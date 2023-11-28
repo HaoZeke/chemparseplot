@@ -67,6 +67,7 @@ check_ruff = "ruff ."
 ruff_fix = "ruff --fix ."
 ruff_format = "ruff format ."
 lint = {composite = ["ruff_fix", "ruff_format"]}
+test = "pytest tests"
 
 [tool.black]
 target-version = ["py312"]
