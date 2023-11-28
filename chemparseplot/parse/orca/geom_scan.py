@@ -10,10 +10,7 @@ end
 import re
 import numpy as np
 from pathlib import Path
-
-# Conversion factors
-HARTREE_TO_EV = 27.211407953
-BOHR_TO_ANGSTROM = 0.529177249
+from chemparseplot.units import Q_
 
 def extract_energy_data(data, energy_type):
     """
@@ -33,7 +30,7 @@ def extract_energy_data(data, energy_type):
     x_values, y_values = [], []
     for line in energy_data.split('\n')[1:]:  # Skip the first
         x, y = map(float, line.split())
-        x_values.append(x * BOHR_TO_ANGSTROM)
+        x_values.append(x)
         y_values.append(y)
 
-    return np.array(x_values), np.array(y_values)
+    return Q_(np.as_array(x_values), 'bohr'), Q_(np.as_array(y_values), 'hartree')
