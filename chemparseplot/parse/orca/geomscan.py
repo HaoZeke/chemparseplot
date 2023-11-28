@@ -8,14 +8,13 @@ end
 *xyzfile 0 1 h2_base.xyz
 """
 import re
-import typing as typ
 
 import numpy as np
 
 from chemparseplot.units import Q_
 
 
-def extract_energy_data(data: str, energy_type: str) -> typ.tuple[Q_, Q_]:
+def extract_energy_data(data: str, energy_type: str) -> tuple[Q_, Q_]:
     """
     Extracts and converts the energy data for a specified energy type.
 
@@ -44,7 +43,8 @@ def extract_energy_data(data: str, energy_type: str) -> typ.tuple[Q_, Q_]:
     # https://regex101.com/r/RF6b4V/2
     pattern = (
         r".*? Calculated Surface.*?"
-        rf"{energy_type}.*?\s(?P<data>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"
+        rf"{energy_type}.*?\s"
+        r"(?P<data>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"
     )
     matchr = re.search(pattern, data, re.MULTILINE)
 
