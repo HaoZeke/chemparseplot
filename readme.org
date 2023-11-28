@@ -1,4 +1,7 @@
 * About
+#+begin_export markdown
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+#+end_export
 A *pure-python*[fn:butwhy] project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
 - Plotting scripts for specific workflows
