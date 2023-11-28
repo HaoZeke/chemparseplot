@@ -7,6 +7,7 @@ version-file = "_version.py"
 
 [tool.hatch.build]
 include = [
+  "chemparseplot/**/*.py",
   "chemparseplot/*.py",
   "/tests",
 ]
