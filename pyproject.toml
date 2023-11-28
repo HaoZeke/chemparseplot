@@ -5,6 +5,12 @@ build-backend = "hatchling.build"
 [tool.hatch.build.hooks.vcs]
 version-file = "_version.py"
 
+[tool.hatch.build]
+include = [
+  "chemparseplot/*.py",
+  "/tests",
+]
+
 [project]
 name = "chemparseplot"
 dynamic = ["version"]
