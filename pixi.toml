@@ -1,0 +1,14 @@
+[project]
+name = "chemparseplot"
+version = "0.1.0"
+description = "Add a short description here"
+authors = ["Rohit Goswami <rog32@hi.is>"]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tasks]
+
+[dependencies]
+hatch = "1.7.0.*"
+python = "==3.12"
+pip = "23.3.1.*"
