@@ -1,16 +1,18 @@
 
 # Table of Contents
 
-1.  [About](#org933ae35)
-    1.  [Features](#org29aeadc)
-        1.  [Supported Engines [WIP]](#org326cafe)
-    2.  [Rationale](#orgb6526b7)
-2.  [License](#org3d31168)
+1.  [About](#orgea43256)
+    1.  [Features](#org6a31408)
+        1.  [Supported Engines [WIP]](#orgbfa09d8)
+    2.  [Rationale](#org4c00d67)
+2.  [License](#orge2168a3)
 
 
-<a id="org933ae35"></a>
+<a id="orgea43256"></a>
 
 # About
+
+![img](branding/logo/chemparseplot_logo.png)
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 
@@ -25,7 +27,7 @@ runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
 
 
-<a id="org29aeadc"></a>
+<a id="org6a31408"></a>
 
 ## Features
 
@@ -35,7 +37,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
     -   Via `pint`
 
 
-<a id="org326cafe"></a>
+<a id="orgbfa09d8"></a>
 
 ### Supported Engines [WIP]
 
@@ -45,7 +47,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
         coordinate)
 
 
-<a id="orgb6526b7"></a>
+<a id="org4c00d67"></a>
 
 ## Rationale
 
@@ -56,7 +58,7 @@ either Bohr/Hartree or Angstron/eV or whatever.
 Also I couldn't find (m)any scripts using the scientific colorschemes.
 
 
-<a id="org3d31168"></a>
+<a id="orge2168a3"></a>
 
 # License
 
