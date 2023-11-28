@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 import numpy as np
 
-from chemparseplot.parse.orca.GeomScan import extract_energy_data
+from chemparseplot.parse.orca.geomscan import extract_energy_data
 from chemparseplot.units import Q_
 
 # Sample data snippet
