@@ -8,12 +8,14 @@ end
 *xyzfile 0 1 h2_base.xyz
 """
 import re
-from pathlib import Path
-from typing import Tuple
+import typing as typ
+
 import numpy as np
+
 from chemparseplot.units import Q_
 
-def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
+
+def extract_energy_data(data: str, energy_type: str) -> typ.tuple[Q_, Q_]:
     """
     Extracts and converts the energy data for a specified energy type.
 
@@ -32,7 +34,7 @@ def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
 
     Returns
     -------
-    Tuple[Q_, Q_]
+    tuple[Q_, Q_]
         A tuple containing two `Quantity` objects from the `pint` library.
         The first element is an array of distances in Bohr, and the second
         element is an array of energies in Hartree.
@@ -40,18 +42,21 @@ def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
     """
     # Regular expression to find the energy type and the two-column data following it
     # https://regex101.com/r/RF6b4V/2
-    pattern = rf".*? Calculated Surface.*?{energy_type}.*?\s(?P<data>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"
+    pattern = (
+        r".*? Calculated Surface.*?"
+        rf"{energy_type}.*?\s(?P<data>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"
+    )
     matchr = re.search(pattern, data, re.MULTILINE)
 
     if not matchr:
-        return Q_(np.array([]), 'bohr'), Q_(np.array([]), 'hartree')
+        return Q_(np.array([]), "bohr"), Q_(np.array([]), "hartree")
 
     # Extract and convert the data
-    energy_data = matchr.group('data')
+    energy_data = matchr.group("data")
     x_values, y_values = [], []
-    for line in energy_data.split('\n'):
+    for line in energy_data.split("\n"):
         x, y = map(float, line.split())
         x_values.append(x)
         y_values.append(y)
 
-    return Q_(np.array(x_values), 'bohr'), Q_(np.array(y_values), 'hartree')
+    return Q_(np.array(x_values), "bohr"), Q_(np.array(y_values), "hartree")
