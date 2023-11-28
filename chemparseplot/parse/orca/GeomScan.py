@@ -11,9 +11,9 @@ import re
 from pathlib import Path
 from typing import Tuple
 import numpy as np
-from chemparseplot.units import Q_
+from chemparseplot.units import BOHR_TO_ANGSTROM
 
-def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
+def extract_energy_data(data: str, energy_type: str) -> Tuple[np.array, np.array]:
     """
     Extracts and converts the energy data for a specified energy type.
 
@@ -44,7 +44,7 @@ def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
     matchr = re.search(pattern, data, re.MULTILINE)
 
     if not matchr:
-        return Q_(np.array([]), 'bohr'), Q_(np.array([]), 'hartree')
+        return np.array([]), np.array([])
 
     # Extract and convert the data
     energy_data = matchr.group('data')
@@ -54,4 +54,4 @@ def extract_energy_data(data: str, energy_type: str) -> Tuple[Q_, Q_]:
         x_values.append(x)
         y_values.append(y)
 
-    return Q_(np.array(x_values), 'bohr'), Q_(np.array(y_values), 'hartree')
+    return np.array(x_values)*BOHR_TO_ANGSTROM, np.array(y_values)
