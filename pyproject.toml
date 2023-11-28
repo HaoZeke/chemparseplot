@@ -32,9 +32,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/chemparseplot#readme"
-Issues = "https://github.com/unknown/chemparseplot/issues"
-Source = "https://github.com/unknown/chemparseplot"
+Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
+Issues = "https://github.com/HaoZeke/chemparseplot/issues"
+Source = "https://github.com/HaoZeke/chemparseplot"
 
 
 [project.optional-dependencies]
