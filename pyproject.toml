@@ -26,12 +26,21 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dependencies = []
+dependencies = [
+    "numpy>=1.26.2",
+    "pint>=0.22",
+]
 
 [project.urls]
 Documentation = "https://github.com/unknown/chemparseplot#readme"
 Issues = "https://github.com/unknown/chemparseplot/issues"
 Source = "https://github.com/unknown/chemparseplot"
+
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib>=3.8.2",
+]
 
 
 [tool.hatch.version]
