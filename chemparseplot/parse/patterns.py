@@ -29,3 +29,4 @@ def create_multicol_pattern(num_cols, pname="multicolnum"):
 
 
 TWO_COL_NUM = create_multicol_pattern(2, "twocolnum")
+THREE_COL_NUM = create_multicol_pattern(3, "threecolnum")
