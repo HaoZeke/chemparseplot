@@ -15,6 +15,23 @@ include = [
   "/tests",
 ]
 
+
+[tool.pdm.dev-dependencies]
+lint = [
+    "ruff>=0.1.6",
+]
+test = [
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.pdm.scripts]
+check_ruff = "ruff ."
+ruff_fix = "ruff --fix ."
+ruff_format = "ruff format ."
+lint = {composite = ["ruff_fix", "ruff_format"]}
+test = "pytest --cov=chemparseplot tests"
+
 [project]
 name = "chemparseplot"
 description = "Parsers and plotting tools for computational chemistry"
@@ -57,22 +74,6 @@ Source = "https://github.com/HaoZeke/chemparseplot"
 
 [tool.hatch.version]
 source = "vcs"
-
-[tool.pdm.dev-dependencies]
-lint = [
-    "ruff>=0.1.6",
-]
-test = [
-    "pytest>=7.4.3",
-    "coverage[toml]>=7.3.2",
-]
-
-[tool.pdm.scripts]
-check_ruff = "ruff ."
-ruff_fix = "ruff --fix ."
-ruff_format = "ruff format ."
-lint = {composite = ["ruff_fix", "ruff_format"]}
-test = "pytest tests"
 
 [tool.black]
 target-version = ["py312"]
