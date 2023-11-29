@@ -135,7 +135,7 @@ ban-relative-imports = "all"
 "__init__.py" = ["F401"]
 
 [tool.coverage.run]
-source_pkgs = ["chemparseplot", "tests"]
+source_pkgs = ["chemparseplot"]
 branch = true
 parallel = true
 omit = [
@@ -144,7 +144,7 @@ omit = [
 
 [tool.coverage.paths]
 chemparseplot = ["src/chemparseplot", "*/chemparseplot/src/chemparseplot"]
-tests = ["tests", "*/chemparseplot/tests"]
+tests = ["tests"]
 
 [tool.coverage.report]
 exclude_lines = [
