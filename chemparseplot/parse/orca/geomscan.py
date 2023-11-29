@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
+#
+# SPDX-License-Identifier: MIT
 """
 For parsing outputs from input files like this:
 !OPT UHF def2-SVP
@@ -9,8 +12,7 @@ end
 """
 import re
 
-import numpy as np
-
+import chemparseplot.parse.converter as conv
 import chemparseplot.parse.patterns as pat
 from chemparseplot.units import Q_
 
@@ -49,16 +51,13 @@ def extract_energy_data(data: str, energy_type: str) -> tuple[Q_, Q_]:
     ) + pat.TWO_COL_NUM
     matchr = re.search(pattern, data, re.MULTILINE)
     # fmt: on
-
     if not matchr:
-        return Q_(np.array([]), "bohr"), Q_(np.array([]), "hartree")
+        xdu = Q_([], "bohr")
+        ydu = Q_([], "hartree")
+        return xdu, ydu
 
-    # Extract and convert the data
-    energy_data = matchr.group("twocolnum")
-    x_values, y_values = [], []
-    for line in energy_data.split("\n"):
-        x, y = map(float, line.split())
-        x_values.append(x)
-        y_values.append(y)
-
-    return Q_(np.array(x_values), "bohr"), Q_(np.array(y_values), "hartree")
+    energytxt = matchr.group("twocolnum")
+    xydat = conv.np_txt(energytxt)
+    xdu = Q_(xydat[:, 0], "bohr")
+    ydu = Q_(xydat[:, 1], "hartree")
+    return xdu, ydu
