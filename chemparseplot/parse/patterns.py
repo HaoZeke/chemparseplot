@@ -2,4 +2,5 @@
 #
 # SPDX-License-Identifier: MIT
 
-from chemparseplot.parse import orca, patterns
+# https://regex101.com/r/jHAG2T/1
+TWO_COL_NUM = r"\s(?P<twocolnum>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"

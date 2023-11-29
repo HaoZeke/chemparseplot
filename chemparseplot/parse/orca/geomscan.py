@@ -11,6 +11,7 @@ import re
 
 import numpy as np
 
+import chemparseplot.parse.patterns as pat
 from chemparseplot.units import Q_
 
 
@@ -41,18 +42,19 @@ def extract_energy_data(data: str, energy_type: str) -> tuple[Q_, Q_]:
     """
     # Regular expression to find the energy type and the two-column data following it
     # https://regex101.com/r/RF6b4V/2
+    # fmt: off
     pattern = (
         r".*? Calculated Surface.*?"
-        rf"{energy_type}.*?\s"
-        r"(?P<data>(?:\s+\d+\.\d+\s+-?\d+\.\d+)+)"
-    )
+        rf"{energy_type}.*?"
+    ) + pat.TWO_COL_NUM
     matchr = re.search(pattern, data, re.MULTILINE)
+    # fmt: on
 
     if not matchr:
         return Q_(np.array([]), "bohr"), Q_(np.array([]), "hartree")
 
     # Extract and convert the data
-    energy_data = matchr.group("data")
+    energy_data = matchr.group("twocolnum")
     x_values, y_values = [], []
     for line in energy_data.split("\n"):
         x, y = map(float, line.split())
