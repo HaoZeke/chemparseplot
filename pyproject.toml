@@ -24,6 +24,11 @@ test = [
     "pytest>=7.4.3",
     "pytest-cov>=4.1.0",
 ]
+nbdoc = [
+    "jupyterlab>=4.0.9",
+    "jupytext>=1.15.2",
+    "ase>=3.22.1",
+]
 
 [tool.pdm.scripts]
 check_ruff = "ruff ."
@@ -66,6 +71,18 @@ dependencies = [
 [project.optional-dependencies]
 plot = [
   "matplotlib>=3.8.2",
+]
+doc = [
+    "sphinx>=7.2.6",
+    "myst-parser>=2.0.0",
+    "sphinxcontrib-apidoc>=0.4.0",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-sitemap>=2.5.1",
+    "sphinx-togglebutton>=0.3.2",
+    "sphinx-library>=1.1.2",
+    "sphinx-autodoc2>=0.5.0",
+    "mdit-py-plugins>=0.3.4",
+    "myst-nb>=1.0.0",
 ]
 [project.urls]
 Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
