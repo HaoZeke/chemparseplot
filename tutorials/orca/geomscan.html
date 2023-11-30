@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Geometry Scan &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"extensions": ["tex2jax.js"], "jax": ["input/TeX", "output/HTML-CSS"]})</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/tutorials/orca/geomscan.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Installation" href="../../installation.html" />
+    <link rel="prev" title="Tutorial Introduction" href="../index.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorial Introduction</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Geometry Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Geometry Scan</a><ul>
+<li><a class="reference internal" href="#system-construction">System construction</a><ul>
+<li><a class="reference internal" href="#orca-input">ORCA Input</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#execution">Execution</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
+<li><a class="reference internal" href="#plotting">Plotting</a></li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">Tutorial Introduction</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">Geometry Scan</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">chemparseplot.parse.orca</span> <span class="kn">import</span> <span class="n">geomscan</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section class="tex2jax_ignore mathjax_ignore" id="geometry-scan">
+<h1>Geometry Scan<a class="headerlink" href="#geometry-scan" title="Link to this heading">¶</a></h1>
+<p>Often it is of interest to scan for energies over a particular aspect of
+molecular geometry. Here we consider the example of scanning over the bond
+length of the H2 molecule.</p>
+<section id="system-construction">
+<h2>System construction<a class="headerlink" href="#system-construction" title="Link to this heading">¶</a></h2>
+<p>For simplicity, we will just use <code class="docutils literal notranslate"><span class="pre">ase</span></code> for this:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">h2</span> <span class="o">=</span> <span class="n">molecule</span><span class="p">(</span><span class="s2">&quot;H2&quot;</span><span class="p">)</span>
+<span class="n">h2</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;data/h2_base.xyz&quot;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This can be visualized via <code class="docutils literal notranslate"><span class="pre">ase</span> <span class="pre">gui</span> <span class="pre">h2_base.xyz</span></code> or similar, to see<a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>:</p>
+<p><img alt="H2 Molecule" src="../../_images/h2mol.png" /></p>
+<p>Note that for <code class="docutils literal notranslate"><span class="pre">ORCA</span></code>, we need the “plain” <code class="docutils literal notranslate"><span class="pre">.xyz</span></code> file, so we need to remove the
+metadata added by <code class="docutils literal notranslate"><span class="pre">ase</span></code>, hence the newline comment.</p>
+<section id="orca-input">
+<h3>ORCA Input<a class="headerlink" href="#orca-input" title="Link to this heading">¶</a></h3>
+<p>To run <code class="docutils literal notranslate"><span class="pre">orca</span></code>, we can use an input file such as:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="kt">!OPT</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">UHF def2-SVP</span>
+<span class="l l-Scalar l-Scalar-Plain">%geom Scan</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain"># B &lt;atmid1&gt; &lt;atmid2&gt; = init, final, npoints</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain"># Converted from Angstrom to Bohr</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">B 0 1 = 7.5589039543, 0.2116708996, 33</span>
+<span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end</span>
+<span class="l l-Scalar l-Scalar-Plain">end</span>
+<span class="l l-Scalar l-Scalar-Plain">*xyzfile 0 1 h2_base.xyz</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="execution">
+<h2>Execution<a class="headerlink" href="#execution" title="Link to this heading">¶</a></h2>
+<p>Following the best practices for running ORCA, we have<a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:/blah/orca_5_0_4_linux_x86-64_openmpi411/
+mkdir<span class="w"> </span>uhf
+cp<span class="w"> </span>orca.inp<span class="w"> </span>h2_base.xyz<span class="w"> </span>uhf
+<span class="nb">cd</span><span class="w"> </span>uhf
+<span class="o">(</span><span class="k">$(</span>which<span class="w"> </span>orca<span class="k">)</span><span class="w"> </span>orca.inp<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="o">)</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>scan_uhf
+</pre></div>
+</div>
+<p>Also because it is annoying to keep blobs of text, and because it is large:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gzip<span class="w"> </span>-9<span class="w"> </span>-c<span class="w"> </span>scan_uhf<span class="w"> </span>&gt;<span class="w"> </span>scanuhf.gz
+mv<span class="w"> </span>scanuhf.gz<span class="w"> </span>../data/
+</pre></div>
+</div>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="analysis-with-chemparseplot">
+<h1>Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code><a class="headerlink" href="#analysis-with-chemparseplot" title="Link to this heading">¶</a></h1>
+<p>Now we can finally get to the good bit. Rather than painstakingly parsing “by
+eye” the <code class="docutils literal notranslate"><span class="pre">scan_uhf</span></code> file, we will simply use <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">orcaout</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;data/scanuhf.gz&quot;</span><span class="p">),</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">act_energy</span> <span class="o">=</span> <span class="n">geomscan</span><span class="o">.</span><span class="n">extract_energy_data</span><span class="p">(</span><span class="n">orcaout</span><span class="p">,</span> <span class="s2">&quot;Actual&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">act_energy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Quantity([7.55890395 7.32930292 7.09970189 6.87010086 6.64049982 6.41089879
+ 6.18129776 5.95169672 5.72209569 5.49249466 5.26289362 5.03329259
+ 4.80369156 4.57409053 4.34448949 4.11488846 3.88528743 3.65568639
+ 3.42608536 3.19648433 2.9668833  2.73728226 2.50768123 2.2780802
+ 2.04847916 1.81887813 1.5892771  1.35967606 1.13007503 0.900474
+ 0.67087297 0.44127193 0.2116709 ], &#39;bohr&#39;)&gt;, &lt;Quantity([-7.42398620e-01 -7.43499390e-01 -7.44674460e-01 -7.45933440e-01
+ -7.47288480e-01 -7.48755240e-01 -7.50354120e-01 -7.52111840e-01
+ -7.54063390e-01 -7.56254250e-01 -7.58743070e-01 -7.61604610e-01
+ -7.64933080e-01 -7.68845710e-01 -7.73486280e-01 -7.79028130e-01
+ -7.85676030e-01 -7.93666670e-01 -8.03268580e-01 -8.14784250e-01
+ -8.28557780e-01 -8.44988870e-01 -8.64547310e-01 -8.87779890e-01
+ -9.15309070e-01 -9.47797640e-01 -9.85735890e-01 -1.02886903e+00
+ -1.07506391e+00 -1.11633350e+00 -1.12403918e+00 -9.84131910e-01
+ -7.37660000e-04], &#39;hartree&#39;)&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note that there are units attached, which makes subsequent analysis much easier,
+since <code class="docutils literal notranslate"><span class="pre">pint</span></code> will ensure that the correct units are always used.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">act_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;angstrom&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table><tbody><tr><th>Magnitude</th><td style='text-align:left;'><pre>[3.9999997097520588 3.8785000770759783 3.757000444399898<br> 3.6355008117238174 3.5140011737559647 3.392501541079884 3.271001908403804<br> 3.1495022704359514 3.0280026377598706 2.9065030050837906<br> 2.7850033671159378 2.6635037344398573 2.542004101763777<br> 2.4205044690876965 2.2990048311198437 2.1775051984437637<br> 2.056005565767683 1.9345059277998302 1.8130062951237498<br> 1.6915066624476693 1.570007029771589 1.4485073918037363 1.327007759127656<br> 1.2055081264515755 1.0840084884837227 0.9625088558076422<br> 0.8410092231315618 0.7195095851637091 0.5980099524876287<br> 0.47651031981154823 0.3550106871354678 0.2335110491676152<br> 0.11201141649153473]</pre></td></tr><tr><th>Units</th><td style='text-align:left;'>angstrom</td></tr></tbody></table></div></div>
+</div>
+<section id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
+<p>This is simple enough to plot.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">act_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">act_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f8c4b6eccb0&gt;
+</pre></div>
+</div>
+<img alt="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" src="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" />
+</div>
+</div>
+<p>However, this is not super satisfying, and since this is a “supported” workflow, we can leverage <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> instead.</p>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>I use <a class="reference external" href="https://chemcraftprog.com/">ChemCraft</a> for visualization</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Discussed in more detail <a class="reference external" href="https://rgoswami.me/posts/intro-highthrough-calc/#chemical">here</a></p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="../index.html" title="Previous">
+    &larr; Tutorial Introduction
+  </a>
+  <a class="next" href="../../installation.html" title="Next">
+    Installation &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2023, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+  <a href="../../_sources/tutorials/orca/geomscan.md.txt" rel="nofollow">Page source</a>
+</footer>
+  </body>
+</html>

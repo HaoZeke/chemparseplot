@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Contributing to chemparseplot &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <script src="_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/contributing.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Features" href="features.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-co-authored-by-in-git-commits">Using Co-Authored-By in Git Commits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
+<li><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
+<li><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
+<li><a class="reference internal" href="#using-co-authored-by-in-git-commits">Using Co-Authored-By in Git Commits</a></li>
+<li><a class="reference internal" href="#development">Development</a><ul>
+<li><a class="reference internal" href="#local-development">Local Development</a><ul>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">Contributing to chemparseplot</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="contributing-to-chemparseplot">
+<h1>Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code><a class="headerlink" href="#contributing-to-chemparseplot" title="Link to this heading">¶</a></h1>
+<p>Thank you for considering contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>! We appreciate your
+interest in making this project better.</p>
+<section id="code-of-conduct">
+<h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Link to this heading">¶</a></h2>
+<p>Please read and adhere to our <a class="reference external" href="https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a> to maintain
+a safe, welcoming, and inclusive environment.</p>
+</section>
+<section id="types-of-contributions">
+<h2>Types of Contributions<a class="headerlink" href="#types-of-contributions" title="Link to this heading">¶</a></h2>
+<p>We welcome various forms of contributions:</p>
+<ul class="simple">
+<li><p><strong>Bug Reports</strong>: Feel free to report any bugs you encounter.</p></li>
+<li><p><strong>Documentation</strong>: Typos, clarity issues, or missing guides—your help is
+welcome here.</p></li>
+<li><p><strong>Feature Discussions/Requests</strong>: Got an idea? Open an issue to discuss its
+potential.</p></li>
+<li><p><strong>Code Contributions</strong>: All code contributions are welcome.</p></li>
+</ul>
+</section>
+<section id="using-co-authored-by-in-git-commits">
+<h2>Using Co-Authored-By in Git Commits<a class="headerlink" href="#using-co-authored-by-in-git-commits" title="Link to this heading">¶</a></h2>
+<p>We encourage the use of <a class="reference external" href="https://docs.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors">co-authored
+commits</a>
+for collaborative efforts. This helps in giving credit to all contributors for
+their work.</p>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Co-authored-by: name &lt;name@example.com&gt;
+Co-authored-by: another-name &lt;another-name@example.com&gt;
+</pre></div>
+</div>
+</section>
+<section id="development">
+<h2>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h2>
+<p>Your contributions make this project better for everyone. Thank you for
+participating!</p>
+<section id="local-development">
+<h3>Local Development<a class="headerlink" href="#local-development" title="Link to this heading">¶</a></h3>
+<p>Often it is useful to have <a class="reference external" href="https://prefix.dev/">pixi</a> handle the dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pixi<span class="w"> </span>shell
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> job is set up on CI to enforce consistent styles. It is advisable
+to set it up locally as well using <a class="reference external" href="https://pypa.github.io/pipx/">pipx</a> for
+isolation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run before committing</span>
+pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+<span class="c1"># Or install the git hook to enforce this</span>
+pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">readme</span></code> file is generated from <code class="docutils literal notranslate"><span class="pre">readme_src.org</span></code> via:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/org_to_md.sh<span class="w"> </span>readme_src.org<span class="w"> </span>readme.md
+</pre></div>
+</div>
+<section id="tests">
+<h4>Tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h4>
+<p>Tests and checks are run on the CI, however locally one can use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pdm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+</pre></div>
+</div>
+</section>
+<section id="documentation">
+<h4>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h4>
+<p>We use <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> with the <code class="docutils literal notranslate"><span class="pre">myst-parser</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sphinx-build<span class="w"> </span>doc/source<span class="w"> </span>doc/build/html
+python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span>-d<span class="w"> </span>doc/build/html
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="installation.html" title="Previous">
+    &larr; Installation
+  </a>
+  <a class="next" href="features.html" title="Next">
+    Features &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2023, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+  <a href="_sources/contributing.md.txt" rel="nofollow">Page source</a>
+</footer>
+  </body>
+</html>

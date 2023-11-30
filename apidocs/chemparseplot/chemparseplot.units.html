@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.units &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/apidocs/chemparseplot/chemparseplot.units.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Tutorial Introduction" href="../../tutorials/index.html" />
+    <link rel="prev" title="chemparseplot.basetypes" href="chemparseplot.basetypes.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.units.ureg"><code class="docutils literal notranslate"><span class="pre">ureg</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.units.Q_"><code class="docutils literal notranslate"><span class="pre">Q_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.units</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.units">
+<span id="chemparseplot-units"></span><h1><a class="reference internal" href="#module-chemparseplot.units" title="chemparseplot.units"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code></a><a class="headerlink" href="#module-chemparseplot.units" title="Link to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.units.ureg" title="chemparseplot.units.ureg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ureg</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.units.Q_" title="chemparseplot.units.Q_"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Q_</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.units.ureg">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.units.</span></span><span class="sig-name descname"><span class="pre">ureg</span></span><a class="headerlink" href="#chemparseplot.units.ureg" title="Link to this definition">¶</a></dt>
+<dd><p>‘UnitRegistry(…)’</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.units.Q_">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.units.</span></span><span class="sig-name descname"><span class="pre">Q_</span></span><a class="headerlink" href="#chemparseplot.units.Q_" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.basetypes.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.basetypes</span></code>
+  </a>
+  <a class="next" href="../../tutorials/index.html" title="Next">
+    Tutorial Introduction &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2023, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+  <a href="../../_sources/apidocs/chemparseplot/chemparseplot.units.md.txt" rel="nofollow">Page source</a>
+</footer>
+  </body>
+</html>
