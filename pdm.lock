@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "lint", "test", "plot", "doc", "nbdoc"]
+groups = ["default", "lint", "test", "plot", "doc", "nbdoc", "release_aid"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:7daa04edc6fac78e924943f51212d43b27175d9b0192844da9fbc3149847c549"
+content_hash = "sha256:fc8ef95345fecfe35c4aa2f9852b9a3ddea6467edd7e8e5c4831994c0219c035"
 
 [[package]]
 name = "alabaster"
@@ -339,6 +339,21 @@ files = [
 ]
 
 [[package]]
+name = "cli-ui"
+version = "0.17.2"
+requires_python = ">=3.7,<4.0"
+summary = "Build Nice User Interfaces In The Terminal"
+dependencies = [
+    "colorama<0.5.0,>=0.4.1",
+    "tabulate<0.9.0,>=0.8.3",
+    "unidecode<2.0.0,>=1.0.23",
+]
+files = [
+    {file = "cli-ui-0.17.2.tar.gz", hash = "sha256:2f67e50cf474e76ad160c3e660bbad98bf8b8dfb8d847765f3a261b7e13c05fa"},
+    {file = "cli_ui-0.17.2-py3-none-any.whl", hash = "sha256:6a1ebdbbcd83a0fa06b2f63f4434082a3ba8664aebedd91f1ff86b9e4289d53e"},
+]
+
+[[package]]
 name = "click"
 version = "8.1.7"
 requires_python = ">=3.7"
@@ -372,6 +387,16 @@ dependencies = [
 files = [
     {file = "comm-0.2.0-py3-none-any.whl", hash = "sha256:2da8d9ebb8dd7bfc247adaff99f24dce705638a8042b85cb995066793e391001"},
     {file = "comm-0.2.0.tar.gz", hash = "sha256:a517ea2ca28931c7007a7a99c562a0fa5883cfb48963140cf642c41c948498be"},
+]
+
+[[package]]
+name = "contextlib2"
+version = "21.6.0"
+requires_python = ">=3.6"
+summary = "Backports and enhancements for the contextlib module"
+files = [
+    {file = "contextlib2-21.6.0-py2.py3-none-any.whl", hash = "sha256:3fbdb64466afd23abaf6c977627b75b6139a5a3e8ce38405c5b413aed7a0471f"},
+    {file = "contextlib2-21.6.0.tar.gz", hash = "sha256:ab1e2bfe1d01d968e1b7e8d9023bc51ef3509bba217bb730cee3827e1ee82869"},
 ]
 
 [[package]]
@@ -587,6 +612,14 @@ files = [
 ]
 
 [[package]]
+name = "docopt"
+version = "0.6.2"
+summary = "Pythonic argument parser, that will make you smile"
+files = [
+    {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
+]
+
+[[package]]
 name = "docutils"
 version = "0.20.1"
 requires_python = ">=3.7"
@@ -767,6 +800,15 @@ dependencies = [
 files = [
     {file = "importlib_resources-6.1.1-py3-none-any.whl", hash = "sha256:e8bf90d8213b486f428c9c39714b920041cb02c184686a3dee24905aaa8105d6"},
     {file = "importlib_resources-6.1.1.tar.gz", hash = "sha256:3893a00122eafde6894c59914446a512f728a0c1a45f9bb9b63721b6bacf0b4a"},
+]
+
+[[package]]
+name = "incremental"
+version = "22.10.0"
+summary = "\"A small library that versions your Python projects.\""
+files = [
+    {file = "incremental-22.10.0-py2.py3-none-any.whl", hash = "sha256:b864a1f30885ee72c5ac2835a761b8fe8aa9c28b9395cacf27286602688d3e51"},
+    {file = "incremental-22.10.0.tar.gz", hash = "sha256:912feeb5e0f7e0188e6f42241d2f450002e11bbc0937c65865045854c24c0bd0"},
 ]
 
 [[package]]
@@ -2153,6 +2195,18 @@ files = [
 ]
 
 [[package]]
+name = "schema"
+version = "0.7.5"
+summary = "Simple data validation library"
+dependencies = [
+    "contextlib2>=0.5.5",
+]
+files = [
+    {file = "schema-0.7.5-py2.py3-none-any.whl", hash = "sha256:f3ffdeeada09ec34bf40d7d79996d9f7175db93b7a5065de0faa7f41083c1e6c"},
+    {file = "schema-0.7.5.tar.gz", hash = "sha256:f06717112c61895cabc4707752b88716e8420a8819d71404501e114f91043197"},
+]
+
+[[package]]
 name = "scipy"
 version = "1.11.4"
 requires_python = ">=3.9"
@@ -2491,12 +2545,28 @@ files = [
 
 [[package]]
 name = "tabulate"
-version = "0.9.0"
-requires_python = ">=3.7"
+version = "0.8.10"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "Pretty-print tabular data"
 files = [
-    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
-    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+    {file = "tabulate-0.8.10-py3-none-any.whl", hash = "sha256:0ba055423dbaa164b9e456abe7920c5e8ed33fcc16f6d1b2f2d152c8e1e8b4fc"},
+    {file = "tabulate-0.8.10.tar.gz", hash = "sha256:6c57f3f3dd7ac2782770155f3adb2db0b1a269637e42f27599925e64b114f519"},
+]
+
+[[package]]
+name = "tbump"
+version = "6.11.0"
+requires_python = ">=3.7,<4.0"
+summary = "Bump software releases"
+dependencies = [
+    "cli-ui>=0.10.3",
+    "docopt<0.7.0,>=0.6.2",
+    "schema<0.8.0,>=0.7.1",
+    "tomlkit<0.12,>=0.11",
+]
+files = [
+    {file = "tbump-6.11.0-py3-none-any.whl", hash = "sha256:6b181fe6f3ae84ce0b9af8cc2009a8bca41ded34e73f623a7413b9684f1b4526"},
+    {file = "tbump-6.11.0.tar.gz", hash = "sha256:385e710eedf0a8a6ff959cf1e9f3cfd17c873617132fc0ec5f629af0c355c870"},
 ]
 
 [[package]]
@@ -2548,6 +2618,16 @@ files = [
 ]
 
 [[package]]
+name = "tomlkit"
+version = "0.11.8"
+requires_python = ">=3.7"
+summary = "Style preserving TOML library"
+files = [
+    {file = "tomlkit-0.11.8-py3-none-any.whl", hash = "sha256:8c726c4c202bdb148667835f68d68780b9a003a9ec34167b6c673b38eff2a171"},
+    {file = "tomlkit-0.11.8.tar.gz", hash = "sha256:9330fc7faa1db67b541b28e62018c17d20be733177d290a13b24c62d1614e0c3"},
+]
+
+[[package]]
 name = "tornado"
 version = "6.4"
 requires_python = ">= 3.8"
@@ -2564,6 +2644,23 @@ files = [
     {file = "tornado-6.4-cp38-abi3-win32.whl", hash = "sha256:6f8a6c77900f5ae93d8b4ae1196472d0ccc2775cc1dfdc9e7727889145c45052"},
     {file = "tornado-6.4-cp38-abi3-win_amd64.whl", hash = "sha256:10aeaa8006333433da48dec9fe417877f8bcc21f48dda8d661ae79da357b2a63"},
     {file = "tornado-6.4.tar.gz", hash = "sha256:72291fa6e6bc84e626589f1c29d90a5a6d593ef5ae68052ee2ef000dfd273dee"},
+]
+
+[[package]]
+name = "towncrier"
+version = "23.11.0"
+requires_python = ">=3.8"
+summary = "Building newsfiles for your project."
+dependencies = [
+    "click",
+    "importlib-resources>=5; python_version < \"3.10\"",
+    "incremental",
+    "jinja2",
+    "tomli; python_version < \"3.11\"",
+]
+files = [
+    {file = "towncrier-23.11.0-py3-none-any.whl", hash = "sha256:2e519ca619426d189e3c98c99558fe8be50c9ced13ea1fc20a4a353a95d2ded7"},
+    {file = "towncrier-23.11.0.tar.gz", hash = "sha256:13937c247e3f8ae20ac44d895cf5f96a60ad46cfdcc1671759530d7837d9ee5d"},
 ]
 
 [[package]]
@@ -2593,6 +2690,16 @@ summary = "Backported and Experimental Type Hints for Python 3.8+"
 files = [
     {file = "typing_extensions-4.8.0-py3-none-any.whl", hash = "sha256:8f92fc8806f9a6b641eaa5318da32b44d401efaac0f6678c9bc448ba3605faa0"},
     {file = "typing_extensions-4.8.0.tar.gz", hash = "sha256:df8e4339e9cb77357558cbdbceca33c303714cf861d1eef15e1070055ae8b7ef"},
+]
+
+[[package]]
+name = "unidecode"
+version = "1.3.7"
+requires_python = ">=3.5"
+summary = "ASCII transliterations of Unicode text"
+files = [
+    {file = "Unidecode-1.3.7-py3-none-any.whl", hash = "sha256:663a537f506834ed836af26a81b210d90cbde044c47bfbdc0fbbc9f94c86a6e4"},
+    {file = "Unidecode-1.3.7.tar.gz", hash = "sha256:3c90b4662aa0de0cb591884b934ead8d2225f1800d8da675a7750cbc3bd94610"},
 ]
 
 [[package]]

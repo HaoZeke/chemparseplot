@@ -16,6 +16,7 @@ include = [
 ]
 
 
+
 [tool.pdm.dev-dependencies]
 lint = [
     "ruff>=0.1.6",
@@ -28,6 +29,10 @@ nbdoc = [
     "jupyterlab>=4.0.9",
     "jupytext>=1.15.2",
     "ase>=3.22.1",
+]
+release_aid = [
+    "tbump>=6.11.0",
+    "towncrier>=23.11.0",
 ]
 
 [tool.pdm.scripts]
@@ -169,3 +174,43 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.towncrier]
+start_string = "<!-- towncrier release notes start -->\n"
+underlines = ["", "", ""]
+single_file = true
+filename = "CHANGELOG.md"
+directory = "doc/release/upcoming_changes/"
+issue_format = "[#{issue}](https://github.com/HaoZeke/chemparseplot/issues/{issue})"
+title_format = "## [{version}](https://github.com/HaoZeke/chemparseplot/tree/{version}) - {project_date}"
+all_bullets = false
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "misc"
+name = "Miscellaneous"
+showcontent = true
