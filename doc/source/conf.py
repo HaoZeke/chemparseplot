@@ -5,6 +5,7 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from datetime import date
 
 project = "chemparseplot"
 copyright = f'2023-{date.today().year}, Rohit Goswami'
@@ -16,7 +17,6 @@ release = "0.1.0"
 
 extensions = [
     "autodoc2",  # Consumes docstrings
-    "myst_parser",  # Markdown documentation
     "myst_nb",  # Markdown notebooks
     "sphinx.ext.napoleon",  # Allows for Google Style Docs
     "sphinx.ext.todo",  # Show TODO details

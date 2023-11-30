@@ -163,3 +163,4 @@ cython_debug/
 #.idea/
 /_version.py
 /.pdm-python
+*.ipynb

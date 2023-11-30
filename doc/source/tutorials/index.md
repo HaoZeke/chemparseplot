@@ -4,5 +4,5 @@ Here we will focus on a few standard workflows where `chemparseplot` is meant to
 be used.
 
 ```{toctree}
-orca/energy_scan
+orca/geomscan
 ```
