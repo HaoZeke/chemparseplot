@@ -1,3 +1,5 @@
+#+OPTIONS: num:nil
+
 * About
 file:branding/logo/chemparseplot_logo.png
 #+begin_export markdown
