@@ -24,7 +24,7 @@ jobs:
         python: ["cp39","cp310", "cp311", "cp312"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.3
