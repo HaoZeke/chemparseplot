@@ -5,7 +5,7 @@ interest in making this project better.
 
 ## Code of Conduct
 
-Please read and adhere to our [Code of Conduct](./CODE_OF_CONDUCT.md) to maintain
+Please read and adhere to our [Code of Conduct](https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md) to maintain
 a safe, welcoming, and inclusive environment.
 
 ## Types of Contributions
@@ -66,5 +66,15 @@ Note that the `readme` file is generated from `readme_src.org` via:
 Tests and checks are run on the CI, however locally one can use:
 
 ```bash
-hatch run test
+pdm run test
+```
+
+
+#### Documentation
+
+We use `sphinx` with the `myst-parser`:
+
+```bash
+sphinx-build doc/source doc/build/html
+python -m http.server -d doc/build/html
 ```
