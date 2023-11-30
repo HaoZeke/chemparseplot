@@ -1,0 +1,25 @@
+name: "Build Documentation"
+on: [push, pull_request]
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-18.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Prep dependencies
+        run: pdm install -dG:all
+      - name: Build docs
+        run: pdm run sphinx-build doc/source doc/build/html
+      - name: Deploy Documentation
+        if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'HaoZeke/chemparseplot') || (github.ref == 'refs/heads/master' && github.repository == 'HaoZeke/chemparseplot')}}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./doc/build/html
