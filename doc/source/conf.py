@@ -11,7 +11,7 @@ project = "chemparseplot"
 copyright = f'2023-{date.today().year}, Rohit Goswami'
 author = "Rohit Goswami"
 # The short X.Y version.
-version = '0.0.1'
+version = '0.0.2'
 # The full version, including alpha/beta/rc tags.
 release = version
 
