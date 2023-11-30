@@ -1,6 +1,6 @@
 [project]
 name = "chemparseplot"
-version = "0.1.0"
+version = "0.0.1"
 description = "Parsers and plotting tools for computational chemistry."
 authors = ["Rohit Goswami <rog32@hi.is>"]
 channels = ["conda-forge"]

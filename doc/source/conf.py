@@ -10,7 +10,10 @@ from datetime import date
 project = "chemparseplot"
 copyright = f'2023-{date.today().year}, Rohit Goswami'
 author = "Rohit Goswami"
-release = "0.1.0"
+# The short X.Y version.
+version = '0.0.1'
+# The full version, including alpha/beta/rc tags.
+release = version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
