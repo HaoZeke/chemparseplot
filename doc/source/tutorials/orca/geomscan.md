@@ -114,5 +114,34 @@ However, this is not super satisfying, and since this is a "supported" workflow,
 
 ```
 
+```{code-cell} ipython3
+# Create an instance of TwoDimPlot
+twodim_plot = TwoDimPlot()
+
+# Set the units for the plot
+twodim_plot.set_units('angstrom', 'hartree')
+
+# Add data (EnergyPath instances) to the plot
+energy_path1 = EnergyPath('Path 1', np.linspace(0, 10, 30) * ureg.angstrom, np.random.uniform(-1, 0, 30) * ureg.hartree)
+energy_path2 = EnergyPath('Path 2', np.linspace(1, 9, 25) * ureg.angstrom, np.random.uniform(-0.5, 0.5, 25) * ureg.hartree)
+twodim_plot.add_data(energy_path1)
+twodim_plot.add_data(energy_path2)
+
+# Display the plot
+twodim_plot.show_plot("Energy Paths")
+```
+
+```{code-cell} ipython3
+twodim_plot.set_units('bohr', 'electron_volt')
+```
+
+```{code-cell} ipython3
+twodim_plot.fig
+```
+
 [^1]: I use [ChemCraft](https://chemcraftprog.com/) for visualization
 [^2]: Discussed in more detail [here](https://rgoswami.me/posts/intro-highthrough-calc/#chemical)
+
+```{code-cell} ipython3
+
+```
