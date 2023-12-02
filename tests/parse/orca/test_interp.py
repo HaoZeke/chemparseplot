@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-import pytest
+from chemparseplot.basetypes import nebiter
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
-from chemparseplot.basetypes import nebiter, nebpath
-from chemparseplot.units import Q_, ureg
+from chemparseplot.units import ureg
+
 
 def test_extract_interp_points_valid_input():
     # Example valid text input
@@ -29,12 +29,13 @@ Images: Distance  (Bohr), Energy (Eh)
     assert result[0].nebpath.norm_dist.magnitude[0] == 13.0
     assert result[0].nebpath.arc_dist.magnitude[0] == 0.0
     assert result[0].nebpath.energy.magnitude[0] == 0.0
-    assert result[0].nebpath.norm_dist.units == ureg.Unit('dimensionless')
-    assert result[0].nebpath.arc_dist.units == 'bohr'
-    assert result[0].nebpath.energy.units == 'hartree'
+    assert result[0].nebpath.norm_dist.units == ureg.Unit("dimensionless")
+    assert result[0].nebpath.arc_dist.units == "bohr"
+    assert result[0].nebpath.energy.units == "hartree"
     assert result[1].nebpath.norm_dist.magnitude[0] == 0.0
     assert result[1].nebpath.arc_dist.magnitude[0] == 0.2
     assert result[1].nebpath.energy.magnitude[0] == 0.3
+
 
 def test_extract_interp_points_invalid_input():
     # Example invalid text input
