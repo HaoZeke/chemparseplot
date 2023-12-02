@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test", "plot", "doc", "nbdoc", "release_aid"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:fc8ef95345fecfe35c4aa2f9852b9a3ddea6467edd7e8e5c4831994c0219c035"
+content_hash = "sha256:5c250f9b6d79dde161301937c3f2d164b5877714afa2b4aab7f0d2e996a74409"
 
 [[package]]
 name = "alabaster"
@@ -364,6 +364,21 @@ dependencies = [
 files = [
     {file = "click-8.1.7-py3-none-any.whl", hash = "sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28"},
     {file = "click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de"},
+]
+
+[[package]]
+name = "cmcrameri"
+version = "1.7"
+requires_python = ">=3.6"
+summary = "Perceptually uniform colormaps by Fabio Crameri"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "packaging",
+]
+files = [
+    {file = "cmcrameri-1.7-py3-none-any.whl", hash = "sha256:97f9ae687253bfdaab06081172db4ba14c6638eb3ca0a6c82a5874e99b6ee344"},
+    {file = "cmcrameri-1.7.tar.gz", hash = "sha256:581f459809ce1951bbd305b7992d56185bab33a79efd40059d414365ef97abfe"},
 ]
 
 [[package]]
