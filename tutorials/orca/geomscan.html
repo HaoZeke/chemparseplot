@@ -111,6 +111,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
 </ul>
 
 <h3>Page Contents</h3>
@@ -278,13 +281,60 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f8c4b6eccb0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f6ba43db170&gt;
 </pre></div>
 </div>
 <img alt="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" src="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" />
 </div>
 </div>
 <p>However, this is not super satisfying, and since this is a “supported” workflow, we can leverage <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> instead.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create an instance of TwoDimPlot</span>
+<span class="n">twodim_plot</span> <span class="o">=</span> <span class="n">TwoDimPlot</span><span class="p">()</span>
+
+<span class="c1"># Set the units for the plot</span>
+<span class="n">twodim_plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s1">&#39;angstrom&#39;</span><span class="p">,</span> <span class="s1">&#39;hartree&#39;</span><span class="p">)</span>
+
+<span class="c1"># Add data (EnergyPath instances) to the plot</span>
+<span class="n">energy_path1</span> <span class="o">=</span> <span class="n">EnergyPath</span><span class="p">(</span><span class="s1">&#39;Path 1&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">angstrom</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">hartree</span><span class="p">)</span>
+<span class="n">energy_path2</span> <span class="o">=</span> <span class="n">EnergyPath</span><span class="p">(</span><span class="s1">&#39;Path 2&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">angstrom</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">*</span> <span class="n">ureg</span><span class="o">.</span><span class="n">hartree</span><span class="p">)</span>
+<span class="n">twodim_plot</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">energy_path1</span><span class="p">)</span>
+<span class="n">twodim_plot</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">energy_path2</span><span class="p">)</span>
+
+<span class="c1"># Display the plot</span>
+<span class="n">twodim_plot</span><span class="o">.</span><span class="n">show_plot</span><span class="p">(</span><span class="s2">&quot;Energy Paths&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># Create an instance of TwoDimPlot</span>
+<span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">twodim_plot</span> <span class="o">=</span> <span class="n">TwoDimPlot</span><span class="p">()</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="c1"># Set the units for the plot</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="n">twodim_plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s1">&#39;angstrom&#39;</span><span class="p">,</span> <span class="s1">&#39;hartree&#39;</span><span class="p">)</span>
+
+<span class="ne">NameError</span>: name &#39;TwoDimPlot&#39; is not defined
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">twodim_plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s1">&#39;bohr&#39;</span><span class="p">,</span> <span class="s1">&#39;electron_volt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">twodim_plot</span><span class="o">.</span><span class="n">fig</span>
+</pre></div>
+</div>
+</div>
+</div>
 <hr class="footnotes docutils" />
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id3" role="doc-footnote">

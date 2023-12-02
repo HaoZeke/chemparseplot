@@ -28,6 +28,7 @@ Documentation TOC
    installation
    contributing
    features
+   worklog/graphTrials
 
 Features
 ~~~~~~~~

@@ -1,0 +1,155 @@
+# {py:mod}`chemparseplot.plot.structs`
+
+```{py:module} chemparseplot.plot.structs
+```
+
+```{autodoc2-docstring} chemparseplot.plot.structs
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`BasePlotter <chemparseplot.plot.structs.BasePlotter>`
+  - ```{autodoc2-docstring} chemparseplot.plot.structs.BasePlotter
+    :summary:
+    ```
+* - {py:obj}`TwoDimPlot <chemparseplot.plot.structs.TwoDimPlot>`
+  - ```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`EnergyPath <chemparseplot.plot.structs.EnergyPath>`
+  - ```{autodoc2-docstring} chemparseplot.plot.structs.EnergyPath
+    :summary:
+    ```
+* - {py:obj}`XYData <chemparseplot.plot.structs.XYData>`
+  - ```{autodoc2-docstring} chemparseplot.plot.structs.XYData
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} EnergyPath
+:canonical: chemparseplot.plot.structs.EnergyPath
+:value: >
+   'namedtuple(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.structs.EnergyPath
+```
+
+````
+
+````{py:data} XYData
+:canonical: chemparseplot.plot.structs.XYData
+:value: >
+   'namedtuple(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.structs.XYData
+```
+
+````
+
+`````{py:class} BasePlotter(figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=cm.batlow, style='bmh')
+:canonical: chemparseplot.plot.structs.BasePlotter
+
+```{autodoc2-docstring} chemparseplot.plot.structs.BasePlotter
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} chemparseplot.plot.structs.BasePlotter.__init__
+```
+
+````{py:method} add_title(title='')
+:canonical: chemparseplot.plot.structs.BasePlotter.add_title
+
+```{autodoc2-docstring} chemparseplot.plot.structs.BasePlotter.add_title
+```
+
+````
+
+`````
+
+`````{py:class} TwoDimPlot(*args, **kwargs)
+:canonical: chemparseplot.plot.structs.TwoDimPlot
+
+Bases: {py:obj}`chemparseplot.plot.structs.BasePlotter`
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.__init__
+```
+
+````{py:method} set_labels(x_label, y_label)
+:canonical: chemparseplot.plot.structs.TwoDimPlot.set_labels
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.set_labels
+```
+
+````
+
+````{py:method} set_units(x_unit, y_unit)
+:canonical: chemparseplot.plot.structs.TwoDimPlot.set_units
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.set_units
+```
+
+````
+
+````{py:method} update_labels()
+:canonical: chemparseplot.plot.structs.TwoDimPlot.update_labels
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.update_labels
+```
+
+````
+
+````{py:method} redraw_plot()
+:canonical: chemparseplot.plot.structs.TwoDimPlot.redraw_plot
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.redraw_plot
+```
+
+````
+
+````{py:method} add_data(xy_data)
+:canonical: chemparseplot.plot.structs.TwoDimPlot.add_data
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.add_data
+```
+
+````
+
+````{py:method} rmdat(labels_to_remove)
+:canonical: chemparseplot.plot.structs.TwoDimPlot.rmdat
+
+```{autodoc2-docstring} chemparseplot.plot.structs.TwoDimPlot.rmdat
+```
+
+````
+
+````{py:method} __repr__()
+:canonical: chemparseplot.plot.structs.TwoDimPlot.__repr__
+
+````
+
+`````

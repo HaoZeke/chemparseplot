@@ -1,0 +1,19 @@
+# {py:mod}`chemparseplot.plot`
+
+```{py:module} chemparseplot.plot
+```
+
+```{autodoc2-docstring} chemparseplot.plot
+:allowtitles:
+```
+
+## Submodules
+
+```{toctree}
+:titlesonly:
+:maxdepth: 1
+
+chemparseplot.plot.geomscan
+chemparseplot.plot._aids
+chemparseplot.plot.structs
+```

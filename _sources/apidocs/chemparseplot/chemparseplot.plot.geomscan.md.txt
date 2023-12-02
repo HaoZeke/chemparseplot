@@ -1,0 +1,31 @@
+# {py:mod}`chemparseplot.plot.geomscan`
+
+```{py:module} chemparseplot.plot.geomscan
+```
+
+```{autodoc2-docstring} chemparseplot.plot.geomscan
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`plot_energy_paths <chemparseplot.plot.geomscan.plot_energy_paths>`
+  - ```{autodoc2-docstring} chemparseplot.plot.geomscan.plot_energy_paths
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} plot_energy_paths(energy_paths, units, colormap_fraction=1.0, plotter=None)
+:canonical: chemparseplot.plot.geomscan.plot_energy_paths
+
+```{autodoc2-docstring} chemparseplot.plot.geomscan.plot_energy_paths
+```
+````

@@ -1,0 +1,31 @@
+# {py:mod}`chemparseplot.plot._aids`
+
+```{py:module} chemparseplot.plot._aids
+```
+
+```{autodoc2-docstring} chemparseplot.plot._aids
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`spline_interp <chemparseplot.plot._aids.spline_interp>`
+  - ```{autodoc2-docstring} chemparseplot.plot._aids.spline_interp
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} spline_interp(x, y, num=100, knots=3)
+:canonical: chemparseplot.plot._aids.spline_interp
+
+```{autodoc2-docstring} chemparseplot.plot._aids.spline_interp
+```
+````

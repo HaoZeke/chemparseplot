@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chemparseplot.plot.geomscan &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
+    <script src="../../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/_modules/chemparseplot/plot/geomscan.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../../index.html">Module code</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.plot.geomscan</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <h1>Source code for chemparseplot.plot.geomscan</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">chemparseplot.plot._aids</span> <span class="kn">import</span> <span class="n">spline_interp</span>
+<span class="kn">from</span> <span class="nn">chemparseplot.plot.structs</span> <span class="kn">import</span> <span class="n">BasePlotter</span>
+
+
+<div class="viewcode-block" id="plot_energy_paths">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.geomscan.html#chemparseplot.plot.geomscan.plot_energy_paths">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_energy_paths</span><span class="p">(</span><span class="n">energy_paths</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">colormap_fraction</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">plotter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">plotter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plotter</span> <span class="o">=</span> <span class="n">BasePlotter</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energy_paths</span><span class="p">):</span>
+        <span class="n">distance_values</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span>
+        <span class="n">energy_values</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">])</span>
+
+        <span class="n">distance_fine</span><span class="p">,</span> <span class="n">energy_fine</span> <span class="o">=</span> <span class="n">spline_interp</span><span class="p">(</span><span class="n">distance_values</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">energy_values</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="c1"># Determine the color for each path using the colormap</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">plotter</span><span class="o">.</span><span class="n">colormap</span><span class="p">(</span><span class="n">idx</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy_paths</span><span class="p">)</span> <span class="o">*</span> <span class="n">colormap_fraction</span><span class="p">)</span>
+        <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_fine</span><span class="p">,</span> <span class="n">energy_fine</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">distance_values</span><span class="p">,</span> <span class="n">energy_values</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span>
+        <span class="p">)</span>
+
+    <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distance (</span><span class="si">{</span><span class="n">units</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Energy (</span><span class="si">{</span><span class="n">units</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span>
+    <span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Adding a colorbar</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">plotter</span><span class="o">.</span><span class="n">colormap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_paths</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">cbar</span> <span class="o">=</span> <span class="n">plotter</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">plotter</span><span class="o">.</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Path Index&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">plotter</span></div>
+
+</pre></div>
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2023, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+</footer>
+  </body>
+</html>
