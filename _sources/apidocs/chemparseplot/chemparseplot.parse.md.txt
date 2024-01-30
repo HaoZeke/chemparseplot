@@ -22,6 +22,6 @@ chemparseplot.parse.orca
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.parse.patterns
 chemparseplot.parse.converter
+chemparseplot.parse.patterns
 ```
