@@ -52,6 +52,13 @@ detailed path information for each NEB iteration.
 
 
 @dataclass
+class DimerOpt:
+    saddle: str = "dimer"
+    rot: str = "lbfgs"
+    trans: str = "lbfgs"
+
+
+@dataclass
 class SpinID:
     mol_id: int
     spin: str
@@ -73,6 +80,8 @@ class SaddleMeasure:
     saddle_fmax: float = np.nan
     success: bool = False
     method: str = "not run"
+    dimer_rot: str = "n/a"
+    dimer_trans: str = "n/a"
     init_energy: float = np.nan
     barrier: float = np.nan
     mol_id: int = np.nan

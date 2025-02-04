@@ -1,19 +1,15 @@
 import re
 import gzip
+import configparser
 from pathlib import Path
 from enum import StrEnum, auto
 
+import numpy as np
 from rgpycrumbs.parsers.bless import BLESS_LOG, BLESS_TIME
 from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail, head_search
 
-from chemparseplot.basetypes import MolGeom, SaddleMeasure, SpinID
-
-def SaddleSearchMethod(StrEnum):
-    UNKNOWN = auto()
-    GPRD = auto()
-    IDLBFGSX2 = "idimer_lbfgsrot_lbfgs"
-    IDLBFGSCG = "idimer_cgrot_lbfgs"
+from chemparseplot.basetypes import MolGeom, SaddleMeasure, SpinID, DimerOpt
 
 
 def extract_saddle_gprd(log: list[str]):
@@ -145,7 +141,6 @@ def _extract_saddle_info(
     Returns:
         A tuple containing:
         - saddle_fmax: The maximum force at the saddle point.
-        - method: A string indicating the method used ("GPRD", "IDimer", or "Unknown").
     """
     start_line = next(
         (i + 1 for i, line in enumerate(log_data) if "Elapsed time" in line), None
@@ -162,7 +157,6 @@ def _extract_saddle_info(
     if is_gprd and start_line is not None and end_line is not None:
         saddle = extract_saddle_gprd(log_data[start_line:end_line])
         saddle_fmax = np.abs(np.max(saddle.forces))
-        method = "GPRD"
     elif not is_gprd:
         try:
             saddle_fmax = float(
@@ -172,33 +166,45 @@ def _extract_saddle_info(
                 .split("\n")[-5:][0]
                 .split()[5]
             )
-            method = "IDimer"
         except (FileNotFoundError, IndexError):
             saddle_fmax = 0.0
-            method = (
-                "Unknown"  # Or handle the error in a way that suits your application
-            )
     else:
         saddle_fmax = 0.0
-        method = "Unknown"
 
-    return saddle_fmax, method
+    return saddle_fmax
 
 
-def parse_eon_saddle(
-    eresp: Path, rloc: "SpinID", meth: SaddleSearchMethod
-) -> "SaddleMeasure":
+def _get_methods(eresp: Path) -> DimerOpt:
+    _conf = configparser.ConfigParser()
+    _conf.read(eresp / "config.ini")
+    if _conf["Saddle Search"]["min_mode_method"] == "gprdimer":
+        return DimerOpt(
+            saddle="GPRD",
+            rot=_conf["GPR Dimer"]["rotation_opt_method"],
+            trans=_conf["GPR Dimer"]["translation_opt_method"],
+        )
+    elif _conf["Saddle Search"]["min_mode_method"] == "dimer":
+        return DimerOpt(
+            saddle="IDimer",
+            rot=_conf["Dimer"]["opt_method"],
+            trans=_conf["Optimizer"]["opt_method"],
+        )
+    else:
+        raise ValueError("Clearly wrong..")
+
+
+def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
     """Parses EON saddle point search results from a directory.
 
     Args:
         eresp: Path to the directory containing EON results.
         rloc: A SpinID object.
-        is_gprd: Boolean flag for GPRD method.
 
     Returns:
         A SaddleMeasure object.
     """
-
+    meth = _get_methods(eresp)
+    is_gprd = meth.saddle.lower() == "gprd"
     # 1. Read results.dat
     results_data = _read_results_dat(eresp)
     if results_data is None:
@@ -227,10 +233,10 @@ def parse_eon_saddle(
     # 4. Extract data from the log file
     tot_time = _extract_total_time(log_data)
     init_energy = _extract_initial_energy(log_data)
-    saddle_fmax, method = _extract_saddle_info(log_data, eresp, is_gprd)
+    saddle_fmax = _extract_saddle_info(log_data, eresp, is_gprd)
 
     # 5. Construct and return SaddleMeasure
-    if tot_time <= 0.0 and method == "IDimer":
+    if tot_time <= 0.0 and meth.saddle == "IDimer":
         return SaddleMeasure(
             mol_id=getattr(rloc, "mol_id", None), spin=getattr(rloc, "spin", None)
         )
@@ -242,7 +248,9 @@ def parse_eon_saddle(
         saddle_energy=results_data["saddle_energy"],
         saddle_fmax=saddle_fmax,
         success=True,
-        method=method,
+        method=meth.saddle,
+        dimer_rot=meth.rot,
+        dimer_trans=meth.trans,
         init_energy=init_energy,
         barrier=(
             results_data["saddle_energy"] - init_energy
