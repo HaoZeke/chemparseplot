@@ -1,7 +1,11 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from collections import namedtuple
+import datetime
+
+import numpy as np
 
 # namedtuple for storing NEB iteration data
 nebiter = namedtuple("nebiter", ["iteration", "nebpath"])
@@ -45,3 +49,32 @@ Notes
 The `nebpath` namedtuple is used within the `nebiter` namedtuple to store
 detailed path information for each NEB iteration.
 """
+
+
+@dataclass
+class SpinID:
+    mol_id: int
+    spin: str
+
+
+@dataclass
+class MolGeom:
+    pos: np.array
+    energy: float
+    forces: np.array
+
+
+@dataclass
+class SaddleMeasure:
+    pes_calls: int = 0
+    iter_steps: int = 0
+    tot_time: datetime.timedelta = datetime.timedelta(0).total_seconds()
+    saddle_energy: float = np.nan
+    saddle_fmax: float = np.nan
+    success: bool = False
+    method: str = "not run"
+    init_energy: float = np.nan
+    barrier: float = np.nan
+    mol_id: int = np.nan
+    spin: str = "unknown"
+    scf: float = np.nan
