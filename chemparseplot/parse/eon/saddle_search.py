@@ -186,7 +186,8 @@ def _get_methods(eresp: Path) -> DimerOpt:
     elif _conf["Saddle Search"]["min_mode_method"] == "dimer":
         return DimerOpt(
             saddle="IDimer",
-            rot=_conf["Dimer"]["opt_method"],
+            # XXX: This is basically the default
+            rot=_conf["Dimer"].get("opt_method", "cg"),
             trans=_conf["Optimizer"]["opt_method"],
         )
     else:
