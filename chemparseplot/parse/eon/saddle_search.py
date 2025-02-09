@@ -1,4 +1,5 @@
 import re
+import os
 import gzip
 import configparser
 from pathlib import Path
@@ -54,8 +55,8 @@ def _read_results_dat(eresp: Path) -> dict:
     return results_data
 
 
-def _find_log_file(eresp: Path) -> Path:
-    """Finds the correct log file within the EON results directory.
+def _find_log_file(eresp: Path) -> Path | None:
+    """Finds the most recent, valid log file within the EON results directory.
 
     Args:
         eresp: Path to the EON results directory.
@@ -68,17 +69,18 @@ def _find_log_file(eresp: Path) -> Path:
         print(f"Warning: *.log.gz not found for {eresp}")
         return None
 
-    if len(log_files) != 1:
-        for f in log_files:
-            last_line = tail(f, 1)[0]
-            fcheck = [x for x in tail(f, 5) if "Fail" in x]
-            if len(fcheck) > 0:
-                continue
-            else:
-                return f
-    else:
-        return log_files[0]
-        print(f"No valid log files found")
+    # Sort log files by modification time (most recent first)
+    log_files.sort(key=os.path.getmtime, reverse=True)
+
+    for f in log_files:
+        last_lines = tail(f, 5)  # Get the last 5 lines
+        if not last_lines:  # if tail fails, move onto next file.
+            continue
+        fcheck = [x for x in last_lines if "Fail" in x]
+        if not fcheck:  # If "Fail" is NOT in any of the last 5 lines
+            return f
+
+    print(f"No valid log files found in {eresp}")
     return None
 
 
