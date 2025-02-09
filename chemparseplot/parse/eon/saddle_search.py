@@ -70,16 +70,14 @@ def _find_log_file(eresp: Path) -> Path:
 
     if len(log_files) != 1:
         for f in log_files:
-            try:
-                last_line = tail(f, 1)[0]
-                if "pixi run eonclient" in last_line and head_search(
-                    f, "scf_thresh: 1e-8", 60
-                ):
-                    print(f"Found the desired log file: {f}")
-                    return f
-            except IndexError:
-                pass  # Ignore empty or invalid log files
-
+            last_line = tail(f, 1)[0]
+            fcheck = [x for x in tail(f, 5) if "Fail" in x]
+            if len(fcheck) > 0:
+                continue
+            else:
+                return f
+    else:
+        return log_files[0]
         print(f"No valid log files found")
     return None
 
@@ -210,7 +208,12 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
     results_data = _read_results_dat(eresp)
     if results_data is None:
         return SaddleMeasure(
-            mol_id=getattr(rloc, "mol_id", None), spin=getattr(rloc, "spin", None)
+            mol_id=getattr(rloc, "mol_id", None),
+            spin=getattr(rloc, "spin", None),
+            success=False,
+            method=meth.saddle,
+            dimer_rot=meth.rot,
+            dimer_trans=meth.trans,
         )
 
     # 2. Find the log file
@@ -223,6 +226,9 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             tot_time=0.0,
             saddle_fmax=0.0,
             success=False,
+            method=meth.saddle,
+            dimer_rot=meth.rot,
+            dimer_trans=meth.trans,
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),
         )
@@ -239,7 +245,15 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
     # 5. Construct and return SaddleMeasure
     if tot_time <= 0.0 and meth.saddle == "IDimer":
         return SaddleMeasure(
-            mol_id=getattr(rloc, "mol_id", None), spin=getattr(rloc, "spin", None)
+            mol_id=getattr(rloc, "mol_id", None),
+            spin=getattr(rloc, "spin", None),
+            success=False,
+            method=meth.saddle,
+            dimer_rot=meth.rot,
+            dimer_trans=meth.trans,
+            pes_calls=results_data["pes_calls"],
+            iter_steps=results_data["iter_steps"],
+            saddle_energy=results_data["saddle_energy"],
         )
 
     return SaddleMeasure(
