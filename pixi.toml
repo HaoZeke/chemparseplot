@@ -11,4 +11,7 @@ platforms = ["linux-64"]
 [dependencies]
 python = "==3.12"
 pip = "23.3.1.*"
-pdm = "2.10.4.*"
+pdm = ">=2.22.3,<3"
+
+[pypi-dependencies]
+rgpycrumbs = { path = "./../rgpycrumbs", editable=true}
