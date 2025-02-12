@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 import datetime
 from collections import namedtuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -75,7 +75,7 @@ class MolGeom:
 class SaddleMeasure:
     pes_calls: int = 0
     iter_steps: int = 0
-    tot_time: datetime.timedelta = datetime.timedelta(0).total_seconds()
+    tot_time: datetime.timedelta = field(init=False)
     saddle_energy: float = np.nan
     saddle_fmax: float = np.nan
     success: bool = False
@@ -87,3 +87,7 @@ class SaddleMeasure:
     mol_id: int = np.nan
     spin: str = "unknown"
     scf: float = np.nan
+
+    def __post_init__(self):
+        if not self.tot_time:
+            self.tot_time = datetime.timedelta(0).total_seconds()

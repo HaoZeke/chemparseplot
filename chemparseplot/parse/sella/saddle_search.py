@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
-from ase.io import Trajectory, read
+from ase.io import read
 from rgpycrumbs.time.helpers import one_day_tdelta
 
 from chemparseplot.basetypes import SaddleMeasure, SpinID

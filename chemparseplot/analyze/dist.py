@@ -5,30 +5,6 @@ from ase.neighborlist import NeighborList
 from scipy.spatial.distance import cdist
 
 
-def is_ira_pair(atm1, atm2, hd_tol=1, k_factor=2.8):
-    import ira_mod
-
-    ira = ira_mod.IRA()
-    if len(atm1) != len(atm2):
-        return False
-    if np.all(atm1.symbols == atm2.symbols):
-        hd = ira.match(
-            len(atm1),
-            atm1.get_atomic_numbers(),
-            atm1.get_positions(),
-            len(atm2),
-            atm2.get_atomic_numbers(),
-            atm2.get_positions(),
-            k_factor,
-        )[-1]
-        if hd < hd_tol:
-            return True
-        else:
-            return False
-    else:
-        return False
-
-
 def analyze_structure(
     atoms: ase.Atoms, covalent_scale: float = 1.2
 ) -> tuple[np.ndarray, np.ndarray, list[list[int]]]:
@@ -71,7 +47,7 @@ def analyze_structure(
         skin=0.0,  # No skin, we use the cutoffs directly
         bothways=True,  # Get both i->j and j->i
         self_interaction=False,  # No i->i connections
-        primitive=ase.neighborlist.NewPrimitiveNeighborList,  # ensure we get the old behaviour
+        primitive=ase.neighborlist.NewPrimitiveNeighborList,
     )
     neighbor_list.update(atoms)
 

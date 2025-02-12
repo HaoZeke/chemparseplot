@@ -2,13 +2,12 @@ import configparser
 import gzip
 import os
 import re
-from enum import StrEnum, auto
 from pathlib import Path
 
 import numpy as np
-from rgpycrumbs.parsers.bless import BLESS_LOG, BLESS_TIME
+from rgpycrumbs.parsers.bless import BLESS_LOG
 from rgpycrumbs.parsers.common import _NUM
-from rgpycrumbs.search.helpers import head_search, tail
+from rgpycrumbs.search.helpers import tail
 
 from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 
@@ -129,7 +128,7 @@ def _extract_initial_energy(log_data: list[str]) -> float:
 
 
 def _extract_saddle_info(
-    log_data: list[str], eresp: Path, is_gprd: bool
+    log_data: list[str], eresp: Path, *, is_gprd: bool
 ) -> tuple[float, str]:
     """Extracts saddle point information (saddle_fmax and method) from the log data.
 
@@ -191,7 +190,8 @@ def _get_methods(eresp: Path) -> DimerOpt:
             trans=_conf["Optimizer"]["opt_method"],
         )
     else:
-        raise ValueError("Clearly wrong..")
+        errmsg="Clearly wrong.."
+        raise ValueError(errmsg)
 
 
 def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":

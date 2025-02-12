@@ -1,13 +1,17 @@
+import os
+import typing
+
 import ase
 import ase.io as aseio
 import h5py
 import numpy as np
 from ase.calculators.calculator import Calculator, all_changes
+from ase.calculators.nwchem import NWChem
 from ase.io.trajectory import Trajectory
 
 
 class HDF5Calculator(Calculator):
-    implemented_properties = ["energy", "forces"]
+    implemented_properties: typing.ClassVar[list[str]] = ["energy", "forces"]
 
     def __init__(self, from_hdf5, **kwargs):
         Calculator.__init__(self, **kwargs)
@@ -37,7 +41,8 @@ def get_atoms_from_hdf5(template_atoms: ase.Atoms, hdf5_group: h5py.Group) -> as
         hdf5_group (h5py.Group): The HDF5 group containing 'energy', 'gradients', and 'positions' datasets.
 
     Returns:
-        ase.Atoms: An ASE Atoms object with positions, energy, and forces from the HDF5 group.
+        ase.Atoms: An ASE Atoms object with positions, energy, and forces from
+        the HDF5 group.
     """
 
     atoms = template_atoms.copy()
@@ -54,13 +59,16 @@ def create_trajectory_from_hdf5(
     outer_loop_group_name: str = "outer_loop",
 ):
     """
-    Creates an ASE trajectory file from an HDF5 file containing optimization data.
+    Creates an ASE trajectory file from an HDF5 file containing optimization
+    data.
 
     Args:
         hdf5_file (str): Path to the HDF5 file.
-        output_traj_file (str): Path to the output trajectory file (e.g., 'gprd_run.traj').
+        output_traj_file (str): Path to the output trajectory file (e.g.,
+        'gprd_run.traj').
         initial_structure_file (str): Path to the file containing the initial structure (e.g., 'pos.con').
-        outer_loop_group_name (str, optional): Name of the group containing outer loop data. Defaults to "outer_loop".
+        outer_loop_group_name (str, optional): Name of the group containing
+        outer loop data. Defaults to "outer_loop".
     """
 
     try:
@@ -150,17 +158,17 @@ def create_nwchem_trajectory(
 
     nwchem_path = os.environ["NWCHEM_COMMAND"]
     memory = "2 gb"
-    nwchem_kwargs = dict(
-        command=f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",
-        memory=memory,
-        scf=dict(
-            nopen=mult - 1,
-            thresh=1e-8,
-            maxiter=200,
-        ),
-        basis="3-21G",
-        task="gradient",
-    )
+    nwchem_kwargs = {
+        "command": f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",
+        "memory": memory,
+        "scf": {
+            "nopen": mult - 1,
+            "thresh": 1e-8,
+            "maxiter": 200,
+        },
+        "basis": "3-21G",
+        "task": "gradient",
+    }
     if mult == 2:
         nwchem_kwargs["scf"]["uhf"] = None  # switch to unrestricted calculation
 
