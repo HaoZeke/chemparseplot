@@ -1,3 +1,6 @@
+# This is a separate module because building ira_mod [1] needs a Makefile and a
+# PYTHONPATH export.. after that's cleared up this will probably be a dependency
+# [1]: https://github.com/mammasmias/IterativeRotationsAssignments
 import dataclasses
 
 import ira_mod
@@ -52,3 +55,18 @@ def do_ira(atm1, atm2, k_factor=2.8):
     """Performs IRA matching on two atomistic structures."""
     rotation, translation, perm, hd = _perform_ira_match(atm1, atm2, k_factor)
     return IRAComp(rot=rotation, trans=translation, perm=perm, hd=hd)
+
+
+def calculate_rmsd(atm1, atm2, k_factor=2.8):
+    """Calculates RMSD using do_ira."""
+    ira_comp = do_ira(atm1, atm2, k_factor)
+    atm2_coords_permuted = atm2.get_positions()[ira_comp.perm]
+    atm2_coords_transformed = (
+        np.dot(atm2_coords_permuted, ira_comp.rot) + ira_comp.trans
+    )
+    n_atoms = len(atm1.get_positions())
+    squared_distances = np.sum(
+        (atm1.get_positions() - atm2_coords_transformed) ** 2, axis=1
+    )
+    rmsd = np.sqrt(np.sum(squared_distances) / n_atoms)
+    return rmsd
