@@ -1,9 +1,12 @@
-from pathlib import Path
 from dataclasses import dataclass
-from chemparseplot.basetypes import SaddleMeasure, SpinID
-from rgpycrumbs.time.helpers import one_day_tdelta
+from pathlib import Path
 from typing import Optional
-from ase.io import read, Trajectory
+
+from ase.io import Trajectory, read
+from rgpycrumbs.time.helpers import one_day_tdelta
+
+from chemparseplot.basetypes import SaddleMeasure, SpinID
+
 
 @dataclass
 class LogStart:
@@ -50,7 +53,7 @@ class LogEnd:
 #     )
 
 
-def parse_log_line(line: str, line_type: str) -> Optional[LogStart | LogEnd]:
+def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
     """Parses a log line based on its type.
 
     Args:

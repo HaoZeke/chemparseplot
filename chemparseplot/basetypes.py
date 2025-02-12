@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from collections import namedtuple
 import datetime
+from collections import namedtuple
+from dataclasses import dataclass
 
 import numpy as np
 

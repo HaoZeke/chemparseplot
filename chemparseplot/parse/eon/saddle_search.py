@@ -1,16 +1,16 @@
-import re
-import os
-import gzip
 import configparser
-from pathlib import Path
+import gzip
+import os
+import re
 from enum import StrEnum, auto
+from pathlib import Path
 
 import numpy as np
 from rgpycrumbs.parsers.bless import BLESS_LOG, BLESS_TIME
 from rgpycrumbs.parsers.common import _NUM
-from rgpycrumbs.search.helpers import tail, head_search
+from rgpycrumbs.search.helpers import head_search, tail
 
-from chemparseplot.basetypes import MolGeom, SaddleMeasure, SpinID, DimerOpt
+from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 
 
 def extract_saddle_gprd(log: list[str]):

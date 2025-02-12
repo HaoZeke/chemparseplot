@@ -1,9 +1,9 @@
 import ase
+import ase.io as aseio
+import h5py
+import numpy as np
 from ase.calculators.calculator import Calculator, all_changes
 from ase.io.trajectory import Trajectory
-import ase.io as aseio
-import numpy as np
-import h5py
 
 
 class HDF5Calculator(Calculator):

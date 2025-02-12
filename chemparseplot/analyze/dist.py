@@ -1,9 +1,8 @@
-import numpy as np
-from scipy.spatial.distance import cdist
-
 import ase
+import numpy as np
 from ase.data import covalent_radii
 from ase.neighborlist import NeighborList
+from scipy.spatial.distance import cdist
 
 
 def analyze_structure(
@@ -54,7 +53,7 @@ def analyze_structure(
 
     for i in range(num_atoms):
         indices, offsets = neighbor_list.get_neighbors(i)
-        for j, offset in zip(indices, offsets):
+        for j, offset in zip(indices, offsets, strict=False):
             bond_matrix[i, j] = 1
 
     # 3. Identify fragments.
