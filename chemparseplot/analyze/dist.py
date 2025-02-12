@@ -1,8 +1,9 @@
 import numpy as np
+from scipy.spatial.distance import cdist
+
 import ase
 from ase.data import covalent_radii
 from ase.neighborlist import NeighborList
-from scipy.spatial.distance import cdist
 
 
 def analyze_structure(
@@ -80,7 +81,7 @@ def analyze_structure(
     # 4. Calculate Centroid Distances and *Corrected* Distances.
     num_fragments = len(fragments)
     centroid_distances = np.zeros((num_fragments, num_fragments))
-    corrected_distances = [] # Initialize with infinity
+    corrected_distances = []  # Initialize with infinity
     positions = atoms.get_positions()
     atomic_numbers = atoms.get_atomic_numbers()
     atomic_symbols = atoms.get_chemical_symbols()
@@ -99,14 +100,32 @@ def analyze_structure(
                 # Find closest pair of atoms and calculate corrected distance
                 all_distances = cdist(frag_i_positions, frag_j_positions)
                 min_dist = np.min(all_distances)
-                min_index_i, min_index_j = np.unravel_index(np.argmin(all_distances), all_distances.shape)
+                min_index_i, min_index_j = np.unravel_index(
+                    np.argmin(all_distances), all_distances.shape
+                )
 
                 atom_i_number = atomic_numbers[fragments[i][min_index_i]]
                 atom_j_number = atomic_numbers[fragments[j][min_index_j]]
                 atom_i_symbol = atomic_symbols[fragments[i][min_index_i]]
                 atom_j_symbol = atomic_symbols[fragments[j][min_index_j]]
-                covrad_sum = float(covalent_radii[atom_i_number] + covalent_radii[atom_j_number])
+                covrad_sum = float(
+                    covalent_radii[atom_i_number] + covalent_radii[atom_j_number]
+                )
 
-                corrected_distances.append((float(min_dist), atom_i_symbol, atom_j_symbol, covrad_sum, float(min_dist - covrad_sum*covalent_scale)))
+                corrected_distances.append(
+                    (
+                        float(min_dist),
+                        atom_i_symbol,
+                        atom_j_symbol,
+                        covrad_sum,
+                        float(min_dist - covrad_sum * covalent_scale),
+                    )
+                )
 
-    return distance_matrix, bond_matrix, fragments, centroid_distances, corrected_distances
+    return (
+        distance_matrix,
+        bond_matrix,
+        fragments,
+        centroid_distances,
+        corrected_distances,
+    )
