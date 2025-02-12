@@ -12,41 +12,43 @@ class IRAComp:
     hd: float
 
 
-def is_ira_pair(atm1, atm2, hd_tol=1, k_factor=2.8):
-    ira = ira_mod.IRA()
+class IncomparableStructuresError(ValueError):
+    """Custom exception raised for incompatible atomistic structures."""
+
+    pass
+
+
+def _perform_ira_match(atm1, atm2, k_factor=2.8):
+    """Performs IRA matching. Internal function."""
     if len(atm1) != len(atm2):
-        return False
-    if np.all(atm1.symbols == atm2.symbols):
-        hd = ira.match(
-            len(atm1),
-            atm1.get_atomic_numbers(),
-            atm1.get_positions(),
-            len(atm2),
-            atm2.get_atomic_numbers(),
-            atm2.get_positions(),
-            k_factor,
-        )[-1]
-        if hd < hd_tol:
-            return True
-        else:
-            return False
-    else:
+        errmsg = "Atomistic structures must have the same number of atoms."
+        raise IncomparableStructuresError(errmsg)
+    if not np.array_equal(atm1.symbols, atm2.symbols):
+        errmsg = "Atomistic structures must have the same atom types."
+        raise IncomparableStructuresError(errmsg)
+
+    ira = ira_mod.IRA()
+    return ira.match(
+        len(atm1),
+        atm1.get_atomic_numbers(),
+        atm1.get_positions(),
+        len(atm2),
+        atm2.get_atomic_numbers(),
+        atm2.get_positions(),
+        k_factor,
+    )
+
+
+def is_ira_pair(atm1, atm2, hd_tol=1, k_factor=2.8):
+    """Checks if two atomistic structures are an IRA pair."""
+    try:
+        _, _, _, hd = _perform_ira_match(atm1, atm2, k_factor)
+        return hd < hd_tol
+    except IncomparableStructuresError:
         return False
 
 
 def do_ira(atm1, atm2, k_factor=2.8):
-    ira = ira_mod.IRA()
-    if len(atm1) != len(atm2):
-        errmsg = "Can't match different sized fragments"
-        raise ValueError(errmsg)
-    if np.all(atm1.symbols == atm2.symbols):
-        rotation, translation, perm, hd = ira.match(
-            len(atm1),
-            atm1.get_atomic_numbers(),
-            atm1.get_positions(),
-            len(atm2),
-            atm2.get_atomic_numbers(),
-            atm2.get_positions(),
-            k_factor,
-        )
-        return IRAComp(rot=rotation, trans=translation, perm=perm, hd=hd)
+    """Performs IRA matching on two atomistic structures."""
+    rotation, translation, perm, hd = _perform_ira_match(atm1, atm2, k_factor)
+    return IRAComp(rot=rotation, trans=translation, perm=perm, hd=hd)
