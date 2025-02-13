@@ -242,7 +242,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
     # 4. Extract data from the log file
     tot_time = _extract_total_time(log_data)
     init_energy = _extract_initial_energy(log_data)
-    saddle_fmax = _extract_saddle_info(log_data, eresp, is_gprd)
+    saddle_fmax = _extract_saddle_info(log_data, eresp, is_gprd=is_gprd)
 
     # 5. Construct and return SaddleMeasure
     if tot_time <= 0.0 and meth.saddle == "IDimer":
