@@ -5,6 +5,7 @@ import dataclasses
 
 import ira_mod
 import numpy as np
+from collections import Counter
 
 
 @dataclasses.dataclass
@@ -26,7 +27,7 @@ def _perform_ira_match(atm1, atm2, k_factor=2.8):
     if len(atm1) != len(atm2):
         errmsg = "Atomistic structures must have the same number of atoms."
         raise IncomparableStructuresError(errmsg)
-    if not np.array_equal(atm1.symbols, atm2.symbols):
+    if not Counter(atm1.symbols) == Counter(atm2.symbols):
         errmsg = "Atomistic structures must have the same atom types."
         raise IncomparableStructuresError(errmsg)
 
