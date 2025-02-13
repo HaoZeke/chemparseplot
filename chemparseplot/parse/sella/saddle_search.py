@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
+from collections import Counter
 
 from ase.io import read
 from rgpycrumbs.time.helpers import one_day_tdelta
 
 from chemparseplot.basetypes import SaddleMeasure, SpinID
+import ase
 
 
 @dataclass
@@ -147,3 +149,17 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
     except (IndexError, ValueError) as e:
         print(f"Warning: Error parsing log data: {e}")
         return SaddleMeasure()
+
+
+def _no_ghost(atm: ase.Atoms):
+    # Sella writes out X symbol'd atoms for ghost atoms
+    del atm[[atom.index for atom in atm if atom.symbol == "X"]]
+    return atm
+
+
+def _get_ghosts(traj_f):
+    traj = ase.io.read(traj_f, ":")
+    n_ghosts = 0
+    for atm in traj:
+        n_ghosts += Counter(atm.symbols).get("X", 0)
+    return n_ghosts
