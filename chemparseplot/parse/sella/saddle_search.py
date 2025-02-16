@@ -14,7 +14,7 @@ from collections import namedtuple
 import numpy as np
 
 SellaLog = namedtuple(
-    "SellaLog", ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho"]
+    "SellaLog", ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"]
 )
 
 
@@ -33,6 +33,7 @@ def _sella_loglist(log_f):
                 cmax=float(tline[5]),
                 rtrust=float(tline[6]),
                 rho=float(tline[7]),
+                trj_id=int(tline[8]),
             )
         )
     return rdat
@@ -194,39 +195,11 @@ def _get_ghosts(traj_f):
     return n_ghosts
 
 
-def get_unique_frames(traj, sloglist: list, nround: int = 2):
-    # XXX: This is fairly idiotic, but it turns out empirically filtering by
-    # rounding the fmax to 2 seems to give the same number as the number of
-    # steps, so those frames are the "unique" ones.
-    #
-    #
-    # However, this is ONLY for S000 so one needs to play with the nround for
-    # other trajectories...
-    unique_frames = []
-    used_indices = set()
-
-    for sella_entry in sloglist:
-        target_fmax = round(
-            sella_entry.fmax, nround
-        )  # Round the target fmax to nround decimal places
-        for i, atoms in enumerate(traj):
-            if i not in used_indices:
-                current_fmax = round(
-                    np.max(np.linalg.norm(atoms.get_forces(), axis=1)), nround
-                )
-                if current_fmax == target_fmax:  # Exact comparison after rounding
-                    unique_frames.append((i, atoms))
-                    used_indices.add(i)
-                    break
-    return unique_frames
-
-
-def make_geom_traj(traj_f, log_f, nround, out_f="geom_step.traj"):
+def make_geom_traj(traj_f, log_f, out_f="geom_step.traj"):
+    # XXX: This uses a logfile which has the patch for writing the trajectory ID
     traj = ase.io.read(traj_f, ":")
     sellalog = _sella_loglist(log_f)
-    unique_frames = get_unique_frames(traj, sellalog, nround)
-    assert len(sellalog) == len(unique_frames), "Play around with nround"
 
     # Create a new trajectory with the unique frames
-    unique_traj = [frame[1] for frame in unique_frames]
+    unique_traj = [traj[x.trj_id] for x in sellalog]
     ase.io.write(out_f, unique_traj, format="traj")
