@@ -14,7 +14,8 @@ from collections import namedtuple
 import numpy as np
 
 SellaLog = namedtuple(
-    "SellaLog", ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"]
+    "SellaLog",
+    ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"],
 )
 
 
@@ -193,6 +194,34 @@ def _get_ghosts(traj_f):
     for atm in traj:
         n_ghosts += Counter(atm.symbols).get("X", 0)
     return n_ghosts
+
+
+def get_unique_frames(traj, sloglist: list, nround: int = 2):
+    # XXX: This is fairly idiotic, but it turns out empirically filtering by
+    # rounding the fmax to 2 seems to give the same number as the number of
+    # steps, so those frames are the "unique" ones.
+    #
+    #
+    # However, this is ONLY for S000 so one needs to play with the nround for
+    # other trajectories...
+    #
+    # I guess it could still be used if the trajectories were generated without
+    # the newer patch
+    unique_frames = []
+    used_indices = set()
+
+    for sella_entry in sloglist:
+        target_fmax = round(sella_entry.fmax, nround)
+        for i, atoms in enumerate(traj):
+            if i not in used_indices:
+                current_fmax = round(
+                    np.max(np.linalg.norm(atoms.get_forces(), axis=1)), nround
+                )
+                if current_fmax == target_fmax:  # Exact comparison after rounding
+                    unique_frames.append((i, atoms))
+                    used_indices.add(i)
+                    break
+    return unique_frames
 
 
 def make_geom_traj(traj_f, log_f, out_f="geom_step.traj"):
