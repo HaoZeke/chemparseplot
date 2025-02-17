@@ -52,7 +52,7 @@ def get_atoms_from_hdf5(template_atoms: ase.Atoms, hdf5_group: h5py.Group) -> as
     return atoms
 
 
-def create_trajectory_from_hdf5(
+def create_geom_traj_from_hdf5(
     hdf5_file: str,
     output_traj_file: str,
     initial_structure_file: str,
@@ -60,7 +60,11 @@ def create_trajectory_from_hdf5(
 ):
     """
     Creates an ASE trajectory file from an HDF5 file containing optimization
-    data.
+    data. This only outputs the geometry steps after the initial rotations.
+
+    Generally this is what you want to see for checking the change in geometry
+    along the run. There are initial rotations and 2 additional calls (one in
+    the beginning and one at the end) which are not accounted for here.
 
     Args:
         hdf5_file (str): Path to the HDF5 file.
@@ -196,3 +200,105 @@ def create_nwchem_trajectory(
     f.close()
     traj.close()
     print(f"NWChem trajectory file '{output_traj_file}' created successfully.")
+
+
+def create_full_traj_from_hdf5(
+    hdf5_file: str,
+    output_traj_file: str,
+    initial_structure_file: str,
+    outer_loop_group_name: str = "outer_loop",
+    inner_loop_group_name: str = "initial_rotations",
+):
+    """
+    Creates an ASE trajectory file from an HDF5 file containing optimization
+    data. Includes **estimated points** for the initial rotations and the
+    endpoints. These are correct (correspond to the actual counts) but is
+    slightly convoluted, since the HDF5 contains both the midpoint and the
+    "forward dimer". Instead, the length of the inner rotations keys is the
+    number of (0 energy) points added to the trajectory. This again makes
+    intuitive sense, since we have the Elvl cutoff in the GPRD as well.
+
+    Args:
+        hdf5_file (str): Path to the HDF5 file.
+        output_traj_file (str): Path to the output trajectory file (e.g.,
+        'gprd_run.traj').
+        initial_structure_file (str): Path to the file containing the initial structure (e.g., 'pos.con').
+        outer_loop_group_name (str, optional): Name of the group containing
+        outer loop data. Defaults to "outer_loop".
+    """
+
+    try:
+        f = h5py.File(hdf5_file, "r")
+    except FileNotFoundError:
+        print(f"Error: HDF5 file '{hdf5_file}' not found.")
+        return
+    except Exception as e:
+        print(f"An error occurred while opening HDF5 file: {e}")
+        return
+
+    outer_loop_keys = [
+        str(x) for x in np.sort([int(x) for x in f[outer_loop_group_name].keys()])
+    ]
+
+    inner_loop_keys = [
+        str(x) for x in np.sort([int(x) for x in f[inner_loop_group_name].keys()])
+    ]
+
+    print(f"Available outer loop keys: {outer_loop_keys}")
+
+    try:
+        init = aseio.read(initial_structure_file)
+    except FileNotFoundError:
+        print(f"Error: Initial structure file '{initial_structure_file}' not found.")
+        f.close()
+        return
+    except Exception as e:
+        print(f"An error occurred while reading initial structure file: {e}")
+        f.close()
+        return
+
+    traj = Trajectory(output_traj_file, "w")
+
+    # Generate the initial rotation stuff here
+    # Basically the number of keys, + 1
+    for _ in enumerate(len(inner_loop_keys) + 1):
+        atoms = init.copy()
+        calculator = HDF5Calculator(
+            from_hdf5=f[outer_loop_group_name][outer_loop_keys[0]]
+        )
+        atoms.calc = calculator
+        atoms.set_positions(
+            f[outer_loop_group_name][key]["positions"][:].reshape(-1, 3)
+        )
+
+        # Trigger calculation of energy and forces
+        atoms.get_potential_energy()
+        traj.write(atoms)
+
+    for idx, key in enumerate(outer_loop_keys):
+        try:
+            # Create atoms object directly here
+            atoms = init.copy()
+            calculator = HDF5Calculator(from_hdf5=f[outer_loop_group_name][key])
+            atoms.calc = calculator
+            atoms.set_positions(
+                f[outer_loop_group_name][key]["positions"][:].reshape(-1, 3)
+            )
+
+            # Trigger calculation of energy and forces
+            atoms.get_potential_energy()
+
+            traj.write(atoms)
+            # Now for the final calculation done to finish the run
+            if idx == len(outer_loop_keys) - 1:
+                # Just write it one more time, same thing
+                traj.write(atoms)
+
+        except KeyError as e:
+            print(f"Skipping key {key} due to missing data: {e}")
+        except Exception as e:
+            print(f"An error occurred while processing key {key}: {e}")
+
+    f.close()
+    traj.close()
+    print(f"Trajectory file '{output_traj_file}' created successfully.")
