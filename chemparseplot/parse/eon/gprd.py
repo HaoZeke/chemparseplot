@@ -10,6 +10,29 @@ from ase.calculators.nwchem import NWChem
 from ase.io.trajectory import Trajectory
 
 
+class HDF5CalculatorDimerMidpoint(Calculator):
+    implemented_properties: typing.ClassVar[list[str]] = ["energy", "forces"]
+
+    def __init__(self, from_hdf5, natms, **kwargs):
+        Calculator.__init__(self, **kwargs)
+        # Reference to the HDF5 group or dataset
+        self.from_hdf5 = from_hdf5
+        self.natoms = natms
+
+    def calculate(
+        self, atoms=None, properties=["energy", "forces"], system_changes=all_changes
+    ):
+        Calculator.calculate(self, atoms, properties, system_changes)
+
+        # Access energy and gradients directly from the referenced HDF5 object
+        energy = self.from_hdf5["energy"][0]
+        forces = self.from_hdf5["gradients"][: self.natoms * 3].reshape(-1, 3) * -1
+
+        # Store results
+        self.results["energy"] = energy
+        self.results["forces"] = forces
+
+
 class HDF5Calculator(Calculator):
     implemented_properties: typing.ClassVar[list[str]] = ["energy", "forces"]
 
@@ -244,6 +267,7 @@ def create_full_traj_from_hdf5(
         str(x) for x in np.sort([int(x) for x in f[inner_loop_group_name].keys()])
     ]
 
+    print(f"Available innner loop keys: {inner_loop_keys}")
     print(f"Available outer loop keys: {outer_loop_keys}")
 
     try:
@@ -261,19 +285,20 @@ def create_full_traj_from_hdf5(
 
     # Generate the initial rotation stuff here
     # Basically the number of keys, + 1
-    for _ in enumerate(len(inner_loop_keys) + 1):
+    for idx, key in enumerate(inner_loop_keys):
         atoms = init.copy()
-        calculator = HDF5Calculator(
-            from_hdf5=f[outer_loop_group_name][outer_loop_keys[0]]
-        )
+        iloop_dat = f[inner_loop_group_name][key]
+        calculator = HDF5CalculatorDimerMidpoint(from_hdf5=iloop_dat, natms=len(atoms))
         atoms.calc = calculator
-        atoms.set_positions(
-            f[outer_loop_group_name][key]["positions"][:].reshape(-1, 3)
-        )
+        atoms.set_positions(iloop_dat["positions"][: len(atoms) * 3].reshape(-1, 3))
 
         # Trigger calculation of energy and forces
         atoms.get_potential_energy()
         traj.write(atoms)
+
+        # Do it again for the first step
+        if idx == 0:
+            traj.write(atoms)
 
     for idx, key in enumerate(outer_loop_keys):
         try:
