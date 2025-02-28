@@ -87,3 +87,4 @@ class SaddleMeasure:
     mol_id: int = np.nan
     spin: str = "unknown"
     scf: float = np.nan
+    termination_status: str = "not set"

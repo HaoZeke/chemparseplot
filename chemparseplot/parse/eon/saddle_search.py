@@ -15,26 +15,30 @@ from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 
 class EONSaddleStatus(Enum):
     # See SaddleSearchJob.cpp for the ordering
+    # (numerical_status, descriptive_string)
     GOOD = 0, "Success"
-    BAD_NO_CONVEX = 1, "Initial displacement unable to reach convex region"
-    BAD_HIGH_ENERGY = 2, "Barrier too high"
-    BAD_MAX_CONCAVE_ITERATIONS = 3, "Too many iterations in concave region"
-    BAD_MAX_ITERATIONS = 4, "Too many iterations"
-    BAD_NOT_CONNECTED = 5, "Saddle is not connected to initial state"
-    BAD_PREFACTOR = 6, "Prefactors not within window"
-    FAILED_PREFACTOR = 7, "Hessian calculation failed"
+    INIT = 1, "Initial"  # Should never show up, before run
+    BAD_NO_CONVEX = 2, "Initial displacement unable to reach convex region"
+    BAD_HIGH_ENERGY = 3, "Barrier too high"
+    BAD_MAX_CONCAVE_ITERATIONS = 4, "Too many iterations in concave region"
+    BAD_MAX_ITERATIONS = 5, "Too many iterations"
+    BAD_NOT_CONNECTED = 6, "Saddle is not connected to initial state"
+    BAD_PREFACTOR = 7, "Prefactors not within window"
     BAD_HIGH_BARRIER = 8, "Energy barrier not within window"
     BAD_MINIMA = 9, "Minimizations from saddle did not converge"
-    NONNEGATIVE_ABORT = 10, "Nonnegative initial mode, aborting"
-    NEGATIVE_BARRIER = 11, "Negative barrier detected"
-    BAD_MD_TRAJECTORY_TOO_SHORT = 12, "No reaction found during MD trajectory"
+    FAILED_PREFACTOR = 10, "Hessian calculation failed"
+    POTENTIAL_FAILED = 11, "Potential failed"
+    NONNEGATIVE_ABORT = 12, "Nonnegative initial mode, aborting"
+    NONLOCAL_ABORT = 13, "Nonlocal abort"
+    NEGATIVE_BARRIER = 14, "Negative barrier detected"
+    BAD_MD_TRAJECTORY_TOO_SHORT = 15, "No reaction found during MD trajectory"
     BAD_NO_NEGATIVE_MODE_AT_SADDLE = (
-        13,
+        16,
         "Converged to stationary point with zero negative modes",
     )
-    BAD_NO_BARRIER = 14, "No forward barrier was found along minimized band"
-    ZEROMODE_ABORT = 15, "Zero mode abort."
-    OPTIMIZER_ERROR = 16, "Optimizer error."
+    BAD_NO_BARRIER = 17, "No forward barrier was found along minimized band"
+    ZEROMODE_ABORT = 18, "Zero mode abort."
+    OPTIMIZER_ERROR = 19, "Optimizer error."
     UNKNOWN = -1, "Unknown status"
 
     def __new__(cls, value, description):
@@ -262,6 +266,17 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
         )
 
+    if list(results_data.keys()) == ['termination_status']:
+        return SaddleMeasure(
+            mol_id=getattr(rloc, "mol_id", None),
+            spin=getattr(rloc, "spin", None),
+            success=False,
+            method=meth.saddle,
+            dimer_rot=meth.rot,
+            dimer_trans=meth.trans,
+            termination_status=results_data["termination_status"],
+        )
+
     # 2. Find the log file
     log_file = _find_log_file(eresp)
     if log_file is None:
@@ -277,6 +292,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),
+            termination_status=results_data["termination_status"],
         )
 
     # 3. Parse the log file
@@ -300,6 +316,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             pes_calls=results_data["pes_calls"],
             iter_steps=results_data["iter_steps"],
             saddle_energy=results_data["saddle_energy"],
+            termination_status=results_data["termination_status"],
         )
 
     return SaddleMeasure(
@@ -320,4 +337,5 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
         ),
         mol_id=getattr(rloc, "mol_id", None),
         spin=getattr(rloc, "spin", None),
+        termination_status=results_data["termination_status"],
     )
