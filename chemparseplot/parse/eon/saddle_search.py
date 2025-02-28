@@ -3,6 +3,7 @@ import gzip
 import os
 import re
 from pathlib import Path
+from enum import Enum
 
 import numpy as np
 from rgpycrumbs.parsers.bless import BLESS_LOG
@@ -10,6 +11,44 @@ from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail
 
 from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
+
+
+class EONSaddleStatus(Enum):
+    # See SaddleSearchJob.cpp for the ordering
+    GOOD = 0, "Success"
+    BAD_NO_CONVEX = 1, "Initial displacement unable to reach convex region"
+    BAD_HIGH_ENERGY = 2, "Barrier too high"
+    BAD_MAX_CONCAVE_ITERATIONS = 3, "Too many iterations in concave region"
+    BAD_MAX_ITERATIONS = 4, "Too many iterations"
+    BAD_NOT_CONNECTED = 5, "Saddle is not connected to initial state"
+    BAD_PREFACTOR = 6, "Prefactors not within window"
+    FAILED_PREFACTOR = 7, "Hessian calculation failed"
+    BAD_HIGH_BARRIER = 8, "Energy barrier not within window"
+    BAD_MINIMA = 9, "Minimizations from saddle did not converge"
+    NONNEGATIVE_ABORT = 10, "Nonnegative initial mode, aborting"
+    NEGATIVE_BARRIER = 11, "Negative barrier detected"
+    BAD_MD_TRAJECTORY_TOO_SHORT = 12, "No reaction found during MD trajectory"
+    BAD_NO_NEGATIVE_MODE_AT_SADDLE = (
+        13,
+        "Converged to stationary point with zero negative modes",
+    )
+    BAD_NO_BARRIER = 14, "No forward barrier was found along minimized band"
+    ZEROMODE_ABORT = 15, "Zero mode abort."
+    OPTIMIZER_ERROR = 16, "Optimizer error."
+    UNKNOWN = -1, "Unknown status"
+
+    def __new__(cls, value, description):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.description = description
+        return obj
+
+    @classmethod
+    def from_value(cls, value):
+        for member in cls:
+            if member.value == value:
+                return member
+        return cls.UNKNOWN
 
 
 def extract_saddle_gprd(log: list[str]):
@@ -40,9 +79,13 @@ def _read_results_dat(eresp: Path) -> dict:
         return None
 
     rdat = respth.read_text()
-    termination_reason = int(re.search(r"(\d+) termination_reason", rdat).group(1))
-    if termination_reason != 0:
-        return None
+    termination_int = int(re.search(r"(\d+) termination_reason", rdat).group(1))
+    termination_reason = EONSaddleStatus.from_value(termination_int)
+    term_dict = {
+        "termination_status": str(termination_reason).split(".")[-1],
+    }
+    if termination_reason != EONSaddleStatus.GOOD:
+        return term_dict
 
     results_data = {
         "pes_calls": int(re.search(r"(\d+) total_force_calls", rdat).group(1)),
@@ -51,6 +94,7 @@ def _read_results_dat(eresp: Path) -> dict:
             re.search(r"(-?\d+\.\d+) potential_energy_saddle", rdat).group(1)
         ),
     }
+    results_data |= term_dict
     return results_data
 
 
@@ -190,7 +234,7 @@ def _get_methods(eresp: Path) -> DimerOpt:
             trans=_conf["Optimizer"]["opt_method"],
         )
     else:
-        errmsg="Clearly wrong.."
+        errmsg = "Clearly wrong.."
         raise ValueError(errmsg)
 
 
