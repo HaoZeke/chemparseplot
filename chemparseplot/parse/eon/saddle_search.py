@@ -3,6 +3,7 @@ import gzip
 import os
 import re
 from pathlib import Path
+from enum import Enum
 
 import numpy as np
 from rgpycrumbs.parsers.bless import BLESS_LOG
@@ -10,6 +11,48 @@ from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail
 
 from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
+
+
+class EONSaddleStatus(Enum):
+    # See SaddleSearchJob.cpp for the ordering
+    # (numerical_status, descriptive_string)
+    GOOD = 0, "Success"
+    INIT = 1, "Initial"  # Should never show up, before run
+    BAD_NO_CONVEX = 2, "Initial displacement unable to reach convex region"
+    BAD_HIGH_ENERGY = 3, "Barrier too high"
+    BAD_MAX_CONCAVE_ITERATIONS = 4, "Too many iterations in concave region"
+    BAD_MAX_ITERATIONS = 5, "Too many iterations"
+    BAD_NOT_CONNECTED = 6, "Saddle is not connected to initial state"
+    BAD_PREFACTOR = 7, "Prefactors not within window"
+    BAD_HIGH_BARRIER = 8, "Energy barrier not within window"
+    BAD_MINIMA = 9, "Minimizations from saddle did not converge"
+    FAILED_PREFACTOR = 10, "Hessian calculation failed"
+    POTENTIAL_FAILED = 11, "Potential failed"
+    NONNEGATIVE_ABORT = 12, "Nonnegative initial mode, aborting"
+    NONLOCAL_ABORT = 13, "Nonlocal abort"
+    NEGATIVE_BARRIER = 14, "Negative barrier detected"
+    BAD_MD_TRAJECTORY_TOO_SHORT = 15, "No reaction found during MD trajectory"
+    BAD_NO_NEGATIVE_MODE_AT_SADDLE = (
+        16,
+        "Converged to stationary point with zero negative modes",
+    )
+    BAD_NO_BARRIER = 17, "No forward barrier was found along minimized band"
+    ZEROMODE_ABORT = 18, "Zero mode abort."
+    OPTIMIZER_ERROR = 19, "Optimizer error."
+    UNKNOWN = -1, "Unknown status"
+
+    def __new__(cls, value, description):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.description = description
+        return obj
+
+    @classmethod
+    def from_value(cls, value):
+        for member in cls:
+            if member.value == value:
+                return member
+        return cls.UNKNOWN
 
 
 def extract_saddle_gprd(log: list[str]):
@@ -40,9 +83,13 @@ def _read_results_dat(eresp: Path) -> dict:
         return None
 
     rdat = respth.read_text()
-    termination_reason = int(re.search(r"(\d+) termination_reason", rdat).group(1))
-    if termination_reason != 0:
-        return None
+    termination_int = int(re.search(r"(\d+) termination_reason", rdat).group(1))
+    termination_reason = EONSaddleStatus.from_value(termination_int)
+    term_dict = {
+        "termination_status": str(termination_reason).split(".")[-1],
+    }
+    if termination_reason != EONSaddleStatus.GOOD:
+        return term_dict
 
     results_data = {
         "pes_calls": int(re.search(r"(\d+) total_force_calls", rdat).group(1)),
@@ -51,6 +98,7 @@ def _read_results_dat(eresp: Path) -> dict:
             re.search(r"(-?\d+\.\d+) potential_energy_saddle", rdat).group(1)
         ),
     }
+    results_data |= term_dict
     return results_data
 
 
@@ -190,7 +238,7 @@ def _get_methods(eresp: Path) -> DimerOpt:
             trans=_conf["Optimizer"]["opt_method"],
         )
     else:
-        errmsg="Clearly wrong.."
+        errmsg = "Clearly wrong.."
         raise ValueError(errmsg)
 
 
@@ -218,6 +266,17 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
         )
 
+    if list(results_data.keys()) == ['termination_status']:
+        return SaddleMeasure(
+            mol_id=getattr(rloc, "mol_id", None),
+            spin=getattr(rloc, "spin", None),
+            success=False,
+            method=meth.saddle,
+            dimer_rot=meth.rot,
+            dimer_trans=meth.trans,
+            termination_status=results_data["termination_status"],
+        )
+
     # 2. Find the log file
     log_file = _find_log_file(eresp)
     if log_file is None:
@@ -233,6 +292,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),
+            termination_status=results_data["termination_status"],
         )
 
     # 3. Parse the log file
@@ -256,6 +316,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             pes_calls=results_data["pes_calls"],
             iter_steps=results_data["iter_steps"],
             saddle_energy=results_data["saddle_energy"],
+            termination_status=results_data["termination_status"],
         )
 
     return SaddleMeasure(
@@ -276,4 +337,5 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
         ),
         mol_id=getattr(rloc, "mol_id", None),
         spin=getattr(rloc, "spin", None),
+        termination_status=results_data["termination_status"],
     )
