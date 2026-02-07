@@ -314,10 +314,10 @@ def plot_landscape_surface(
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
     else:
-        # 1. Minima Augmentation (Create Bowls)
+        # Minima Augmentation (Create Bowls)
         r_aug, p_aug, z_aug = _augment_minima_points(rmsd_r, rmsd_p, z_data)
 
-        # 2. Gradient Augmentation (Enforce Slope)
+        # Gradient Augmentation (Enforce Slope)
         # Map the gradients to the augmented array, but since augmentation
         # adds new points with unknown gradients, apply gradient augmentation
         # ONLY to the original raw points first, then combine.

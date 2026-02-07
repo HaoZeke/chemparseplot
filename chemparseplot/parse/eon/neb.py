@@ -84,17 +84,40 @@ def load_or_compute_data(
 
 
 def load_structures_and_calculate_additional_rmsd(
-    con_file: Path, additional_con: list[tuple[Path, str]], ira_kmax: float
+    con_file: Path,
+    additional_con: list[tuple[Path, str]],
+    ira_kmax: float,
+    sp_file: Path | None = None,
 ):
     """Loads the main trajectory and calculates RMSD for any additional comparison structures."""
     log.info(f"Reading structures from {con_file}")
     atoms_list = ase_read(con_file, index=":")
     log.info(f"Loaded {len(atoms_list)} structures.")
 
+    # --- Explicit Saddle Point Loading ---
+    sp_data = None
+    ira_instance = ira_mod.IRA() if ira_mod else None
+
+    if sp_file and sp_file.exists():
+        log.info(f"Loading explicit saddle point from {sp_file}")
+        sp_atoms = ase_read(sp_file)
+        sp_rmsd_r = calculate_rmsd_from_ref(
+            [sp_atoms],
+            ira_instance,
+            ref_atom=atoms_list[0],
+            ira_kmax=ira_kmax,
+        )[0]
+        sp_rmsd_p = calculate_rmsd_from_ref(
+            [sp_atoms],
+            ira_instance,
+            ref_atom=atoms_list[-1],
+            ira_kmax=ira_kmax,
+        )[0]
+        sp_data = {"atoms": sp_atoms, "r": sp_rmsd_r, "p": sp_rmsd_p}
+
+    # --- Additional Structures Loading ---
     additional_atoms_data = []
     if additional_con:
-        ira_instance = ira_mod.IRA() if ira_mod else None
-
         for add_file, add_label in additional_con:
             # Handle empty labels
             if not add_label or add_label.strip() == "":
@@ -122,7 +145,7 @@ def load_structures_and_calculate_additional_rmsd(
                 (additional_atoms, add_rmsd_r, add_rmsd_p, label)
             )
 
-    return atoms_list, additional_atoms_data
+    return atoms_list, additional_atoms_data, sp_data
 
 
 def aggregate_neb_landscape_data(
