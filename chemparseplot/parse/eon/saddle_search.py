@@ -206,12 +206,14 @@ def _extract_saddle_info(
         saddle_fmax = np.abs(np.max(saddle.forces))
     elif not is_gprd:
         try:
+            # Expected header: Step, Step Size, Delta E, ||Force||
+            # ||Force|| is the 5th element (index 4)
             saddle_fmax = float(
                 (eresp / "client_spdlog.log")
                 .read_text()
                 .strip()
                 .split("\n")[-5:][0]
-                .split()[5]
+                .split()[4]
             )
         except (FileNotFoundError, IndexError):
             saddle_fmax = 0.0
