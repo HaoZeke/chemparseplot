@@ -17,7 +17,7 @@ from scipy.interpolate import (
 )
 from scipy.signal import savgol_filter
 from scipy.spatial.distance import cdist
-from chemparseplot.plot._jax_aids import FastTPS, FastMatern
+from chemparseplot.plot._surfaces import get_surface_model
 
 log = logging.getLogger(__name__)
 
@@ -292,15 +292,14 @@ def plot_landscape_surface(
     grad_p,
     z_data,
     step_data=None,
-    method="rbf",
+    method="grad_matern",
     rbf_smooth=None,
     cmap="viridis",
     show_pts=True,
 ):
     """
     Plots the 2D landscape surface using RBF or Grid interpolation.
-
-    Automatically augments data around minima to enforce physical wells if using RBF.
+    Supports Gradient-Enhanced Matern GP with subset optimization.
     """
     log.info(f"Generating 2D surface using {method}...")
 
@@ -311,10 +310,106 @@ def plot_landscape_surface(
     xg = np.linspace(rmsd_r.min() - x_margin, rmsd_r.max() + x_margin, nx)
     yg = np.linspace(rmsd_p.min() - y_margin, rmsd_p.max() + y_margin, ny)
     xg, yg = np.meshgrid(xg, yg)
+    ModelClass = get_surface_model(method)
 
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
+        
+    elif method == "grad_matern":
+        # ---------------------------------------------------------
+        # GRADIENT MATERN (Two-Step Optimization Strategy)
+        # ---------------------------------------------------------
+        
+        # Prepare Data
+        pts = np.column_stack([rmsd_r, rmsd_p])
+        vals = z_data
+        
+        # Jitter helps prevent Cholesky crashes on duplicate points
+        rng = np.random.default_rng(42)
+        pts_jittered = pts + rng.normal(0, 1e-6, size=pts.shape)
+        
+        if grad_r is not None:
+            # Note: grad_r from processing is already a gradient (+). No flip needed.
+            grad_stack = np.column_stack([grad_r, grad_p])
+        else:
+            grad_stack = np.zeros_like(pts)
+
+        # Default smoothing (noise scalar)
+        safe_smooth = rbf_smooth if rbf_smooth is not None else 1e-4
+
+        # Subset Strategy for Hyperparameter Optimization
+        best_ls = np.max(rmsd_r)
+        log.info(f"Initial length_scale: {best_ls:.4f} A")
+        
+        if step_data is not None:
+            max_step = step_data.max()
+            is_final = (step_data == max_step)
+            
+            # --- STEP A: Learn Physics on Final Path (Fast) ---
+            if np.sum(is_final) > 3: # Ensure we have enough points
+                log.info("Optimizing Length Scale on Final Path...")
+                
+                pts_final = pts_jittered[is_final]
+                vals_final = vals[is_final]
+                grads_final = grad_stack[is_final]
+                
+                # Run optimizer on subset
+                model_learner = ModelClass(
+                    pts_final,
+                    vals_final,
+                    gradients=grads_final,
+                    smoothing=safe_smooth,
+                    optimize=True
+                )
+                best_ls = model_learner.ls
+                log.info(f"Learned optimal length_scale: {best_ls:.4f} A")
+        
+        # Downsampling for Full Visualization (CPU Speed Constraint)
+        MAX_VIS_POINTS = 1000000
+        
+        if len(pts) > MAX_VIS_POINTS and MAX_VIS_POINTS:
+            log.info(f"Downsampling history for visualization ({len(pts)} -> {MAX_VIS_POINTS})...")
+            
+            if step_data is not None:
+                final_indices = np.where(step_data == step_data.max())[0]
+                history_indices = np.where(step_data != step_data.max())[0]
+            else:
+                final_indices = np.arange(len(pts)-20, len(pts))
+                history_indices = np.arange(0, len(pts)-20)
+                
+            n_keep_history = MAX_VIS_POINTS - len(final_indices)
+            
+            if n_keep_history > 0 and len(history_indices) > 0:
+                chosen_history = rng.choice(history_indices, size=n_keep_history, replace=False)
+                keep_mask = np.concatenate([final_indices, chosen_history])
+            else:
+                keep_mask = final_indices
+                
+            pts_vis = pts_jittered[keep_mask]
+            vals_vis = vals[keep_mask]
+            grads_vis = grad_stack[keep_mask]
+        else:
+            pts_vis = pts_jittered
+            vals_vis = vals
+            grads_vis = grad_stack
+
+        # --- STEP B: Fit Surface (Fixed Hyperparams) ---
+        log.info("Fitting final surface...")
+        rbf = ModelClass(
+            pts_vis, 
+            vals_vis, 
+            gradients=grads_vis, 
+            smoothing=safe_smooth, 
+            length_scale=best_ls,
+            optimize=False
+        )
+        
+        zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
+
     else:
+        # ---------------------------------------------------------
+        # LEGACY METHODS (TPS / Standard Matern)
+        # ---------------------------------------------------------
         # Minima Augmentation (Create Bowls)
         r_aug, p_aug, z_aug = _augment_minima_points(rmsd_r, rmsd_p, z_data)
 
@@ -336,15 +431,20 @@ def plot_landscape_surface(
             vals = z_aug
 
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
-        rbf = FastTPS(pts, vals, smoothing=safe_smooth)
+        
+        # Instantiate (TPS ignores length_scale, Matern uses default)
+        rbf = ModelClass(pts, vals, smoothing=safe_smooth, length_scale=1.0)
+        
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
+    # --- Plotting ---
     try:
         colormap = plt.get_cmap(cmap)
     except ValueError:
         colormap = plt.get_cmap("viridis")
 
-    ax.contourf(xg, yg, zg, levels=20, cmap=colormap, alpha=0.75, zorder=10)
+    # High-res contourf
+    ax.contourf(xg, yg, zg, levels=100, cmap=colormap, alpha=0.75, zorder=10)
     ax.contour(xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11)
 
     if show_pts:
