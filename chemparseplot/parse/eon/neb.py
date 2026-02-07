@@ -152,24 +152,17 @@ def aggregate_neb_landscape_data(
             raise ValueError("Cache missing 'p' column.")
 
     def compute_landscape_data() -> pl.DataFrame:
-        # Match indices
-        # (This is a simplified logic from the original which had complex index matching.
-        #  We assume the caller has provided matched lists or we just zip them).
+        all_dfs = []
 
-        # In a robust implementation, we would replicate the filename matching logic here.
-        # For brevity, we assume strict zipping as the main aggregation step.
+        # Synchronization check
         paths_dat = all_dat_paths
         paths_con = all_con_paths
-
         if len(paths_dat) != len(paths_con):
-            log.warning(
-                f"Mismatch in file counts: {len(paths_dat)} dat vs {len(paths_con)} con."
-            )
+            log.warning(f"Mismatch: {len(paths_dat)} dat vs {len(paths_con)} con.")
             min_len = min(len(paths_dat), len(paths_con))
             paths_dat = paths_dat[:min_len]
             paths_con = paths_con[:min_len]
 
-        all_dfs = []
         for step_idx, (dat_file, con_file_step) in enumerate(
             zip(paths_dat, paths_con, strict=True)
         ):
@@ -199,7 +192,8 @@ def aggregate_neb_landscape_data(
                 continue
 
         if not all_dfs:
-            raise RuntimeError("No data could be aggregated.")
+            rerr = "No data could be aggregated from files."
+            raise RuntimeError(rerr)
 
         return pl.concat(all_dfs)
 
