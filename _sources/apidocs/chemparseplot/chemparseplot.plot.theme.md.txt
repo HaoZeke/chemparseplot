@@ -1,0 +1,272 @@
+# {py:mod}`chemparseplot.plot.theme`
+
+```{py:module} chemparseplot.plot.theme
+```
+
+```{autodoc2-docstring} chemparseplot.plot.theme
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`PlotTheme <chemparseplot.plot.theme.PlotTheme>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`build_cmap <chemparseplot.plot.theme.build_cmap>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.build_cmap
+    :summary:
+    ```
+* - {py:obj}`setup_global_theme <chemparseplot.plot.theme.setup_global_theme>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.setup_global_theme
+    :summary:
+    ```
+* - {py:obj}`apply_axis_theme <chemparseplot.plot.theme.apply_axis_theme>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.apply_axis_theme
+    :summary:
+    ```
+* - {py:obj}`get_theme <chemparseplot.plot.theme.get_theme>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.get_theme
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.plot.theme.log>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.log
+    :summary:
+    ```
+* - {py:obj}`RUHI_COLORS <chemparseplot.plot.theme.RUHI_COLORS>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.RUHI_COLORS
+    :summary:
+    ```
+* - {py:obj}`BATLOW_THEME <chemparseplot.plot.theme.BATLOW_THEME>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.BATLOW_THEME
+    :summary:
+    ```
+* - {py:obj}`RUHI_THEME <chemparseplot.plot.theme.RUHI_THEME>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.RUHI_THEME
+    :summary:
+    ```
+* - {py:obj}`THEMES <chemparseplot.plot.theme.THEMES>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.THEMES
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.plot.theme.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.theme.log
+```
+
+````
+
+````{py:data} RUHI_COLORS
+:canonical: chemparseplot.plot.theme.RUHI_COLORS
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.RUHI_COLORS
+```
+
+````
+
+`````{py:class} PlotTheme
+:canonical: chemparseplot.plot.theme.PlotTheme
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme
+```
+
+````{py:attribute} name
+:canonical: chemparseplot.plot.theme.PlotTheme.name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.name
+```
+
+````
+
+````{py:attribute} font_family
+:canonical: chemparseplot.plot.theme.PlotTheme.font_family
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.font_family
+```
+
+````
+
+````{py:attribute} font_size
+:canonical: chemparseplot.plot.theme.PlotTheme.font_size
+:type: int
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.font_size
+```
+
+````
+
+````{py:attribute} facecolor
+:canonical: chemparseplot.plot.theme.PlotTheme.facecolor
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.facecolor
+```
+
+````
+
+````{py:attribute} textcolor
+:canonical: chemparseplot.plot.theme.PlotTheme.textcolor
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.textcolor
+```
+
+````
+
+````{py:attribute} edgecolor
+:canonical: chemparseplot.plot.theme.PlotTheme.edgecolor
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.edgecolor
+```
+
+````
+
+````{py:attribute} gridcolor
+:canonical: chemparseplot.plot.theme.PlotTheme.gridcolor
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.gridcolor
+```
+
+````
+
+````{py:attribute} cmap_profile
+:canonical: chemparseplot.plot.theme.PlotTheme.cmap_profile
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.cmap_profile
+```
+
+````
+
+````{py:attribute} cmap_landscape
+:canonical: chemparseplot.plot.theme.PlotTheme.cmap_landscape
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.cmap_landscape
+```
+
+````
+
+````{py:attribute} highlight_color
+:canonical: chemparseplot.plot.theme.PlotTheme.highlight_color
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.PlotTheme.highlight_color
+```
+
+````
+
+`````
+
+````{py:data} BATLOW_THEME
+:canonical: chemparseplot.plot.theme.BATLOW_THEME
+:value: >
+   'PlotTheme(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.theme.BATLOW_THEME
+```
+
+````
+
+````{py:data} RUHI_THEME
+:canonical: chemparseplot.plot.theme.RUHI_THEME
+:value: >
+   'PlotTheme(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.theme.RUHI_THEME
+```
+
+````
+
+````{py:data} THEMES
+:canonical: chemparseplot.plot.theme.THEMES
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.theme.THEMES
+```
+
+````
+
+````{py:function} build_cmap(hex_list, name)
+:canonical: chemparseplot.plot.theme.build_cmap
+
+```{autodoc2-docstring} chemparseplot.plot.theme.build_cmap
+```
+````
+
+````{py:function} setup_global_theme(theme: chemparseplot.plot.theme.PlotTheme)
+:canonical: chemparseplot.plot.theme.setup_global_theme
+
+```{autodoc2-docstring} chemparseplot.plot.theme.setup_global_theme
+```
+````
+
+````{py:function} apply_axis_theme(ax: matplotlib.pyplot.Axes, theme: chemparseplot.plot.theme.PlotTheme)
+:canonical: chemparseplot.plot.theme.apply_axis_theme
+
+```{autodoc2-docstring} chemparseplot.plot.theme.apply_axis_theme
+```
+````
+
+````{py:function} get_theme(name: str, **overrides) -> chemparseplot.plot.theme.PlotTheme
+:canonical: chemparseplot.plot.theme.get_theme
+
+```{autodoc2-docstring} chemparseplot.plot.theme.get_theme
+```
+````

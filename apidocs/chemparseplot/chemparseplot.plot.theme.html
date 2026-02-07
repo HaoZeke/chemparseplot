@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.plot.theme &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/apidocs/chemparseplot/chemparseplot.plot.theme.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chemparseplot.plot._aids" href="chemparseplot.plot._aids.html" />
+    <link rel="prev" title="chemparseplot.plot.geomscan" href="chemparseplot.plot.geomscan.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.log"><code class="docutils literal notranslate"><span class="pre">log</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.RUHI_COLORS"><code class="docutils literal notranslate"><span class="pre">RUHI_COLORS</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme"><code class="docutils literal notranslate"><span class="pre">PlotTheme</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.name"><code class="docutils literal notranslate"><span class="pre">PlotTheme.name</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.font_family"><code class="docutils literal notranslate"><span class="pre">PlotTheme.font_family</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.font_size"><code class="docutils literal notranslate"><span class="pre">PlotTheme.font_size</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.facecolor"><code class="docutils literal notranslate"><span class="pre">PlotTheme.facecolor</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.textcolor"><code class="docutils literal notranslate"><span class="pre">PlotTheme.textcolor</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.edgecolor"><code class="docutils literal notranslate"><span class="pre">PlotTheme.edgecolor</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.gridcolor"><code class="docutils literal notranslate"><span class="pre">PlotTheme.gridcolor</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.cmap_profile"><code class="docutils literal notranslate"><span class="pre">PlotTheme.cmap_profile</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.cmap_landscape"><code class="docutils literal notranslate"><span class="pre">PlotTheme.cmap_landscape</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme.highlight_color"><code class="docutils literal notranslate"><span class="pre">PlotTheme.highlight_color</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.BATLOW_THEME"><code class="docutils literal notranslate"><span class="pre">BATLOW_THEME</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.RUHI_THEME"><code class="docutils literal notranslate"><span class="pre">RUHI_THEME</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.THEMES"><code class="docutils literal notranslate"><span class="pre">THEMES</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.build_cmap"><code class="docutils literal notranslate"><span class="pre">build_cmap()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.setup_global_theme"><code class="docutils literal notranslate"><span class="pre">setup_global_theme()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.apply_axis_theme"><code class="docutils literal notranslate"><span class="pre">apply_axis_theme()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.theme.get_theme"><code class="docutils literal notranslate"><span class="pre">get_theme()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.plot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.plot.theme</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.plot.theme">
+<span id="chemparseplot-plot-theme"></span><h1><a class="reference internal" href="#module-chemparseplot.plot.theme" title="chemparseplot.plot.theme"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a><a class="headerlink" href="#module-chemparseplot.plot.theme" title="Link to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlotTheme</span></code></a></p></td>
+<td><p>Holds all aesthetic parameters for a matplotlib theme.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.build_cmap" title="chemparseplot.plot.theme.build_cmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_cmap</span></code></a></p></td>
+<td><p>Build and register a LinearSegmentedColormap from a list of hex colors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.setup_global_theme" title="chemparseplot.plot.theme.setup_global_theme"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_global_theme</span></code></a></p></td>
+<td><p>Sets global plt.rcParams based on the theme.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.apply_axis_theme" title="chemparseplot.plot.theme.apply_axis_theme"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_axis_theme</span></code></a></p></td>
+<td><p>Applies theme properties specific to an axis instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.get_theme" title="chemparseplot.plot.theme.get_theme"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_theme</span></code></a></p></td>
+<td><p>Retrieves a theme by name and applies optional property overrides.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.log" title="chemparseplot.plot.theme.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.RUHI_COLORS" title="chemparseplot.plot.theme.RUHI_COLORS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RUHI_COLORS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.BATLOW_THEME" title="chemparseplot.plot.theme.BATLOW_THEME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BATLOW_THEME</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.RUHI_THEME" title="chemparseplot.plot.theme.RUHI_THEME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RUHI_THEME</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.theme.THEMES" title="chemparseplot.plot.theme.THEMES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">THEMES</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.log">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">log</span></span><a class="reference internal" href="../../_modules/logging.html#log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.log" title="Link to this definition">¶</a></dt>
+<dd><p>‘getLogger(…)’</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.RUHI_COLORS">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">RUHI_COLORS</span></span><a class="headerlink" href="#chemparseplot.plot.theme.RUHI_COLORS" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">PlotTheme</span></span><a class="reference internal" href="../../_modules/chemparseplot/plot/theme.html#PlotTheme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme" title="Link to this definition">¶</a></dt>
+<dd><p>Holds all aesthetic parameters for a matplotlib theme.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.name">
+<span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.name" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.font_family">
+<span class="sig-name descname"><span class="pre">font_family</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.font_family" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.font_size">
+<span class="sig-name descname"><span class="pre">font_size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.font_size" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.facecolor">
+<span class="sig-name descname"><span class="pre">facecolor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.facecolor" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.textcolor">
+<span class="sig-name descname"><span class="pre">textcolor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.textcolor" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.edgecolor">
+<span class="sig-name descname"><span class="pre">edgecolor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.edgecolor" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.gridcolor">
+<span class="sig-name descname"><span class="pre">gridcolor</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.gridcolor" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.cmap_profile">
+<span class="sig-name descname"><span class="pre">cmap_profile</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.cmap_profile" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.cmap_landscape">
+<span class="sig-name descname"><span class="pre">cmap_landscape</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.cmap_landscape" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.highlight_color">
+<span class="sig-name descname"><span class="pre">highlight_color</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.highlight_color" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.BATLOW_THEME">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">BATLOW_THEME</span></span><a class="headerlink" href="#chemparseplot.plot.theme.BATLOW_THEME" title="Link to this definition">¶</a></dt>
+<dd><p>‘PlotTheme(…)’</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.RUHI_THEME">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">RUHI_THEME</span></span><a class="headerlink" href="#chemparseplot.plot.theme.RUHI_THEME" title="Link to this definition">¶</a></dt>
+<dd><p>‘PlotTheme(…)’</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.THEMES">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">THEMES</span></span><a class="headerlink" href="#chemparseplot.plot.theme.THEMES" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.build_cmap">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">build_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chemparseplot/plot/theme.html#build_cmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.build_cmap" title="Link to this definition">¶</a></dt>
+<dd><p>Build and register a LinearSegmentedColormap from a list of hex colors.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.setup_global_theme">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">setup_global_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chemparseplot/plot/theme.html#setup_global_theme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.setup_global_theme" title="Link to this definition">¶</a></dt>
+<dd><p>Sets global plt.rcParams based on the theme.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.apply_axis_theme">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">apply_axis_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">matplotlib.pyplot.Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/chemparseplot/plot/theme.html#apply_axis_theme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.apply_axis_theme" title="Link to this definition">¶</a></dt>
+<dd><p>Applies theme properties specific to an axis instance.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.theme.get_theme">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">get_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></span><a class="reference internal" href="../../_modules/chemparseplot/plot/theme.html#get_theme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.plot.theme.get_theme" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieves a theme by name and applies optional property overrides.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.plot.geomscan.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.geomscan</span></code>
+  </a>
+  <a class="next" href="chemparseplot.plot._aids.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot._aids</span></code> &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2026, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+  <a href="../../_sources/apidocs/chemparseplot/chemparseplot.plot.theme.md.txt" rel="nofollow">Page source</a>
+</footer>
+  </body>
+</html>

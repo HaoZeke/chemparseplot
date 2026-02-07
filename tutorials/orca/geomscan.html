@@ -6,25 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Geometry Scan &#8212; chemparseplot 0.0.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"extensions": ["tex2jax.js"], "jax": ["input/TeX", "output/HTML-CSS"]})</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="canonical" href="https://haozeke.github.io/chemparseplot/tutorials/orca/geomscan.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -82,7 +78,7 @@
 
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -90,7 +86,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 <h3>Links</h3>
 <ul>
@@ -166,12 +162,12 @@
       
   <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gzip</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">ase.build</span> <span class="kn">import</span> <span class="n">molecule</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">molecule</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<span class="kn">from</span> <span class="nn">chemparseplot.parse.orca</span> <span class="kn">import</span> <span class="n">geomscan</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
 </pre></div>
 </div>
 </div>
@@ -268,7 +264,7 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table><tbody><tr><th>Magnitude</th><td style='text-align:left;'><pre>[3.9999997097520588 3.8785000770759783 3.757000444399898<br> 3.6355008117238174 3.5140011737559647 3.392501541079884 3.271001908403804<br> 3.1495022704359514 3.0280026377598706 2.9065030050837906<br> 2.7850033671159378 2.6635037344398573 2.542004101763777<br> 2.4205044690876965 2.2990048311198437 2.1775051984437637<br> 2.056005565767683 1.9345059277998302 1.8130062951237498<br> 1.6915066624476693 1.570007029771589 1.4485073918037363 1.327007759127656<br> 1.2055081264515755 1.0840084884837227 0.9625088558076422<br> 0.8410092231315618 0.7195095851637091 0.5980099524876287<br> 0.47651031981154823 0.3550106871354678 0.2335110491676152<br> 0.11201141649153473]</pre></td></tr><tr><th>Units</th><td style='text-align:left;'>angstrom</td></tr></tbody></table></div></div>
+<div class="output text_html"><table><tbody><tr><th>Magnitude</th><td style='text-align:left;'><pre>[3.9999997070301374 3.878500074436735 3.7570004418433327 3.63550080924993 3.5140011713647556 3.3925015387713535 3.271001906177951 3.1495022682927765 3.028002635699374 2.9065030031059718 2.7850033652207973 2.663503732627395 2.5420041000339926 2.4205044674405904 2.299004829555416 2.177505196962014 2.0560055643686113 1.9345059264834368 1.8130062938900344 1.691506661296632 1.5700070287032297 1.4485073908180555 1.3270077582246531 1.2055081256312508 1.084008487746076 0.9625088551526738 0.8410092225592715 0.719509584674097 0.5980099520806946 0.4765103194872923 0.35501068689389 0.2335110490087155 0.11201141641531316]</pre></td></tr><tr><th>Units</th><td style='text-align:left;'>angstrom</td></tr></tbody></table></div></div>
 </div>
 <section id="plotting">
 <h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
@@ -281,10 +277,10 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f6e001af230&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f89eac62900&gt;
 </pre></div>
 </div>
-<img alt="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" src="../../_images/de8d5cd0b18667ff293b88312d768648bcb5f6ec339bf67fb74aec3095fcc97f.png" />
+<img alt="../../_images/6fa0569debe38aa54595f11091c1156c6ef605479528c23a1875abe4abefda61.png" src="../../_images/6fa0569debe38aa54595f11091c1156c6ef605479528c23a1875abe4abefda61.png" />
 </div>
 </div>
 <p>However, this is not super satisfying, and since this is a “supported” workflow, we can leverage <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> instead.</p>
@@ -335,6 +331,8 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 </div>
 </div>
 </div>
+</section>
+</section>
 <hr class="footnotes docutils" />
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id3" role="doc-footnote">
@@ -346,8 +344,6 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 <p>Discussed in more detail <a class="reference external" href="https://rgoswami.me/posts/intro-highthrough-calc/#chemical">here</a></p>
 </aside>
 </aside>
-</section>
-</section>
 
 
     </main>
@@ -367,7 +363,7 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
   <div class="clear"></div>
 </div>
 <footer class="footer" role="contentinfo">
-    &copy; Copyright 2023-2024, Rohit Goswami.
+    &copy; Copyright 2023-2026, Rohit Goswami.
   
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.

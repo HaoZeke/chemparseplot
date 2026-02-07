@@ -5,21 +5,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>chemparseplot.parse.orca.geomscan &#8212; chemparseplot 0.0.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
     <script src="../../../../_static/documentation_options.js?v=e3a6060d"></script>
-    <script src="../../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../../../_static/togglebutton.js?v=4a39c7ea"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <link rel="canonical" href="https://haozeke.github.io/chemparseplot/_modules/chemparseplot/parse/orca/geomscan.html" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -76,7 +75,7 @@
 
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../../search.html" method="get">
@@ -84,7 +83,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 <h3>Links</h3>
 <ul>
@@ -151,16 +150,16 @@
 <span class="sd">end</span>
 <span class="sd">*xyzfile 0 1 h2_base.xyz</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
-<span class="kn">import</span> <span class="nn">chemparseplot.parse.converter</span> <span class="k">as</span> <span class="nn">conv</span>
-<span class="kn">import</span> <span class="nn">chemparseplot.parse.patterns</span> <span class="k">as</span> <span class="nn">pat</span>
-<span class="kn">from</span> <span class="nn">chemparseplot.units</span> <span class="kn">import</span> <span class="n">Q_</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">chemparseplot.parse.converter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">conv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">chemparseplot.parse.patterns</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Q_</span>
 
 
 <div class="viewcode-block" id="extract_energy_data">
 <a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.orca.geomscan.html#chemparseplot.parse.orca.geomscan.extract_energy_data">[docs]</a>
-<span class="k">def</span> <span class="nf">extract_energy_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">energy_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Q_</span><span class="p">,</span> <span class="n">Q_</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_energy_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">energy_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Q_</span><span class="p">,</span> <span class="n">Q_</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extracts and converts the energy data for a specified energy type.</span>
 
@@ -218,7 +217,7 @@
   <div class="clear"></div>
 </div>
 <footer class="footer" role="contentinfo">
-    &copy; Copyright 2023-2024, Rohit Goswami.
+    &copy; Copyright 2023-2026, Rohit Goswami.
   
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.

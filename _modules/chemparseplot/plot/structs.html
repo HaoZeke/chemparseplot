@@ -5,21 +5,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>chemparseplot.plot.structs &#8212; chemparseplot 0.0.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
     <script src="../../../_static/documentation_options.js?v=e3a6060d"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=f281be69"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../../_static/togglebutton.js?v=4a39c7ea"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <link rel="canonical" href="https://haozeke.github.io/chemparseplot/_modules/chemparseplot/plot/structs.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -76,7 +75,7 @@
 
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -84,7 +83,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 <h3>Links</h3>
 <ul>
@@ -139,12 +138,12 @@
     <main class="body" role="main" id="main">
       
   <h1>Source code for chemparseplot.plot.structs</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">cmcrameri</span> <span class="kn">import</span> <span class="n">cm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cmcrameri</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 
-<span class="kn">from</span> <span class="nn">chemparseplot.plot._aids</span> <span class="kn">import</span> <span class="n">spline_interp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot._aids</span><span class="w"> </span><span class="kn">import</span> <span class="n">spline_interp</span>
 
 <span class="c1"># Define a namedtuple for energy paths</span>
 <span class="n">EnergyPath</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;EnergyPath&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">])</span>
@@ -154,8 +153,8 @@
 <span class="c1"># Baseline plotting class</span>
 <div class="viewcode-block" id="BasePlotter">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.BasePlotter">[docs]</a>
-<span class="k">class</span> <span class="nc">BasePlotter</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BasePlotter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">3.2</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">batlow</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;bmh&quot;</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">figsize</span> <span class="o">=</span> <span class="n">figsize</span>
@@ -167,7 +166,7 @@
 
 <div class="viewcode-block" id="BasePlotter.add_title">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.BasePlotter.add_title">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">)</span></div>
 </div>
@@ -176,8 +175,8 @@
 
 <div class="viewcode-block" id="TwoDimPlot">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot">[docs]</a>
-<span class="k">class</span> <span class="nc">TwoDimPlot</span><span class="p">(</span><span class="n">BasePlotter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoDimPlot</span><span class="p">(</span><span class="n">BasePlotter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Stores XYData objects</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_unit</span> <span class="o">=</span> <span class="s2">&quot;dimensionless&quot;</span>
@@ -187,7 +186,7 @@
 
 <div class="viewcode-block" id="TwoDimPlot.set_labels">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.set_labels">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_label</span> <span class="o">=</span> <span class="n">x_label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y_label</span> <span class="o">=</span> <span class="n">y_label</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_labels</span><span class="p">()</span></div>
@@ -195,7 +194,7 @@
 
 <div class="viewcode-block" id="TwoDimPlot.set_units">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.set_units">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_unit</span><span class="p">,</span> <span class="n">y_unit</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_unit</span><span class="p">,</span> <span class="n">y_unit</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_unit</span> <span class="o">=</span> <span class="n">x_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y_unit</span> <span class="o">=</span> <span class="n">y_unit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redraw_plot</span><span class="p">()</span></div>
@@ -203,14 +202,14 @@
 
 <div class="viewcode-block" id="TwoDimPlot.update_labels">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.update_labels">[docs]</a>
-    <span class="k">def</span> <span class="nf">update_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x_label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x_unit</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y_label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y_unit</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TwoDimPlot.redraw_plot">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.redraw_plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">redraw_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">redraw_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">xy_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
             <span class="n">x_values</span> <span class="o">=</span> <span class="n">xy_data</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_unit</span><span class="p">)</span><span class="o">.</span><span class="n">m</span>
@@ -236,14 +235,14 @@
 
 <div class="viewcode-block" id="TwoDimPlot.add_data">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.add_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy_data</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy_data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xy_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redraw_plot</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="TwoDimPlot.rmdat">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.rmdat">[docs]</a>
-    <span class="k">def</span> <span class="nf">rmdat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels_to_remove</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rmdat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels_to_remove</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labels_to_remove</span> <span class="o">|</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
             <span class="n">labels_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="n">labels_to_remove</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
@@ -254,7 +253,7 @@
 
 <div class="viewcode-block" id="TwoDimPlot.__repr__">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.structs.html#chemparseplot.plot.structs.TwoDimPlot.__repr__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;TwoDimPlot with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> datasets&quot;</span></div>
 </div>
 
@@ -271,7 +270,7 @@
   <div class="clear"></div>
 </div>
 <footer class="footer" role="contentinfo">
-    &copy; Copyright 2023-2024, Rohit Goswami.
+    &copy; Copyright 2023-2026, Rohit Goswami.
   
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.

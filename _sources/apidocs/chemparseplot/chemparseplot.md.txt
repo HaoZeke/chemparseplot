@@ -23,6 +23,7 @@ chemparseplot.plot
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.basetypes
+chemparseplot.util
 chemparseplot.units
+chemparseplot.basetypes
 ```

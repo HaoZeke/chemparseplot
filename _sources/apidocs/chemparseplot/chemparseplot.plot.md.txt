@@ -14,6 +14,7 @@
 :maxdepth: 1
 
 chemparseplot.plot.geomscan
-chemparseplot.plot.structs
+chemparseplot.plot.theme
 chemparseplot.plot._aids
+chemparseplot.plot.structs
 ```

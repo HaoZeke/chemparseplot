@@ -1,0 +1,94 @@
+# {py:mod}`chemparseplot.util`
+
+```{py:module} chemparseplot.util
+```
+
+```{autodoc2-docstring} chemparseplot.util
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`parse_target_coords <chemparseplot.util.parse_target_coords>`
+  - ```{autodoc2-docstring} chemparseplot.util.parse_target_coords
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`POSCON_FILENAME <chemparseplot.util.POSCON_FILENAME>`
+  - ```{autodoc2-docstring} chemparseplot.util.POSCON_FILENAME
+    :summary:
+    ```
+* - {py:obj}`target_coords_text <chemparseplot.util.target_coords_text>`
+  - ```{autodoc2-docstring} chemparseplot.util.target_coords_text
+    :summary:
+    ```
+* - {py:obj}`atoms <chemparseplot.util.atoms>`
+  - ```{autodoc2-docstring} chemparseplot.util.atoms
+    :summary:
+    ```
+* - {py:obj}`target_coords <chemparseplot.util.target_coords>`
+  - ```{autodoc2-docstring} chemparseplot.util.target_coords
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} POSCON_FILENAME
+:canonical: chemparseplot.util.POSCON_FILENAME
+:value: >
+   'pos.con'
+
+```{autodoc2-docstring} chemparseplot.util.POSCON_FILENAME
+```
+
+````
+
+````{py:data} target_coords_text
+:canonical: chemparseplot.util.target_coords_text
+:value: <Multiline-String>
+
+```{autodoc2-docstring} chemparseplot.util.target_coords_text
+```
+
+````
+
+````{py:function} parse_target_coords(text_block)
+:canonical: chemparseplot.util.parse_target_coords
+
+```{autodoc2-docstring} chemparseplot.util.parse_target_coords
+```
+````
+
+````{py:data} atoms
+:canonical: chemparseplot.util.atoms
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.util.atoms
+```
+
+````
+
+````{py:data} target_coords
+:canonical: chemparseplot.util.target_coords
+:value: >
+   'parse_target_coords(...)'
+
+```{autodoc2-docstring} chemparseplot.util.target_coords
+```
+
+````

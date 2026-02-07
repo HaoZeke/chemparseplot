@@ -6,27 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>chemparseplot.basetypes &#8212; chemparseplot 0.0.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
-    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <link rel="canonical" href="https://haozeke.github.io/chemparseplot/apidocs/chemparseplot/chemparseplot.basetypes.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="chemparseplot.units" href="chemparseplot.units.html" />
-    <link rel="prev" title="chemparseplot.plot._aids" href="chemparseplot.plot._aids.html" />
+    <link rel="next" title="Tutorial Introduction" href="../../tutorials/index.html" />
+    <link rel="prev" title="chemparseplot.units" href="chemparseplot.units.html" />
  
 
 <link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
@@ -79,7 +78,7 @@
 
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
@@ -87,7 +86,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 <h3>Links</h3>
 <ul>
@@ -116,10 +115,46 @@
 <ul>
 <li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.basetypes</span></code></a><ul>
 <li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
 <li><a class="reference internal" href="#data">Data</a></li>
 <li><a class="reference internal" href="#api">API</a><ul>
 <li><a class="reference internal" href="#chemparseplot.basetypes.nebiter"><code class="docutils literal notranslate"><span class="pre">nebiter</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.basetypes.nebpath"><code class="docutils literal notranslate"><span class="pre">nebpath</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.DimerOpt"><code class="docutils literal notranslate"><span class="pre">DimerOpt</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.basetypes.DimerOpt.saddle"><code class="docutils literal notranslate"><span class="pre">DimerOpt.saddle</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.DimerOpt.rot"><code class="docutils literal notranslate"><span class="pre">DimerOpt.rot</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.DimerOpt.trans"><code class="docutils literal notranslate"><span class="pre">DimerOpt.trans</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SpinID"><code class="docutils literal notranslate"><span class="pre">SpinID</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SpinID.mol_id"><code class="docutils literal notranslate"><span class="pre">SpinID.mol_id</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SpinID.spin"><code class="docutils literal notranslate"><span class="pre">SpinID.spin</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.MolGeom"><code class="docutils literal notranslate"><span class="pre">MolGeom</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.basetypes.MolGeom.pos"><code class="docutils literal notranslate"><span class="pre">MolGeom.pos</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.MolGeom.energy"><code class="docutils literal notranslate"><span class="pre">MolGeom.energy</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.MolGeom.forces"><code class="docutils literal notranslate"><span class="pre">MolGeom.forces</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.pes_calls"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.pes_calls</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.iter_steps"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.iter_steps</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.tot_time"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.tot_time</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.saddle_energy"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.saddle_energy</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.saddle_fmax"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.saddle_fmax</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.success"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.success</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.method"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.method</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.dimer_rot"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.dimer_rot</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.dimer_trans"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.dimer_trans</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.init_energy"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.init_energy</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.barrier"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.barrier</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.mol_id"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.mol_id</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.spin"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.spin</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.scf"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.scf</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure.termination_status"><code class="docutils literal notranslate"><span class="pre">SaddleMeasure.termination_status</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -166,6 +201,25 @@
 <span id="chemparseplot-basetypes"></span><h1><a class="reference internal" href="#module-chemparseplot.basetypes" title="chemparseplot.basetypes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.basetypes</span></code></a><a class="headerlink" href="#module-chemparseplot.basetypes" title="Link to this heading">¶</a></h1>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.basetypes.DimerOpt" title="chemparseplot.basetypes.DimerOpt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DimerOpt</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.basetypes.SpinID" title="chemparseplot.basetypes.SpinID"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpinID</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.basetypes.MolGeom" title="chemparseplot.basetypes.MolGeom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MolGeom</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.basetypes.SaddleMeasure" title="chemparseplot.basetypes.SaddleMeasure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SaddleMeasure</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="data">
 <h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
 <table class="autosummary longtable docutils align-left">
@@ -186,12 +240,12 @@
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">nebiter</span></span><a class="headerlink" href="#chemparseplot.basetypes.nebiter" title="Link to this definition">¶</a></dt>
 <dd><p>‘namedtuple(…)’</p>
 <p>A namedtuple representing an iteration of a Nudged Elastic Band (NEB) calculation.</p>
-<h2 class="rubric" id="id2">Parameters</h2>
+<p class="rubric" id="id2">Parameters</p>
 <p>iteration : int
 The iteration number of the NEB calculation.
 nebpath : nebpath namedtuple
 The data for the NEB path at this iteration.</p>
-<h2 class="rubric" id="id3">See Also</h2>
+<p class="rubric" id="id3">See Also</p>
 <p>nebpath : Stores the normalized arclength, actual arclength, and energy data for
 the NEB path.</p>
 </dd></dl>
@@ -201,7 +255,7 @@ the NEB path.</p>
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">nebpath</span></span><a class="headerlink" href="#chemparseplot.basetypes.nebpath" title="Link to this definition">¶</a></dt>
 <dd><p>‘namedtuple(…)’</p>
 <p>A namedtuple representing the NEB path data.</p>
-<h2 class="rubric" id="id4">Parameters</h2>
+<p class="rubric" id="id4">Parameters</p>
 <p>norm_dist : float
 Normalized Arclength (0 to 1), representing the progression along the reaction path.
 Calculated as xcoord2 = arcS[img] / arcS[nim-1].
@@ -213,9 +267,167 @@ Interpolated Energy at each point, calculated using cubic polynomial
 interpolation. The energy is calculated using the formula:
 p = a<em>pow(dx(ii), 3.0) + b</em>pow(dx(ii), 2.0) + c*dx(ii) + d,
 where a, b, c, and d are coefficients of the cubic polynomial.</p>
-<h2 class="rubric" id="id5">Notes</h2>
+<p class="rubric" id="id5">Notes</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">nebpath</span></code> namedtuple is used within the <code class="docutils literal notranslate"><span class="pre">nebiter</span></code> namedtuple to store
 detailed path information for each NEB iteration.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.DimerOpt">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">DimerOpt</span></span><a class="reference internal" href="../../_modules/chemparseplot/basetypes.html#DimerOpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.basetypes.DimerOpt" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.DimerOpt.saddle">
+<span class="sig-name descname"><span class="pre">saddle</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.DimerOpt.saddle" title="Link to this definition">¶</a></dt>
+<dd><p>‘dimer’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.DimerOpt.rot">
+<span class="sig-name descname"><span class="pre">rot</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.DimerOpt.rot" title="Link to this definition">¶</a></dt>
+<dd><p>‘lbfgs’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.DimerOpt.trans">
+<span class="sig-name descname"><span class="pre">trans</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.DimerOpt.trans" title="Link to this definition">¶</a></dt>
+<dd><p>‘lbfgs’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SpinID">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">SpinID</span></span><a class="reference internal" href="../../_modules/chemparseplot/basetypes.html#SpinID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.basetypes.SpinID" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SpinID.mol_id">
+<span class="sig-name descname"><span class="pre">mol_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SpinID.mol_id" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SpinID.spin">
+<span class="sig-name descname"><span class="pre">spin</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SpinID.spin" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.MolGeom">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">MolGeom</span></span><a class="reference internal" href="../../_modules/chemparseplot/basetypes.html#MolGeom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.basetypes.MolGeom" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.MolGeom.pos">
+<span class="sig-name descname"><span class="pre">pos</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.array</span></span><a class="headerlink" href="#chemparseplot.basetypes.MolGeom.pos" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.MolGeom.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.MolGeom.energy" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.MolGeom.forces">
+<span class="sig-name descname"><span class="pre">forces</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">numpy.array</span></span><a class="headerlink" href="#chemparseplot.basetypes.MolGeom.forces" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.basetypes.</span></span><span class="sig-name descname"><span class="pre">SaddleMeasure</span></span><a class="reference internal" href="../../_modules/chemparseplot/basetypes.html#SaddleMeasure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure" title="Link to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.pes_calls">
+<span class="sig-name descname"><span class="pre">pes_calls</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.pes_calls" title="Link to this definition">¶</a></dt>
+<dd><p>0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.iter_steps">
+<span class="sig-name descname"><span class="pre">iter_steps</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.iter_steps" title="Link to this definition">¶</a></dt>
+<dd><p>0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.tot_time">
+<span class="sig-name descname"><span class="pre">tot_time</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.14)"><span class="pre">datetime.timedelta</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.tot_time" title="Link to this definition">¶</a></dt>
+<dd><p>‘total_seconds(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.saddle_energy">
+<span class="sig-name descname"><span class="pre">saddle_energy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.saddle_energy" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.saddle_fmax">
+<span class="sig-name descname"><span class="pre">saddle_fmax</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.saddle_fmax" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.success">
+<span class="sig-name descname"><span class="pre">success</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.success" title="Link to this definition">¶</a></dt>
+<dd><p>False</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.method">
+<span class="sig-name descname"><span class="pre">method</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.method" title="Link to this definition">¶</a></dt>
+<dd><p>‘not run’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.dimer_rot">
+<span class="sig-name descname"><span class="pre">dimer_rot</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.dimer_rot" title="Link to this definition">¶</a></dt>
+<dd><p>‘n/a’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.dimer_trans">
+<span class="sig-name descname"><span class="pre">dimer_trans</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.dimer_trans" title="Link to this definition">¶</a></dt>
+<dd><p>‘n/a’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.init_energy">
+<span class="sig-name descname"><span class="pre">init_energy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.init_energy" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.barrier">
+<span class="sig-name descname"><span class="pre">barrier</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.barrier" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.mol_id">
+<span class="sig-name descname"><span class="pre">mol_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.mol_id" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.spin">
+<span class="sig-name descname"><span class="pre">spin</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.spin" title="Link to this definition">¶</a></dt>
+<dd><p>‘unknown’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.scf">
+<span class="sig-name descname"><span class="pre">scf</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.scf" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.basetypes.SaddleMeasure.termination_status">
+<span class="sig-name descname"><span class="pre">termination_status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.basetypes.SaddleMeasure.termination_status" title="Link to this definition">¶</a></dt>
+<dd><p>‘not set’</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -225,11 +437,11 @@ detailed path information for each NEB iteration.</p>
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="chemparseplot.plot._aids.html" title="Previous">
-    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot._aids</span></code>
+  <a class="prev" href="chemparseplot.units.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code>
   </a>
-  <a class="next" href="chemparseplot.units.html" title="Next">
-    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code> &rarr;
+  <a class="next" href="../../tutorials/index.html" title="Next">
+    Tutorial Introduction &rarr;
   </a>
   <div class="clear"></div>
     </nav>
@@ -240,7 +452,7 @@ detailed path information for each NEB iteration.</p>
   <div class="clear"></div>
 </div>
 <footer class="footer" role="contentinfo">
-    &copy; Copyright 2023-2024, Rohit Goswami.
+    &copy; Copyright 2023-2026, Rohit Goswami.
   
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.

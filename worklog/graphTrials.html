@@ -6,25 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Overview &#8212; chemparseplot 0.0.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=ffc13525" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <script src="../_static/documentation_options.js?v=e3a6060d"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"extensions": ["tex2jax.js"], "jax": ["input/TeX", "output/HTML-CSS"]})</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="canonical" href="https://haozeke.github.io/chemparseplot/worklog/graphTrials.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -81,7 +77,7 @@
 
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -89,7 +85,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
 <h3>Links</h3>
 <ul>
@@ -150,11 +146,11 @@
       
   <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">chemparseplot.plot.structs</span> <span class="kn">import</span> <span class="n">EnergyPath</span><span class="p">,</span> <span class="n">BasePlotter</span><span class="p">,</span> <span class="n">TwoDimPlot</span><span class="p">,</span> <span class="n">XYData</span>
-<span class="kn">from</span> <span class="nn">chemparseplot.plot.geomscan</span> <span class="kn">import</span> <span class="n">plot_energy_paths</span>
-<span class="kn">from</span> <span class="nn">chemparseplot.units</span> <span class="kn">import</span> <span class="n">ureg</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyPath</span><span class="p">,</span> <span class="n">BasePlotter</span><span class="p">,</span> <span class="n">TwoDimPlot</span><span class="p">,</span> <span class="n">XYData</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.geomscan</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_energy_paths</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
@@ -185,7 +181,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/230e496769b3a5058401ecd586f1d7746903307b337b7849a8c19164a80275b0.png" src="../_images/230e496769b3a5058401ecd586f1d7746903307b337b7849a8c19164a80275b0.png" />
+<img alt="../_images/449e4dca5f5980f9aa66b84c845cdd7d44bb95a2a86064bf8ba4c90458afb2ae.png" src="../_images/449e4dca5f5980f9aa66b84c845cdd7d44bb95a2a86064bf8ba4c90458afb2ae.png" />
 </div>
 </div>
 </section>
@@ -209,7 +205,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/53d006803c9a7d719eb35965afbf6272015207b8348defda1c5bfbeb29c7f8fc.png" src="../_images/53d006803c9a7d719eb35965afbf6272015207b8348defda1c5bfbeb29c7f8fc.png" />
+<img alt="../_images/62073818cafdb3bb5432df84dd7597746a00b3c2c7a350ee86ddbab717cdd22f.png" src="../_images/62073818cafdb3bb5432df84dd7597746a00b3c2c7a350ee86ddbab717cdd22f.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -220,7 +216,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/d66606f3ef7052e949426da53278ecb3e3b0b6858963de9244b8d3b2fa84ae17.png" src="../_images/d66606f3ef7052e949426da53278ecb3e3b0b6858963de9244b8d3b2fa84ae17.png" />
+<img alt="../_images/b61863c9816995d50b289d5330e36f6ac6b315cbfcb144a7b2d2b078c7c5f2dd.png" src="../_images/b61863c9816995d50b289d5330e36f6ac6b315cbfcb144a7b2d2b078c7c5f2dd.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -237,7 +233,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/7877cddcc82e8cc2f693ae05f35b64a8fca247cea01a615e095166ee42ed5192.png" src="../_images/7877cddcc82e8cc2f693ae05f35b64a8fca247cea01a615e095166ee42ed5192.png" />
+<img alt="../_images/87edce11d865518759a23e783b8c43a5fa26f85f2aa903f5261d7e79b5610fb4.png" src="../_images/87edce11d865518759a23e783b8c43a5fa26f85f2aa903f5261d7e79b5610fb4.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -247,7 +243,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html">4.762594898135798 angstrom</div></div>
+<div class="output text_html">4.762594894894945 angstrom</div></div>
 </div>
 </section>
 
@@ -266,7 +262,7 @@
   <div class="clear"></div>
 </div>
 <footer class="footer" role="contentinfo">
-    &copy; Copyright 2023-2024, Rohit Goswami.
+    &copy; Copyright 2023-2026, Rohit Goswami.
   
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.

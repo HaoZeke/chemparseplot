@@ -9,6 +9,30 @@
 
 ## Module Contents
 
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DimerOpt <chemparseplot.basetypes.DimerOpt>`
+  - ```{autodoc2-docstring} chemparseplot.basetypes.DimerOpt
+    :summary:
+    ```
+* - {py:obj}`SpinID <chemparseplot.basetypes.SpinID>`
+  - ```{autodoc2-docstring} chemparseplot.basetypes.SpinID
+    :summary:
+    ```
+* - {py:obj}`MolGeom <chemparseplot.basetypes.MolGeom>`
+  - ```{autodoc2-docstring} chemparseplot.basetypes.MolGeom
+    :summary:
+    ```
+* - {py:obj}`SaddleMeasure <chemparseplot.basetypes.SaddleMeasure>`
+  - ```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure
+    :summary:
+    ```
+````
+
 ### Data
 
 ````{list-table}
@@ -46,3 +70,288 @@
 ```
 
 ````
+
+`````{py:class} DimerOpt
+:canonical: chemparseplot.basetypes.DimerOpt
+
+```{autodoc2-docstring} chemparseplot.basetypes.DimerOpt
+```
+
+````{py:attribute} saddle
+:canonical: chemparseplot.basetypes.DimerOpt.saddle
+:type: str
+:value: >
+   'dimer'
+
+```{autodoc2-docstring} chemparseplot.basetypes.DimerOpt.saddle
+```
+
+````
+
+````{py:attribute} rot
+:canonical: chemparseplot.basetypes.DimerOpt.rot
+:type: str
+:value: >
+   'lbfgs'
+
+```{autodoc2-docstring} chemparseplot.basetypes.DimerOpt.rot
+```
+
+````
+
+````{py:attribute} trans
+:canonical: chemparseplot.basetypes.DimerOpt.trans
+:type: str
+:value: >
+   'lbfgs'
+
+```{autodoc2-docstring} chemparseplot.basetypes.DimerOpt.trans
+```
+
+````
+
+`````
+
+`````{py:class} SpinID
+:canonical: chemparseplot.basetypes.SpinID
+
+```{autodoc2-docstring} chemparseplot.basetypes.SpinID
+```
+
+````{py:attribute} mol_id
+:canonical: chemparseplot.basetypes.SpinID.mol_id
+:type: int
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SpinID.mol_id
+```
+
+````
+
+````{py:attribute} spin
+:canonical: chemparseplot.basetypes.SpinID.spin
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SpinID.spin
+```
+
+````
+
+`````
+
+`````{py:class} MolGeom
+:canonical: chemparseplot.basetypes.MolGeom
+
+```{autodoc2-docstring} chemparseplot.basetypes.MolGeom
+```
+
+````{py:attribute} pos
+:canonical: chemparseplot.basetypes.MolGeom.pos
+:type: numpy.array
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.MolGeom.pos
+```
+
+````
+
+````{py:attribute} energy
+:canonical: chemparseplot.basetypes.MolGeom.energy
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.MolGeom.energy
+```
+
+````
+
+````{py:attribute} forces
+:canonical: chemparseplot.basetypes.MolGeom.forces
+:type: numpy.array
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.MolGeom.forces
+```
+
+````
+
+`````
+
+`````{py:class} SaddleMeasure
+:canonical: chemparseplot.basetypes.SaddleMeasure
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure
+```
+
+````{py:attribute} pes_calls
+:canonical: chemparseplot.basetypes.SaddleMeasure.pes_calls
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.pes_calls
+```
+
+````
+
+````{py:attribute} iter_steps
+:canonical: chemparseplot.basetypes.SaddleMeasure.iter_steps
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.iter_steps
+```
+
+````
+
+````{py:attribute} tot_time
+:canonical: chemparseplot.basetypes.SaddleMeasure.tot_time
+:type: datetime.timedelta
+:value: >
+   'total_seconds(...)'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.tot_time
+```
+
+````
+
+````{py:attribute} saddle_energy
+:canonical: chemparseplot.basetypes.SaddleMeasure.saddle_energy
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.saddle_energy
+```
+
+````
+
+````{py:attribute} saddle_fmax
+:canonical: chemparseplot.basetypes.SaddleMeasure.saddle_fmax
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.saddle_fmax
+```
+
+````
+
+````{py:attribute} success
+:canonical: chemparseplot.basetypes.SaddleMeasure.success
+:type: bool
+:value: >
+   False
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.success
+```
+
+````
+
+````{py:attribute} method
+:canonical: chemparseplot.basetypes.SaddleMeasure.method
+:type: str
+:value: >
+   'not run'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.method
+```
+
+````
+
+````{py:attribute} dimer_rot
+:canonical: chemparseplot.basetypes.SaddleMeasure.dimer_rot
+:type: str
+:value: >
+   'n/a'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.dimer_rot
+```
+
+````
+
+````{py:attribute} dimer_trans
+:canonical: chemparseplot.basetypes.SaddleMeasure.dimer_trans
+:type: str
+:value: >
+   'n/a'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.dimer_trans
+```
+
+````
+
+````{py:attribute} init_energy
+:canonical: chemparseplot.basetypes.SaddleMeasure.init_energy
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.init_energy
+```
+
+````
+
+````{py:attribute} barrier
+:canonical: chemparseplot.basetypes.SaddleMeasure.barrier
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.barrier
+```
+
+````
+
+````{py:attribute} mol_id
+:canonical: chemparseplot.basetypes.SaddleMeasure.mol_id
+:type: int
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.mol_id
+```
+
+````
+
+````{py:attribute} spin
+:canonical: chemparseplot.basetypes.SaddleMeasure.spin
+:type: str
+:value: >
+   'unknown'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.spin
+```
+
+````
+
+````{py:attribute} scf
+:canonical: chemparseplot.basetypes.SaddleMeasure.scf
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.scf
+```
+
+````
+
+````{py:attribute} termination_status
+:canonical: chemparseplot.basetypes.SaddleMeasure.termination_status
+:type: str
+:value: >
+   'not set'
+
+```{autodoc2-docstring} chemparseplot.basetypes.SaddleMeasure.termination_status
+```
+
+````
+
+`````
