@@ -18,6 +18,7 @@ from scipy.interpolate import (
     splrep,
 )
 from scipy.signal import savgol_filter
+from scipy.spatial.distance import cdist
 
 log = logging.getLogger(__name__)
 
@@ -230,6 +231,35 @@ def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="w
     ax.axhline(0, color=grid_color, linestyle=":", linewidth=1.5, alpha=0.8, zorder=1)
 
 
+def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.15, dE=0.2, num_pts=8):
+    """
+    Creates a 'collar' of synthetic points around the endpoints and the global minimum.
+    This forces the RBF interpolator to curve upwards around these points, preventing
+    artificial wells (overshooting) where the physics dictates a minimum.
+    """
+    # Identify indices: Fixed Endpoints (0, -1) and Global Minimum
+    # Note: Using np.argmin on the whole array finds the global min.
+    indices = {0, len(z_data) - 1, np.argmin(z_data)}
+
+    aug_r, aug_p, aug_z = [rmsd_r], [rmsd_p], [z_data]
+
+    for idx in indices:
+        r0, p0, z0 = rmsd_r[idx], rmsd_p[idx], z_data[idx]
+
+        # Generate a ring of points
+        angles = np.linspace(0, 2 * np.pi, num_pts, endpoint=False)
+        ring_r = r0 + radius * np.cos(angles)
+        ring_p = p0 + radius * np.sin(angles)
+        # Force energy higher to create a bowl shape
+        ring_z = np.full_like(ring_r, z0 + dE)
+
+        aug_r.append(ring_r)
+        aug_p.append(ring_p)
+        aug_z.append(ring_z)
+
+    return np.concatenate(aug_r), np.concatenate(aug_p), np.concatenate(aug_z)
+
+
 def plot_landscape_surface(
     ax,
     rmsd_r,
@@ -240,23 +270,31 @@ def plot_landscape_surface(
     cmap="viridis",
     show_pts=True,
 ):
-    """Plots the 2D landscape surface using RBF or Grid interpolation."""
+    """
+    Plots the 2D landscape surface using RBF or Grid interpolation.
+
+    Automatically augments data around minima to enforce physical wells if using RBF.
+    """
     log.info(f"Generating 2D surface using {method}...")
 
     nx, ny = 150, 150
-    xg = np.linspace(rmsd_r.min(), rmsd_r.max(), nx)
-    yg = np.linspace(rmsd_p.min(), rmsd_p.max(), ny)
+    # Add buffer to grid
+    x_margin = (rmsd_r.max() - rmsd_r.min()) * 0.1
+    y_margin = (rmsd_p.max() - rmsd_p.min()) * 0.1
+    xg = np.linspace(rmsd_r.min() - x_margin, rmsd_r.max() + x_margin, nx)
+    yg = np.linspace(rmsd_p.min() - y_margin, rmsd_p.max() + y_margin, ny)
     xg, yg = np.meshgrid(xg, yg)
 
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
     else:
-        # RBF
-        pts = np.column_stack([rmsd_r.ravel(), rmsd_p.ravel()])
-        # Safety: Scipy RBFInterpolator crashes if smoothing is None. Default to 0.0.
+        # RBF with Physics-Informed Augmentation
+        r_train, p_train, z_train = _augment_minima_points(rmsd_r, rmsd_p, z_data)
+        pts = np.column_stack([r_train, p_train])
+
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
         rbf = RBFInterpolator(
-            pts, z_data.ravel(), kernel="thin_plate_spline", smoothing=safe_smooth
+            pts, z_train, kernel="thin_plate_spline", smoothing=safe_smooth
         )
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
