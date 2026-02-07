@@ -17,7 +17,7 @@ from scipy.interpolate import (
 )
 from scipy.signal import savgol_filter
 from scipy.spatial.distance import cdist
-from chemparseplot.plot._jax_aids import FastTPS
+from chemparseplot.plot._jax_aids import FastTPS, FastMatern
 
 log = logging.getLogger(__name__)
 
@@ -336,9 +336,7 @@ def plot_landscape_surface(
             vals = z_aug
 
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
-        rbf = RBFInterpolator(
-            pts, vals, kernel="thin_plate_spline", smoothing=safe_smooth
-        )
+        rbf = FastMatern(pts, vals, smoothing=safe_smooth, length_scale=rbf_smooth)
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
     try:
