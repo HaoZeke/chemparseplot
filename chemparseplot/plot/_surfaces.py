@@ -357,6 +357,60 @@ class GradientMatern:
         return jnp.concatenate(preds, axis=0) + self.e_mean
 
 
+# ==============================================================================
+# 4. Inverse Multiquadric (IMQ) kernel
+# ==============================================================================
+
+
+@jit
+def _imq_solve(x, y, sm, epsilon):
+    """Inverse Multiquadric: k(r) = 1 / sqrt(r^2 + epsilon^2)"""
+    d2 = jnp.sum((x[:, None, :] - x[None, :, :]) ** 2, axis=-1)
+    # Epsilon (length_scale) controls the width/shape
+    K = 1.0 / jnp.sqrt(d2 + epsilon**2)
+    K = K + jnp.eye(x.shape[0]) * sm
+
+    L = jnp.linalg.cholesky(K)
+    alpha = jnp.linalg.solve(L.T, jnp.linalg.solve(L, y))
+    return alpha
+
+
+@jit
+def _imq_predict(x_query, x_obs, alpha, epsilon):
+    d2 = jnp.sum((x_query[:, None, :] - x_obs[None, :, :]) ** 2, axis=-1)
+    K_q = 1.0 / jnp.sqrt(d2 + epsilon**2)
+    return K_q @ alpha
+
+
+class FastIMQ:
+    def __init__(self, x_obs, y_obs, smoothing=1e-3, length_scale=None, **kwargs):
+        self.x_obs = jnp.asarray(x_obs, dtype=jnp.float32)
+        self.y_obs = jnp.asarray(y_obs, dtype=jnp.float32)
+        self.y_mean = jnp.mean(self.y_obs)
+        y_centered = self.y_obs - self.y_mean
+
+        # For IMQ, length_scale acts as the shape parameter (epsilon)
+        if length_scale is None:
+            span = jnp.max(self.x_obs, axis=0) - jnp.min(self.x_obs, axis=0)
+            self.epsilon = (
+                jnp.mean(span) * 0.8
+            )  # Usually needs to be broader than Matern
+        else:
+            self.epsilon = length_scale
+
+        self.alpha = _imq_solve(self.x_obs, y_centered, smoothing, self.epsilon)
+
+    def __call__(self, x_query, chunk_size=500):
+        x_query = jnp.asarray(x_query, dtype=jnp.float32)
+        num_points = x_query.shape[0]
+        preds = []
+        for i in range(0, num_points, chunk_size):
+            chunk = x_query[i : i + chunk_size]
+            chunk_pred = _imq_predict(chunk, self.x_obs, self.alpha, self.epsilon)
+            preds.append(chunk_pred)
+        return jnp.concatenate(preds, axis=0) + self.y_mean
+
+
 # Factory for string-based instantiation
 def get_surface_model(name):
     if name == "grad_matern":
@@ -365,6 +419,8 @@ def get_surface_model(name):
         return FastTPS
     if name == "matern":
         return FastMatern
+    if name == "imq":
+        return FastIMQ
     if name == "rbf":
         return FastTPS  # Legacy default
     raise ValueError(f"Unknown surface model: {name}")
