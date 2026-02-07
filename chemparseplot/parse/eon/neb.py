@@ -1,24 +1,17 @@
-import glob
 import logging
-import re
-import sys
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import polars as pl
-from ase.io import read as ase_read
 from ase import Atoms
-from chemparseplot.parse.file_ import find_file_paths
+from ase.io import read as ase_read
+from typing import Callable
 
 try:
+    from rgpycrumbs._aux import _import_from_parent_env
     from rgpycrumbs.geom.api.alignment import (
-        align_structure_robust,
         calculate_rmsd_from_ref,
     )
-
-    # If the user script imports 'ira_mod' from parent env, we mimic that check here
-    from rgpycrumbs._aux import _import_from_parent_env
 
     ira_mod = _import_from_parent_env("ira_mod")
 except ImportError:
@@ -150,6 +143,8 @@ def aggregate_neb_landscape_data(
     def validate_landscape_cache(df: pl.DataFrame):
         if "p" not in df.columns:
             raise ValueError("Cache missing 'p' column.")
+        if "grad_r" not in df.columns:
+            raise ValueError("Cache missing gradient columns (outdated).")
 
     def compute_landscape_data() -> pl.DataFrame:
         all_dfs = []
@@ -171,17 +166,39 @@ def aggregate_neb_landscape_data(
                 z_data_step = path_data[y_data_column]
                 atoms_list_step = ase_read(con_file_step, index=":")
 
+                f_para_step = path_data[3]
+
                 _validate_data_atoms_match(z_data_step, atoms_list_step, dat_file.name)
 
                 rmsd_r, rmsd_p = calculate_landscape_coords(
                     atoms_list_step, ira_instance, ira_kmax
                 )
 
+                # --- Calculate Synthetic 2D Gradients ---
+                # Calculate tangent vectors (dr, dp) using central differences
+                dr = np.gradient(rmsd_r)
+                dp = np.gradient(rmsd_p)
+
+                # Normalize to get unit tangent vector
+                norm_ds = np.sqrt(dr**2 + dp**2)
+                norm_ds[norm_ds == 0] = 1.0  # Avoid div/0
+                tr = dr / norm_ds
+                tp = dp / norm_ds
+
+                # Project parallel force onto 2D components
+                # Gradient E = -Force.
+                # Since f_para is the force ALONG the path, the gradient vector
+                # is (-f_para) directed along the tangent (tr, tp).
+                grad_r = -f_para_step * tr
+                grad_p = -f_para_step * tp
+
                 all_dfs.append(
                     pl.DataFrame(
                         {
                             "r": rmsd_r,
                             "p": rmsd_p,
+                            "grad_r": grad_r,
+                            "grad_p": grad_p,
                             "z": z_data_step,
                             "step": int(step_idx),
                         }
@@ -192,7 +209,7 @@ def aggregate_neb_landscape_data(
                 continue
 
         if not all_dfs:
-            rerr = "No data could be aggregated from files."
+            rerr = "No data could be aggregated."
             raise RuntimeError(rerr)
 
         return pl.concat(all_dfs)
@@ -237,10 +254,11 @@ def compute_profile_rmsd(
         context_name="Profile RMSD",
     )
 
+
 def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     """
     Estimates a smoothing parameter for RBF interpolation.
-    
+
     Calculates the median Euclidean distance between sequential points in the path
     and uses 10% of that value as the smoothing factor.
     """
@@ -254,10 +272,10 @@ def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
         .with_columns(dist=(pl.col("dr") ** 2 + pl.col("dp") ** 2).sqrt())
         .drop_nulls()
     )
-    
+
     global_median_step = df_dist["dist"].median()
-    
+
     if global_median_step is None or global_median_step == 0:
         return 0.0
-        
+
     return 0.1 * global_median_step

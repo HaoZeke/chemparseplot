@@ -260,10 +260,35 @@ def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.15, dE=0.2, num_pts=
     return np.concatenate(aug_r), np.concatenate(aug_p), np.concatenate(aug_z)
 
 
+def _augment_with_gradients(r, p, z, gr, gp, epsilon=0.05):
+    """
+    Uses projected gradients to create helper points slightly offset from the path.
+    This effectively tells the RBF interpolator the local slope.
+    
+    Creates 4 helper points for every real point:
+      (r +/- eps, p) and (r, p +/- eps)
+    """
+    if gr is None or gp is None:
+        return r, p, z
+        
+    # Helper 1: Step in R
+    r1, p1, z1 = r + epsilon, p, z + epsilon * gr
+    r2, p2, z2 = r - epsilon, p, z - epsilon * gr
+    
+    # Helper 2: Step in P
+    r3, p3, z3 = r, p + epsilon, z + epsilon * gp
+    r4, p4, z4 = r, p - epsilon, z - epsilon * gp
+    
+    return (np.concatenate([r, r1, r2, r3, r4]),
+            np.concatenate([p, p1, p2, p3, p4]),
+            np.concatenate([z, z1, z2, z3, z4]))
+
 def plot_landscape_surface(
     ax,
     rmsd_r,
     rmsd_p,
+    grad_r,
+    grad_p,
     z_data,
     method="rbf",
     rbf_smooth=None,
@@ -288,13 +313,30 @@ def plot_landscape_surface(
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
     else:
-        # RBF with Physics-Informed Augmentation
-        r_train, p_train, z_train = _augment_minima_points(rmsd_r, rmsd_p, z_data)
-        pts = np.column_stack([r_train, p_train])
+        # 1. Minima Augmentation (Create Bowls)
+        r_aug, p_aug, z_aug = _augment_minima_points(rmsd_r, rmsd_p, z_data)
+        
+        # 2. Gradient Augmentation (Enforce Slope)
+        # We need to map the gradients to the augmented array, but since augmentation
+        # adds new points with unknown gradients, we strictly apply gradient augmentation
+        # ONLY to the original raw points first, then combine.
+        if grad_r is not None and grad_p is not None:
+             r_grad, p_grad, z_grad = _augment_with_gradients(rmsd_r, rmsd_p, z_data, grad_r, grad_p)
+             # Combine both augmented sets
+             # Note: r_aug includes the original points already, so we exclude index 0-N of r_grad
+             # to avoid duplicates, OR just combine them all (RBF handles close points fine with smoothing)
+             pts = np.column_stack([
+                 np.concatenate([r_aug, r_grad]),
+                 np.concatenate([p_aug, p_grad])
+             ])
+             vals = np.concatenate([z_aug, z_grad])
+        else:
+             pts = np.column_stack([r_aug, p_aug])
+             vals = z_aug
 
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
         rbf = RBFInterpolator(
-            pts, z_train, kernel="thin_plate_spline", smoothing=safe_smooth
+            pts, vals, kernel="thin_plate_spline", smoothing=safe_smooth
         )
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
