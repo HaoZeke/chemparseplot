@@ -283,7 +283,7 @@ def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     Estimates a smoothing parameter for RBF interpolation.
 
     Calculates the median Euclidean distance between sequential points in the path
-    and uses 10% of that value as the smoothing factor.
+    and uses that value as the smoothing factor.
     """
     # Calculate distances between sequential images (r, p) within each step
     df_dist = (
@@ -301,4 +301,4 @@ def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     if global_median_step is None or global_median_step == 0:
         return 0.0
 
-    return 0.1 * global_median_step
+    return global_median_step
