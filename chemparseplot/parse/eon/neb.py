@@ -204,6 +204,11 @@ def aggregate_neb_landscape_data(
     cache_file: Path | None = None,
     force_recompute: bool = False,
     ira_kmax: float = 1.8,
+    # Caching augmentation
+    augment_dat: str | None = None,
+    augment_con: str | None = None,
+    ref_atoms: Atoms | None = None,
+    prod_atoms: Atoms | None = None,
 ) -> pl.DataFrame:
     """Aggregates data from multiple NEB steps for landscape visualization."""
 
@@ -219,6 +224,19 @@ def aggregate_neb_landscape_data(
 
     def compute_landscape_data() -> pl.DataFrame:
         all_dfs = []
+        # --- Load Augmentation Data (Inside Cache Block) ---
+        if augment_dat and augment_con and ref_atoms and prod_atoms:
+            log.info(f"Loading augmentation data for cache: {augment_dat}")
+            df_aug = load_augmenting_neb_data(
+                augment_dat,
+                augment_con,
+                ref_atoms=ref_atoms,
+                prod_atoms=prod_atoms,
+                y_data_column=y_data_column,
+                ira_kmax=ira_kmax,
+            )
+            if not df_aug.is_empty():
+                 all_dfs.append(df_aug)
 
         # Synchronization check
         paths_dat = all_dat_paths
