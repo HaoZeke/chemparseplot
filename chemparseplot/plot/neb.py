@@ -253,9 +253,10 @@ def plot_landscape_surface(
     else:
         # RBF
         pts = np.column_stack([rmsd_r.ravel(), rmsd_p.ravel()])
-        # Default kernel is thin_plate_spline
+        # Safety: Scipy RBFInterpolator crashes if smoothing is None. Default to 0.0.
+        safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
         rbf = RBFInterpolator(
-            pts, z_data.ravel(), kernel="thin_plate_spline", smoothing=rbf_smooth
+            pts, z_data.ravel(), kernel="thin_plate_spline", smoothing=safe_smooth
         )
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
