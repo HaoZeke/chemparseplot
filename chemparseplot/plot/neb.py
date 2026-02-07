@@ -16,7 +16,7 @@ from scipy.interpolate import (
     splrep,
 )
 from scipy.signal import savgol_filter
-from scipy.spatial.distance import cdist
+
 from chemparseplot.plot._surfaces import get_surface_model
 
 log = logging.getLogger(__name__)
@@ -238,7 +238,7 @@ def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, dE=0.02, num_pts
     """
     # Explicitly handle endpoints to ensure they use their own energy
     indices = {0, len(z_data) - 1}
-    
+
     aug_r, aug_p, aug_z = [rmsd_r], [rmsd_p], [z_data]
 
     for idx in indices:
@@ -314,20 +314,20 @@ def plot_landscape_surface(
 
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
-        
+
     elif method == "grad_matern":
         # ---------------------------------------------------------
         # GRADIENT MATERN (Two-Step Optimization Strategy)
         # ---------------------------------------------------------
-        
+
         # Prepare Data
         pts = np.column_stack([rmsd_r, rmsd_p])
         vals = z_data
-        
+
         # Jitter helps prevent Cholesky crashes on duplicate points
         rng = np.random.default_rng(42)
         pts_jittered = pts + rng.normal(0, 1e-6, size=pts.shape)
-        
+
         if grad_r is not None:
             # Note: grad_r from processing is already a gradient (+). No flip needed.
             grad_stack = np.column_stack([grad_r, grad_p])
@@ -339,52 +339,60 @@ def plot_landscape_surface(
 
         # Subset Strategy for Hyperparameter Optimization
         best_ls = np.max(rmsd_r)
-        log.info(f"Initial length_scale: {best_ls:.4f} A")
-        
+        best_noise = safe_smooth
+        log.info(f"Initial length_scale: {best_ls:.4f} A, noise: {best_noise:.4f}")
+
         if step_data is not None:
             max_step = step_data.max()
-            is_final = (step_data == max_step)
-            
+            is_final = step_data == max_step
+
             # --- STEP A: Learn Physics on Final Path (Fast) ---
-            if np.sum(is_final) > 3: # Ensure we have enough points
+            if np.sum(is_final) > 3:  # Ensure we have enough points
                 log.info("Optimizing Length Scale on Final Path...")
-                
+
                 pts_final = pts_jittered[is_final]
                 vals_final = vals[is_final]
                 grads_final = grad_stack[is_final]
-                
+
                 # Run optimizer on subset
                 model_learner = ModelClass(
                     pts_final,
                     vals_final,
                     gradients=grads_final,
                     smoothing=safe_smooth,
-                    optimize=True
+                    optimize=True,
                 )
                 best_ls = model_learner.ls
-                log.info(f"Learned optimal length_scale: {best_ls:.4f} A")
-        
+                best_noise = model_learner.noise
+                log.info(
+                    f"Learned length_scale: {best_ls:.4f} A, noise: {best_noise:.4f}"
+                )
+
         # Downsampling for Full Visualization (CPU Speed Constraint)
         MAX_VIS_POINTS = 1000000
-        
+
         if len(pts) > MAX_VIS_POINTS and MAX_VIS_POINTS:
-            log.info(f"Downsampling history for visualization ({len(pts)} -> {MAX_VIS_POINTS})...")
-            
+            log.info(
+                f"Downsampling history for visualization ({len(pts)} -> {MAX_VIS_POINTS})..."
+            )
+
             if step_data is not None:
                 final_indices = np.where(step_data == step_data.max())[0]
                 history_indices = np.where(step_data != step_data.max())[0]
             else:
-                final_indices = np.arange(len(pts)-20, len(pts))
-                history_indices = np.arange(0, len(pts)-20)
-                
+                final_indices = np.arange(len(pts) - 20, len(pts))
+                history_indices = np.arange(0, len(pts) - 20)
+
             n_keep_history = MAX_VIS_POINTS - len(final_indices)
-            
+
             if n_keep_history > 0 and len(history_indices) > 0:
-                chosen_history = rng.choice(history_indices, size=n_keep_history, replace=False)
+                chosen_history = rng.choice(
+                    history_indices, size=n_keep_history, replace=False
+                )
                 keep_mask = np.concatenate([final_indices, chosen_history])
             else:
                 keep_mask = final_indices
-                
+
             pts_vis = pts_jittered[keep_mask]
             vals_vis = vals[keep_mask]
             grads_vis = grad_stack[keep_mask]
@@ -396,14 +404,14 @@ def plot_landscape_surface(
         # --- STEP B: Fit Surface (Fixed Hyperparams) ---
         log.info("Fitting final surface...")
         rbf = ModelClass(
-            pts_vis, 
-            vals_vis, 
-            gradients=grads_vis, 
-            smoothing=safe_smooth, 
+            pts_vis,
+            vals_vis,
+            gradients=grads_vis,
+            smoothing=best_noise,
             length_scale=best_ls,
-            optimize=False
+            optimize=False,
         )
-        
+
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
     else:
@@ -431,10 +439,10 @@ def plot_landscape_surface(
             vals = z_aug
 
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
-        
+
         # Instantiate (TPS ignores length_scale, Matern uses default)
         rbf = ModelClass(pts, vals, smoothing=safe_smooth, length_scale=1.0)
-        
+
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
     # --- Plotting ---
@@ -445,7 +453,9 @@ def plot_landscape_surface(
 
     # High-res contourf
     ax.contourf(xg, yg, zg, levels=100, cmap=colormap, alpha=0.75, zorder=10)
-    ax.contour(xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11)
+    ax.contour(
+        xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11
+    )
 
     if show_pts:
         # TODO(rg): will a user every want to control this?
@@ -455,7 +465,7 @@ def plot_landscape_surface(
             plot_r, plot_p = rmsd_r[mask], rmsd_p[mask]
         else:
             plot_r, plot_p = rmsd_r, rmsd_p
-            
+
         ax.scatter(plot_r, plot_p, c="k", s=12, marker=".", alpha=0.6, zorder=40)
 
 

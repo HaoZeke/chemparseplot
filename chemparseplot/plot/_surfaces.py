@@ -140,13 +140,15 @@ class FastMatern:
         """
         x_query = jnp.asarray(x_query, dtype=jnp.float32)
         num_points = x_query.shape[0]
-        
+
         preds = []
         for i in range(0, num_points, chunk_size):
             chunk = x_query[i : i + chunk_size]
-            chunk_pred = _matern_predict(chunk, self.x_obs, self.alpha, self.length_scale)
+            chunk_pred = _matern_predict(
+                chunk, self.x_obs, self.alpha, self.length_scale
+            )
             preds.append(chunk_pred)
-            
+
         return jnp.concatenate(preds, axis=0) + self.y_mean
 
 
@@ -207,31 +209,37 @@ k_matrix_map = vmap(vmap(full_covariance_block, (None, 0, None)), (0, None, None
 
 
 # --- Cost Function (Optimization of Length Scale) ---
-def negative_mll(log_params, x, y_flat, D_plus_1, noise_scalar):
+def negative_mll(log_params, x, y_flat, D_plus_1):
     """
-    Optimizes length_scale while keeping noise fixed (user supplied).
+    Optimizes length_scale and noise.
     """
     length_scale = jnp.exp(log_params[0])
+    noise_scalar = jnp.exp(log_params[1])
 
     # Build Kernel Matrix
     K_blocks = k_matrix_map(x, x, length_scale)
     N = x.shape[0]
     K_full = K_blocks.transpose(0, 2, 1, 3).reshape(N * D_plus_1, N * D_plus_1)
 
-    # Add Fixed Noise (Scalar applied to all dims)
-    # Adding epsilon jitter to diagonal for Cholesky stability
-    diag_noise = (noise_scalar + 1e-6) * jnp.eye(N * D_plus_1)
+    # Add Noise + Jitter
+    # Optimization needs more jitter (1e-4) to stay positive definite
+    diag_noise = (noise_scalar + 1e-4) * jnp.eye(N * D_plus_1)
     K_full = K_full + diag_noise
 
     # Factorize
+    # Using eigh (eigenvalues) is slower but safer than Cholesky for stability checks,
+    # but Cholesky is needed for speed. Crash/return Inf if it fails.
     L = jnp.linalg.cholesky(K_full)
 
-    # Compute Likelihood
+    # Compute Terms
     alpha = jnp.linalg.solve(L.T, jnp.linalg.solve(L, y_flat))
     data_fit = 0.5 * jnp.dot(y_flat, alpha)
     complexity = jnp.sum(jnp.log(jnp.diag(L)))
 
-    return jnp.squeeze(data_fit + complexity)
+    cost = data_fit + complexity
+
+    # Check for NaNs and return infinite cost if bad
+    return jnp.where(jnp.isnan(cost), 1e9, cost)
 
 
 @jit
@@ -296,28 +304,42 @@ class GradientMatern:
         D_plus_1 = self.x.shape[1] + 1
         self.smoothing = smoothing
 
-        # Heuristic Init
+        # --- Heuristics ---
         if length_scale is None:
             span = jnp.max(self.x, axis=0) - jnp.min(self.x, axis=0)
             init_ls = jnp.mean(span) * 0.5
         else:
             init_ls = length_scale
 
+        # Clamp initial noise to prevent log(0)
+        init_noise = max(smoothing, 1e-4)
+
         if optimize:
-            # Minimize negative MLL w.r.t length_scale
-            x0 = jnp.array([jnp.log(init_ls)])
+            # Optimize [log_ls, log_noise]
+            x0 = jnp.array([jnp.log(init_ls), jnp.log(init_noise)])
 
             def loss_fn(log_p):
-                return negative_mll(
-                    log_p, self.x, self.y_flat, D_plus_1, self.smoothing
-                )
+                return negative_mll(log_p, self.x, self.y_flat, D_plus_1)
 
             results = jopt.minimize(loss_fn, x0, method="BFGS", tol=1e-3)
-            self.ls = float(jnp.exp(results.x[0]))
+
+            # Unpack results safely
+            learned_ls = float(jnp.exp(results.x[0]))
+            learned_noise = float(jnp.exp(results.x[1]))
+
+            # Check for NaNs (optimization failure)
+            if jnp.isnan(learned_ls) or jnp.isnan(learned_noise):
+                print("Warning: Optimization failed (NaN). Reverting to heuristics.")
+                self.ls = init_ls
+                self.noise = init_noise
+            else:
+                self.ls = learned_ls
+                self.noise = learned_noise
         else:
             self.ls = init_ls
+            self.noise = init_noise
 
-        self.alpha = _grad_matern_solve(self.x, self.y_full, self.smoothing, self.ls)
+        self.alpha = _grad_matern_solve(self.x, self.y_full, self.noise, self.ls)
 
     def __call__(self, x_query, chunk_size=500):
         """
@@ -329,7 +351,6 @@ class GradientMatern:
         preds = []
         for i in range(0, num_points, chunk_size):
             chunk = x_query[i : i + chunk_size]
-            # _grad_matern_predict is JIT compiled, so this loop is just launching kernels
             chunk_pred = _grad_matern_predict(chunk, self.x, self.alpha, self.ls)
             preds.append(chunk_pred)
 
