@@ -2,7 +2,7 @@
 name = "chemparseplot"
 version = "0.0.2"
 description = "Parsers and plotting tools for computational chemistry."
-authors = ["Rohit Goswami <rog32@hi.is>"]
+authors = ["Rohit Goswami <rgoswami[at]ieee[dot]org>"]
 channels = ["conda-forge"]
 platforms = ["linux-64"]
 
