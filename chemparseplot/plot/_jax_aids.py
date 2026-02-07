@@ -122,3 +122,133 @@ class FastMatern:
             x_query, self.x_obs, self.alpha, self.length_scale
         )
         return pred_centered + self.y_mean
+
+# --- The Core Kernel (Scalar) ---
+def matern_kernel(x1, x2, length_scale=1.0):
+    d2 = jnp.sum((x1 - x2)**2)
+    r = jnp.sqrt(d2 + 1e-12)
+    sqrt5_r_l = jnp.sqrt(5.0) * r / length_scale
+    val = (1.0 + sqrt5_r_l + (5.0 * r**2) / (3.0 * length_scale**2)) * jnp.exp(-sqrt5_r_l)
+    return val
+
+# --- Auto-Diff the Kernel to get Gradient Covariances ---
+# This creates a function that returns the (D+1)x(D+1) covariance block
+# [ Cov(E, E)    Cov(E, dX)    Cov(E, dY) ]
+# [ Cov(dX, E)   Cov(dX, dX)   Cov(dX, dY) ]
+# [ Cov(dY, E)   Cov(dY, dX)   Cov(dY, dY) ]
+
+def full_covariance_block(x1, x2, length_scale):
+    # 0. Energy-Energy
+    k_ee = matern_kernel(x1, x2, length_scale)
+    
+    # 1. Energy-Gradient (Jacobian of kernel w.r.t x2)
+    k_ed = jax.grad(matern_kernel, argnums=1)(x1, x2, length_scale)
+    
+    # 2. Gradient-Energy (Jacobian of kernel w.r.t x1)
+    k_de = jax.grad(matern_kernel, argnums=0)(x1, x2, length_scale)
+    
+    # 3. Gradient-Gradient (Hessian of kernel w.r.t x1, x2)
+    # This captures how a slope at x1 correlates with a slope at x2
+    k_dd = jax.jacfwd(jax.grad(matern_kernel, argnums=1), argnums=0)(x1, x2, length_scale)
+    
+    # Assemble the block:
+    # Scalar k_ee, Vector k_ed, Vector k_de, Matrix k_dd
+    
+    # Top row: [E-E, E-dx, E-dy]
+    row1 = jnp.concatenate([k_ee[None], k_ed]) 
+    
+    # Bottom rows: [dx-E,  dx-dx, dx-dy]
+    #              [dy-E,  dy-dx, dy-dy]
+    row2 = jnp.concatenate([k_de[:, None], k_dd], axis=1)
+    
+    block = jnp.concatenate([row1[None, :], row2], axis=0)
+    return block
+
+# Vectorize to create the full matrix
+# maps over x1 (rows) and x2 (cols)
+k_matrix_map = vmap(vmap(full_covariance_block, (None, 0, None)), (0, None, None))
+
+@jit
+def _grad_matern_solve(x, y_full, sm, length_scale):
+    # x: (N, D)
+    # y_full: (N, D+1) -> flattens to (N*(D+1))
+    
+    # Build huge block matrix
+    # shape (N, N, D+1, D+1)
+    K_blocks = k_matrix_map(x, x, length_scale)
+    
+    N, _, D_plus_1, _ = K_blocks.shape
+    
+    # Reshape to 2D matrix (N*(D+1), N*(D+1))
+    K_full = K_blocks.transpose(0, 2, 1, 3).reshape(N*D_plus_1, N*D_plus_1)
+    
+    # Regularization (nugget)
+    # We might want less noise on energies than gradients, but uniform is fine for now
+    K_full = K_full + jnp.eye(N*D_plus_1) * sm
+    
+    # Flatten Targets
+    y_flat = y_full.flatten() # [E1, dx1, dy1, E2, dx2, dy2...]
+    
+    # Solve
+    L = jnp.linalg.cholesky(K_full)
+    alpha = jnp.linalg.solve(L.T, jnp.linalg.solve(L, y_flat))
+    
+    return alpha
+
+@jit
+def _grad_matern_predict(x_query, x_obs, alpha, length_scale):
+    # We only want Energy predictions (top row of the covariance blocks)
+    # But we depend on the full alpha vector (which includes gradient weights)
+    
+    # Get Energy-Energy and Energy-Gradient parts
+    # k_query_blocks shape: (M, N, 1, D+1)  <-- we only need the first row of the block
+    
+    def get_query_row(xq, xo):
+        # Cov(E_query, E_obs)
+        kee = matern_kernel(xq, xo, length_scale)
+        # Cov(E_query, Grad_obs)
+        ked = jax.grad(matern_kernel, argnums=1)(xq, xo, length_scale)
+        return jnp.concatenate([kee[None], ked])
+
+    # (M, N, D+1)
+    K_q = vmap(vmap(get_query_row, (None, 0)), (0, None))(x_query, x_obs)
+    
+    # Flatten last two dims to match alpha: (M, N*(D+1))
+    M, N, D_plus_1 = K_q.shape
+    K_q_flat = K_q.reshape(M, N*D_plus_1)
+    
+    return K_q_flat @ alpha
+
+class GradientMatern:
+    def __init__(self, x, y, gradients=None, smoothing=1e-4, length_scale=1.0, **kwargs):
+        """
+        x: (N, 2) array of coordinates
+        y: (N,) array of energies
+        gradients: (N, 2) array of forces (-grad V). 
+                   Note: The kernel expects gradients of the function. 
+                   If passing forces, flip sign if y is Potential Energy.
+        """
+        self.x = jnp.asarray(x, dtype=jnp.float32)
+        
+        # Prepare targets: [Energy, dE/dx, dE/dy] for each point
+        # Shape becomes (N, 3)
+        y_energies = jnp.asarray(y, dtype=jnp.float32)[:, None]
+        
+        if gradients is not None:
+            # Assumes gradients are passed as dE/dx (e.g. -Force)
+            grad_vals = jnp.asarray(gradients, dtype=jnp.float32)
+        else:
+            grad_vals = jnp.zeros_like(self.x)
+            
+        self.y_full = jnp.concatenate([y_energies, grad_vals], axis=1)
+        
+        # Center the energy mean (gradients have 0 mean typically)
+        self.e_mean = jnp.mean(y_energies)
+        self.y_full = self.y_full.at[:, 0].add(-self.e_mean)
+        
+        self.ls = length_scale
+        self.alpha = _grad_matern_solve(self.x, self.y_full, smoothing, self.ls)
+
+    def __call__(self, x_query):
+        x_q = jnp.asarray(x_query, dtype=jnp.float32)
+        return _grad_matern_predict(x_q, self.x, self.alpha, self.ls) + self.e_mean

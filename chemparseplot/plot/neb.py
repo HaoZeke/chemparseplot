@@ -336,7 +336,7 @@ def plot_landscape_surface(
             vals = z_aug
 
         safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
-        rbf = FastMatern(pts, vals, smoothing=safe_smooth, length_scale=rbf_smooth)
+        rbf = FastTPS(pts, vals, smoothing=safe_smooth)
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
     try:
