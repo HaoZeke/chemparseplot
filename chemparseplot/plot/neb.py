@@ -1,0 +1,306 @@
+import io
+import logging
+from collections import namedtuple
+from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
+import numpy as np
+from ase.io import write as ase_write
+from matplotlib.collections import LineCollection
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib.patches import ArrowStyle
+from scipy.interpolate import (
+    CubicHermiteSpline,
+    RBFInterpolator,
+    griddata,
+    splev,
+    splrep,
+)
+from scipy.signal import savgol_filter
+
+log = logging.getLogger(__name__)
+
+# --- Data Structures ---
+InsetImagePos = namedtuple("InsetImagePos", "x y rad")
+
+
+@dataclass
+class SmoothingParams:
+    window_length: int = 5
+    polyorder: int = 2
+
+
+MIN_PATH_LENGTH = 1e-6
+
+# --- Structure Rendering Helpers ---
+
+
+def render_structure_to_image(atoms, zoom, rotation):
+    """Renders an ASE atoms object to a numpy image array."""
+    buf = io.BytesIO()
+    ase_write(buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100)
+    buf.seek(0)
+    img_data = plt.imread(buf)
+    buf.close()
+    return img_data
+
+
+def plot_structure_strip(
+    ax,
+    atoms_list,
+    labels,
+    zoom=0.3,
+    rotation="0x,90y,0z",
+    theme_color="black",
+    max_cols=6,
+):
+    """Renders a horizontal gallery of atomic structures."""
+    ax.axis("off")
+    n_plot = len(atoms_list)
+    n_cols = min(n_plot, max_cols)
+    n_rows = (n_plot + max_cols - 1) // max_cols
+    row_step = 8.5
+
+    ax.set_xlim(-0.5, n_cols - 0.5)
+    # Heuristic layout from plt_neb.py
+    y_min = -((n_rows - 1) * row_step) - 0.8
+    y_max = 0.6
+    ax.set_ylim(y_min, y_max)
+
+    for i, atoms in enumerate(atoms_list):
+        col = i % max_cols
+        row = i // max_cols
+        x_pos, y_pos = col, -row * row_step
+
+        # Image generation
+        img_data = render_structure_to_image(atoms, zoom, rotation)
+
+        # Adjust zoom for strip
+        effective_zoom = zoom * 0.45
+        imagebox = OffsetImage(img_data, zoom=effective_zoom)
+
+        ab = AnnotationBbox(
+            imagebox,
+            (x_pos, y_pos),
+            frameon=False,
+            xycoords="data",
+            boxcoords="offset points",
+            pad=0.0,
+        )
+        ax.add_artist(ab)
+
+        if labels and i < len(labels):
+            ax.text(
+                x_pos,
+                y_pos - 0.8,
+                labels[i],
+                ha="center",
+                va="top",
+                fontsize=11,
+                color=theme_color,
+                fontweight="bold",
+            )
+
+
+def plot_structure_inset(
+    ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None
+):
+    """Plots a single structure as an annotation inset."""
+    img_data = render_structure_to_image(atoms, zoom, rotation)
+    imagebox = OffsetImage(img_data, zoom=zoom)
+
+    # Default arrow properties matching plt_neb.py
+    default_arrow = {
+        "arrowstyle": ArrowStyle.Fancy(head_length=0.4, head_width=0.4, tail_width=0.1),
+        "connectionstyle": f"arc3,rad={rad}",
+        "linestyle": "-",
+        "alpha": 0.8,
+        "color": "black",
+        "linewidth": 1.2,
+    }
+    if arrow_props:
+        default_arrow.update(arrow_props)
+
+    ab = AnnotationBbox(
+        imagebox,
+        (x, y),
+        xybox=xybox,
+        frameon=False,
+        xycoords="data",
+        boxcoords="offset points",
+        pad=0.1,
+        arrowprops=default_arrow,
+    )
+    ax.add_artist(ab)
+    ab.set_zorder(80)
+
+
+# --- Path Plotting Helpers ---
+
+
+def plot_energy_path(
+    ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None
+):
+    """Plots 1D energy profile with optional Hermite spline interpolation."""
+    if smoothing is None:
+        smoothing = SmoothingParams()
+
+    # Derivative is negative force
+    deriv = -f_para
+
+    try:
+        idx = np.argsort(rc)
+        rc_s = rc[idx]
+        e_s = energy[idx]
+
+        rc_min, rc_max = rc_s.min(), rc_s.max()
+        path_length = rc_max - rc_min
+
+        # Normalize
+        if path_length > MIN_PATH_LENGTH:
+            rc_norm = (rc_s - rc_min) / path_length
+        else:
+            rc_norm = rc_s
+
+        rc_fine_norm = np.linspace(0, 1, 300)
+
+        if method == "hermite":
+            deriv_smooth = savgol_filter(
+                deriv, smoothing.window_length, smoothing.polyorder
+            )
+            deriv_sorted = deriv_smooth[idx]
+            # Scale derivative to normalized coordinate
+            deriv_scaled = deriv_sorted * path_length
+
+            spline = CubicHermiteSpline(rc_norm, e_s, deriv_scaled)
+            y_fine = spline(rc_fine_norm)
+        else:
+            tck = splrep(rc_norm, e_s, k=3)
+            y_fine = splev(rc_fine_norm, tck)
+
+        x_fine = rc_fine_norm * path_length + rc_min
+
+        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder)
+        ax.plot(
+            rc,
+            energy,
+            marker="o",
+            ls="None",
+            color=color,
+            ms=6,
+            alpha=alpha,
+            zorder=zorder + 1,
+            markerfacecolor=color,
+            markeredgewidth=0.5,
+        )
+
+    except Exception as e:
+        log.warning(f"Spline failed ({e}), plotting raw lines.")
+        ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder)
+
+
+def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white"):
+    """Plots 1D eigenvalue profile."""
+    try:
+        idx = np.argsort(rc)
+        rc_s = rc[idx]
+        ev_s = eigenvalue[idx]
+    except ValueError:
+        rc_s, ev_s = rc, eigenvalue
+
+    # Standard spline
+    rc_fine = np.linspace(rc.min(), rc.max(), 300)
+    tck = splrep(rc_s, ev_s, k=3)
+    y_fine = splev(rc_fine, tck)
+
+    ax.plot(rc_fine, y_fine, color=color, alpha=alpha, zorder=zorder)
+    ax.plot(
+        rc,
+        eigenvalue,
+        marker="s",
+        ls="None",
+        color=color,
+        ms=6,
+        alpha=alpha,
+        zorder=zorder + 1,
+        markerfacecolor=color,
+        markeredgewidth=0.5,
+    )
+    ax.axhline(0, color=grid_color, linestyle=":", linewidth=1.5, alpha=0.8, zorder=1)
+
+
+def plot_landscape_surface(
+    ax,
+    rmsd_r,
+    rmsd_p,
+    z_data,
+    method="rbf",
+    rbf_smooth=None,
+    cmap="viridis",
+    show_pts=True,
+):
+    """Plots the 2D landscape surface using RBF or Grid interpolation."""
+    log.info(f"Generating 2D surface using {method}...")
+
+    nx, ny = 150, 150
+    xg = np.linspace(rmsd_r.min(), rmsd_r.max(), nx)
+    yg = np.linspace(rmsd_p.min(), rmsd_p.max(), ny)
+    xg, yg = np.meshgrid(xg, yg)
+
+    if method == "grid":
+        zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
+    else:
+        # RBF
+        pts = np.column_stack([rmsd_r.ravel(), rmsd_p.ravel()])
+        # Safety: Scipy RBFInterpolator crashes if smoothing is None. Default to 0.0.
+        safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
+        rbf = RBFInterpolator(
+            pts, z_data.ravel(), kernel="thin_plate_spline", smoothing=safe_smooth
+        )
+        zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
+
+    try:
+        colormap = plt.get_cmap(cmap)
+    except ValueError:
+        colormap = plt.get_cmap("viridis")
+
+    ax.contourf(xg, yg, zg, levels=20, cmap=colormap, alpha=0.75, zorder=10)
+
+    if show_pts:
+        ax.scatter(rmsd_r, rmsd_p, c="k", s=12, marker=".", alpha=0.6, zorder=40)
+
+
+def plot_landscape_path_overlay(ax, r, p, z, cmap, z_label):
+    """Overlays the colored path line on the landscape."""
+    points = np.array([r, p]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+    try:
+        colormap = plt.get_cmap(cmap)
+    except ValueError:
+        colormap = plt.get_cmap("viridis")
+
+    norm = plt.Normalize(z.min(), z.max())
+    lc = LineCollection(segments, cmap=colormap, norm=norm, zorder=30)
+
+    # Color segments by average Z of endpoints
+    lc.set_array((z[:-1] + z[1:]) / 2)
+    lc.set_linewidth(3)
+    ax.add_collection(lc)
+
+    ax.scatter(
+        r,
+        p,
+        c=z,
+        cmap=colormap,
+        norm=norm,
+        edgecolors="black",
+        linewidths=0.5,
+        zorder=40,
+    )
+
+    cb = ax.figure.colorbar(
+        plt.cm.ScalarMappable(norm=norm, cmap=colormap), ax=ax, label=z_label
+    )
+    return cb
