@@ -1,0 +1,189 @@
+# {py:mod}`chemparseplot.plot.neb`
+
+```{py:module} chemparseplot.plot.neb
+```
+
+```{autodoc2-docstring} chemparseplot.plot.neb
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`SmoothingParams <chemparseplot.plot.neb.SmoothingParams>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.SmoothingParams
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`render_structure_to_image <chemparseplot.plot.neb.render_structure_to_image>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.render_structure_to_image
+    :summary:
+    ```
+* - {py:obj}`plot_structure_strip <chemparseplot.plot.neb.plot_structure_strip>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
+    :summary:
+    ```
+* - {py:obj}`plot_structure_inset <chemparseplot.plot.neb.plot_structure_inset>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
+    :summary:
+    ```
+* - {py:obj}`plot_energy_path <chemparseplot.plot.neb.plot_energy_path>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_energy_path
+    :summary:
+    ```
+* - {py:obj}`plot_eigenvalue_path <chemparseplot.plot.neb.plot_eigenvalue_path>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_eigenvalue_path
+    :summary:
+    ```
+* - {py:obj}`plot_landscape_surface <chemparseplot.plot.neb.plot_landscape_surface>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface
+    :summary:
+    ```
+* - {py:obj}`plot_landscape_path_overlay <chemparseplot.plot.neb.plot_landscape_path_overlay>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.plot.neb.log>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.log
+    :summary:
+    ```
+* - {py:obj}`InsetImagePos <chemparseplot.plot.neb.InsetImagePos>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.InsetImagePos
+    :summary:
+    ```
+* - {py:obj}`MIN_PATH_LENGTH <chemparseplot.plot.neb.MIN_PATH_LENGTH>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.MIN_PATH_LENGTH
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.plot.neb.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.neb.log
+```
+
+````
+
+````{py:data} InsetImagePos
+:canonical: chemparseplot.plot.neb.InsetImagePos
+:value: >
+   'namedtuple(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.neb.InsetImagePos
+```
+
+````
+
+`````{py:class} SmoothingParams
+:canonical: chemparseplot.plot.neb.SmoothingParams
+
+```{autodoc2-docstring} chemparseplot.plot.neb.SmoothingParams
+```
+
+````{py:attribute} window_length
+:canonical: chemparseplot.plot.neb.SmoothingParams.window_length
+:type: int
+:value: >
+   5
+
+```{autodoc2-docstring} chemparseplot.plot.neb.SmoothingParams.window_length
+```
+
+````
+
+````{py:attribute} polyorder
+:canonical: chemparseplot.plot.neb.SmoothingParams.polyorder
+:type: int
+:value: >
+   2
+
+```{autodoc2-docstring} chemparseplot.plot.neb.SmoothingParams.polyorder
+```
+
+````
+
+`````
+
+````{py:data} MIN_PATH_LENGTH
+:canonical: chemparseplot.plot.neb.MIN_PATH_LENGTH
+:value: >
+   1e-06
+
+```{autodoc2-docstring} chemparseplot.plot.neb.MIN_PATH_LENGTH
+```
+
+````
+
+````{py:function} render_structure_to_image(atoms, zoom, rotation)
+:canonical: chemparseplot.plot.neb.render_structure_to_image
+
+```{autodoc2-docstring} chemparseplot.plot.neb.render_structure_to_image
+```
+````
+
+````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6)
+:canonical: chemparseplot.plot.neb.plot_structure_strip
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
+```
+````
+
+````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None)
+:canonical: chemparseplot.plot.neb.plot_structure_inset
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
+```
+````
+
+````{py:function} plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method='hermite', smoothing=None)
+:canonical: chemparseplot.plot.neb.plot_energy_path
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_energy_path
+```
+````
+
+````{py:function} plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color='white')
+:canonical: chemparseplot.plot.neb.plot_eigenvalue_path
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_eigenvalue_path
+```
+````
+
+````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, z_data, method='rbf', rbf_smooth=None, cmap='viridis', show_pts=True)
+:canonical: chemparseplot.plot.neb.plot_landscape_surface
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface
+```
+````
+
+````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label)
+:canonical: chemparseplot.plot.neb.plot_landscape_path_overlay
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
+```
+````

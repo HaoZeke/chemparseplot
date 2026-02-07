@@ -1,0 +1,53 @@
+# {py:mod}`chemparseplot.parse.file_`
+
+```{py:module} chemparseplot.parse.file_
+```
+
+```{autodoc2-docstring} chemparseplot.parse.file_
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`find_file_paths <chemparseplot.parse.file_.find_file_paths>`
+  - ```{autodoc2-docstring} chemparseplot.parse.file_.find_file_paths
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.file_.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.file_.log
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.file_.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.file_.log
+```
+
+````
+
+````{py:function} find_file_paths(file_pattern: str) -> list[pathlib.Path]
+:canonical: chemparseplot.parse.file_.find_file_paths
+
+```{autodoc2-docstring} chemparseplot.parse.file_.find_file_paths
+```
+````

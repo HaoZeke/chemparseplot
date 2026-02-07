@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chemparseplot.plot.neb &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/_modules/chemparseplot/plot/neb.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../../index.html">Module code</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.plot.neb</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <h1>Source code for chemparseplot.plot.neb</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patheffects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">path_effects</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ase.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">write</span> <span class="k">as</span> <span class="n">ase_write</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineCollection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.offsetbox</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnnotationBbox</span><span class="p">,</span> <span class="n">OffsetImage</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrowStyle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CubicHermiteSpline</span><span class="p">,</span>
+    <span class="n">RBFInterpolator</span><span class="p">,</span>
+    <span class="n">griddata</span><span class="p">,</span>
+    <span class="n">splev</span><span class="p">,</span>
+    <span class="n">splrep</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">savgol_filter</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># --- Data Structures ---</span>
+<span class="n">InsetImagePos</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;InsetImagePos&quot;</span><span class="p">,</span> <span class="s2">&quot;x y rad&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SmoothingParams">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.SmoothingParams">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SmoothingParams</span><span class="p">:</span>
+    <span class="n">window_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">polyorder</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
+
+<span class="n">MIN_PATH_LENGTH</span> <span class="o">=</span> <span class="mf">1e-6</span>
+
+<span class="c1"># --- Structure Rendering Helpers ---</span>
+
+
+<div class="viewcode-block" id="render_structure_to_image">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.render_structure_to_image">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">render_structure_to_image</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">rotation</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders an ASE atoms object to a numpy image array.&quot;&quot;&quot;</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+    <span class="n">ase_write</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span> <span class="n">show_unit_cell</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">img_data</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+    <span class="n">buf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">img_data</span></div>
+
+
+
+<div class="viewcode-block" id="plot_structure_strip">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_structure_strip">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_structure_strip</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">,</span>
+    <span class="n">atoms_list</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">zoom</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="n">rotation</span><span class="o">=</span><span class="s2">&quot;0x,90y,0z&quot;</span><span class="p">,</span>
+    <span class="n">theme_color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="n">max_cols</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Renders a horizontal gallery of atomic structures.&quot;&quot;&quot;</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">n_plot</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms_list</span><span class="p">)</span>
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_plot</span><span class="p">,</span> <span class="n">max_cols</span><span class="p">)</span>
+    <span class="n">n_rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_plot</span> <span class="o">+</span> <span class="n">max_cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">max_cols</span>
+    <span class="n">row_step</span> <span class="o">=</span> <span class="mf">8.5</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_cols</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="c1"># Heuristic layout from plt_neb.py</span>
+    <span class="n">y_min</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="n">n_rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">row_step</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.8</span>
+    <span class="n">y_max</span> <span class="o">=</span> <span class="mf">0.6</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atoms</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms_list</span><span class="p">):</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="n">max_cols</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">i</span> <span class="o">//</span> <span class="n">max_cols</span>
+        <span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span> <span class="o">=</span> <span class="n">col</span><span class="p">,</span> <span class="o">-</span><span class="n">row</span> <span class="o">*</span> <span class="n">row_step</span>
+
+        <span class="c1"># Image generation</span>
+        <span class="n">img_data</span> <span class="o">=</span> <span class="n">render_structure_to_image</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+
+        <span class="c1"># Adjust zoom for strip</span>
+        <span class="n">effective_zoom</span> <span class="o">=</span> <span class="n">zoom</span> <span class="o">*</span> <span class="mf">0.45</span>
+        <span class="n">imagebox</span> <span class="o">=</span> <span class="n">OffsetImage</span><span class="p">(</span><span class="n">img_data</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">effective_zoom</span><span class="p">)</span>
+
+        <span class="n">ab</span> <span class="o">=</span> <span class="n">AnnotationBbox</span><span class="p">(</span>
+            <span class="n">imagebox</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span><span class="p">),</span>
+            <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">xycoords</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+            <span class="n">boxcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+            <span class="n">pad</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">labels</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                <span class="n">x_pos</span><span class="p">,</span>
+                <span class="n">y_pos</span> <span class="o">-</span> <span class="mf">0.8</span><span class="p">,</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+                <span class="n">fontsize</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="n">theme_color</span><span class="p">,</span>
+                <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_structure_inset">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_structure_inset">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_structure_inset</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xybox</span><span class="p">,</span> <span class="n">rad</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="s2">&quot;0x,90y,0z&quot;</span><span class="p">,</span> <span class="n">arrow_props</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots a single structure as an annotation inset.&quot;&quot;&quot;</span>
+    <span class="n">img_data</span> <span class="o">=</span> <span class="n">render_structure_to_image</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+    <span class="n">imagebox</span> <span class="o">=</span> <span class="n">OffsetImage</span><span class="p">(</span><span class="n">img_data</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">zoom</span><span class="p">)</span>
+
+    <span class="c1"># Default arrow properties matching plt_neb.py</span>
+    <span class="n">default_arrow</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;arrowstyle&quot;</span><span class="p">:</span> <span class="n">ArrowStyle</span><span class="o">.</span><span class="n">Fancy</span><span class="p">(</span><span class="n">head_length</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">tail_width</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="s2">&quot;connectionstyle&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;arc3,rad=</span><span class="si">{</span><span class="n">rad</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">arrow_props</span><span class="p">:</span>
+        <span class="n">default_arrow</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">arrow_props</span><span class="p">)</span>
+
+    <span class="n">ab</span> <span class="o">=</span> <span class="n">AnnotationBbox</span><span class="p">(</span>
+        <span class="n">imagebox</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+        <span class="n">xybox</span><span class="o">=</span><span class="n">xybox</span><span class="p">,</span>
+        <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">xycoords</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+        <span class="n">boxcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+        <span class="n">pad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">arrowprops</span><span class="o">=</span><span class="n">default_arrow</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">add_artist</span><span class="p">(</span><span class="n">ab</span><span class="p">)</span>
+    <span class="n">ab</span><span class="o">.</span><span class="n">set_zorder</span><span class="p">(</span><span class="mi">80</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --- Path Plotting Helpers ---</span>
+
+
+<div class="viewcode-block" id="plot_energy_path">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_energy_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_energy_path</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">f_para</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;hermite&quot;</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots 1D energy profile with optional Hermite spline interpolation.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">smoothing</span> <span class="o">=</span> <span class="n">SmoothingParams</span><span class="p">()</span>
+
+    <span class="c1"># Derivative is negative force</span>
+    <span class="n">deriv</span> <span class="o">=</span> <span class="o">-</span><span class="n">f_para</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+        <span class="n">rc_s</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">e_s</span> <span class="o">=</span> <span class="n">energy</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">rc_min</span><span class="p">,</span> <span class="n">rc_max</span> <span class="o">=</span> <span class="n">rc_s</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">rc_s</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="n">path_length</span> <span class="o">=</span> <span class="n">rc_max</span> <span class="o">-</span> <span class="n">rc_min</span>
+
+        <span class="c1"># Normalize</span>
+        <span class="k">if</span> <span class="n">path_length</span> <span class="o">&gt;</span> <span class="n">MIN_PATH_LENGTH</span><span class="p">:</span>
+            <span class="n">rc_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">rc_s</span> <span class="o">-</span> <span class="n">rc_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">path_length</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rc_norm</span> <span class="o">=</span> <span class="n">rc_s</span>
+
+        <span class="n">rc_fine_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;hermite&quot;</span><span class="p">:</span>
+            <span class="n">deriv_smooth</span> <span class="o">=</span> <span class="n">savgol_filter</span><span class="p">(</span>
+                <span class="n">deriv</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">.</span><span class="n">window_length</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">.</span><span class="n">polyorder</span>
+            <span class="p">)</span>
+            <span class="n">deriv_sorted</span> <span class="o">=</span> <span class="n">deriv_smooth</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="c1"># Scale derivative to normalized coordinate</span>
+            <span class="n">deriv_scaled</span> <span class="o">=</span> <span class="n">deriv_sorted</span> <span class="o">*</span> <span class="n">path_length</span>
+
+            <span class="n">spline</span> <span class="o">=</span> <span class="n">CubicHermiteSpline</span><span class="p">(</span><span class="n">rc_norm</span><span class="p">,</span> <span class="n">e_s</span><span class="p">,</span> <span class="n">deriv_scaled</span><span class="p">)</span>
+            <span class="n">y_fine</span> <span class="o">=</span> <span class="n">spline</span><span class="p">(</span><span class="n">rc_fine_norm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tck</span> <span class="o">=</span> <span class="n">splrep</span><span class="p">(</span><span class="n">rc_norm</span><span class="p">,</span> <span class="n">e_s</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">y_fine</span> <span class="o">=</span> <span class="n">splev</span><span class="p">(</span><span class="n">rc_fine_norm</span><span class="p">,</span> <span class="n">tck</span><span class="p">)</span>
+
+        <span class="n">x_fine</span> <span class="o">=</span> <span class="n">rc_fine_norm</span> <span class="o">*</span> <span class="n">path_length</span> <span class="o">+</span> <span class="n">rc_min</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_fine</span><span class="p">,</span> <span class="n">y_fine</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">rc</span><span class="p">,</span>
+            <span class="n">energy</span><span class="p">,</span>
+            <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+            <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">ms</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+            <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">markerfacecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+            <span class="n">markeredgewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spline failed (</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">), plotting raw lines.&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rc</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_eigenvalue_path">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_eigenvalue_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_eigenvalue_path</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">eigenvalue</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="p">,</span> <span class="n">grid_color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots 1D eigenvalue profile.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+        <span class="n">rc_s</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">ev_s</span> <span class="o">=</span> <span class="n">eigenvalue</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">rc_s</span><span class="p">,</span> <span class="n">ev_s</span> <span class="o">=</span> <span class="n">rc</span><span class="p">,</span> <span class="n">eigenvalue</span>
+
+    <span class="c1"># Standard spline</span>
+    <span class="n">rc_fine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">rc</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">rc</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">300</span><span class="p">)</span>
+    <span class="n">tck</span> <span class="o">=</span> <span class="n">splrep</span><span class="p">(</span><span class="n">rc_s</span><span class="p">,</span> <span class="n">ev_s</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">y_fine</span> <span class="o">=</span> <span class="n">splev</span><span class="p">(</span><span class="n">rc_fine</span><span class="p">,</span> <span class="n">tck</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rc_fine</span><span class="p">,</span> <span class="n">y_fine</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">rc</span><span class="p">,</span>
+        <span class="n">eigenvalue</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span>
+        <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+        <span class="n">ms</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+        <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">markerfacecolor</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+        <span class="n">markeredgewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">grid_color</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_landscape_surface">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_landscape_surface">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_landscape_surface</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">,</span>
+    <span class="n">rmsd_r</span><span class="p">,</span>
+    <span class="n">rmsd_p</span><span class="p">,</span>
+    <span class="n">z_data</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;rbf&quot;</span><span class="p">,</span>
+    <span class="n">rbf_smooth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
+    <span class="n">show_pts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots the 2D landscape surface using RBF or Grid interpolation.&quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating 2D surface using </span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+    <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">150</span>
+    <span class="n">xg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">rmsd_r</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">rmsd_r</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="n">yg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">rmsd_p</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">rmsd_p</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">ny</span><span class="p">)</span>
+    <span class="n">xg</span><span class="p">,</span> <span class="n">yg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">xg</span><span class="p">,</span> <span class="n">yg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span>
+        <span class="n">zg</span> <span class="o">=</span> <span class="n">griddata</span><span class="p">((</span><span class="n">rmsd_r</span><span class="p">,</span> <span class="n">rmsd_p</span><span class="p">),</span> <span class="n">z_data</span><span class="p">,</span> <span class="p">(</span><span class="n">xg</span><span class="p">,</span> <span class="n">yg</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># RBF</span>
+        <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">rmsd_r</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">rmsd_p</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+        <span class="c1"># Safety: Scipy RBFInterpolator crashes if smoothing is None. Default to 0.0.</span>
+        <span class="n">safe_smooth</span> <span class="o">=</span> <span class="n">rbf_smooth</span> <span class="k">if</span> <span class="n">rbf_smooth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">rbf</span> <span class="o">=</span> <span class="n">RBFInterpolator</span><span class="p">(</span>
+            <span class="n">pts</span><span class="p">,</span> <span class="n">z_data</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;thin_plate_spline&quot;</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="n">safe_smooth</span>
+        <span class="p">)</span>
+        <span class="n">zg</span> <span class="o">=</span> <span class="n">rbf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">xg</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">yg</span><span class="o">.</span><span class="n">ravel</span><span class="p">()]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xg</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">xg</span><span class="p">,</span> <span class="n">yg</span><span class="p">,</span> <span class="n">zg</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show_pts</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">rmsd_r</span><span class="p">,</span> <span class="n">rmsd_p</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_landscape_path_overlay">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.plot.neb.html#chemparseplot.plot.neb.plot_landscape_path_overlay">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_landscape_path_overlay</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">z_label</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Overlays the colored path line on the landscape.&quot;&quot;&quot;</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">points</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="mi">1</span><span class="p">:]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">z</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+    <span class="n">lc</span> <span class="o">=</span> <span class="n">LineCollection</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+    <span class="c1"># Color segments by average Z of endpoints</span>
+    <span class="n">lc</span><span class="o">.</span><span class="n">set_array</span><span class="p">((</span><span class="n">z</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">lc</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">lc</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">r</span><span class="p">,</span>
+        <span class="n">p</span><span class="p">,</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">z</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span>
+        <span class="n">edgecolors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+        <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">zorder</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">colormap</span><span class="p">),</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">z_label</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">cb</span></div>
+
+</pre></div>
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2026, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+</footer>
+  </body>
+</html>
