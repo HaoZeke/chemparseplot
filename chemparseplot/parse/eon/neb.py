@@ -148,6 +148,54 @@ def load_structures_and_calculate_additional_rmsd(
     return atoms_list, additional_atoms_data, sp_data
 
 
+def _process_single_path_step(
+    dat_file,
+    con_file,
+    y_data_column,
+    ira_instance,
+    ira_kmax,
+    step_idx,
+    ref_atoms=None,
+    prod_atoms=None,
+):
+    """Helper to process a single .dat/.con pair into a DataFrame row."""
+    path_data = np.loadtxt(dat_file, skiprows=1).T
+    z_data_step = path_data[y_data_column]
+    atoms_list_step = ase_read(con_file, index=":")
+    f_para_step = path_data[3]
+
+    _validate_data_atoms_match(z_data_step, atoms_list_step, dat_file.name)
+
+    # If ref/prod not provided, assume self-contained NEB (0=Ref, -1=Prod)
+    # If provided (augmentation mode), use them.
+    ref = ref_atoms if ref_atoms is not None else atoms_list_step[0]
+    prod = prod_atoms if prod_atoms is not None else atoms_list_step[-1]
+
+    rmsd_r = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax)
+    rmsd_p = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax)
+
+    # --- Calculate Synthetic 2D Gradients ---
+    dr = np.gradient(rmsd_r)
+    dp = np.gradient(rmsd_p)
+    norm_ds = np.sqrt(dr**2 + dp**2)
+    norm_ds[norm_ds == 0] = 1.0
+    tr = dr / norm_ds
+    tp = dp / norm_ds
+    grad_r = -f_para_step * tr
+    grad_p = -f_para_step * tp
+
+    return pl.DataFrame(
+        {
+            "r": rmsd_r,
+            "p": rmsd_p,
+            "grad_r": grad_r,
+            "grad_p": grad_p,
+            "z": z_data_step,
+            "step": int(step_idx),
+        }
+    )
+
+
 def aggregate_neb_landscape_data(
     all_dat_paths: list[Path],
     all_con_paths: list[Path],
@@ -185,48 +233,15 @@ def aggregate_neb_landscape_data(
             zip(paths_dat, paths_con, strict=True)
         ):
             try:
-                path_data = np.loadtxt(dat_file, skiprows=1).T
-                z_data_step = path_data[y_data_column]
-                atoms_list_step = ase_read(con_file_step, index=":")
-
-                f_para_step = path_data[3]
-
-                _validate_data_atoms_match(z_data_step, atoms_list_step, dat_file.name)
-
-                rmsd_r, rmsd_p = calculate_landscape_coords(
-                    atoms_list_step, ira_instance, ira_kmax
+                df_step = _process_single_path_step(
+                    dat_file,
+                    con_file_step,
+                    y_data_column,
+                    ira_instance,
+                    ira_kmax,
+                    step_idx,
                 )
-
-                # --- Calculate Synthetic 2D Gradients ---
-                # Calculate tangent vectors (dr, dp) using central differences
-                dr = np.gradient(rmsd_r)
-                dp = np.gradient(rmsd_p)
-
-                # Normalize to get unit tangent vector
-                norm_ds = np.sqrt(dr**2 + dp**2)
-                norm_ds[norm_ds == 0] = 1.0  # Avoid div/0
-                tr = dr / norm_ds
-                tp = dp / norm_ds
-
-                # Project parallel force onto 2D components
-                # Gradient E = -Force.
-                # Since f_para is the force ALONG the path, the gradient vector
-                # is (-f_para) directed along the tangent (tr, tp).
-                grad_r = -f_para_step * tr
-                grad_p = -f_para_step * tp
-
-                all_dfs.append(
-                    pl.DataFrame(
-                        {
-                            "r": rmsd_r,
-                            "p": rmsd_p,
-                            "grad_r": grad_r,
-                            "grad_p": grad_p,
-                            "z": z_data_step,
-                            "step": int(step_idx),
-                        }
-                    )
-                )
+                all_dfs.append(df_step)
             except Exception as e:
                 log.warning(f"Failed to process step {step_idx} ({dat_file.name}): {e}")
                 continue
@@ -244,6 +259,57 @@ def aggregate_neb_landscape_data(
         computation_callback=compute_landscape_data,
         context_name="Landscape",
     )
+
+
+def load_augmenting_neb_data(
+    dat_pattern: str,
+    con_pattern: str,
+    ref_atoms: Atoms,
+    prod_atoms: Atoms,
+    y_data_column: int,
+    ira_kmax: float,
+) -> pl.DataFrame:
+    """
+    Loads external NEB paths (dat+con) to augment the landscape fit.
+    Forces projection onto the MAIN path's R/P coordinates.
+    """
+    from chemparseplot.parse.file_ import find_file_paths
+
+    dat_paths = find_file_paths(dat_pattern)
+    con_paths = find_file_paths(con_pattern)
+
+    if not dat_paths or not con_paths:
+        log.warning("Augmentation patterns did not match files.")
+        return pl.DataFrame()
+
+    # Sync lengths
+    min_len = min(len(dat_paths), len(con_paths))
+    dat_paths = dat_paths[:min_len]
+    con_paths = con_paths[:min_len]
+
+    log.info(f"Augmenting with {min_len} external paths...")
+
+    all_dfs = []
+    ira_instance = ira_mod.IRA() if ira_mod else None
+
+    for i, (d, c) in enumerate(zip(dat_paths, con_paths)):
+        try:
+            # Step -1 indicates 'background/augmented' data
+            df = _process_single_path_step(
+                d,
+                c,
+                y_data_column,
+                ira_instance,
+                ira_kmax,
+                -1,
+                ref_atoms=ref_atoms,
+                prod_atoms=prod_atoms,
+            )
+            all_dfs.append(df)
+        except Exception as e:
+            log.warning(f"Failed to load augmentation pair {d.name}: {e}")
+
+    return pl.concat(all_dfs) if all_dfs else pl.DataFrame()
 
 
 def compute_profile_rmsd(
