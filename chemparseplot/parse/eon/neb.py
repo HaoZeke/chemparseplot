@@ -1,11 +1,11 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
 import polars as pl
 from ase import Atoms
 from ase.io import read as ase_read
-from typing import Callable
 
 try:
     from rgpycrumbs._aux import _import_from_parent_env
