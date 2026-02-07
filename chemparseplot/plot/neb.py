@@ -11,13 +11,13 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
 from scipy.interpolate import (
     CubicHermiteSpline,
-    RBFInterpolator,
     griddata,
     splev,
     splrep,
 )
 from scipy.signal import savgol_filter
 from scipy.spatial.distance import cdist
+from chemparseplot.plot._jax_aids import FastTPS
 
 log = logging.getLogger(__name__)
 
