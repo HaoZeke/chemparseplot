@@ -291,6 +291,7 @@ def plot_landscape_surface(
     grad_r,
     grad_p,
     z_data,
+    step_data=None,
     method="rbf",
     rbf_smooth=None,
     cmap="viridis",
@@ -349,7 +350,15 @@ def plot_landscape_surface(
     ax.contour(xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11)
 
     if show_pts:
-        ax.scatter(rmsd_r, rmsd_p, c="k", s=12, marker=".", alpha=0.6, zorder=40)
+        # TODO(rg): will a user every want to control this?
+        # Filter: Only show points that are NOT augmented (step != -1)
+        if step_data is not None:
+            mask = step_data != -1
+            plot_r, plot_p = rmsd_r[mask], rmsd_p[mask]
+        else:
+            plot_r, plot_p = rmsd_r, rmsd_p
+            
+        ax.scatter(plot_r, plot_p, c="k", s=12, marker=".", alpha=0.6, zorder=40)
 
 
 def plot_landscape_path_overlay(ax, r, p, z, cmap, z_label):
