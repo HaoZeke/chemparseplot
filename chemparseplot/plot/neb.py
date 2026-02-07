@@ -230,16 +230,15 @@ def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="w
     ax.axhline(0, color=grid_color, linestyle=":", linewidth=1.5, alpha=0.8, zorder=1)
 
 
-def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.15, dE=0.2, num_pts=8):
+def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, dE=0.02, num_pts=12):
     """
-    Creates a 'collar' of synthetic points around the endpoints and the global minimum.
+    Creates a 'collar' of synthetic points around the endpoints.
     This forces the RBF interpolator to curve upwards around these points, preventing
     artificial wells (overshooting) where the physics dictates a minimum.
     """
-    # Identify indices: Fixed Endpoints (0, -1) and Global Minimum
-    # Note: Using np.argmin on the whole array finds the global min.
-    indices = {0, len(z_data) - 1, np.argmin(z_data)}
-
+    # Explicitly handle endpoints to ensure they use their own energy
+    indices = {0, len(z_data) - 1}
+    
     aug_r, aug_p, aug_z = [rmsd_r], [rmsd_p], [z_data]
 
     for idx in indices:
@@ -319,16 +318,14 @@ def plot_landscape_surface(
         r_aug, p_aug, z_aug = _augment_minima_points(rmsd_r, rmsd_p, z_data)
 
         # 2. Gradient Augmentation (Enforce Slope)
-        # We need to map the gradients to the augmented array, but since augmentation
-        # adds new points with unknown gradients, we strictly apply gradient augmentation
+        # Map the gradients to the augmented array, but since augmentation
+        # adds new points with unknown gradients, apply gradient augmentation
         # ONLY to the original raw points first, then combine.
         if grad_r is not None and grad_p is not None:
             r_grad, p_grad, z_grad = _augment_with_gradients(
                 rmsd_r, rmsd_p, z_data, grad_r, grad_p
             )
             # Combine both augmented sets
-            # Note: r_aug includes the original points already, so we exclude index 0-N of r_grad
-            # to avoid duplicates, OR just combine them all (RBF handles close points fine with smoothing)
             pts = np.column_stack(
                 [np.concatenate([r_aug, r_grad]), np.concatenate([p_aug, p_grad])]
             )
@@ -349,6 +346,7 @@ def plot_landscape_surface(
         colormap = plt.get_cmap("viridis")
 
     ax.contourf(xg, yg, zg, levels=20, cmap=colormap, alpha=0.75, zorder=10)
+    ax.contour(xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11)
 
     if show_pts:
         ax.scatter(rmsd_r, rmsd_p, c="k", s=12, marker=".", alpha=0.6, zorder=40)
