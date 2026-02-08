@@ -599,7 +599,7 @@ def negative_mll_imq_grad(log_params, x, y_flat, D_plus_1):
     K_full = K_blocks.transpose(0, 2, 1, 3).reshape(N * D_plus_1, N * D_plus_1)
     return generic_negative_mll(K_full, y_flat, noise_scalar)
 
-def negative_mll_imq_map(log_params, x, y_flat, D_plus_1):
+def negative_mll_imq_map(log_params, init_eps, x, y_flat, D_plus_1):
     log_eps = log_params[0]
     log_noise = log_params[1]
 
@@ -612,17 +612,21 @@ def negative_mll_imq_map(log_params, x, y_flat, D_plus_1):
     K_full = K_blocks.transpose(0, 2, 1, 3).reshape(N * D_plus_1, N * D_plus_1)
     mll_cost = generic_negative_mll(K_full, y_flat, noise_scalar)
 
-    # Priors (Regularization)
+    # --- Gamma Prior on Epsilon ---
+    # Distribution should peak at 'init_eps' but kills large values.
+    # Gamma PDF: x^(alpha-1) * exp(-beta * x)
+    # NegLogPDF: -(alpha-1)*log(x) + beta*x
     
-    # Epsilon Prior: Target ~1.0 Å. 
-    # Variance 0.5 allows it to swing between ~0.5 and ~8.0, but not infinity.
-    eps_target = jnp.log(1.0) 
-    eps_penalty = (log_eps - eps_target) ** 2 / 0.5
+    alpha_g = 2.0  # Shape=2 ensures the distribution goes to 0 at epsilon=0 (physical)
+    beta_g = 1.0 / (init_eps + 1e-6) # Rate set so the peak (mode) is roughly at init_eps
+    
+    # This linear 'epsilon' term is what stops it from shooting up
+    eps_penalty = -(alpha_g - 1.0) * log_eps + beta_g * epsilon
 
-    # Noise Prior: Target 1e-2. 
-    # Keeps noise physical so it doesn't try to fit every tiny wiggle perfectly.
+    # --- Log-Normal Prior on Noise ---
+    # Log-Normal is fine for noise; to stay in a magnitude range
     noise_target = jnp.log(1e-2)
-    noise_penalty = (log_noise - noise_target) ** 2 / 1.0
+    noise_penalty = (log_noise - noise_target) ** 2 / 0.5
 
     return mll_cost + eps_penalty + noise_penalty
 
@@ -685,7 +689,7 @@ class GradientIMQ:
             x0 = jnp.array([jnp.log(init_eps), jnp.log(init_noise)])
 
             def loss_fn(log_p):
-                return negative_mll_imq_map(log_p, self.x, self.y_flat, D_plus_1)
+                return negative_mll_imq_map(log_p, init_eps, self.x, self.y_flat, D_plus_1)
 
             results = jopt.minimize(loss_fn, x0, method="BFGS", tol=1e-3)
             self.epsilon = float(jnp.exp(results.x[0]))
