@@ -299,150 +299,187 @@ def plot_landscape_surface(
 ):
     """
     Plots the 2D landscape surface using RBF or Grid interpolation.
-    Supports Gradient-Enhanced Matern GP with subset optimization.
+    
+    Unified pipeline:
+      1. Hyperparameter Optimization: Learn LS/Noise on the 'clean' final path.
+      2. Augmentation: Add synthetic points (minima rings) and helper points (gradients).
+      3. Final Fit: Generate surface using learned params + augmented data.
     """
     log.info(f"Generating 2D surface using {method}...")
 
+    # --- 1. Grid Setup ---
     nx, ny = 150, 150
-    # Add buffer to grid
     x_margin = (rmsd_r.max() - rmsd_r.min()) * 0.1
     y_margin = (rmsd_p.max() - rmsd_p.min()) * 0.1
     xg = np.linspace(rmsd_r.min() - x_margin, rmsd_r.max() + x_margin, nx)
     yg = np.linspace(rmsd_p.min() - y_margin, rmsd_p.max() + y_margin, ny)
     xg, yg = np.meshgrid(xg, yg)
-    ModelClass = get_surface_model(method)
-
+    
     if method == "grid":
         zg = griddata((rmsd_r, rmsd_p), z_data, (xg, yg), method="cubic")
+        # Griddata doesn't support the rest of the pipeline
+    else:
+        ModelClass = get_surface_model(method)
+        is_gradient_model = method.startswith("grad_")
 
-    elif method == "grad_matern":
-        # ---------------------------------------------------------
-        # GRADIENT MATERN (Two-Step Optimization Strategy)
-        # ---------------------------------------------------------
+        # --- 2. Hyperparameter Optimization (Learning Phase) ---
+        # We learn physics (length_scale) from the *real* data (final path),
+        # without synthetic augmentation artifacts.
+        # 'rbf_smooth' passed from estimate_rbf_smoothing is actually a distance metric.
+        # It is a good GUESS for length_scale, but terrible for noise (too high).
+        
+        # Initial Guess for Length Scale (Correlation distance)
+        heuristic_ls = rbf_smooth if rbf_smooth is not None and rbf_smooth > 1e-4 else 0.5
+        
+        # Initial Guess for Noise (Data fidelity)
+        heuristic_noise = 1e-2
 
-        # Prepare Data
-        pts = np.column_stack([rmsd_r, rmsd_p])
-        vals = z_data
+        # Defaults
+        best_ls = heuristic_ls
+        best_noise = heuristic_noise
 
-        # Jitter helps prevent Cholesky crashes on duplicate points
-        rng = np.random.default_rng(42)
-        pts_jittered = pts + rng.normal(0, 1e-6, size=pts.shape)
-
+        # Prepare Clean Data for Optimization
+        pts_clean = np.column_stack([rmsd_r, rmsd_p])
+        vals_clean = z_data
+        
         if grad_r is not None:
-            # Note: grad_r from processing is already a gradient (+). No flip needed.
-            grad_stack = np.column_stack([grad_r, grad_p])
+             grads_clean = np.column_stack([grad_r, grad_p])
         else:
-            grad_stack = np.zeros_like(pts)
+             grads_clean = np.zeros_like(pts_clean)
 
-        # Default smoothing (noise scalar)
-        safe_smooth = rbf_smooth if rbf_smooth is not None else 1e-4
-
-        # Subset Strategy for Hyperparameter Optimization
-        best_ls = np.max(rmsd_r)
-        best_noise = safe_smooth
-        log.info(f"Initial length_scale: {best_ls:.4f} A, noise: {best_noise:.4f}")
-
+        # Optimization Subset Selection
         if step_data is not None:
             max_step = step_data.max()
             is_final = step_data == max_step
-
-            # --- STEP A: Learn Physics on Final Path (Fast) ---
-            if np.sum(is_final) > 3:  # Ensure we have enough points
-                log.info("Optimizing Length Scale on Final Path...")
-
-                pts_final = pts_jittered[is_final]
-                vals_final = vals[is_final]
-                grads_final = grad_stack[is_final]
-
-                # Run optimizer on subset
-                model_learner = ModelClass(
-                    pts_final,
-                    vals_final,
-                    gradients=grads_final,
-                    smoothing=safe_smooth,
-                    optimize=True,
-                )
-                best_ls = model_learner.ls
-                best_noise = model_learner.noise
-                log.info(
-                    f"Learned length_scale: {best_ls:.4f} A, noise: {best_noise:.4f}"
-                )
-
-        # Downsampling for Full Visualization (CPU Speed Constraint)
-        MAX_VIS_POINTS = 1000000
-
-        if len(pts) > MAX_VIS_POINTS and MAX_VIS_POINTS:
-            log.info(
-                f"Downsampling history for visualization ({len(pts)} -> {MAX_VIS_POINTS})..."
-            )
-
-            if step_data is not None:
-                final_indices = np.where(step_data == step_data.max())[0]
-                history_indices = np.where(step_data != step_data.max())[0]
-            else:
-                final_indices = np.arange(len(pts) - 20, len(pts))
-                history_indices = np.arange(0, len(pts) - 20)
-
-            n_keep_history = MAX_VIS_POINTS - len(final_indices)
-
-            if n_keep_history > 0 and len(history_indices) > 0:
-                chosen_history = rng.choice(
-                    history_indices, size=n_keep_history, replace=False
-                )
-                keep_mask = np.concatenate([final_indices, chosen_history])
-            else:
-                keep_mask = final_indices
-
-            pts_vis = pts_jittered[keep_mask]
-            vals_vis = vals[keep_mask]
-            grads_vis = grad_stack[keep_mask]
+            # Use final path for learning if it has enough points
+            mask_opt = is_final if np.sum(is_final) > 3 else np.ones(len(z_data), dtype=bool)
         else:
-            pts_vis = pts_jittered
-            vals_vis = vals
-            grads_vis = grad_stack
+            mask_opt = np.ones(len(z_data), dtype=bool)
 
-        # --- STEP B: Fit Surface (Fixed Hyperparams) ---
-        log.info("Fitting final surface...")
-        rbf = ModelClass(
-            pts_vis,
-            vals_vis,
-            gradients=grads_vis,
-            smoothing=best_noise,
-            length_scale=best_ls,
-            optimize=False,
-        )
+        log.info(f"Optimizing hyperparameters on subset of {np.sum(mask_opt)} points...")
+        
+        # Jitter to prevent singular matrix during opt
+        rng = np.random.default_rng(42)
+        jitter_opt = rng.normal(0, 1e-6, size=pts_clean[mask_opt].shape)
+        
+        # Configure arguments for optimization run
+        opt_kwargs = {
+            "x": pts_clean[mask_opt] + jitter_opt,
+            "y": vals_clean[mask_opt],
+            "smoothing": heuristic_noise,
+            "length_scale": heuristic_ls,
+            "ls": heuristic_ls,
+            "optimize": True
+        }
+        
+        if is_gradient_model:
+            # Gradient models expect 'gradients' arg
+            opt_kwargs["gradients"] = grads_clean[mask_opt]
+        elif grad_r is not None:
+            # Non-gradient models don't take 'gradients' arg, 
+            # BUT for optimization we might want to temporarily augment with gradients 
+            # to learn better params. However, to keep it simple and robust, 
+            # we optimize standard models on standard points only.
+            pass
 
-        zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
+        # Instantiating triggers optimization
+        try:
+            # Mapping args to init signature differences (Unified in previous step preferably)
+            # My previous classes: Gradient uses (x,y), Fast uses (x_obs, y_obs)
+            # Let's handle the call signature dynamically or assume the uniform wrapper I provided.
+            if is_gradient_model:
+                learner = ModelClass(**opt_kwargs)
+            else:
+                learner = ModelClass(x_obs=opt_kwargs["x"], y_obs=opt_kwargs["y"], **opt_kwargs)
+            
+            # Extract learned params
+            if hasattr(learner, 'ls'): best_ls = learner.ls
+            if hasattr(learner, 'epsilon'): best_ls = learner.epsilon # IMQ uses epsilon
+            if hasattr(learner, 'sm'): best_noise = learner.sm # TPS uses sm
+            if hasattr(learner, 'noise'): best_noise = learner.noise
+            
+            log.info(f"Learned Params :: LS/Eps: {best_ls:.4f}, Noise: {best_noise:.4f}")
+            
+        except Exception as e:
+            log.warning(f"Optimization failed ({e}). Using heuristics.")
+            best_ls = heuristic_ls
+            best_noise = heuristic_noise
 
-    else:
-        # ---------------------------------------------------------
-        # LEGACY METHODS (TPS / Standard Matern)
-        # ---------------------------------------------------------
-        # Minima Augmentation (Create Bowls)
-        r_aug, p_aug, z_aug = _augment_minima_points(rmsd_r, rmsd_p, z_data)
-
-        # Gradient Augmentation (Enforce Slope)
-        # Map the gradients to the augmented array, but since augmentation
-        # adds new points with unknown gradients, apply gradient augmentation
-        # ONLY to the original raw points first, then combine.
-        if grad_r is not None and grad_p is not None:
-            r_grad, p_grad, z_grad = _augment_with_gradients(
-                rmsd_r, rmsd_p, z_data, grad_r, grad_p
+        # --- 3. Data Augmentation (Visualization Phase) ---
+        # Now we build the full dataset for the final high-res surface.
+        # We add "helper" points to force the surface to look good (bowls at minima).
+        
+        # A. Minima Augmentation
+        # Increase radius/dE slightly so the GP actually "sees" the well features
+        # Radius 0.001 is often smaller than the grid resolution
+        aug_radius = 0.02
+        aug_dE = 0.05
+        
+        if not is_gradient_model:
+            r_aug, p_aug, z_aug = _augment_minima_points(
+                rmsd_r, rmsd_p, z_data, radius=aug_radius, dE=aug_dE, num_pts=12
             )
-            # Combine both augmented sets
-            pts = np.column_stack(
-                [np.concatenate([r_aug, r_grad]), np.concatenate([p_aug, p_grad])]
-            )
-            vals = np.concatenate([z_aug, z_grad])
         else:
-            pts = np.column_stack([r_aug, p_aug])
-            vals = z_aug
+            # For gradient models, we usually don't need ring augmentation if gradients are correct.
+            # But if we do, we must be careful. Let's trust the gradients at the minima 
+            # (which should be zero) instead of adding fake rings.
+            r_aug, p_aug, z_aug = rmsd_r, rmsd_p, z_data
+        
+        # B. Gradient Handling
+        if is_gradient_model:
+            final_pts = np.column_stack([r_aug, p_aug])
+            final_vals = z_aug
+            # Ensure gradients match shape (no augmentation logic needed if we skip rings)
+            final_grads = np.column_stack([grad_r, grad_p]) if grad_r is not None else np.zeros_like(final_pts)
+        else:
+            # Standard Models: Bake gradients into geometry
+            if grad_r is not None:
+                # Use the helper function on the ORIGINAL data first
+                # (Augmenting gradients on synthetic minima rings is overkill/messy)
+                r_grad_aug, p_grad_aug, z_grad_aug = _augment_with_gradients(
+                    rmsd_r, rmsd_p, z_data, grad_r, grad_p
+                )
+                
+                # Combine: Minima Rings + Gradient Helpers
+                # Note: r_aug contains [original + rings]. r_grad_aug contains [original + gradient_helpers].
+                # We need [original + rings + gradient_helpers].
+                
+                # Extract just the rings (tail of aug)
+                ring_start_idx = len(rmsd_r)
+                r_rings = r_aug[ring_start_idx:]
+                p_rings = p_aug[ring_start_idx:]
+                z_rings = z_aug[ring_start_idx:]
+                
+                final_r = np.concatenate([r_grad_aug, r_rings])
+                final_p = np.concatenate([p_grad_aug, p_rings])
+                final_vals = np.concatenate([z_grad_aug, z_rings])
+                final_pts = np.column_stack([final_r, final_p])
+                final_grads = None # Not used
+            else:
+                # No gradients available
+                final_pts = np.column_stack([r_aug, p_aug])
+                final_vals = z_aug
+                final_grads = None
 
-        safe_smooth = rbf_smooth if rbf_smooth is not None else 0.0
+        # --- 4. Final Fit & Prediction ---
+        log.info(f"Fitting final surface on {len(final_vals)} points...")
+        
+        # # Jitter final points
+        # final_pts += rng.normal(0, 1e-6, size=final_pts.shape)
+        
+        # Final instantiation kwargs
+        fit_kwargs = {
+            "smoothing": best_noise,
+            "length_scale": np.min([best_ls, 1.0]),
+            "optimize": False # Don't re-optimize on augmented data
+        }
 
-        # Instantiate (TPS ignores length_scale, Matern uses default)
-        rbf = ModelClass(pts, vals, smoothing=safe_smooth, length_scale=1.0)
+        if is_gradient_model:
+            rbf = ModelClass(x=final_pts, y=final_vals, gradients=final_grads, **fit_kwargs)
+        else:
+            rbf = ModelClass(x_obs=final_pts, y_obs=final_vals, **fit_kwargs)
 
+        # Batch prediction
         zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
 
     # --- Plotting ---
@@ -452,10 +489,10 @@ def plot_landscape_surface(
         colormap = plt.get_cmap("viridis")
 
     # High-res contourf
-    ax.contourf(xg, yg, zg, levels=100, cmap=colormap, alpha=0.75, zorder=10)
-    ax.contour(
-        xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11
-    )
+    ax.contourf(xg, yg, zg, levels=20, cmap=colormap, alpha=0.75, zorder=10)
+    # ax.contour(
+    #     xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11
+    # )
 
     if show_pts:
         # TODO(rg): will a user every want to control this?
