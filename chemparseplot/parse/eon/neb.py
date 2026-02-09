@@ -1,24 +1,17 @@
-import glob
 import logging
-import re
-import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import polars as pl
-from ase.io import read as ase_read
 from ase import Atoms
-from chemparseplot.parse.file_ import find_file_paths
+from ase.io import read as ase_read
 
 try:
+    from rgpycrumbs._aux import _import_from_parent_env
     from rgpycrumbs.geom.api.alignment import (
-        align_structure_robust,
         calculate_rmsd_from_ref,
     )
-
-    # If the user script imports 'ira_mod' from parent env, we mimic that check here
-    from rgpycrumbs._aux import _import_from_parent_env
 
     ira_mod = _import_from_parent_env("ira_mod")
 except ImportError:
@@ -91,17 +84,40 @@ def load_or_compute_data(
 
 
 def load_structures_and_calculate_additional_rmsd(
-    con_file: Path, additional_con: list[tuple[Path, str]], ira_kmax: float
+    con_file: Path,
+    additional_con: list[tuple[Path, str]],
+    ira_kmax: float,
+    sp_file: Path | None = None,
 ):
     """Loads the main trajectory and calculates RMSD for any additional comparison structures."""
     log.info(f"Reading structures from {con_file}")
     atoms_list = ase_read(con_file, index=":")
     log.info(f"Loaded {len(atoms_list)} structures.")
 
+    # --- Explicit Saddle Point Loading ---
+    sp_data = None
+    ira_instance = ira_mod.IRA() if ira_mod else None
+
+    if sp_file and sp_file.exists():
+        log.info(f"Loading explicit saddle point from {sp_file}")
+        sp_atoms = ase_read(sp_file)
+        sp_rmsd_r = calculate_rmsd_from_ref(
+            [sp_atoms],
+            ira_instance,
+            ref_atom=atoms_list[0],
+            ira_kmax=ira_kmax,
+        )[0]
+        sp_rmsd_p = calculate_rmsd_from_ref(
+            [sp_atoms],
+            ira_instance,
+            ref_atom=atoms_list[-1],
+            ira_kmax=ira_kmax,
+        )[0]
+        sp_data = {"atoms": sp_atoms, "r": sp_rmsd_r, "p": sp_rmsd_p}
+
+    # --- Additional Structures Loading ---
     additional_atoms_data = []
     if additional_con:
-        ira_instance = ira_mod.IRA() if ira_mod else None
-
         for add_file, add_label in additional_con:
             # Handle empty labels
             if not add_label or add_label.strip() == "":
@@ -129,7 +145,55 @@ def load_structures_and_calculate_additional_rmsd(
                 (additional_atoms, add_rmsd_r, add_rmsd_p, label)
             )
 
-    return atoms_list, additional_atoms_data
+    return atoms_list, additional_atoms_data, sp_data
+
+
+def _process_single_path_step(
+    dat_file,
+    con_file,
+    y_data_column,
+    ira_instance,
+    ira_kmax,
+    step_idx,
+    ref_atoms=None,
+    prod_atoms=None,
+):
+    """Helper to process a single .dat/.con pair into a DataFrame row."""
+    path_data = np.loadtxt(dat_file, skiprows=1).T
+    z_data_step = path_data[y_data_column]
+    atoms_list_step = ase_read(con_file, index=":")
+    f_para_step = path_data[3]
+
+    _validate_data_atoms_match(z_data_step, atoms_list_step, dat_file.name)
+
+    # If ref/prod not provided, assume self-contained NEB (0=Ref, -1=Prod)
+    # If provided (augmentation mode), use them.
+    ref = ref_atoms if ref_atoms is not None else atoms_list_step[0]
+    prod = prod_atoms if prod_atoms is not None else atoms_list_step[-1]
+
+    rmsd_r = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax)
+    rmsd_p = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax)
+
+    # --- Calculate Synthetic 2D Gradients ---
+    dr = np.gradient(rmsd_r)
+    dp = np.gradient(rmsd_p)
+    norm_ds = np.sqrt(dr**2 + dp**2)
+    norm_ds[norm_ds == 0] = 1.0
+    tr = dr / norm_ds
+    tp = dp / norm_ds
+    grad_r = -f_para_step * tr
+    grad_p = -f_para_step * tp
+
+    return pl.DataFrame(
+        {
+            "r": rmsd_r,
+            "p": rmsd_p,
+            "grad_r": grad_r,
+            "grad_p": grad_p,
+            "z": z_data_step,
+            "step": int(step_idx),
+        }
+    )
 
 
 def aggregate_neb_landscape_data(
@@ -140,6 +204,11 @@ def aggregate_neb_landscape_data(
     cache_file: Path | None = None,
     force_recompute: bool = False,
     ira_kmax: float = 1.8,
+    # Caching augmentation
+    augment_dat: str | None = None,
+    augment_con: str | None = None,
+    ref_atoms: Atoms | None = None,
+    prod_atoms: Atoms | None = None,
 ) -> pl.DataFrame:
     """Aggregates data from multiple NEB steps for landscape visualization."""
 
@@ -150,56 +219,54 @@ def aggregate_neb_landscape_data(
     def validate_landscape_cache(df: pl.DataFrame):
         if "p" not in df.columns:
             raise ValueError("Cache missing 'p' column.")
+        if "grad_r" not in df.columns:
+            raise ValueError("Cache missing gradient columns (outdated).")
 
     def compute_landscape_data() -> pl.DataFrame:
-        # Match indices
-        # (This is a simplified logic from the original which had complex index matching.
-        #  We assume the caller has provided matched lists or we just zip them).
+        all_dfs = []
+        # --- Load Augmentation Data (Inside Cache Block) ---
+        if augment_dat and augment_con and ref_atoms and prod_atoms:
+            log.info(f"Loading augmentation data for cache: {augment_dat}")
+            df_aug = load_augmenting_neb_data(
+                augment_dat,
+                augment_con,
+                ref_atoms=ref_atoms,
+                prod_atoms=prod_atoms,
+                y_data_column=y_data_column,
+                ira_kmax=ira_kmax,
+            )
+            if not df_aug.is_empty():
+                 all_dfs.append(df_aug)
 
-        # In a robust implementation, we would replicate the filename matching logic here.
-        # For brevity, we assume strict zipping as the main aggregation step.
+        # Synchronization check
         paths_dat = all_dat_paths
         paths_con = all_con_paths
-
         if len(paths_dat) != len(paths_con):
-            log.warning(
-                f"Mismatch in file counts: {len(paths_dat)} dat vs {len(paths_con)} con."
-            )
+            log.warning(f"Mismatch: {len(paths_dat)} dat vs {len(paths_con)} con.")
             min_len = min(len(paths_dat), len(paths_con))
             paths_dat = paths_dat[:min_len]
             paths_con = paths_con[:min_len]
 
-        all_dfs = []
         for step_idx, (dat_file, con_file_step) in enumerate(
             zip(paths_dat, paths_con, strict=True)
         ):
             try:
-                path_data = np.loadtxt(dat_file, skiprows=1).T
-                z_data_step = path_data[y_data_column]
-                atoms_list_step = ase_read(con_file_step, index=":")
-
-                _validate_data_atoms_match(z_data_step, atoms_list_step, dat_file.name)
-
-                rmsd_r, rmsd_p = calculate_landscape_coords(
-                    atoms_list_step, ira_instance, ira_kmax
+                df_step = _process_single_path_step(
+                    dat_file,
+                    con_file_step,
+                    y_data_column,
+                    ira_instance,
+                    ira_kmax,
+                    step_idx,
                 )
-
-                all_dfs.append(
-                    pl.DataFrame(
-                        {
-                            "r": rmsd_r,
-                            "p": rmsd_p,
-                            "z": z_data_step,
-                            "step": int(step_idx),
-                        }
-                    )
-                )
+                all_dfs.append(df_step)
             except Exception as e:
                 log.warning(f"Failed to process step {step_idx} ({dat_file.name}): {e}")
                 continue
 
         if not all_dfs:
-            raise RuntimeError("No data could be aggregated.")
+            rerr = "No data could be aggregated."
+            raise RuntimeError(rerr)
 
         return pl.concat(all_dfs)
 
@@ -210,6 +277,57 @@ def aggregate_neb_landscape_data(
         computation_callback=compute_landscape_data,
         context_name="Landscape",
     )
+
+
+def load_augmenting_neb_data(
+    dat_pattern: str,
+    con_pattern: str,
+    ref_atoms: Atoms,
+    prod_atoms: Atoms,
+    y_data_column: int,
+    ira_kmax: float,
+) -> pl.DataFrame:
+    """
+    Loads external NEB paths (dat+con) to augment the landscape fit.
+    Forces projection onto the MAIN path's R/P coordinates.
+    """
+    from chemparseplot.parse.file_ import find_file_paths
+
+    dat_paths = find_file_paths(dat_pattern)
+    con_paths = find_file_paths(con_pattern)
+
+    if not dat_paths or not con_paths:
+        log.warning("Augmentation patterns did not match files.")
+        return pl.DataFrame()
+
+    # Sync lengths
+    min_len = min(len(dat_paths), len(con_paths))
+    dat_paths = dat_paths[:min_len]
+    con_paths = con_paths[:min_len]
+
+    log.info(f"Augmenting with {min_len} external paths...")
+
+    all_dfs = []
+    ira_instance = ira_mod.IRA() if ira_mod else None
+
+    for i, (d, c) in enumerate(zip(dat_paths, con_paths)):
+        try:
+            # Step -1 indicates 'background/augmented' data
+            df = _process_single_path_step(
+                d,
+                c,
+                y_data_column,
+                ira_instance,
+                ira_kmax,
+                -1,
+                ref_atoms=ref_atoms,
+                prod_atoms=prod_atoms,
+            )
+            all_dfs.append(df)
+        except Exception as e:
+            log.warning(f"Failed to load augmentation pair {d.name}: {e}")
+
+    return pl.concat(all_dfs) if all_dfs else pl.DataFrame()
 
 
 def compute_profile_rmsd(
@@ -243,12 +361,13 @@ def compute_profile_rmsd(
         context_name="Profile RMSD",
     )
 
+
 def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     """
     Estimates a smoothing parameter for RBF interpolation.
-    
+
     Calculates the median Euclidean distance between sequential points in the path
-    and uses 10% of that value as the smoothing factor.
+    and uses that value as the smoothing factor.
     """
     # Calculate distances between sequential images (r, p) within each step
     df_dist = (
@@ -260,10 +379,10 @@ def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
         .with_columns(dist=(pl.col("dr") ** 2 + pl.col("dp") ** 2).sqrt())
         .drop_nulls()
     )
-    
+
     global_median_step = df_dist["dist"].median()
-    
+
     if global_median_step is None or global_median_step == 0:
         return 0.0
-        
-    return 0.1 * global_median_step
+
+    return global_median_step
