@@ -17,5 +17,6 @@ chemparseplot.plot.geomscan
 chemparseplot.plot.theme
 chemparseplot.plot._aids
 chemparseplot.plot.structs
+chemparseplot.plot._surfaces
 chemparseplot.plot.neb
 ```

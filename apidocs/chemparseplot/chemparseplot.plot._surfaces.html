@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.plot._surfaces &#8212; chemparseplot 0.0.2 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/apidocs/chemparseplot/chemparseplot.plot._surfaces.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chemparseplot.plot.neb" href="chemparseplot.plot.neb.html" />
+    <link rel="prev" title="chemparseplot.plot.structs" href="chemparseplot.plot.structs.html" />
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot._surfaces</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.safe_cholesky_solve"><code class="docutils literal notranslate"><span class="pre">safe_cholesky_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.generic_negative_mll"><code class="docutils literal notranslate"><span class="pre">generic_negative_mll()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_kernel_matrix"><code class="docutils literal notranslate"><span class="pre">_tps_kernel_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_tps"><code class="docutils literal notranslate"><span class="pre">negative_mll_tps()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_solve"><code class="docutils literal notranslate"><span class="pre">_tps_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_predict"><code class="docutils literal notranslate"><span class="pre">_tps_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastTPS"><code class="docutils literal notranslate"><span class="pre">FastTPS</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastTPS.__call__"><code class="docutils literal notranslate"><span class="pre">FastTPS.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_kernel_matrix"><code class="docutils literal notranslate"><span class="pre">_matern_kernel_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_matern_std"><code class="docutils literal notranslate"><span class="pre">negative_mll_matern_std()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_solve"><code class="docutils literal notranslate"><span class="pre">_matern_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_predict"><code class="docutils literal notranslate"><span class="pre">_matern_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastMatern"><code class="docutils literal notranslate"><span class="pre">FastMatern</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastMatern.__call__"><code class="docutils literal notranslate"><span class="pre">FastMatern.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.matern_kernel_elem"><code class="docutils literal notranslate"><span class="pre">matern_kernel_elem()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_matern"><code class="docutils literal notranslate"><span class="pre">full_covariance_matern()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_matern_grad_map"><code class="docutils literal notranslate"><span class="pre">k_matrix_matern_grad_map</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_matern_grad"><code class="docutils literal notranslate"><span class="pre">negative_mll_matern_grad()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_matern_solve"><code class="docutils literal notranslate"><span class="pre">_grad_matern_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_matern_predict"><code class="docutils literal notranslate"><span class="pre">_grad_matern_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientMatern"><code class="docutils literal notranslate"><span class="pre">GradientMatern</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientMatern.__call__"><code class="docutils literal notranslate"><span class="pre">GradientMatern.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_kernel_matrix"><code class="docutils literal notranslate"><span class="pre">_imq_kernel_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_std"><code class="docutils literal notranslate"><span class="pre">negative_mll_imq_std()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_solve"><code class="docutils literal notranslate"><span class="pre">_imq_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_predict"><code class="docutils literal notranslate"><span class="pre">_imq_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastIMQ"><code class="docutils literal notranslate"><span class="pre">FastIMQ</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.FastIMQ.__call__"><code class="docutils literal notranslate"><span class="pre">FastIMQ.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.se_kernel_elem"><code class="docutils literal notranslate"><span class="pre">se_kernel_elem()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_se"><code class="docutils literal notranslate"><span class="pre">full_covariance_se()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_se_grad_map"><code class="docutils literal notranslate"><span class="pre">k_matrix_se_grad_map</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_se_grad"><code class="docutils literal notranslate"><span class="pre">negative_mll_se_grad()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_se_solve"><code class="docutils literal notranslate"><span class="pre">_grad_se_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_se_predict"><code class="docutils literal notranslate"><span class="pre">_grad_se_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientSE"><code class="docutils literal notranslate"><span class="pre">GradientSE</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientSE.__call__"><code class="docutils literal notranslate"><span class="pre">GradientSE.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.imq_kernel_elem"><code class="docutils literal notranslate"><span class="pre">imq_kernel_elem()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_imq"><code class="docutils literal notranslate"><span class="pre">full_covariance_imq()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_imq_grad_map"><code class="docutils literal notranslate"><span class="pre">k_matrix_imq_grad_map</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_grad"><code class="docutils literal notranslate"><span class="pre">negative_mll_imq_grad()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_map"><code class="docutils literal notranslate"><span class="pre">negative_mll_imq_map()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_imq_solve"><code class="docutils literal notranslate"><span class="pre">_grad_imq_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_imq_predict"><code class="docutils literal notranslate"><span class="pre">_grad_imq_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientIMQ"><code class="docutils literal notranslate"><span class="pre">GradientIMQ</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientIMQ.__call__"><code class="docutils literal notranslate"><span class="pre">GradientIMQ.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.rq_kernel_base"><code class="docutils literal notranslate"><span class="pre">rq_kernel_base()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.rq_kernel_elem"><code class="docutils literal notranslate"><span class="pre">rq_kernel_elem()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_rq"><code class="docutils literal notranslate"><span class="pre">full_covariance_rq()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_rq_grad_map"><code class="docutils literal notranslate"><span class="pre">k_matrix_rq_grad_map</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_rq_map"><code class="docutils literal notranslate"><span class="pre">negative_mll_rq_map()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_rq_solve"><code class="docutils literal notranslate"><span class="pre">_grad_rq_solve()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_rq_predict"><code class="docutils literal notranslate"><span class="pre">_grad_rq_predict()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientRQ"><code class="docutils literal notranslate"><span class="pre">GradientRQ</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientRQ.__call__"><code class="docutils literal notranslate"><span class="pre">GradientRQ.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.plot._surfaces.get_surface_model"><code class="docutils literal notranslate"><span class="pre">get_surface_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.plot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.plot._surfaces</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.plot._surfaces">
+<span id="chemparseplot-plot-surfaces"></span><h1><a class="reference internal" href="#module-chemparseplot.plot._surfaces" title="chemparseplot.plot._surfaces"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot._surfaces</span></code></a><a class="headerlink" href="#module-chemparseplot.plot._surfaces" title="Link to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.FastTPS" title="chemparseplot.plot._surfaces.FastTPS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastTPS</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.FastMatern" title="chemparseplot.plot._surfaces.FastMatern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastMatern</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientMatern" title="chemparseplot.plot._surfaces.GradientMatern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GradientMatern</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.FastIMQ" title="chemparseplot.plot._surfaces.FastIMQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FastIMQ</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientSE" title="chemparseplot.plot._surfaces.GradientSE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GradientSE</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientIMQ" title="chemparseplot.plot._surfaces.GradientIMQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GradientIMQ</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.GradientRQ" title="chemparseplot.plot._surfaces.GradientRQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GradientRQ</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.safe_cholesky_solve" title="chemparseplot.plot._surfaces.safe_cholesky_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">safe_cholesky_solve</span></code></a></p></td>
+<td><p>Retries Cholesky with increasing jitter if it fails.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.generic_negative_mll" title="chemparseplot.plot._surfaces.generic_negative_mll"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generic_negative_mll</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_kernel_matrix" title="chemparseplot.plot._surfaces._tps_kernel_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_tps_kernel_matrix</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_tps" title="chemparseplot.plot._surfaces.negative_mll_tps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_tps</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_solve" title="chemparseplot.plot._surfaces._tps_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_tps_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._tps_predict" title="chemparseplot.plot._surfaces._tps_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_tps_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_kernel_matrix" title="chemparseplot.plot._surfaces._matern_kernel_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_matern_kernel_matrix</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_matern_std" title="chemparseplot.plot._surfaces.negative_mll_matern_std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_matern_std</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_solve" title="chemparseplot.plot._surfaces._matern_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_matern_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._matern_predict" title="chemparseplot.plot._surfaces._matern_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_matern_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.matern_kernel_elem" title="chemparseplot.plot._surfaces.matern_kernel_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matern_kernel_elem</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_matern" title="chemparseplot.plot._surfaces.full_covariance_matern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_covariance_matern</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_matern_grad" title="chemparseplot.plot._surfaces.negative_mll_matern_grad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_matern_grad</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_matern_solve" title="chemparseplot.plot._surfaces._grad_matern_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_matern_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_matern_predict" title="chemparseplot.plot._surfaces._grad_matern_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_matern_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_kernel_matrix" title="chemparseplot.plot._surfaces._imq_kernel_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_imq_kernel_matrix</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_std" title="chemparseplot.plot._surfaces.negative_mll_imq_std"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_imq_std</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_solve" title="chemparseplot.plot._surfaces._imq_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_imq_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._imq_predict" title="chemparseplot.plot._surfaces._imq_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_imq_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.se_kernel_elem" title="chemparseplot.plot._surfaces.se_kernel_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">se_kernel_elem</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_se" title="chemparseplot.plot._surfaces.full_covariance_se"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_covariance_se</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_se_grad" title="chemparseplot.plot._surfaces.negative_mll_se_grad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_se_grad</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_se_solve" title="chemparseplot.plot._surfaces._grad_se_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_se_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_se_predict" title="chemparseplot.plot._surfaces._grad_se_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_se_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.imq_kernel_elem" title="chemparseplot.plot._surfaces.imq_kernel_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imq_kernel_elem</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_imq" title="chemparseplot.plot._surfaces.full_covariance_imq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_covariance_imq</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_grad" title="chemparseplot.plot._surfaces.negative_mll_imq_grad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_imq_grad</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_imq_map" title="chemparseplot.plot._surfaces.negative_mll_imq_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_imq_map</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_imq_solve" title="chemparseplot.plot._surfaces._grad_imq_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_imq_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_imq_predict" title="chemparseplot.plot._surfaces._grad_imq_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_imq_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.rq_kernel_base" title="chemparseplot.plot._surfaces.rq_kernel_base"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rq_kernel_base</span></code></a></p></td>
+<td><p>Standard RQ Kernel: (1 + r^2 / (2<em>alpha</em>l^2))^-alpha</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.rq_kernel_elem" title="chemparseplot.plot._surfaces.rq_kernel_elem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rq_kernel_elem</span></code></a></p></td>
+<td><p>SYMMETRIC KERNEL TRICK: k_sym(x, x’) = k(x, x’) + k(swap(x), x’)
+Enforces f(r, p) = f(p, r) globally.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.full_covariance_rq" title="chemparseplot.plot._surfaces.full_covariance_rq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_covariance_rq</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.negative_mll_rq_map" title="chemparseplot.plot._surfaces.negative_mll_rq_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">negative_mll_rq_map</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_rq_solve" title="chemparseplot.plot._surfaces._grad_rq_solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_rq_solve</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces._grad_rq_predict" title="chemparseplot.plot._surfaces._grad_rq_predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_grad_rq_predict</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.get_surface_model" title="chemparseplot.plot._surfaces.get_surface_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_surface_model</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_matern_grad_map" title="chemparseplot.plot._surfaces.k_matrix_matern_grad_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">k_matrix_matern_grad_map</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_se_grad_map" title="chemparseplot.plot._surfaces.k_matrix_se_grad_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">k_matrix_se_grad_map</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_imq_grad_map" title="chemparseplot.plot._surfaces.k_matrix_imq_grad_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">k_matrix_imq_grad_map</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot._surfaces.k_matrix_rq_grad_map" title="chemparseplot.plot._surfaces.k_matrix_rq_grad_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">k_matrix_rq_grad_map</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.safe_cholesky_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">safe_cholesky_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jitter_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.safe_cholesky_solve" title="Link to this definition">¶</a></dt>
+<dd><p>Retries Cholesky with increasing jitter if it fails.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.generic_negative_mll">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">generic_negative_mll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.generic_negative_mll" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._tps_kernel_matrix">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_tps_kernel_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._tps_kernel_matrix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_tps">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_tps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_tps" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._tps_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_tps_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._tps_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._tps_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_tps_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._tps_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastTPS">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">FastTPS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastTPS" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastTPS.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastTPS.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Batched prediction to prevent OOM errors on large grids.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._matern_kernel_matrix">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_matern_kernel_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._matern_kernel_matrix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_matern_std">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_matern_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_matern_std" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._matern_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_matern_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._matern_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._matern_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_matern_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._matern_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastMatern">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">FastMatern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastMatern" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastMatern.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastMatern.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Batched prediction for Matern.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.matern_kernel_elem">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">matern_kernel_elem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.matern_kernel_elem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.full_covariance_matern">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">full_covariance_matern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.full_covariance_matern" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.k_matrix_matern_grad_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">k_matrix_matern_grad_map</span></span><a class="headerlink" href="#chemparseplot.plot._surfaces.k_matrix_matern_grad_map" title="Link to this definition">¶</a></dt>
+<dd><p>‘vmap(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_matern_grad">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_matern_grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_plus_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_matern_grad" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_matern_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_matern_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_matern_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_matern_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_matern_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_matern_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientMatern">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">GradientMatern</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientMatern" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientMatern.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientMatern.__call__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._imq_kernel_matrix">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_imq_kernel_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._imq_kernel_matrix" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_imq_std">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_imq_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_imq_std" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._imq_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_imq_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._imq_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._imq_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_imq_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._imq_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastIMQ">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">FastIMQ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastIMQ" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.FastIMQ.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.FastIMQ.__call__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.se_kernel_elem">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">se_kernel_elem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.se_kernel_elem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.full_covariance_se">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">full_covariance_se</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.full_covariance_se" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.k_matrix_se_grad_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">k_matrix_se_grad_map</span></span><a class="headerlink" href="#chemparseplot.plot._surfaces.k_matrix_se_grad_map" title="Link to this definition">¶</a></dt>
+<dd><p>‘vmap(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_se_grad">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_se_grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_plus_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_se_grad" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_se_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_se_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_se_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_se_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_se_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_se_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientSE">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">GradientSE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientSE" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientSE.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientSE.__call__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.imq_kernel_elem">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">imq_kernel_elem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.imq_kernel_elem" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.full_covariance_imq">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">full_covariance_imq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.full_covariance_imq" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.k_matrix_imq_grad_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">k_matrix_imq_grad_map</span></span><a class="headerlink" href="#chemparseplot.plot._surfaces.k_matrix_imq_grad_map" title="Link to this definition">¶</a></dt>
+<dd><p>‘vmap(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_imq_grad">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_imq_grad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_plus_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_imq_grad" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_imq_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_imq_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_plus_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_imq_map" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_imq_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_imq_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_imq_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_imq_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_imq_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_imq_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientIMQ">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">GradientIMQ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientIMQ" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientIMQ.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientIMQ.__call__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.rq_kernel_base">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">rq_kernel_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.rq_kernel_base" title="Link to this definition">¶</a></dt>
+<dd><p>Standard RQ Kernel: (1 + r^2 / (2<em>alpha</em>l^2))^-alpha</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.rq_kernel_elem">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">rq_kernel_elem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.rq_kernel_elem" title="Link to this definition">¶</a></dt>
+<dd><p>SYMMETRIC KERNEL TRICK: k_sym(x, x’) = k(x, x’) + k(swap(x), x’)
+Enforces f(r, p) = f(p, r) globally.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.full_covariance_rq">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">full_covariance_rq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.full_covariance_rq" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.k_matrix_rq_grad_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">k_matrix_rq_grad_map</span></span><a class="headerlink" href="#chemparseplot.plot._surfaces.k_matrix_rq_grad_map" title="Link to this definition">¶</a></dt>
+<dd><p>‘vmap(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.negative_mll_rq_map">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">negative_mll_rq_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_flat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D_plus_1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.negative_mll_rq_map" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_rq_solve">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_rq_solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noise_scalar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_rq_solve" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces._grad_rq_predict">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">_grad_rq_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces._grad_rq_predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientRQ">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">GradientRQ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradients</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientRQ" title="Link to this definition">¶</a></dt>
+<dd><p class="rubric">Initialization</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.GradientRQ.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.GradientRQ.__call__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot._surfaces.get_surface_model">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot._surfaces.</span></span><span class="sig-name descname"><span class="pre">get_surface_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot._surfaces.get_surface_model" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.plot.structs.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.structs</span></code>
+  </a>
+  <a class="next" href="chemparseplot.plot.neb.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.neb</span></code> &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+    &copy; Copyright 2023-2026, Rohit Goswami.
+  
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+  
+  <a href="../../_sources/apidocs/chemparseplot/chemparseplot.plot._surfaces.md.txt" rel="nofollow">Page source</a>
+</footer>
+  </body>
+</html>
