@@ -17,7 +17,7 @@ from scipy.interpolate import (
 )
 from scipy.signal import savgol_filter
 
-from chemparseplot.plot._surfaces import get_surface_model
+from rgpycrumbs.surfaces import get_surface_model
 
 log = logging.getLogger(__name__)
 

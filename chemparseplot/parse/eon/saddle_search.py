@@ -10,7 +10,7 @@ from rgpycrumbs.parsers.bless import BLESS_LOG
 from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail
 
-from chemparseplot.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
+from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 
 
 class EONSaddleStatus(Enum):
@@ -72,7 +72,7 @@ def _read_results_dat(eresp: Path) -> dict:
     """Reads and parses the results.dat file.
 
     Args:
-        eresp: Path to the EON results directory.
+        eresp: Path to the eOn results directory.
 
     Returns:
         A dictionary containing the parsed data from results.dat, or None if the file
@@ -103,10 +103,10 @@ def _read_results_dat(eresp: Path) -> dict:
 
 
 def _find_log_file(eresp: Path) -> Path | None:
-    """Finds the most recent, valid log file within the EON results directory.
+    """Finds the most recent, valid log file within the eOn results directory.
 
     Args:
-        eresp: Path to the EON results directory.
+        eresp: Path to the eOn results directory.
 
     Returns:
         Path to the chosen log file, or None if no suitable log file is found.
@@ -182,7 +182,7 @@ def _extract_saddle_info(
 
     Args:
         log_data: A list of strings representing the lines of the log file.
-        eresp: Path to the EON results directory.
+        eresp: Path to the eOn results directory.
         is_gprd: Boolean flag indicating whether the GPRD method was used.
 
     Returns:
@@ -245,10 +245,10 @@ def _get_methods(eresp: Path) -> DimerOpt:
 
 
 def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
-    """Parses EON saddle point search results from a directory.
+    """Parses eOn saddle point search results from a directory.
 
     Args:
-        eresp: Path to the directory containing EON results.
+        eresp: Path to the directory containing eOn results.
         rloc: A SpinID object.
 
     Returns:

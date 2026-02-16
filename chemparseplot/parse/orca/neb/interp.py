@@ -14,7 +14,7 @@ import re
 
 import chemparseplot.parse.converter as conv
 import chemparseplot.parse.patterns as pat
-from chemparseplot.basetypes import nebiter, nebpath
+from rgpycrumbs.basetypes import nebiter, nebpath
 from chemparseplot.units import Q_
 
 # fmt: off

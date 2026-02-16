@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: MIT
 
-from chemparseplot import basetypes, parse, units
+from chemparseplot import parse, units

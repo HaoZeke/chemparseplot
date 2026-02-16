@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-from chemparseplot.basetypes import nebiter
+from rgpycrumbs.basetypes import nebiter
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.units import ureg
 
