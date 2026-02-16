@@ -9,13 +9,13 @@ About
 A **pure-python** [1]_  project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
 
+- Parsers for various computational chemistry software outputs
 - Plotting scripts for specific workflows
-- Parsers for various software outputs
 
-This is a spin-off from ``wailord`` (`here <https://wailord.xyz>`_) which is
-meant to handle aggregated runs in a specific workflow, while here the goal is
-to do no input handling and very pragmatic output parsing, with the goal of
-generating uniform plots. For more information check the `features` page.
+Computational tasks (surface fitting, interpolation, structure analysis) are
+delegated to ``rgpycrumbs``, which is a required dependency. ``chemparseplot``
+parses output files, calls ``rgpycrumbs`` for heavy computation, and produces
+publication-quality plots. For more information check the `features` page.
 
 Documentation TOC
 -----------------
