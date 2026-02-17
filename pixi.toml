@@ -6,10 +6,12 @@ authors = ["Rohit Goswami <rgoswami[at]ieee[dot]org>"]
 channels = ["conda-forge"]
 platforms = ["linux-64"]
 
-[tasks]
+# Pixi is only needed for conda-gated optional dependencies.
+# For standard development, use uv: uv sync --extra test --extra plot
 
 [dependencies]
 python = "==3.12"
 
 [pypi-dependencies]
-rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", editable = true }
+chemparseplot = { path = ".", editable = true }
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }

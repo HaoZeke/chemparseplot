@@ -76,6 +76,9 @@ Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
 Issues = "https://github.com/HaoZeke/chemparseplot/issues"
 Source = "https://github.com/HaoZeke/chemparseplot"
 
+[tool.uv.sources]
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }
+
 [tool.hatch.version]
 source = "vcs"
 
