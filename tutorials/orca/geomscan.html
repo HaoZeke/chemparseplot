@@ -171,6 +171,20 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">3</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="ne">----&gt; </span><span class="mi">3</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ase.build</span><span class="w"> </span><span class="kn">import</span> <span class="n">molecule</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;ase&#39;
+</pre></div>
+</div>
+</div>
 </div>
 <section class="tex2jax_ignore mathjax_ignore" id="geometry-scan">
 <h1>Geometry Scan<a class="headerlink" href="#geometry-scan" title="Link to this heading">¶</a></h1>
@@ -236,24 +250,6 @@ eye” the <code class="docutils literal notranslate"><span class="pre">scan_uhf
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;Quantity([7.55890395 7.32930292 7.09970189 6.87010086 6.64049982 6.41089879
- 6.18129776 5.95169672 5.72209569 5.49249466 5.26289362 5.03329259
- 4.80369156 4.57409053 4.34448949 4.11488846 3.88528743 3.65568639
- 3.42608536 3.19648433 2.9668833  2.73728226 2.50768123 2.2780802
- 2.04847916 1.81887813 1.5892771  1.35967606 1.13007503 0.900474
- 0.67087297 0.44127193 0.2116709 ], &#39;bohr&#39;)&gt;, &lt;Quantity([-7.42398620e-01 -7.43499390e-01 -7.44674460e-01 -7.45933440e-01
- -7.47288480e-01 -7.48755240e-01 -7.50354120e-01 -7.52111840e-01
- -7.54063390e-01 -7.56254250e-01 -7.58743070e-01 -7.61604610e-01
- -7.64933080e-01 -7.68845710e-01 -7.73486280e-01 -7.79028130e-01
- -7.85676030e-01 -7.93666670e-01 -8.03268580e-01 -8.14784250e-01
- -8.28557780e-01 -8.44988870e-01 -8.64547310e-01 -8.87779890e-01
- -9.15309070e-01 -9.47797640e-01 -9.85735890e-01 -1.02886903e+00
- -1.07506391e+00 -1.11633350e+00 -1.12403918e+00 -9.84131910e-01
- -7.37660000e-04], &#39;hartree&#39;)&gt;)
-</pre></div>
-</div>
-</div>
 </div>
 <p>Note that there are units attached, which makes subsequent analysis much easier,
 since <code class="docutils literal notranslate"><span class="pre">pint</span></code> will ensure that the correct units are always used.</p>
@@ -263,8 +259,6 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><table><tbody><tr><th>Magnitude</th><td style='text-align:left;'><pre>[3.9999997070301374 3.878500074436735 3.7570004418433327 3.63550080924993 3.5140011713647556 3.3925015387713535 3.271001906177951 3.1495022682927765 3.028002635699374 2.9065030031059718 2.7850033652207973 2.663503732627395 2.5420041000339926 2.4205044674405904 2.299004829555416 2.177505196962014 2.0560055643686113 1.9345059264834368 1.8130062938900344 1.691506661296632 1.5700070287032297 1.4485073908180555 1.3270077582246531 1.2055081256312508 1.084008487746076 0.9625088551526738 0.8410092225592715 0.719509584674097 0.5980099520806946 0.4765103194872923 0.35501068689389 0.2335110490087155 0.11201141641531316]</pre></td></tr><tr><th>Units</th><td style='text-align:left;'>angstrom</td></tr></tbody></table></div></div>
 </div>
 <section id="plotting">
 <h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
@@ -275,12 +269,6 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">act_energy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="n">act_energy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x7f760918aa50&gt;
-</pre></div>
-</div>
-<img alt="../../_images/6fa0569debe38aa54595f11091c1156c6ef605479528c23a1875abe4abefda61.png" src="../../_images/6fa0569debe38aa54595f11091c1156c6ef605479528c23a1875abe4abefda61.png" />
 </div>
 </div>
 <p>However, this is not super satisfying, and since this is a “supported” workflow, we can leverage <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> instead.</p>
@@ -300,19 +288,6 @@ since <code class="docutils literal notranslate"><span class="pre">pint</span></
 
 <span class="c1"># Display the plot</span>
 <span class="n">twodim_plot</span><span class="o">.</span><span class="n">show_plot</span><span class="p">(</span><span class="s2">&quot;Energy Paths&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">NameError</span><span class="g g-Whitespace">                                 </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
-<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># Create an instance of TwoDimPlot</span>
-<span class="ne">----&gt; </span><span class="mi">2</span> <span class="n">twodim_plot</span> <span class="o">=</span> <span class="n">TwoDimPlot</span><span class="p">()</span>
-<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="c1"># Set the units for the plot</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="n">twodim_plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s1">&#39;angstrom&#39;</span><span class="p">,</span> <span class="s1">&#39;hartree&#39;</span><span class="p">)</span>
-
-<span class="ne">NameError</span>: name &#39;TwoDimPlot&#39; is not defined
 </pre></div>
 </div>
 </div>

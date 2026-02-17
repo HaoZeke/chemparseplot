@@ -8,6 +8,10 @@ pip install chemparseplot
 pip install matplotlib
 ```
 
+This will automatically install [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+as a dependency, which provides the computational modules used by `chemparseplot`
+(surface fitting, interpolation, data types, etc.).
+
 Local clones of the GitHub repo are best served setting up the maximally
 reproducible development environment:
 
@@ -15,9 +19,8 @@ reproducible development environment:
 # Probably in $HOME/Git/Github
 git clone git@github.com:HaoZeke/chemparseplot
 cd chemparseplot
-# For a reproducible python version
-pixi shell
-pdm install -dG:all
+# Install with all dev dependencies
+uv sync --all-extras
 ```
 
 ## Auxiliary Software

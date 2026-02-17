@@ -154,6 +154,31 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnergyPath</span><span class="p">,</span> <span class="n">BasePlotter</span><span class="p">,</span> <span class="n">TwoDimPlot</span><span class="p">,</span> <span class="n">XYData</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.geomscan</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_energy_paths</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">work</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">plot</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">5</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># SPDX-FileCopyrightText: 2023-present Rohit Goswami &lt;rog32@hi.is&gt;</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="c1">#</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="c1"># SPDX-License-Identifier: MIT</span>
+<span class="ne">----&gt; </span><span class="mi">5</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span><span class="p">,</span> <span class="n">structs</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="n">ureg</span><span class="o">.</span><span class="n">setup_matplotlib</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">File</span> <span class="o">~/</span><span class="n">work</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">chemparseplot</span><span class="o">/</span><span class="n">plot</span><span class="o">/</span><span class="n">geomscan</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.interpolation</span><span class="w"> </span><span class="kn">import</span> <span class="n">spline_interp</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasePlotter</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;matplotlib&#39;
+</pre></div>
+</div>
+</div>
 </div>
 <section class="tex2jax_ignore mathjax_ignore" id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
@@ -180,9 +205,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<img alt="../_images/40709c00e3cf21e28fb8ead5f414561f87f99f67f6bb9fba065931241b1cca3a.png" src="../_images/40709c00e3cf21e28fb8ead5f414561f87f99f67f6bb9fba065931241b1cca3a.png" />
-</div>
 </div>
 </section>
 <section class="tex2jax_ignore mathjax_ignore" id="interactive-plots">
@@ -204,9 +226,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<img alt="../_images/e7b0274bb01b424ccbe7d4607c806a7c216eda550c00c9f4de46706fd3c99fff.png" src="../_images/e7b0274bb01b424ccbe7d4607c806a7c216eda550c00c9f4de46706fd3c99fff.png" />
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -214,9 +233,6 @@
 <span class="n">twodim_plot</span><span class="o">.</span><span class="n">fig</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../_images/ca4083dbfdd187ac5352e9d58be0437434a2f9cffd0946b898a3e301fbd04edb.png" src="../_images/ca4083dbfdd187ac5352e9d58be0437434a2f9cffd0946b898a3e301fbd04edb.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -232,9 +248,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<img alt="../_images/8361df5225ae46b43b4b3e7060fcab2cd3ba1ce1693112f91f42ee78705ecfc3.png" src="../_images/8361df5225ae46b43b4b3e7060fcab2cd3ba1ce1693112f91f42ee78705ecfc3.png" />
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -242,8 +255,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html">4.762594894894945 angstrom</div></div>
 </div>
 </section>
 

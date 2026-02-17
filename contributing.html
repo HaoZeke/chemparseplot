@@ -121,11 +121,12 @@
 <li><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
 <li><a class="reference internal" href="#using-co-authored-by-in-git-commits">Using Co-Authored-By in Git Commits</a></li>
 <li><a class="reference internal" href="#development">Development</a><ul>
-<li><a class="reference internal" href="#local-development">Local Development</a><ul>
-<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#setup">Setup</a></li>
+<li><a class="reference internal" href="#pre-commit">Pre-commit</a></li>
+<li><a class="reference internal" href="#readme">README</a></li>
+<li><a class="reference internal" href="#versioning">Versioning</a></li>
+<li><a class="reference internal" href="#release-process">Release Process</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -196,14 +197,24 @@ Co-authored-by: another-name &lt;another-name@example.com&gt;
 </section>
 <section id="development">
 <h2>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h2>
-<p>Your contributions make this project better for everyone. Thank you for
-participating!</p>
-<section id="local-development">
-<h3>Local Development<a class="headerlink" href="#local-development" title="Link to this heading">¶</a></h3>
-<p>Often it is useful to have <a class="reference external" href="https://prefix.dev/">pixi</a> handle the dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pixi<span class="w"> </span>shell
+<p>This project uses <a class="reference external" href="https://docs.astral.sh/uv/"><code class="docutils literal notranslate"><span class="pre">uv</span></code></a> as the primary development
+tool with <a class="reference external" href="https://hatch.pypa.io/"><code class="docutils literal notranslate"><span class="pre">hatchling</span></code></a> +
+<a class="reference external" href="https://github.com/ofek/hatch-vcs"><code class="docutils literal notranslate"><span class="pre">hatch-vcs</span></code></a> for building and versioning.</p>
+<section id="setup">
+<h3>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install in development mode with test and plotting dependencies</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>plot
+
+<span class="c1"># Run tests</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>chemparseplot<span class="w"> </span>tests
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code> dependency is resolved from git via <code class="docutils literal notranslate"><span class="pre">[tool.uv.sources]</span></code> in
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, so <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span></code> automatically fetches the latest version from
+the main branch.</p>
+</section>
+<section id="pre-commit">
+<h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Link to this heading">¶</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> job is set up on CI to enforce consistent styles. It is advisable
 to set it up locally as well using <a class="reference external" href="https://pypa.github.io/pipx/">pipx</a> for
 isolation:</p>
@@ -213,25 +224,49 @@ pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"
 pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
 </pre></div>
 </div>
-<p>Note that the <code class="docutils literal notranslate"><span class="pre">readme</span></code> file is generated from <code class="docutils literal notranslate"><span class="pre">readme_src.org</span></code> via:</p>
+</section>
+<section id="readme">
+<h3>README<a class="headerlink" href="#readme" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">readme</span></code> file is generated from <code class="docutils literal notranslate"><span class="pre">readme_src.org</span></code> via:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/org_to_md.sh<span class="w"> </span>readme_src.org<span class="w"> </span>readme.md
 </pre></div>
 </div>
-<section id="tests">
-<h4>Tests<a class="headerlink" href="#tests" title="Link to this heading">¶</a></h4>
-<p>Tests and checks are run on the CI, however locally one can use:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pdm<span class="w"> </span>run<span class="w"> </span><span class="nb">test</span>
+</section>
+<section id="versioning">
+<h3>Versioning<a class="headerlink" href="#versioning" title="Link to this heading">¶</a></h3>
+<p>Versions are derived automatically from <strong>git tags</strong> via <code class="docutils literal notranslate"><span class="pre">hatch-vcs</span></code>
+(setuptools-scm). There is no manual version field; the version is the latest
+tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.0.0</span></code> → <code class="docutils literal notranslate"><span class="pre">1.0.0</span></code>). Between tags, dev versions are generated
+automatically (e.g. <code class="docutils literal notranslate"><span class="pre">1.0.1.dev3+gabcdef</span></code>).</p>
+</section>
+<section id="release-process">
+<h3>Release Process<a class="headerlink" href="#release-process" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Ensure tests pass</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>chemparseplot<span class="w"> </span>tests
+
+<span class="c1"># 2. Build changelog (uses towncrier fragments in doc/release/upcoming_changes/)</span>
+uvx<span class="w"> </span>towncrier<span class="w"> </span>build<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;v1.0.0&quot;</span>
+
+<span class="c1"># 3. Commit the changelog</span>
+git<span class="w"> </span>add<span class="w"> </span>CHANGELOG.md<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;doc: release notes for v1.0.0&quot;</span>
+
+<span class="c1"># 4. Tag the release (hatch-vcs derives the version from this tag)</span>
+git<span class="w"> </span>tag<span class="w"> </span>-a<span class="w"> </span>v1.0.0<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Version 1.0.0&quot;</span>
+
+<span class="c1"># 5. Build and publish</span>
+uvx<span class="w"> </span>hatch<span class="w"> </span>build
+uvx<span class="w"> </span>hatch<span class="w"> </span>publish
 </pre></div>
 </div>
 </section>
 <section id="documentation">
-<h4>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h4>
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h3>
 <p>We use <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> with the <code class="docutils literal notranslate"><span class="pre">myst-parser</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sphinx-build<span class="w"> </span>doc/source<span class="w"> </span>doc/build/html
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>doc
+uv<span class="w"> </span>run<span class="w"> </span>sphinx-build<span class="w"> </span>doc/source<span class="w"> </span>doc/build/html
 python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span>-d<span class="w"> </span>doc/build/html
 </pre></div>
 </div>
-</section>
 </section>
 </section>
 </section>

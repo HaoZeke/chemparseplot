@@ -159,13 +159,13 @@
 <p>A <strong>pure-python</strong> <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>  project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:</p>
 <ul class="simple">
+<li><p>Parsers for various computational chemistry software outputs</p></li>
 <li><p>Plotting scripts for specific workflows</p></li>
-<li><p>Parsers for various software outputs</p></li>
 </ul>
-<p>This is a spin-off from <code class="docutils literal notranslate"><span class="pre">wailord</span></code> (<a class="reference external" href="https://wailord.xyz">here</a>) which is
-meant to handle aggregated runs in a specific workflow, while here the goal is
-to do no input handling and very pragmatic output parsing, with the goal of
-generating uniform plots. For more information check the <cite>features</cite> page.</p>
+<p>Computational tasks (surface fitting, interpolation, structure analysis) are
+delegated to <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code>, which is a required dependency. <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
+parses output files, calls <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code> for heavy computation, and produces
+publication-quality plots. For more information check the <cite>features</cite> page.</p>
 </section>
 <section id="documentation-toc">
 <h2>Documentation TOC<a class="headerlink" href="#documentation-toc" title="Link to this heading">¶</a></h2>

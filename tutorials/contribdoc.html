@@ -139,9 +139,9 @@
   <section class="tex2jax_ignore mathjax_ignore" id="contributing-tutorials">
 <h1>Contributing tutorials<a class="headerlink" href="#contributing-tutorials" title="Link to this heading">¶</a></h1>
 <p>The documentation for the <code class="docutils literal notranslate"><span class="pre">tutorials</span></code> mimics that of <code class="docutils literal notranslate"><span class="pre">numpy-tutorials</span></code> to a
-large extent. Since we use <code class="docutils literal notranslate"><span class="pre">pdm</span></code> as the management system, we define the
-required development dependencies in the <code class="docutils literal notranslate"><span class="pre">-dG</span> <span class="pre">nbdoc</span></code> group.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pdm<span class="w"> </span>run<span class="w"> </span>jupyter<span class="w"> </span>lab<span class="w"> </span>--ServerApp.allow_remote_access<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+large extent. The required notebook dependencies are in the <code class="docutils literal notranslate"><span class="pre">nbdoc</span></code> optional
+dependency group.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>jupyter<span class="w"> </span>lab<span class="w"> </span>--ServerApp.allow_remote_access<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--ServerApp.open_browser<span class="o">=</span>False<span class="w"> </span>--port<span class="o">=</span><span class="m">8889</span>
 </pre></div>
 </div>

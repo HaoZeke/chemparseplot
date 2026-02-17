@@ -157,14 +157,16 @@
 pip<span class="w"> </span>install<span class="w"> </span>matplotlib
 </pre></div>
 </div>
+<p>This will automatically install <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs"><code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code></a>
+as a dependency, which provides the computational modules used by <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
+(surface fitting, interpolation, data types, etc.).</p>
 <p>Local clones of the GitHub repo are best served setting up the maximally
 reproducible development environment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Probably in $HOME/Git/Github</span>
 git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HaoZeke/chemparseplot
 <span class="nb">cd</span><span class="w"> </span>chemparseplot
-<span class="c1"># For a reproducible python version</span>
-pixi<span class="w"> </span>shell
-pdm<span class="w"> </span>install<span class="w"> </span>-dG:all
+<span class="c1"># Install with all dev dependencies</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
 </pre></div>
 </div>
 <section id="auxiliary-software">
