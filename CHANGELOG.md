@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## [v1.0.1](https://github.com/HaoZeke/chemparseplot/tree/v1.0.1) - 2026-02-17
+
+### Added
+
+- CI workflow to auto-generate ``readme.md`` from ``readme_src.org`` on push to main.
+- Downstream users page (``used_by.md``) listing public projects that depend on ``chemparseplot``.
+
+
 ## [v1.0.0](https://github.com/HaoZeke/chemparseplot/tree/v1.0.0) - 2026-02-17
 
 ### Removed
