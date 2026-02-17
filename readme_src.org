@@ -7,8 +7,13 @@ file:branding/logo/chemparseplot_logo.png
 #+end_export
 A *pure-python*[fn:butwhy] project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
+- Parsers for various computational chemistry software outputs
 - Plotting scripts for specific workflows
-- Parsers for various software outputs
+
+Computational tasks (surface fitting, structure analysis, interpolation) are
+handled by [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]], which is a required dependency. ~chemparseplot~ parses
+output files, delegates heavy computation to ~rgpycrumbs~, and produces
+publication-quality plots.
 
 This is a spin-off from ~wailord~ ([[https://wailord.xyz][here]]) which is meant to handle aggregated
 runs in a specific workflow, while here the goal is to do no input handling and

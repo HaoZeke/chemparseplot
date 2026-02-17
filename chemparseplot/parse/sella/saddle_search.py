@@ -5,7 +5,7 @@ from collections import Counter
 from ase.io import read
 from rgpycrumbs.time.helpers import one_day_tdelta
 
-from chemparseplot.basetypes import SaddleMeasure, SpinID
+from rgpycrumbs.basetypes import SaddleMeasure, SpinID
 import ase
 
 import datetime

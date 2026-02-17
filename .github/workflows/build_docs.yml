@@ -2,14 +2,14 @@ name: "Build Documentation"
 on:
   push:
     branches:
-      - main  # Set a branch name to trigger deployment
+      - main
   pull_request:
 jobs:
   ci:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.12]
+        python-version: ["3.12"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -18,16 +18,18 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/checkout@v3
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v3
-      - name: Prep dependencies
-        run: pdm install -dG:all
+          fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: uv sync --extra doc
       - name: Build docs
-        run: pdm run sphinx-build doc/source doc/build/html
+        run: uv run sphinx-build doc/source doc/build/html
       - name: Deploy Documentation
         if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'HaoZeke/chemparseplot')}}
         uses: peaceiris/actions-gh-pages@v3

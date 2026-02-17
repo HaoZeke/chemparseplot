@@ -8,7 +8,7 @@ def min_e_result(eresp: Path) -> dict:
     """Reads and parses the results.dat file.
 
     Args:
-        eresp: Path to the EON results directory.
+        eresp: Path to the eOn results directory.
 
     Returns:
         A dictionary containing the parsed data from results.dat, or None if the file

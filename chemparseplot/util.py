@@ -77,7 +77,7 @@ if atoms is not None and target_coords.size > 0:
         # Find the index of the minimum distance
         closest_atom_index = np.argmin(distances) # 0-based index from ASE Atoms object
 
-        # Atom ID in EON is 0 based so no change here
+        # Atom ID in eOn is 0 based so no change here
         # XXX: LAMMPS uses 1 based indexing..
         closest_atom_id = closest_atom_index
         min_dist = distances[closest_atom_index]

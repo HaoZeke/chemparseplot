@@ -33,16 +33,25 @@ Co-authored-by: another-name <another-name@example.com>
 
 ## Development
 
-Your contributions make this project better for everyone. Thank you for
-participating!
+This project uses [`uv`](https://docs.astral.sh/uv/) as the primary development
+tool with [`hatchling`](https://hatch.pypa.io/) +
+[`hatch-vcs`](https://github.com/ofek/hatch-vcs) for building and versioning.
 
-### Local Development
-
-Often it is useful to have [pixi](https://prefix.dev/) handle the dependencies:
+### Setup
 
 ```bash
-pixi shell
+# Install in development mode with test and plotting dependencies
+uv sync --extra test --extra plot
+
+# Run tests
+uv run pytest --cov=chemparseplot tests
 ```
+
+The `rgpycrumbs` dependency is resolved from git via `[tool.uv.sources]` in
+`pyproject.toml`, so `uv sync` automatically fetches the latest version from
+the main branch.
+
+### Pre-commit
 
 A `pre-commit` job is set up on CI to enforce consistent styles. It is advisable
 to set it up locally as well using [pipx](https://pypa.github.io/pipx/) for
@@ -55,26 +64,47 @@ pipx run pre-commit run --all-files
 pipx run pre-commit install
 ```
 
-Note that the `readme` file is generated from `readme_src.org` via:
+### README
+
+The `readme` file is generated from `readme_src.org` via:
 
 ```bash
 ./scripts/org_to_md.sh readme_src.org readme.md
 ```
 
-#### Tests
+### Versioning
 
-Tests and checks are run on the CI, however locally one can use:
+Versions are derived automatically from **git tags** via `hatch-vcs`
+(setuptools-scm). There is no manual version field; the version is the latest
+tag (e.g. `v1.0.0` → `1.0.0`). Between tags, dev versions are generated
+automatically (e.g. `1.0.1.dev3+gabcdef`).
+
+### Release Process
 
 ```bash
-pdm run test
+# 1. Ensure tests pass
+uv run pytest --cov=chemparseplot tests
+
+# 2. Build changelog (uses towncrier fragments in doc/release/upcoming_changes/)
+uvx towncrier build --version "v1.0.0"
+
+# 3. Commit the changelog
+git add CHANGELOG.md && git commit -m "doc: release notes for v1.0.0"
+
+# 4. Tag the release (hatch-vcs derives the version from this tag)
+git tag -a v1.0.0 -m "Version 1.0.0"
+
+# 5. Build and publish
+uvx hatch build
+uvx hatch publish
 ```
 
-
-#### Documentation
+### Documentation
 
 We use `sphinx` with the `myst-parser`:
 
 ```bash
-sphinx-build doc/source doc/build/html
+uv sync --extra doc
+uv run sphinx-build doc/source doc/build/html
 python -m http.server -d doc/build/html
 ```

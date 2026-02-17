@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from chemparseplot.plot._aids import spline_interp
+from rgpycrumbs.interpolation import spline_interp
 from chemparseplot.plot.structs import BasePlotter
 
 

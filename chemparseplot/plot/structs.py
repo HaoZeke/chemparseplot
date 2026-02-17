@@ -3,7 +3,7 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 from cmcrameri import cm
 
-from chemparseplot.plot._aids import spline_interp
+from rgpycrumbs.interpolation import spline_interp
 
 # Define a namedtuple for energy paths
 EnergyPath = namedtuple("EnergyPath", ["label", "distance", "energy"])

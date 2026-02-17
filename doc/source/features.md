@@ -1,9 +1,11 @@
 # Features
 
-- [Scientific color maps](https://www.fabiocrameri.ch/colourmaps/) for the plots
+- **Parsing** computational chemistry output files into structured data
+- **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
     - Camera ready
-- Unit preserving
-    - Via `pint`
+- **Unit preserving** throughout via `pint`
+- **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+  for surface fitting, interpolation, and structure analysis
 
 ## Supported Engines [WIP]
 
@@ -11,3 +13,6 @@
     - Scanning energies over a degree of freedom (`OPT` scans)
     - Nudged elastic band (`NEB`) visualizations (over the "linearized" reaction
       coordinate)
+- eOn
+    - Saddle search parsing and visualization
+    - NEB path energy profiles with surface models
