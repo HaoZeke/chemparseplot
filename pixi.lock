@@ -36,7 +36,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xz-tools-5.8.1-hb9d3cd8_2.conda
       - pypi: https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/51/64/7de3c91e821a2debf77c92962ea3fe6ac2bc45d0778c1cbe15d4fce2fd94/numpy-2.3.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs?rev=d22c57da56e3dfab247ea4c34bac93f1d4427fdc#d22c57da56e3dfab247ea4c34bac93f1d4427fdc
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#a989393cb545e9f3aa8bcc7546fa89453d20a6e5
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2
   sha256: fe51de6107f9edc7aa4f786a70f4a883943bc9d39b3bb7307c04c41410990726
@@ -288,9 +288,9 @@ packages:
   purls: []
   size: 282480
   timestamp: 1740379431762
-- pypi: git+https://github.com/HaoZeke/rgpycrumbs?rev=d22c57da56e3dfab247ea4c34bac93f1d4427fdc#d22c57da56e3dfab247ea4c34bac93f1d4427fdc
+- pypi: git+https://github.com/HaoZeke/rgpycrumbs#a989393cb545e9f3aa8bcc7546fa89453d20a6e5
   name: rgpycrumbs
-  version: 0.1.4.dev8+gd22c57da5
+  version: 0.1.4.dev9+ga989393cb
   requires_dist:
   - click>=8.1
   - numpy>=1.24
