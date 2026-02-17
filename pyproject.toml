@@ -45,7 +45,7 @@ dynamic = [
 dependencies = [
   "numpy>=1.26.2",
   "pint>=0.22",
-  "rgpycrumbs",
+  "rgpycrumbs>=1.0.0",
 ]
 [project.optional-dependencies]
 doc = [
