@@ -40,7 +40,7 @@ templates_path = ["_templates"]
 exclude_patterns = []
 
 # Sitemap Config
-html_baseurl = "https://haozeke.github.io/chemparseplot"
+html_baseurl = "https://chemparseplot.rgoswami.me"
 
 # MathJax Configuration
 mathjax_config = {
