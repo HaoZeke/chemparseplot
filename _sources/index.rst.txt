@@ -28,6 +28,7 @@ Documentation TOC
    installation
    contributing
    features
+   used_by
    worklog/graphTrials
 
 Features

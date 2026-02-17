@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; chemparseplot 0.0.2 documentation</title>
+    <title>Used By &#8212; chemparseplot 0.0.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="_static/library/library.css?v=fa49c7df" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -21,11 +21,11 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/installation.html" />
+    <link rel="canonical" href="https://haozeke.github.io/chemparseplot/used_by.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Contributing to chemparseplot" href="contributing.html" />
-    <link rel="prev" title="Geometry Scan" href="tutorials/orca/geomscan.html" />
+    <link rel="next" title="Overview" href="worklog/graphTrials.html" />
+    <link rel="prev" title="Features" href="features.html" />
  
 
 <link rel="stylesheet" id="sphinx-library-type" href="_static/library/type-book.css" type="text/css" />
@@ -100,13 +100,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#auxiliary-software">Auxiliary Software</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="used_by.html">Used By</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Used By</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#libraries">Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reproducibility-packages">Reproducibility Packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#academic-work">Academic Work</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
@@ -114,8 +116,10 @@
 
 <h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#auxiliary-software">Auxiliary Software</a></li>
+<li><a class="reference internal" href="#">Used By</a><ul>
+<li><a class="reference internal" href="#libraries">Libraries</a></li>
+<li><a class="reference internal" href="#reproducibility-packages">Reproducibility Packages</a></li>
+<li><a class="reference internal" href="#academic-work">Academic Work</a></li>
 </ul>
 </li>
 </ul>
@@ -144,42 +148,39 @@
     <nav class="related breadcrumbs" role="navigation">
   <a class="nav-item" href="index.html">Index</a>
   <span class="delim"> &#187;</span>
-  <span class="nav-item">Installation</span>
+  <span class="nav-item">Used By</span>
     </nav>
     
 
     <main class="body" role="main" id="main">
       
-  <section class="tex2jax_ignore mathjax_ignore" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
-<p>The easiest way to install <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>chemparseplot
-<span class="c1"># For plotting</span>
-pip<span class="w"> </span>install<span class="w"> </span>matplotlib
-</pre></div>
-</div>
-<p>This will automatically install <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs"><code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code></a>
-as a dependency, which provides the computational modules used by <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
-(surface fitting, interpolation, data types, etc.).</p>
-<p>Local clones of the GitHub repo are best served setting up the maximally
-reproducible development environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Probably in $HOME/Git/Github</span>
-git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HaoZeke/chemparseplot
-<span class="nb">cd</span><span class="w"> </span>chemparseplot
-<span class="c1"># Install with all dev dependencies</span>
-uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
-</pre></div>
-</div>
-<section id="auxiliary-software">
-<h2>Auxiliary Software<a class="headerlink" href="#auxiliary-software" title="Link to this heading">¶</a></h2>
-<p>Since <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to facilitate working with the results of
-computational chemistry / atomic physics codes, some links to commonly used
-tools are enumerated below. Note that technically it is the <strong>outputs</strong> of these
-codes which is required, not the codes themselves.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="used-by">
+<h1>Used By<a class="headerlink" href="#used-by" title="Link to this heading">¶</a></h1>
+<p>The following projects use <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> as a dependency or tool.</p>
+<section id="libraries">
+<h2>Libraries<a class="headerlink" href="#libraries" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ORCA</span></code> can be obtained (freely) after <a class="reference external" href="https://orcaforum.kofo.mpg.de/app.php/portal">registering on their forum</a></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ASE</span></code>, the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">atomic simulation environment</a>, is also on PyPI and can be installed via <code class="docutils literal notranslate"><span class="pre">pip</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">eON</span></code> is <a class="reference external" href="https://eondocs.org/">freely available</a> and on <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p></li>
+<li><p><a class="reference external" href="https://github.com/HaoZeke/pychumpchem">pychumpchem</a> — Input generators for
+CHUMP simulations. Companion project to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> for chemical input
+preparation.</p></li>
+</ul>
+</section>
+<section id="reproducibility-packages">
+<h2>Reproducibility Packages<a class="headerlink" href="#reproducibility-packages" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/HaoZeke/brms_idrot_repro">brms_idrot_repro</a> — Bayesian
+reaction mechanism studies reproduction package. Uses both <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> and
+<code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code> for parsing and analysis.</p></li>
+</ul>
+</section>
+<section id="academic-work">
+<h2>Academic Work<a class="headerlink" href="#academic-work" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Rohit Goswami, <em>Efficient Exploration of Chemical Kinetics</em>, Doctoral
+dissertation, University of Iceland, 2025.
+arXiv: <a class="reference external" href="https://arxiv.org/abs/2510.21368">2510.21368</a>,
+doi: <a class="reference external" href="https://doi.org/10.48550/arXiv.2510.21368">10.48550/arXiv.2510.21368</a>.
+Uses <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> for parsing and plotting computational chemistry outputs.</p></li>
 </ul>
 </section>
 </section>
@@ -187,11 +188,11 @@ codes which is required, not the codes themselves.</p>
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="tutorials/orca/geomscan.html" title="Previous">
-    &larr; Geometry Scan
+  <a class="prev" href="features.html" title="Previous">
+    &larr; Features
   </a>
-  <a class="next" href="contributing.html" title="Next">
-    Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> &rarr;
+  <a class="next" href="worklog/graphTrials.html" title="Next">
+    Overview &rarr;
   </a>
   <div class="clear"></div>
     </nav>
@@ -207,7 +208,7 @@ codes which is required, not the codes themselves.</p>
   Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
   <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
   
-  <a href="_sources/installation.md.txt" rel="nofollow">Page source</a>
+  <a href="_sources/used_by.md.txt" rel="nofollow">Page source</a>
 </footer>
   </body>
 </html>
