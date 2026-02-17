@@ -16,32 +16,6 @@ include = [
 ]
 
 
-
-[tool.pdm.dev-dependencies]
-lint = [
-    "ruff>=0.1.6",
-]
-test = [
-    "pytest>=7.4.3",
-    "pytest-cov>=4.1.0",
-]
-nbdoc = [
-    "jupyterlab>=4.0.9",
-    "jupytext>=1.15.2",
-    "ase>=3.22.1",
-]
-release_aid = [
-    "tbump>=6.11.0",
-    "towncrier>=23.11.0",
-]
-
-[tool.pdm.scripts]
-check_ruff = "ruff ."
-ruff_fix = "ruff --fix ."
-ruff_format = "ruff format ."
-lint = {composite = ["ruff_fix", "ruff_format"]}
-test = "pytest --cov=chemparseplot tests"
-
 [project]
 name = "chemparseplot"
 description = "Parsers and plotting tools for computational chemistry"
@@ -55,12 +29,11 @@ license = {text = "MIT"}
 authors = [
     { name = "Rohit Goswami", email = "rog32@hi.is" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -91,6 +64,13 @@ plot = [
   "cmcrameri>=1.7",
   "matplotlib>=3.8.2",
 ]
+test = [
+  "pytest>=7.4.3",
+  "pytest-cov>=4.1.0",
+]
+lint = [
+  "ruff>=0.1.6",
+]
 [project.urls]
 Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
 Issues = "https://github.com/HaoZeke/chemparseplot/issues"
@@ -102,6 +82,7 @@ source = "vcs"
 [tool.ruff]
 target-version = "py312"
 line-length = 90
+[tool.ruff.lint]
 select = [
   "A",
   "ARG",
@@ -146,13 +127,13 @@ unfixable = [
   "F401",
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["chemparseplot"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # Tests can use magic values, assertions, and relative imports
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 # __init__.py can import without use

@@ -66,7 +66,7 @@ Note that the `readme` file is generated from `readme_src.org` via:
 Tests and checks are run on the CI, however locally one can use:
 
 ```bash
-pdm run test
+uv run pytest --cov=chemparseplot tests
 ```
 
 

@@ -19,9 +19,8 @@ reproducible development environment:
 # Probably in $HOME/Git/Github
 git clone git@github.com:HaoZeke/chemparseplot
 cd chemparseplot
-# For a reproducible python version
-pixi shell
-pdm install -dG:all
+# Install with all dev dependencies
+uv sync --all-extras
 ```
 
 ## Auxiliary Software
