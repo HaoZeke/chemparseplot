@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "chemparseplot"
 version = "0.0.2"
 description = "Parsers and plotting tools for computational chemistry."
@@ -12,4 +12,4 @@ platforms = ["linux-64"]
 python = "==3.12"
 
 [pypi-dependencies]
-rgpycrumbs = { path = "./../rgpycrumbs", editable=true}
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", rev = "d22c57da56e3dfab247ea4c34bac93f1d4427fdc", editable = true }
