@@ -3,13 +3,13 @@ import logging
 from collections import namedtuple
 from dataclasses import dataclass
 
-import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
+from rgpycrumbs.surfaces import get_surface_model
 from scipy.interpolate import (
     CubicHermiteSpline,
     griddata,
@@ -17,8 +17,6 @@ from scipy.interpolate import (
     splrep,
 )
 from scipy.signal import savgol_filter
-
-from rgpycrumbs.surfaces import get_surface_model
 
 log = logging.getLogger(__name__)
 
@@ -310,255 +308,141 @@ def plot_landscape_surface(
     r_start, p_start = rmsd_r[0], rmsd_p[0]
     r_end, p_end = rmsd_r[-1], rmsd_p[-1]
 
-    vec_r = r_end - r_start
-    vec_p = p_end - p_start
+    vec_r, vec_p = r_end - r_start, p_end - p_start
     path_norm = np.hypot(vec_r, vec_p)
+    u_r, u_p = vec_r / path_norm, vec_p / path_norm
+    v_r, v_p = -u_p, u_r
 
-    u_r = vec_r / path_norm
-    u_p = vec_p / path_norm
-    v_r = -u_p
-    v_p = u_r
-
+    # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
         s_data = (rmsd_r - r_start) * u_r + (rmsd_p - p_start) * u_p
         d_data = (rmsd_r - r_start) * v_r + (rmsd_p - p_start) * v_p
-
         s_min, s_max = s_data.min(), s_data.max()
         d_min, d_max = d_data.min(), d_data.max()
-        
+
         if extra_points is not None and len(extra_points) > 0:
-            extra_r, extra_p = extra_points[:, 0], extra_points[:, 1]
-            extra_s = (extra_r - r_start) * u_r + (extra_p - p_start) * u_p
-            extra_d = (extra_r - r_start) * v_r + (extra_p - p_start) * v_p
-            s_min, s_max = np.min([s_min, extra_s.min()]), np.max([s_max, extra_s.max()])
-            d_min, d_max = np.min([d_min, extra_d.min()]), np.max([d_max, extra_d.max()])
+            extra_s = (extra_points[:, 0] - r_start) * u_r + (
+                extra_points[:, 1] - p_start
+            ) * u_p
+            extra_d = (extra_points[:, 0] - r_start) * v_r + (
+                extra_points[:, 1] - p_start
+            ) * v_p
+            s_min, s_max = min(s_min, extra_s.min()), max(s_max, extra_s.max())
+            d_min, d_max = min(d_min, extra_d.min()), max(d_max, extra_d.max())
 
-        nx, ny = 150, 150
-        x_margin = (s_max - s_min) * 0.1
-        y_margin = (d_max - d_min) * 0.2
-        if y_margin < 0.05:
-            y_margin = 0.1
-
-        xg_1d = np.linspace(s_min - x_margin, s_max + x_margin, nx)
-        yg_1d = np.linspace(d_min - y_margin, d_max + y_margin, ny)
+        xg_1d = np.linspace(
+            s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
+        )
+        yg_1d = np.linspace(d_min - 0.1, d_max + 0.1, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
-
-        plot_x_data = s_data
-        plot_y_data = d_data
-
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
         p_min, p_max = rmsd_p.min(), rmsd_p.max()
+        if extra_points is not None:
+            r_min, r_max = (
+                min(r_min, extra_points[:, 0].min()),
+                max(r_max, extra_points[:, 0].max()),
+            )
+            p_min, p_max = (
+                min(p_min, extra_points[:, 1].min()),
+                max(p_max, extra_points[:, 1].max()),
+            )
 
-        if extra_points is not None and len(extra_points) > 0:
-            r_min, r_max = np.min([r_min, extra_points[:, 0].min()]), np.max([r_max, extra_points[:, 0].max()])
-            p_min, p_max = np.min([p_min, extra_points[:, 1].min()]), np.max([p_max, extra_points[:, 1].max()])
-
-        nx, ny = 150, 150
-        x_margin = (r_max - r_min) * 0.1
-        y_margin = (p_max - p_min) * 0.1
-
-        xg_1d = np.linspace(r_min - x_margin, r_max + x_margin, nx)
-        yg_1d = np.linspace(p_min - y_margin, p_max + y_margin, ny)
+        xg_1d = np.linspace(
+            r_min - (r_max - r_min) * 0.1, r_max + (r_max - r_min) * 0.1, 150
+        )
+        yg_1d = np.linspace(
+            p_min - (p_max - p_min) * 0.1, p_max + (p_max - p_min) * 0.1, 150
+        )
         xg, yg = np.meshgrid(xg_1d, yg_1d)
 
-    if method == "grid":
-        zg = griddata((plot_x_data, plot_y_data), z_data, (xg, yg), method="cubic")
-    else:
-        ModelClass = get_surface_model(method)
-        is_gradient_model = method.startswith("grad_")
+    # --- 2. Hyperparameter Optimization (Always Needed for Noise Contours) ---
+    ModelClass = get_surface_model(method)
+    is_gradient_model = method.startswith("grad_")
+    h_ls = rbf_smooth if rbf_smooth and rbf_smooth > 1e-4 else 0.5
+    h_noise = 1e-2
 
-        # --- 2. Hyperparameter Optimization (Learning Phase) ---
-        # We learn physics (length_scale) from the *real* data (final path),
-        # without synthetic augmentation artifacts.
-        # 'rbf_smooth' passed from estimate_rbf_smoothing is actually a distance metric.
-        # It is a good GUESS for length_scale, but terrible for noise (too high).
+    mask_opt = (
+        (step_data == step_data.max())
+        if step_data is not None
+        else np.ones(len(z_data), dtype=bool)
+    )
+    opt_kwargs = {
+        "x": np.column_stack([rmsd_r, rmsd_p])[mask_opt],
+        "y": z_data[mask_opt],
+        "ls": h_ls,
+        "smoothing": h_noise,
+        "optimize": True,
+    }
+    if is_gradient_model:
+        opt_kwargs["gradients"] = np.column_stack([grad_r, grad_p])[mask_opt]
 
-        # Initial Guess for Length Scale (Correlation distance)
-        heuristic_ls = rbf_smooth if rbf_smooth is not None and rbf_smooth > 1e-4 else 0.5
-
-        # Initial Guess for Noise (Data fidelity)
-        heuristic_noise = 1e-2
-        best_ls, best_noise = heuristic_ls, heuristic_noise
-
-        pts_clean = np.column_stack([rmsd_r, rmsd_p])
-        vals_clean = z_data
-
-        if grad_r is not None:
-            grads_clean = np.column_stack([grad_r, grad_p])
-        else:
-            grads_clean = np.zeros_like(pts_clean)
-
-        # Optimization Subset Selection
-        if step_data is not None:
-            max_step = step_data.max()
-            is_final = step_data == max_step
-            mask_opt = (
-                is_final if np.sum(is_final) > 3 else np.ones(len(z_data), dtype=bool)
-            )
-        else:
-            mask_opt = np.ones(len(z_data), dtype=bool)
-
-        log.info(f"Optimizing hyperparameters on subset of {np.sum(mask_opt)} points...")
-
-        # Jitter to prevent singular matrix during opt
-        rng = np.random.default_rng(42)
-        jitter_opt = rng.normal(0, 1e-6, size=pts_clean[mask_opt].shape)
-
-        opt_kwargs = {
-            "x": pts_clean[mask_opt] + jitter_opt,
-            "y": vals_clean[mask_opt],
-            "smoothing": heuristic_noise,
-            "length_scale": heuristic_ls,
-            "ls": heuristic_ls,
-            "optimize": True,
-        }
-
-        if is_gradient_model:
-            opt_kwargs["gradients"] = grads_clean[mask_opt]
-
-        try:
-            if is_gradient_model:
-                learner = ModelClass(**opt_kwargs)
-            else:
-                learner = ModelClass(
-                    x_obs=opt_kwargs["x"], y_obs=opt_kwargs["y"], **opt_kwargs
-                )
-
-            if hasattr(learner, "ls"):
-                best_ls = learner.ls
-            if hasattr(learner, "epsilon"):
-                best_ls = learner.epsilon  # IMQ uses epsilon
-            if hasattr(learner, "sm"):
-                best_noise = learner.sm  # TPS uses sm
-            if hasattr(learner, "noise"):
-                best_noise = learner.noise
-
-            log.info(f"Learned Params :: LS/Eps: {best_ls:.4f}, Noise: {best_noise:.4f}")
-
-        except Exception as e:
-            log.warning(f"Optimization failed ({e}). Using heuristics.")
-            best_ls, best_noise = heuristic_ls, heuristic_noise
-
-        # --- 3. Data Augmentation (Visualization Phase) ---
-        # Now we build the full dataset for the final high-res surface.
-        # We add "helper" points to force the surface to look good (bowls at minima).
-
-        # A. Minima Augmentation
-        # Increase radius/dE slightly so the GP actually "sees" the well features
-        # Radius 0.001 is often smaller than the grid resolution
-        aug_radius = 0.02
-        aug_dE = 0.05
-
-        if not is_gradient_model:
-            r_aug, p_aug, z_aug = _augment_minima_points(
-                rmsd_r, rmsd_p, z_data, radius=aug_radius, dE=aug_dE, num_pts=12
-            )
-        else:
-            # For gradient models, we usually don't need ring augmentation if gradients are correct.
-            # But if we do, we must be careful. Let's trust the gradients at the minima
-            # (which should be zero) instead of adding fake rings.
-            r_aug, p_aug, z_aug = rmsd_r, rmsd_p, z_data
-
-        if is_gradient_model:
-            final_pts = np.column_stack([r_aug, p_aug])
-            final_vals = z_aug
-            # Ensure gradients match shape (no augmentation logic needed if we skip rings)
-            final_grads = (
-                np.column_stack([grad_r, grad_p])
-                if grad_r is not None
-                else np.zeros_like(final_pts)
-            )
-        else:
-            # Standard Models: Bake gradients into geometry
-            if grad_r is not None:
-                # Use the helper function on the ORIGINAL data first
-                # (Augmenting gradients on synthetic minima rings is overkill/messy)
-                r_grad_aug, p_grad_aug, z_grad_aug = _augment_with_gradients(
-                    rmsd_r, rmsd_p, z_data, grad_r, grad_p
-                )
-
-                # Combine: Minima Rings + Gradient Helpers
-                # Note: r_aug contains [original + rings]. r_grad_aug contains [original + gradient_helpers].
-                # We need [original + rings + gradient_helpers].
-
-                # Extract just the rings (tail of aug)
-                ring_start_idx = len(rmsd_r)
-                r_rings = r_aug[ring_start_idx:]
-                p_rings = p_aug[ring_start_idx:]
-                z_rings = z_aug[ring_start_idx:]
-
-                final_r = np.concatenate([r_grad_aug, r_rings])
-                final_p = np.concatenate([p_grad_aug, p_rings])
-                final_vals = np.concatenate([z_grad_aug, z_rings])
-                final_pts = np.column_stack([final_r, final_p])
-                final_grads = None
-            else:
-                # No gradients available
-                final_pts = np.column_stack([r_aug, p_aug])
-                final_vals = z_aug
-                final_grads = None
-
-        # --- 4. Final Fit & Prediction ---
-        log.info(f"Fitting final surface on {len(final_vals)} points...")
-
-        # # Jitter final points
-        # final_pts += rng.normal(0, 1e-6, size=final_pts.shape)
-
-        # Final instantiation kwargs
-        fit_kwargs = {
-            "smoothing": best_noise,
-            "length_scale": np.min([best_ls, 1.0]),
-            "optimize": False,
-        }
-
-        if is_gradient_model:
-            rbf = ModelClass(
-                x=final_pts, y=final_vals, gradients=final_grads, **fit_kwargs
-            )
-        else:
-            rbf = ModelClass(x_obs=final_pts, y_obs=final_vals, **fit_kwargs)
-
-        if project_path:
-            grid_r_eval = r_start + xg.ravel() * u_r + yg.ravel() * v_r
-            grid_p_eval = p_start + xg.ravel() * u_p + yg.ravel() * v_p
-            grid_pts_eval = np.column_stack([grid_r_eval, grid_p_eval])
-        else:
-            grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
-
-        zg_flat = rbf(grid_pts_eval)
-        zg_jax = jnp.asarray(zg_flat).reshape(xg.shape)
-
-        if variance_threshold is not None and hasattr(rbf, "predict_var"):
-            var_flat = rbf.predict_var(grid_pts_eval)
-            var_jax = jnp.asarray(var_flat).reshape(xg.shape)
-            effective_threshold = best_noise + variance_threshold
-            zg_jax = zg_jax.at[var_jax > effective_threshold].set(jnp.nan)
-
-        zg = np.asarray(zg_jax)
-
-    # --- Plotting ---
     try:
-        colormap = plt.get_cmap(cmap)
-    except ValueError:
-        colormap = plt.get_cmap("viridis")
+        learner = (
+            ModelClass(**opt_kwargs)
+            if is_gradient_model
+            else ModelClass(x_obs=opt_kwargs["x"], y_obs=opt_kwargs["y"], **opt_kwargs)
+        )
+        best_ls = getattr(learner, "ls", getattr(learner, "epsilon", h_ls))
+        best_noise = getattr(learner, "noise", getattr(learner, "sm", h_noise))
+    except:
+        best_ls, best_noise = h_ls, h_noise
 
-    # High-res contourf
-    ax.contourf(xg, yg, zg, levels=20, cmap=colormap, alpha=0.75, zorder=10)
-    # ax.contour(
-    #     xg, yg, zg, levels=15, colors="white", alpha=0.3, linewidths=0.5, zorder=11
-    # )
+    # --- 3. Prediction and Variance ---
+    if project_path:
+        grid_pts_eval = np.column_stack(
+            [
+                r_start + xg.ravel() * u_r + yg.ravel() * v_r,
+                p_start + xg.ravel() * u_p + yg.ravel() * v_p,
+            ]
+        )
+    else:
+        grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
+
+    rbf = ModelClass(
+        x=np.column_stack([rmsd_r, rmsd_p]),
+        y=z_data,
+        gradients=np.column_stack([grad_r, grad_p]) if grad_r is not None else None,
+        length_scale=best_ls,
+        smoothing=best_noise,
+        optimize=False,
+    )
+
+    zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
+    var_grid = (
+        np.array(rbf.predict_var(grid_pts_eval).reshape(xg.shape))
+        if hasattr(rbf, "predict_var")
+        else None
+    )
+
+    # --- 4. Plotting ---
+    ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
+    if var_grid is not None:
+        v_levs = np.sort(
+            [best_noise + 0.05, best_noise + variance_threshold, best_noise + 0.95]
+        )
+        v_con = ax.contour(
+            xg,
+            yg,
+            var_grid,
+            levels=v_levs,
+            colors="black",
+            linestyles="dashed",
+            alpha=0.8,
+            zorder=12,
+        )
+        ax.clabel(v_con, inline=True, fontsize=8, fmt=lambda x: f"Var: {x:.2f}")
 
     if show_pts:
-        # TODO(rg): will a user every want to control this?
-        # Filter: Only show points that are NOT augmented (step != -1)
-        if step_data is not None:
-            mask = step_data != -1
-            px, py = plot_x_data[mask], plot_y_data[mask]
-        else:
-            px, py = plot_x_data, plot_y_data
-
-        ax.scatter(px, py, c="k", s=12, marker=".", alpha=0.6, zorder=40)
+        ax.scatter(
+            s_data if project_path else rmsd_r,
+            d_data if project_path else rmsd_p,
+            c="k",
+            s=12,
+            marker=".",
+            alpha=0.6,
+            zorder=40,
+        )
 
 
 def plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True):
