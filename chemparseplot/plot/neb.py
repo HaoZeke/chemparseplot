@@ -296,6 +296,7 @@ def plot_landscape_surface(
     rbf_smooth=None,
     cmap="viridis",
     show_pts=True,
+    variance_threshold=None,
 ):
     """
     Plots the 2D landscape surface using RBF or Grid interpolation.
@@ -480,7 +481,16 @@ def plot_landscape_surface(
             rbf = ModelClass(x_obs=final_pts, y_obs=final_vals, **fit_kwargs)
 
         # Batch prediction
-        zg = rbf(np.column_stack([xg.ravel(), yg.ravel()])).reshape(xg.shape)
+        grid_pts = np.column_stack([xg.ravel(), yg.ravel()])
+        zg_flat = rbf(grid_pts)
+        zg = zg_flat.reshape(xg.shape)
+
+        if variance_threshold is not None and hasattr(rbf, "predict_var"):
+            var_flat = rbf.predict_var(grid_pts)
+            var_grid = var_flat.reshape(xg.shape)
+            # Adjust threshold using the learned noise baseline
+            effective_threshold = best_noise + variance_threshold
+            zg = zg.at[var_grid > effective_threshold].set(np.nan)
 
     # --- Plotting ---
     try:
