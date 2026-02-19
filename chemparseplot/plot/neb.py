@@ -12,7 +12,6 @@ from matplotlib.patches import ArrowStyle
 from rgpycrumbs.surfaces import get_surface_model
 from scipy.interpolate import (
     CubicHermiteSpline,
-    griddata,
     splev,
     splrep,
 )
