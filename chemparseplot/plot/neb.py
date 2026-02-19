@@ -299,6 +299,7 @@ def plot_landscape_surface(
     show_pts=True,
     variance_threshold=0.05,
     project_path=True,
+    extra_points=None,
 ):
     """
     Plots the 2D landscape surface. If project_path evaluates to True,
@@ -322,30 +323,44 @@ def plot_landscape_surface(
         s_data = (rmsd_r - r_start) * u_r + (rmsd_p - p_start) * u_p
         d_data = (rmsd_r - r_start) * v_r + (rmsd_p - p_start) * v_p
 
+        s_min, s_max = s_data.min(), s_data.max()
+        d_min, d_max = d_data.min(), d_data.max()
+        
+        if extra_points is not None and len(extra_points) > 0:
+            extra_r, extra_p = extra_points[:, 0], extra_points[:, 1]
+            extra_s = (extra_r - r_start) * u_r + (extra_p - p_start) * u_p
+            extra_d = (extra_r - r_start) * v_r + (extra_p - p_start) * v_p
+            s_min, s_max = np.min([s_min, extra_s.min()]), np.max([s_max, extra_s.max()])
+            d_min, d_max = np.min([d_min, extra_d.min()]), np.max([d_max, extra_d.max()])
+
         nx, ny = 150, 150
-        x_margin = (s_data.max() - s_data.min()) * 0.1
-        y_margin = (d_data.max() - d_data.min()) * 0.2
+        x_margin = (s_max - s_min) * 0.1
+        y_margin = (d_max - d_min) * 0.2
         if y_margin < 0.05:
             y_margin = 0.1
 
-        xg_1d = np.linspace(s_data.min() - x_margin, s_data.max() + x_margin, nx)
-        yg_1d = np.linspace(d_data.min() - y_margin, d_data.max() + y_margin, ny)
+        xg_1d = np.linspace(s_min - x_margin, s_max + x_margin, nx)
+        yg_1d = np.linspace(d_min - y_margin, d_max + y_margin, ny)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
 
         plot_x_data = s_data
         plot_y_data = d_data
 
     else:
+        r_min, r_max = rmsd_r.min(), rmsd_r.max()
+        p_min, p_max = rmsd_p.min(), rmsd_p.max()
+
+        if extra_points is not None and len(extra_points) > 0:
+            r_min, r_max = np.min([r_min, extra_points[:, 0].min()]), np.max([r_max, extra_points[:, 0].max()])
+            p_min, p_max = np.min([p_min, extra_points[:, 1].min()]), np.max([p_max, extra_points[:, 1].max()])
+
         nx, ny = 150, 150
-        x_margin = (rmsd_r.max() - rmsd_r.min()) * 0.1
-        y_margin = (rmsd_p.max() - rmsd_p.min()) * 0.1
+        x_margin = (r_max - r_min) * 0.1
+        y_margin = (p_max - p_min) * 0.1
 
-        xg_1d = np.linspace(rmsd_r.min() - x_margin, rmsd_r.max() + x_margin, nx)
-        yg_1d = np.linspace(rmsd_p.min() - y_margin, rmsd_p.max() + y_margin, ny)
+        xg_1d = np.linspace(r_min - x_margin, r_max + x_margin, nx)
+        yg_1d = np.linspace(p_min - y_margin, p_max + y_margin, ny)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
-
-        plot_x_data = rmsd_r
-        plot_y_data = rmsd_p
 
     if method == "grid":
         zg = griddata((plot_x_data, plot_y_data), z_data, (xg, yg), method="cubic")
