@@ -421,10 +421,20 @@ def plot_landscape_surface(
 
     # --- 4. Plotting ---
     ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
+    # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
-        v_levs = np.sort(
-            [best_noise + 0.05, best_noise + variance_threshold, best_noise + 0.95]
-        )
+        # Get the actual min and max variance currently in the grid
+        v_min, v_max = var_grid.min(), var_grid.max()
+        v_range = v_max - v_min
+
+        # Calculate levels as 5%, 95%, and the user requested threshold of the
+        # visual range with an epsilon to avoid errors for flat variances
+        v_levs = [
+            v_min + 0.05 * v_range + 1e-6,
+            v_min + variance_threshold * v_range + 1e-6,
+            v_min + 0.95 * v_range + 1e-6,
+        ]
+
         v_con = ax.contour(
             xg,
             yg,
@@ -435,7 +445,13 @@ def plot_landscape_surface(
             alpha=0.8,
             zorder=12,
         )
-        ax.clabel(v_con, inline=True, fontsize=8, fmt=lambda x: f"Var: {x:.2f}")
+        ax.clabel(
+            v_con,
+            inline=True,
+            fontsize=8,
+            inline_spacing=50,
+            fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
+        )
 
     if show_pts:
         ax.scatter(
