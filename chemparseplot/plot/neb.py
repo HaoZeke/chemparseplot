@@ -361,7 +361,15 @@ def plot_landscape_surface(
         )
         xg, yg = np.meshgrid(xg_1d, yg_1d)
 
-    # --- 2. Hyperparameter Optimization (Always Needed for Noise Contours) ---
+    if step_data is not None:
+        actual_nimags = int(np.sum(step_data == step_data.max()))
+    else:
+        actual_nimags = None
+
+    # --- 2. Hyperparameter Optimization ---
+    if "imq" in method and len(rmsd_r) > 1000:
+        log.warning(f"More than 1000 points, switching to Nystrom")
+        method = method + "_ny"
     ModelClass = get_surface_model(method)
     is_gradient_model = method.startswith("grad_")
     h_ls = rbf_smooth if rbf_smooth and rbf_smooth > 1e-4 else 0.5
@@ -377,6 +385,7 @@ def plot_landscape_surface(
         "y": z_data[mask_opt],
         "ls": h_ls,
         "smoothing": h_noise,
+        "nimags": len(z_data),
         "optimize": True,
     }
     if is_gradient_model:
@@ -390,7 +399,8 @@ def plot_landscape_surface(
         )
         best_ls = getattr(learner, "ls", getattr(learner, "epsilon", h_ls))
         best_noise = getattr(learner, "noise", getattr(learner, "sm", h_noise))
-    except:
+    except Exception as e:
+        log.warning(f"Optimization failed: {e}")
         best_ls, best_noise = h_ls, h_noise
 
     # --- 3. Prediction and Variance ---
@@ -411,6 +421,7 @@ def plot_landscape_surface(
         length_scale=best_ls,
         smoothing=best_noise,
         optimize=False,
+        nimags=actual_nimags,  # Pass the correct integer here too
     )
 
     zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
