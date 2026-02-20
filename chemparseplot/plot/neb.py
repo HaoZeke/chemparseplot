@@ -106,7 +106,9 @@ def plot_structure_inset(
 ):
     """Plots a single structure as an annotation inset."""
     img_data = render_structure_to_image(atoms, zoom, rotation)
-    imagebox = OffsetImage(img_data, zoom=zoom)
+    # Apply the same unified scaling as the strip
+    effective_zoom = zoom * 0.45
+    imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
     # Default arrow properties matching plt_neb.py
     default_arrow = {
