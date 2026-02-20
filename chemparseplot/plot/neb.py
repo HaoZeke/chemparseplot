@@ -10,6 +10,7 @@ from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
 from rgpycrumbs.surfaces import get_surface_model
+import scipy.ndimage as ndimage
 from scipy.interpolate import (
     CubicHermiteSpline,
     splev,
@@ -418,6 +419,9 @@ def plot_landscape_surface(
         if hasattr(rbf, "predict_var")
         else None
     )
+    var_grid = ndimage.gaussian_filter(
+        var_grid, sigma=2
+    )  # smoothing variances
 
     # --- 4. Plotting ---
     ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
