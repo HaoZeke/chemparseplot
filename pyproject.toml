@@ -45,8 +45,9 @@ dynamic = [
 dependencies = [
   "numpy>=1.26.2",
   "pint>=0.22",
-  "rgpycrumbs>=1.0.0",
+  "rgpycrumbs>=1.1.0",
 ]
+
 [project.optional-dependencies]
 doc = [
   "mdit-py-plugins>=0.3.4",

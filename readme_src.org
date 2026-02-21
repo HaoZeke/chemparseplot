@@ -18,6 +18,12 @@ publication-quality plots.
 This is a spin-off from ~wailord~ ([[https://wailord.xyz][here]]) which is meant to handle aggregated
 runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
+
+** Ecosystem Overview
+   ~chemparseplot~ is part of the ~rgpycrumbs~ suite of interlinked libraries.
+
+[[file:branding/logo/ecosystem.png]]
+
 ** Features
 - [[https://www.fabiocrameri.ch/colourmaps/][Scientific color maps]] for the plots
   + Camera ready
