@@ -294,7 +294,7 @@ requires-dist = [
     { name = "pint", specifier = ">=0.22" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.4.3" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.1.0" },
-    { name = "rgpycrumbs", directory = "../rgpycrumbs" },
+    { name = "rgpycrumbs", git = "https://github.com/HaoZeke/rgpycrumbs" },
     { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.1.6" },
     { name = "sphinx", marker = "extra == 'doc'", specifier = ">=7.2.6" },
     { name = "sphinx-autodoc2", marker = "extra == 'doc'", specifier = ">=0.5" },
@@ -2171,28 +2171,14 @@ wheels = [
 
 [[package]]
 name = "rgpycrumbs"
-source = { directory = "../rgpycrumbs" }
+version = "1.0.1"
+source = { git = "https://github.com/HaoZeke/rgpycrumbs#32def444ba3381ee5507eb6018bbe66bfdaf8e40" }
 dependencies = [
     { name = "click" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "rich" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "ase", marker = "extra == 'analysis'", specifier = ">=3.22" },
-    { name = "click", specifier = ">=8.1" },
-    { name = "jax", marker = "extra == 'surfaces'", specifier = ">=0.4" },
-    { name = "numpy", specifier = ">=1.24" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=9.0" },
-    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.1.0" },
-    { name = "rich", specifier = ">=13.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.1.6" },
-    { name = "scipy", marker = "extra == 'analysis'", specifier = ">=1.11" },
-    { name = "scipy", marker = "extra == 'interpolation'", specifier = ">=1.11" },
-]
-provides-extras = ["analysis", "interpolation", "lint", "surfaces", "test"]
 
 [[package]]
 name = "rich"
