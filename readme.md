@@ -1,14 +1,16 @@
 
 # Table of Contents
 
-1.  [About](#orgea43256)
-    1.  [Features](#org6a31408)
-        1.  [Supported Engines [WIP]](#orgbfa09d8)
-    2.  [Rationale](#org4c00d67)
-2.  [License](#orge2168a3)
+-   [About](#org41f780c)
+    -   [Ecosystem Overview](#org8d84664)
+    -   [Features](#orgcd8c670)
+        -   [Supported Engines [WIP]](#orgf54561c)
+    -   [Rationale](#orgc44cf84)
+-   [License](#orgf123668)
 
 
-<a id="orgea43256"></a>
+
+<a id="org41f780c"></a>
 
 # About
 
@@ -16,18 +18,32 @@
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 
-A **pure-python**<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> project to provide unit-aware uniform visualizations
+A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role="doc-backlink">1</a></sup> project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
 
+-   Parsers for various computational chemistry software outputs
 -   Plotting scripts for specific workflows
--   Parsers for various software outputs
+
+Computational tasks (surface fitting, structure analysis, interpolation) are
+handled by [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs), which is a required dependency. `chemparseplot` parses
+output files, delegates heavy computation to `rgpycrumbs`, and produces
+publication-quality plots.
 
 This is a spin-off from `wailord` ([here](https://wailord.xyz)) which is meant to handle aggregated
 runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
 
 
-<a id="org6a31408"></a>
+<a id="org8d84664"></a>
+
+## Ecosystem Overview
+
+`chemparseplot` is part of the `rgpycrumbs` suite of interlinked libraries.
+
+![img](branding/logo/ecosystem.png)
+
+
+<a id="orgcd8c670"></a>
 
 ## Features
 
@@ -37,7 +53,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
     -   Via `pint`
 
 
-<a id="orgbfa09d8"></a>
+<a id="orgf54561c"></a>
 
 ### Supported Engines [WIP]
 
@@ -47,7 +63,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
         coordinate)
 
 
-<a id="org4c00d67"></a>
+<a id="orgc44cf84"></a>
 
 ## Rationale
 
@@ -58,7 +74,7 @@ either Bohr/Hartree or Angstron/eV or whatever.
 Also I couldn't find (m)any scripts using the scientific colorschemes.
 
 
-<a id="orge2168a3"></a>
+<a id="orgf123668"></a>
 
 # License
 

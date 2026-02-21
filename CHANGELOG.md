@@ -2,6 +2,27 @@
 
 <!-- towncrier release notes start -->
 
+## [v1.1.0](https://github.com/HaoZeke/chemparseplot/tree/v1.1.0) - 2026-02-21
+
+### Added
+
+- Support for Nystrom-approximated gradient kernels in surface models.
+- Uncertainty visualization with variance contours for NEB paths.
+- Orthogonal projection to RMSD(R) for path plots.
+- Symmetric projection handling.
+
+### Changed
+
+- Smoothed variance calculations and relative windowing for uncertainty plots.
+- Expanded grid coverage in path plots to include extra points.
+- Consistent scaling across zoomed plots.
+
+### Fixed
+
+- Documentation footer layout and link improvements.
+- Added Plausible analytics and TurtleTech footer badges to documentation.
+
+
 ## [v1.0.1](https://github.com/HaoZeke/chemparseplot/tree/v1.0.1) - 2026-02-17
 
 ### Added
