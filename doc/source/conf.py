@@ -5,13 +5,11 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-from datetime import datetime
-
 project = "chemparseplot"
-project_copyright = f"2023-{datetime.now().date().year}, Rohit Goswami"
+project_copyright = f"2023-2026, Rohit Goswami"
 author = "Rohit Goswami"
 # The short X.Y version.
-version = "0.0.2"
+version = "1.1.0"
 # The full version, including alpha/beta/rc tags.
 release = version
 
