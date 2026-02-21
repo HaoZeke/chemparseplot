@@ -196,14 +196,14 @@
 ```
 ````
 
-````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True)
+````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None)
 :canonical: chemparseplot.plot.neb.plot_landscape_surface
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface
 ```
 ````
 
-````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label)
+````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True)
 :canonical: chemparseplot.plot.neb.plot_landscape_path_overlay
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay

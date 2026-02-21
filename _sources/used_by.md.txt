@@ -4,8 +4,8 @@ The following projects use `chemparseplot` as a dependency or tool.
 
 ## Libraries
 
-- [pychumpchem](https://github.com/HaoZeke/pychumpchem) — Input generators for
-  CHUMP simulations. Companion project to `chemparseplot` for chemical input
+- [pychum](https://github.com/HaoZeke/pychum) — Input file generators for
+  computational chemistry. Companion project to `chemparseplot` for chemical input
   preparation.
 
 ## Reproducibility Packages

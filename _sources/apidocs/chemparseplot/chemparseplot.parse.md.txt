@@ -22,7 +22,7 @@ chemparseplot.parse.orca
 :titlesonly:
 :maxdepth: 1
 
+chemparseplot.parse.file_
 chemparseplot.parse.patterns
 chemparseplot.parse.converter
-chemparseplot.parse.file_
 ```
