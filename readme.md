@@ -1,16 +1,16 @@
 
 # Table of Contents
 
--   [About](#org41f780c)
-    -   [Ecosystem Overview](#org8d84664)
-    -   [Features](#orgcd8c670)
-        -   [Supported Engines [WIP]](#orgf54561c)
-    -   [Rationale](#orgc44cf84)
--   [License](#orgf123668)
+-   [About](#org1aaacbd)
+    -   [Ecosystem Overview](#org86a8ea7)
+    -   [Features](#org2d23f41)
+        -   [Supported Engines [WIP]](#orgd14b359)
+    -   [Rationale](#orgd89d807)
+-   [License](#orgef56819)
 
 
 
-<a id="org41f780c"></a>
+<a id="org1aaacbd"></a>
 
 # About
 
@@ -18,7 +18,7 @@
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 
-A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role="doc-backlink">1</a></sup> project to provide unit-aware uniform visualizations
+A **pure-python**<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
 
 -   Parsers for various computational chemistry software outputs
@@ -34,7 +34,7 @@ runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
 
 
-<a id="org8d84664"></a>
+<a id="org86a8ea7"></a>
 
 ## Ecosystem Overview
 
@@ -43,7 +43,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
 ![img](branding/logo/ecosystem.png)
 
 
-<a id="orgcd8c670"></a>
+<a id="org2d23f41"></a>
 
 ## Features
 
@@ -53,7 +53,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
     -   Via `pint`
 
 
-<a id="orgf54561c"></a>
+<a id="orgd14b359"></a>
 
 ### Supported Engines [WIP]
 
@@ -63,7 +63,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
         coordinate)
 
 
-<a id="orgc44cf84"></a>
+<a id="orgd89d807"></a>
 
 ## Rationale
 
@@ -74,7 +74,7 @@ either Bohr/Hartree or Angstron/eV or whatever.
 Also I couldn't find (m)any scripts using the scientific colorschemes.
 
 
-<a id="orgf123668"></a>
+<a id="orgef56819"></a>
 
 # License
 
