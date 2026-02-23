@@ -46,18 +46,44 @@ MIN_PATH_LENGTH = 1e-6
 # --- Structure Rendering Helpers ---
 
 
-def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
+def render_structure_to_image(atoms, zoom, rotation, bbox=None):  # noqa: ARG001
     """Renders an ASE atoms object to a numpy image array.
+
+    When *bbox* is supplied, the canvas is fixed so that all
+    structures rendered with the same bbox appear at the same scale.
 
     ```{versionadded} 0.1.0
     ```
     """
     buf = io.BytesIO()
-    ase_write(buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100)
+    kw = {"format": "png", "rotation": rotation, "show_unit_cell": 0, "scale": 100}
+    if bbox is not None:
+        kw["bbox"] = bbox
+    ase_write(buf, atoms, **kw)
     buf.seek(0)
     img_data = plt.imread(buf)
     buf.close()
     return img_data
+
+
+def _compute_common_bbox(atoms_list, rotation, scale=100):
+    """Compute a unified bounding box across structures for uniform rendering."""
+    from ase.io.utils import PlottingVariables
+
+    all_bbox = []
+    for atoms in atoms_list:
+        pv = PlottingVariables(
+            atoms, rotation=rotation, scale=scale, show_unit_cell=0
+        )
+        all_bbox.append(pv.get_bbox())  # (xlo, ylo, xhi, yhi) in atomic coords
+
+    all_bbox = np.array(all_bbox)
+    return (
+        all_bbox[:, 0].min(),
+        all_bbox[:, 1].min(),
+        all_bbox[:, 2].max(),
+        all_bbox[:, 3].max(),
+    )
 
 
 def plot_structure_strip(
@@ -86,13 +112,16 @@ def plot_structure_strip(
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
 
+    # Compute a common bbox so all structures render at the same scale
+    common_bbox = _compute_common_bbox(atoms_list, rotation)
+
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
         x_pos, y_pos = col, -row * row_step
 
-        # Image generation
-        img_data = render_structure_to_image(atoms, zoom, rotation)
+        # Image generation with shared bbox
+        img_data = render_structure_to_image(atoms, zoom, rotation, bbox=common_bbox)
 
         # Adjust zoom for strip
         effective_zoom = zoom * 0.45
@@ -331,6 +360,7 @@ def plot_landscape_surface(
     variance_threshold=0.05,
     project_path=True,  # noqa: FBT002
     extra_points=None,
+    n_inducing=None,
 ):
     """Plot the 2D landscape surface.
 
@@ -408,7 +438,10 @@ def plot_landscape_surface(
 
     # --- 2. Hyperparameter Optimization ---
     _NYSTROM_THRESHOLD = 1000
-    if "imq" in method and len(rmsd_r) > _NYSTROM_THRESHOLD:
+    if (
+        method == "grad_imq"
+        and len(rmsd_r) > _NYSTROM_THRESHOLD
+    ):
         log.warning(
             "More than %d points, switching to Nystrom",
             _NYSTROM_THRESHOLD,
@@ -425,6 +458,11 @@ def plot_landscape_surface(
         if step_data is not None
         else np.ones(len(z_data), dtype=bool)
     )
+    # Build extra kwargs for Nystrom model
+    _approx_kwargs = {}
+    if "_ny" in method and n_inducing is not None:
+        _approx_kwargs["n_inducing"] = n_inducing
+
     opt_kwargs = {
         "x": np.column_stack([rmsd_r, rmsd_p])[mask_opt],
         "y": z_data[mask_opt],
@@ -432,6 +470,7 @@ def plot_landscape_surface(
         "smoothing": h_noise,
         "nimags": len(z_data),
         "optimize": True,
+        **_approx_kwargs,
     }
     if is_gradient_model:
         opt_kwargs["gradients"] = np.column_stack([grad_r, grad_p])[mask_opt]
@@ -471,7 +510,8 @@ def plot_landscape_surface(
         length_scale=best_ls,
         smoothing=best_noise,
         optimize=False,
-        nimags=actual_nimags,  # Pass the correct integer here too
+        nimags=actual_nimags,
+        **_approx_kwargs,
     )
 
     zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
