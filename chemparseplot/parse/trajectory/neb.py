@@ -1,5 +1,8 @@
 """NEB trajectory parser for ASE-readable formats (extxyz, .traj, etc.).
 
+```{versionadded} 1.2.0
+```
+
 Loads trajectory files via ASE, computes NEB profile data (cumulative
 distance, improved Henkelman-Jonsson tangent forces), and converts into
 the formats expected by chemparseplot's plotting functions.
@@ -31,7 +34,11 @@ def _get_energy(atoms: Atoms) -> float:
 
 
 def load_trajectory(traj_file: str) -> list[Atoms]:
-    """Load an extxyz trajectory file, returning all frames."""
+    """Load an extxyz trajectory file, returning all frames.
+
+    ```{versionadded} 1.2.0
+    ```
+    """
     atoms_list = ase_read(traj_file, index=":")
     if isinstance(atoms_list, Atoms):
         atoms_list = [atoms_list]
@@ -41,6 +48,9 @@ def load_trajectory(traj_file: str) -> list[Atoms]:
 
 def compute_cumulative_distance(atoms_list: list[Atoms]) -> np.ndarray:
     """Compute cumulative Euclidean path length along the NEB band.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Returns a 1D array of length n_images with the cumulative distance
     from the first image.
@@ -53,11 +63,12 @@ def compute_cumulative_distance(atoms_list: list[Atoms]) -> np.ndarray:
     return dists
 
 
-def compute_tangent_force(
-    atoms_list: list[Atoms], energies: np.ndarray
-) -> np.ndarray:
+def compute_tangent_force(atoms_list: list[Atoms], energies: np.ndarray) -> np.ndarray:
     """Compute force component parallel to the path using the improved
     Henkelman-Jonsson tangent definition.
+
+    ```{versionadded} 1.2.0
+    ```
 
     For interior images, the tangent is energy-weighted (uphill neighbor
     gets more weight). Forces are read from each frame's arrays.
@@ -68,7 +79,11 @@ def compute_tangent_force(
     f_para = np.zeros(n)
 
     for i in range(n):
-        forces_i = atoms_list[i].get_forces() if atoms_list[i].calc else np.zeros_like(atoms_list[i].positions)
+        forces_i = (
+            atoms_list[i].get_forces()
+            if atoms_list[i].calc
+            else np.zeros_like(atoms_list[i].positions)
+        )
 
         if i == 0 or i == n - 1:
             # Endpoint: f_parallel = 0 by convention
@@ -120,6 +135,9 @@ def extract_profile_data(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Extract profile data from trajectory frames.
 
+    ```{versionadded} 1.2.0
+    ```
+
     Returns (index, distance, energy, f_parallel) arrays.
     """
     n = len(atoms_list)
@@ -132,6 +150,9 @@ def extract_profile_data(
 
 def trajectory_to_profile_dat(atoms_list: list[Atoms]) -> np.ndarray:
     """Convert trajectory to a (5, N) array matching eOn .dat layout.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Columns: [index, reaction_coordinate, energy, f_parallel, zeros]
     This output can be fed directly into plot_energy_path as:
@@ -148,6 +169,9 @@ def trajectory_to_landscape_df(
     step: int = 0,
 ):
     """Convert trajectory to a polars DataFrame for plot_landscape_surface.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Columns: r, p, grad_r, grad_p, z, step
 

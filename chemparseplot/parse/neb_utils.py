@@ -1,5 +1,8 @@
 """Shared NEB analysis utilities.
 
+```{versionadded} 1.2.0
+```
+
 Functions common to all NEB trajectory sources (eOn, extxyz, etc.):
 RMSD landscape coordinate calculation, synthetic 2D gradient projection,
 and landscape DataFrame construction.
@@ -18,6 +21,9 @@ def calculate_landscape_coords(
     atoms_list: list[Atoms], ira_instance, ira_kmax: float
 ) -> tuple[np.ndarray, np.ndarray]:
     """Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Uses the first frame as reactant reference and the last as product.
 
@@ -42,6 +48,9 @@ def compute_synthetic_gradients(
     rmsd_r: np.ndarray, rmsd_p: np.ndarray, f_para: np.ndarray
 ) -> tuple[np.ndarray, np.ndarray]:
     """Project parallel force onto the 2D RMSD coordinate system.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Computes synthetic gradients by projecting the NEB parallel force
     component along the tangent direction in (RMSD-R, RMSD-P) space.
@@ -71,6 +80,9 @@ def create_landscape_dataframe(
     step: int,
 ) -> pl.DataFrame:
     """Build a landscape DataFrame with the standard schema.
+
+    ```{versionadded} 1.2.0
+    ```
 
     :param rmsd_r: RMSD from reactant.
     :param rmsd_p: RMSD from product.

@@ -2,16 +2,32 @@ from collections import namedtuple
 
 import matplotlib.pyplot as plt
 from cmcrameri import cm
-
 from rgpycrumbs.interpolation import spline_interp
 
 # Define a namedtuple for energy paths
 EnergyPath = namedtuple("EnergyPath", ["label", "distance", "energy"])
+"""Named tuple holding a labeled energy path (label, distance, energy).
+
+```{versionadded} 0.0.3
+```
+"""
+
 XYData = namedtuple("XYData", ["label", "x", "y"])
+"""Named tuple holding generic labeled XY data (label, x, y).
+
+```{versionadded} 0.0.3
+```
+"""
 
 
 # Baseline plotting class
 class BasePlotter:
+    """Thin wrapper around a matplotlib figure and axes with defaults.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     def __init__(
         self, figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=cm.batlow, style="bmh"
     ):
@@ -28,6 +44,12 @@ class BasePlotter:
 
 
 class TwoDimPlot(BasePlotter):
+    """Interactive 2D plotter with unit-aware axes and spline interpolation.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.data = []  # Stores XYData objects

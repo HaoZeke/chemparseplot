@@ -1,8 +1,13 @@
+import logging
+
 import numpy as np
 from ase.io import read
 
+log = logging.getLogger(__name__)
+
 # --- Configuration ---
 POSCON_FILENAME = "pos.con"
+_EXPECTED_COORD_COLS = 3
 
 # --- Input Target Coordinates ---
 # e.g. from an OVITO selection
@@ -25,21 +30,35 @@ target_coords_text = """
 25.2834 23.4976 23.4978
 """
 
+
 # --- Function to parse target coordinates ---
 def parse_target_coords(text_block):
-    """ Parses the multiline string of target coordinates. """
+    """Parses the multiline string of target coordinates.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     coords = []
-    lines = text_block.strip().split('\n')
+    lines = text_block.strip().split("\n")
     for i, line in enumerate(lines):
         try:
             parts = line.strip().split()
-            if len(parts) == 3:
+            if len(parts) == _EXPECTED_COORD_COLS:
                 coords.append([float(p) for p in parts])
-            elif parts: # Non-empty line with wrong number of columns
-                 print(f"Warning: Skipping target coordinate line {i+1} due to incorrect format: {line.strip()}")
+            elif parts:
+                log.warning(
+                    "Skipping target coordinate line %d due to incorrect format: %s",
+                    i + 1,
+                    line.strip(),
+                )
         except ValueError:
-             print(f"Warning: Skipping target coordinate line {i+1} due to non-numeric value: {line.strip()}")
+            log.warning(
+                "Skipping target coordinate line %d due to non-numeric value: %s",
+                i + 1,
+                line.strip(),
+            )
     return np.array(coords)
+
 
 # --- Toy Script using ASE ---
 
@@ -49,7 +68,7 @@ try:
     print(f"Reading {POSCON_FILENAME} using ASE...")
     atoms = read(POSCON_FILENAME)
     print(f"Successfully read {len(atoms)} atoms.")
-    atom_coords_from_poscon = atoms.get_positions() # Get positions as NumPy array
+    atom_coords_from_poscon = atoms.get_positions()  # Get positions as NumPy array
 
 except FileNotFoundError:
     print(f"Error: File not found at {POSCON_FILENAME}")
@@ -66,7 +85,7 @@ if atoms is not None and target_coords.size > 0:
     print(f"Found {len(target_coords)} target coordinates to match.")
 
     results = []
-    atom_symbols = atoms.get_chemical_symbols() # Get symbols for richer output
+    atom_symbols = atoms.get_chemical_symbols()  # Get symbols for richer output
 
     # 3. For each target coordinate, find the closest atom
     print("\nMatching target coordinates to closest atoms...")
@@ -75,28 +94,36 @@ if atoms is not None and target_coords.size > 0:
         distances = np.linalg.norm(atom_coords_from_poscon - target_pos, axis=1)
 
         # Find the index of the minimum distance
-        closest_atom_index = np.argmin(distances) # 0-based index from ASE Atoms object
+        closest_atom_index = np.argmin(distances)  # 0-based index from ASE Atoms object
 
         # Atom ID in eOn is 0 based so no change here
         # XXX: LAMMPS uses 1 based indexing..
         closest_atom_id = closest_atom_index
         min_dist = distances[closest_atom_index]
 
-        results.append({
-            'target_index': i + 1,
-            'target_pos': target_pos,
-            'closest_atom_id': closest_atom_id,
-            'closest_atom_symbol': atom_symbols[closest_atom_index],
-            'closest_atom_pos': atom_coords_from_poscon[closest_atom_index],
-            'distance': min_dist
-        })
+        results.append(
+            {
+                "target_index": i + 1,
+                "target_pos": target_pos,
+                "closest_atom_id": closest_atom_id,
+                "closest_atom_symbol": atom_symbols[closest_atom_index],
+                "closest_atom_pos": atom_coords_from_poscon[closest_atom_index],
+                "distance": min_dist,
+            }
+        )
 
     # 4. Print the results
     print("\n--- Results ---")
     for result in results:
-        print(f"Target #{result['target_index']} ({result['target_pos'][0]:.4f}, {result['target_pos'][1]:.4f}, {result['target_pos'][2]:.4f})")
-        print(f"  -> Closest Atom ID: {result['closest_atom_id']} (Symbol: {result['closest_atom_symbol']})")
-        print(f"     Position: ({result['closest_atom_pos'][0]:.4f}, {result['closest_atom_pos'][1]:.4f}, {result['closest_atom_pos'][2]:.4f})")
+        print(
+            f"Target #{result['target_index']} ({result['target_pos'][0]:.4f}, {result['target_pos'][1]:.4f}, {result['target_pos'][2]:.4f})"
+        )
+        print(
+            f"  -> Closest Atom ID: {result['closest_atom_id']} (Symbol: {result['closest_atom_symbol']})"
+        )
+        print(
+            f"     Position: ({result['closest_atom_pos'][0]:.4f}, {result['closest_atom_pos'][1]:.4f}, {result['closest_atom_pos'][2]:.4f})"
+        )
         print(f"     Distance: {result['distance']:.6f}\n")
 
 else:

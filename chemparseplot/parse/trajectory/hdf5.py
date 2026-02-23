@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: MIT
 """HDF5 NEB reader for ChemGP output.
 
+```{versionadded} 1.2.0
+```
+
 Reads ``neb_result.h5`` (final converged path) and ``neb_history.h5``
 (per-step optimization history) produced by ChemGP's Julia NEB optimizer.
 
@@ -86,9 +89,7 @@ def _reconstruct_atoms(
             cell=cell_matrix,
             pbc=pbc,
         )
-        calc = SinglePointCalculator(
-            atoms, energy=energy, forces=forces
-        )
+        calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
         atoms.calc = calc
         atoms_list.append(atoms)
 
@@ -97,6 +98,9 @@ def _reconstruct_atoms(
 
 def load_neb_result(h5_file: str) -> dict:
     """Read a ChemGP ``neb_result.h5`` file.
+
+    ```{versionadded} 1.2.0
+    ```
 
     :param h5_file: Path to the HDF5 result file.
     :return: Dictionary with keys ``path`` (from :func:`_read_path_group`),
@@ -137,6 +141,9 @@ def load_neb_result(h5_file: str) -> dict:
 def load_neb_history(h5_file: str) -> list[dict]:
     """Read a ChemGP ``neb_history.h5`` file.
 
+    ```{versionadded} 1.2.0
+    ```
+
     :param h5_file: Path to the HDF5 history file.
     :return: List of dicts (one per optimization step), sorted by step
         number. Each dict has the same structure as :func:`_read_path_group`.
@@ -148,14 +155,15 @@ def load_neb_history(h5_file: str) -> list[dict]:
         for key in step_keys:
             steps.append(_read_path_group(steps_grp[key]))
 
-    log.info(
-        "Loaded NEB history: %d steps from %s", len(steps), h5_file
-    )
+    log.info("Loaded NEB history: %d steps from %s", len(steps), h5_file)
     return steps
 
 
 def result_to_profile_dat(h5_file: str) -> np.ndarray:
     """Convert a result HDF5 to a (5, N) profile array.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Layout matches eOn ``.dat`` format:
     ``[index, rxn_coord, energy, f_para, zeros]``.
@@ -168,17 +176,22 @@ def result_to_profile_dat(h5_file: str) -> np.ndarray:
     result = load_neb_result(h5_file)
     path = result["path"]
     n = len(path["energies"])
-    return np.array([
-        np.arange(n, dtype=float),
-        path["rxn_coord"],
-        path["energies"],
-        path["f_para"],
-        np.zeros(n),
-    ])
+    return np.array(
+        [
+            np.arange(n, dtype=float),
+            path["rxn_coord"],
+            path["energies"],
+            path["f_para"],
+            np.zeros(n),
+        ]
+    )
 
 
 def result_to_atoms_list(h5_file: str) -> list[Atoms]:
     """Reconstruct ASE Atoms from a result HDF5 file.
+
+    ```{versionadded} 1.2.0
+    ```
 
     :param h5_file: Path to ``neb_result.h5``.
     :return: List of Atoms with SinglePointCalculators attached.
@@ -198,6 +211,9 @@ def result_to_atoms_list(h5_file: str) -> list[Atoms]:
 def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
     """Convert a history HDF5 to a list of (5, N) profile arrays.
 
+    ```{versionadded} 1.2.0
+    ```
+
     One array per optimization step, sorted by step number.
 
     :param h5_file: Path to ``neb_history.h5``.
@@ -207,21 +223,24 @@ def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
     dats = []
     for step_data in steps:
         n = len(step_data["energies"])
-        dat = np.array([
-            np.arange(n, dtype=float),
-            step_data["rxn_coord"],
-            step_data["energies"],
-            step_data["f_para"],
-            np.zeros(n),
-        ])
+        dat = np.array(
+            [
+                np.arange(n, dtype=float),
+                step_data["rxn_coord"],
+                step_data["energies"],
+                step_data["f_para"],
+                np.zeros(n),
+            ]
+        )
         dats.append(dat)
     return dats
 
 
-def history_to_landscape_df(
-    h5_file: str, ira_kmax: float = 1.8
-):
+def history_to_landscape_df(h5_file: str, ira_kmax: float = 1.8):
     """Convert a history HDF5 to a landscape DataFrame.
+
+    ```{versionadded} 1.2.0
+    ```
 
     Reconstructs Atoms per step for RMSD coordinates, uses pre-computed
     ``f_para`` for synthetic gradients.
@@ -244,13 +263,9 @@ def history_to_landscape_df(
     with h5py.File(h5_file, "r") as f:
         meta = f.get("metadata", {})
         atomic_numbers = (
-            np.asarray(meta["atomic_numbers"])
-            if "atomic_numbers" in meta
-            else None
+            np.asarray(meta["atomic_numbers"]) if "atomic_numbers" in meta else None
         )
-        cell = (
-            np.asarray(meta["cell"]) if "cell" in meta else None
-        )
+        cell = np.asarray(meta["cell"]) if "cell" in meta else None
 
     steps = load_neb_history(h5_file)
     frames = []
@@ -264,12 +279,8 @@ def history_to_landscape_df(
             step_data["energies"],
         )
 
-        rmsd_r, rmsd_p = calculate_landscape_coords(
-            atoms_list, ira_instance, ira_kmax
-        )
-        grad_r, grad_p = compute_synthetic_gradients(
-            rmsd_r, rmsd_p, step_data["f_para"]
-        )
+        rmsd_r, rmsd_p = calculate_landscape_coords(atoms_list, ira_instance, ira_kmax)
+        grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, step_data["f_para"])
         df = create_landscape_dataframe(
             rmsd_r,
             rmsd_p,

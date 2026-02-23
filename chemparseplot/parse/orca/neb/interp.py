@@ -1,7 +1,11 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-"""
+"""For parsing .interp files from ORCA NEB calculations.
+
+```{versionadded} 0.0.2
+```
+
 For parsing .interp files from inputs like:
 !B3LYP def2-SVP NEB-CI
 %neb
@@ -10,11 +14,13 @@ Product "prod.xyz"
 end
 *xyzfile 0 1 react.xyz
 """
+
 import re
+
+from rgpycrumbs.basetypes import nebiter, nebpath
 
 import chemparseplot.parse.converter as conv
 import chemparseplot.parse.patterns as pat
-from rgpycrumbs.basetypes import nebiter, nebpath
 from chemparseplot.units import Q_
 
 # fmt: off
@@ -27,6 +33,11 @@ INTERP_PAT = (
 
 
 def extract_interp_points(text: str) -> list[int, Q_, Q_]:
+    """Extract NEB interpolation points from an ORCA .interp file.
+
+    ```{versionadded} 0.0.2
+    ```
+    """
     data = []
     for match in re.finditer(INTERP_PAT, text, re.DOTALL):
         iteration = int(match.group("iteration"))

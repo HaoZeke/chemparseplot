@@ -2,18 +2,23 @@ import configparser
 import gzip
 import os
 import re
-from pathlib import Path
 from enum import Enum
+from pathlib import Path
 
 import numpy as np
+from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 from rgpycrumbs.parsers.bless import BLESS_LOG
 from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail
 
-from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
-
 
 class EONSaddleStatus(Enum):
+    """Status codes returned by eOn saddle point searches.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     # See SaddleSearchJob.cpp for the ordering
     # (numerical_status, descriptive_string)
     GOOD = 0, "Success"
@@ -56,10 +61,15 @@ class EONSaddleStatus(Enum):
 
 
 def extract_saddle_gprd(log: list[str]):
+    """Extract saddle point geometry from GPRD log lines.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     logdata = [BLESS_LOG.search(x).group("logdata").strip() for x in log]
     numdat = []
     for line in logdata:
-        if line.isdigit() or line.startswith("-") and line[1:].isdigit():
+        if line.isdigit() or (line.startswith("-") and line[1:].isdigit()):
             numdat.append(float(line))
         if _NUM.match(line):
             numdat.append(np.array(_NUM.findall(line), dtype=float))
@@ -247,6 +257,9 @@ def _get_methods(eresp: Path) -> DimerOpt:
 def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
     """Parses eOn saddle point search results from a directory.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Args:
         eresp: Path to the directory containing eOn results.
         rloc: A SpinID object.
@@ -268,7 +281,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
         )
 
-    if list(results_data.keys()) == ['termination_status']:
+    if list(results_data.keys()) == ["termination_status"]:
         return SaddleMeasure(
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),

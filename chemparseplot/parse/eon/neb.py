@@ -43,7 +43,11 @@ def load_or_compute_data(
     computation_callback: Callable[[], pl.DataFrame],
     context_name: str,
 ) -> pl.DataFrame:
-    """Retrieves data from a parquet cache or triggers a computation callback."""
+    """Retrieves data from a parquet cache or triggers a computation callback.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     if cache_file and cache_file.exists() and not force_recompute:
         log.info(f"Loading cached {context_name} data from {cache_file}...")
         try:
@@ -73,7 +77,11 @@ def load_structures_and_calculate_additional_rmsd(
     ira_kmax: float,
     sp_file: Path | None = None,
 ):
-    """Loads the main trajectory and calculates RMSD for any additional comparison structures."""
+    """Loads the main trajectory and calculates RMSD for any additional comparison structures.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     log.info(f"Reading structures from {con_file}")
     atoms_list = ase_read(con_file, index=":")
     log.info(f"Loaded {len(atoms_list)} structures.")
@@ -155,11 +163,17 @@ def _process_single_path_step(
     ref = ref_atoms if ref_atoms is not None else atoms_list_step[0]
     prod = prod_atoms if prod_atoms is not None else atoms_list_step[-1]
 
-    rmsd_r = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax)
-    rmsd_p = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax)
+    rmsd_r = calculate_rmsd_from_ref(
+        atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax
+    )
+    rmsd_p = calculate_rmsd_from_ref(
+        atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax
+    )
 
     grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, f_para_step)
-    return create_landscape_dataframe(rmsd_r, rmsd_p, grad_r, grad_p, z_data_step, int(step_idx))
+    return create_landscape_dataframe(
+        rmsd_r, rmsd_p, grad_r, grad_p, z_data_step, int(step_idx)
+    )
 
 
 def aggregate_neb_landscape_data(
@@ -176,7 +190,11 @@ def aggregate_neb_landscape_data(
     ref_atoms: Atoms | None = None,
     prod_atoms: Atoms | None = None,
 ) -> pl.DataFrame:
-    """Aggregates data from multiple NEB steps for landscape visualization."""
+    """Aggregates data from multiple NEB steps for landscape visualization.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
 
     # Init IRA if not passed
     if ira_instance is None and ira_mod is not None:
@@ -202,7 +220,7 @@ def aggregate_neb_landscape_data(
                 ira_kmax=ira_kmax,
             )
             if not df_aug.is_empty():
-                 all_dfs.append(df_aug)
+                all_dfs.append(df_aug)
 
         # Synchronization check
         paths_dat = all_dat_paths
@@ -256,6 +274,9 @@ def load_augmenting_neb_data(
     """
     Loads external NEB paths (dat+con) to augment the landscape fit.
     Forces projection onto the MAIN path's R/P coordinates.
+
+    ```{versionadded} 0.1.0
+    ```
     """
     from chemparseplot.parse.file_ import find_file_paths
 
@@ -302,7 +323,11 @@ def compute_profile_rmsd(
     force_recompute: bool,
     ira_kmax: float,
 ) -> pl.DataFrame:
-    """Computes RMSD for a 1D profile."""
+    """Computes RMSD for a 1D profile.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
 
     def validate_profile_cache(df: pl.DataFrame):
         if "p" in df.columns:
@@ -331,6 +356,9 @@ def compute_profile_rmsd(
 def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     """
     Estimates a smoothing parameter for RBF interpolation.
+
+    ```{versionadded} 0.1.0
+    ```
 
     Calculates the median Euclidean distance between sequential points in the path
     and uses that value as the smoothing factor.

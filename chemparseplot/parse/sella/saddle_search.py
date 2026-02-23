@@ -1,22 +1,24 @@
-from dataclasses import dataclass
-from pathlib import Path
-from collections import Counter
-
-from ase.io import read
-from rgpycrumbs.time.helpers import one_day_tdelta
-
-from rgpycrumbs.basetypes import SaddleMeasure, SpinID
-import ase
-
 import datetime
 import time
-from collections import namedtuple
+from collections import Counter, namedtuple
+from dataclasses import dataclass
+from pathlib import Path
+
+import ase
 import numpy as np
+from ase.io import read
+from rgpycrumbs.basetypes import SaddleMeasure, SpinID
+from rgpycrumbs.time.helpers import one_day_tdelta
 
 SellaLog = namedtuple(
     "SellaLog",
     ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"],
 )
+"""Named tuple for a single Sella log entry.
+
+```{versionadded} 0.0.3
+```
+"""
 
 
 def _sella_loglist(log_f):
@@ -42,12 +44,24 @@ def _sella_loglist(log_f):
 
 @dataclass
 class LogStart:
+    """Start-of-log record for a Sella calculation.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     tstart: str
     init_energy: float
 
 
 @dataclass
 class LogEnd:
+    """End-of-log record for a Sella calculation.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     iter_steps: int
     tend: str
     saddle_energy: float
@@ -88,6 +102,9 @@ class LogEnd:
 def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
     """Parses a log line based on its type.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Args:
         line: The log line string.
         line_type: Either "start" or "end" indicating the line type.
@@ -116,6 +133,9 @@ def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
 def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
     """Parses Sella saddle point calculation results.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Args:
         eresp: Path to the directory containing the results.
         rloc: SpinID object containing molecule ID and spin.
@@ -132,9 +152,7 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
             traj = read(traj_file, index=":")
             npes = len(traj)
         except Exception as e:
-            print(
-                f"Warning: Could not read or process trajectory file {traj_file}: {e}"
-            )
+            print(f"Warning: Could not read or process trajectory file {traj_file}: {e}")
             return SaddleMeasure()
     else:
         print(f"Warning: No .traj file found in {eresp}. Using npes.txt or default.")
@@ -197,6 +215,11 @@ def _get_ghosts(traj_f):
 
 
 def get_unique_frames(traj, sloglist: list, nround: int = 2):
+    """Filter trajectory to unique frames by matching rounded fmax values.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     # XXX: This is fairly idiotic, but it turns out empirically filtering by
     # rounding the fmax to 2 seems to give the same number as the number of
     # steps, so those frames are the "unique" ones.
@@ -225,6 +248,11 @@ def get_unique_frames(traj, sloglist: list, nround: int = 2):
 
 
 def make_geom_traj(traj_f, log_f, out_f="geom_step.traj"):
+    """Write a geometry-step trajectory from a Sella trajectory and log file.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     # XXX: This uses a logfile which has the patch for writing the trajectory ID
     traj = ase.io.read(traj_f, ":")
     sellalog = _sella_loglist(log_f)
