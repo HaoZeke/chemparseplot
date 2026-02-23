@@ -1,0 +1,53 @@
+# {py:mod}`chemparseplot.parse.neb_utils`
+
+```{py:module} chemparseplot.parse.neb_utils
+```
+
+```{autodoc2-docstring} chemparseplot.parse.neb_utils
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`calculate_landscape_coords <chemparseplot.parse.neb_utils.calculate_landscape_coords>`
+  - ```{autodoc2-docstring} chemparseplot.parse.neb_utils.calculate_landscape_coords
+    :summary:
+    ```
+* - {py:obj}`compute_synthetic_gradients <chemparseplot.parse.neb_utils.compute_synthetic_gradients>`
+  - ```{autodoc2-docstring} chemparseplot.parse.neb_utils.compute_synthetic_gradients
+    :summary:
+    ```
+* - {py:obj}`create_landscape_dataframe <chemparseplot.parse.neb_utils.create_landscape_dataframe>`
+  - ```{autodoc2-docstring} chemparseplot.parse.neb_utils.create_landscape_dataframe
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} calculate_landscape_coords(atoms_list: list[ase.Atoms], ira_instance, ira_kmax: float) -> tuple[numpy.ndarray, numpy.ndarray]
+:canonical: chemparseplot.parse.neb_utils.calculate_landscape_coords
+
+```{autodoc2-docstring} chemparseplot.parse.neb_utils.calculate_landscape_coords
+```
+````
+
+````{py:function} compute_synthetic_gradients(rmsd_r: numpy.ndarray, rmsd_p: numpy.ndarray, f_para: numpy.ndarray) -> tuple[numpy.ndarray, numpy.ndarray]
+:canonical: chemparseplot.parse.neb_utils.compute_synthetic_gradients
+
+```{autodoc2-docstring} chemparseplot.parse.neb_utils.compute_synthetic_gradients
+```
+````
+
+````{py:function} create_landscape_dataframe(rmsd_r: numpy.ndarray, rmsd_p: numpy.ndarray, grad_r: numpy.ndarray, grad_p: numpy.ndarray, z: numpy.ndarray, step: int) -> polars.DataFrame
+:canonical: chemparseplot.parse.neb_utils.create_landscape_dataframe
+
+```{autodoc2-docstring} chemparseplot.parse.neb_utils.create_landscape_dataframe
+```
+````

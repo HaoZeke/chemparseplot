@@ -65,6 +65,10 @@ plot = [
   "cmcrameri>=1.7",
   "matplotlib>=3.8.2",
 ]
+neb = [
+  "ase>=3.22",
+  "polars>=0.20",
+]
 test = [
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
@@ -82,6 +86,15 @@ rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "-q"]
+markers = [
+  "pure: mark a test as needing only numpy",
+  "neb: mark a test as needing numpy, polars, and ase",
+]
+minversion = "7.4"
+testpaths = ["tests"]
 
 [tool.ruff]
 target-version = "py312"

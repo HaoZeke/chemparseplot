@@ -7,6 +7,11 @@ import polars as pl
 from ase import Atoms
 from ase.io import read as ase_read
 
+from chemparseplot.parse.neb_utils import (
+    compute_synthetic_gradients,
+    create_landscape_dataframe,
+)
+
 try:
     from rgpycrumbs._aux import _import_from_parent_env
     from rgpycrumbs.geom.api.alignment import (
@@ -18,27 +23,6 @@ except ImportError:
     ira_mod = None
 
 log = logging.getLogger(__name__)
-
-
-def calculate_landscape_coords(
-    atoms_list: list[Atoms], ira_instance, ira_kmax: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculates 2D landscape coordinates (RMSD-R, RMSD-P) for a path.
-
-    :param atoms_list: List of ASE Atoms objects representing the path.
-    :param ira_instance: An instantiated IRA object (or None).
-    :param ira_kmax: kmax factor for IRA.
-    :return: A tuple of (rmsd_r, rmsd_p) arrays.
-    """
-    logging.info("Calculating landscape coordinates (RMSD-R, RMSD-P)...")
-    rmsd_r = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[0], ira_kmax=ira_kmax
-    )
-    rmsd_p = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[-1], ira_kmax=ira_kmax
-    )
-    return rmsd_r, rmsd_p
 
 
 def _validate_data_atoms_match(z_data, atoms, dat_file_name):
@@ -174,26 +158,8 @@ def _process_single_path_step(
     rmsd_r = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax)
     rmsd_p = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax)
 
-    # --- Calculate Synthetic 2D Gradients ---
-    dr = np.gradient(rmsd_r)
-    dp = np.gradient(rmsd_p)
-    norm_ds = np.sqrt(dr**2 + dp**2)
-    norm_ds[norm_ds == 0] = 1.0
-    tr = dr / norm_ds
-    tp = dp / norm_ds
-    grad_r = -f_para_step * tr
-    grad_p = -f_para_step * tp
-
-    return pl.DataFrame(
-        {
-            "r": rmsd_r,
-            "p": rmsd_p,
-            "grad_r": grad_r,
-            "grad_p": grad_p,
-            "z": z_data_step,
-            "step": int(step_idx),
-        }
-    )
+    grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, f_para_step)
+    return create_landscape_dataframe(rmsd_r, rmsd_p, grad_r, grad_p, z_data_step, int(step_idx))
 
 
 def aggregate_neb_landscape_data(
