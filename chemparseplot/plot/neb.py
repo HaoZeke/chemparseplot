@@ -1,5 +1,8 @@
 import io
 import logging
+import shutil
+import subprocess
+import tempfile
 from collections import namedtuple
 from dataclasses import dataclass
 
@@ -9,7 +12,12 @@ from ase.io import write as ase_write
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
-from rgpycrumbs.surfaces import get_surface_model
+from rgpycrumbs.surfaces import (
+    NYSTROM_N_INDUCING_DEFAULT,
+    NYSTROM_THRESHOLD,
+    get_surface_model,
+    nystrom_paths_needed,
+)
 from scipy import ndimage
 from scipy.interpolate import (
     CubicHermiteSpline,
@@ -46,44 +54,96 @@ MIN_PATH_LENGTH = 1e-6
 # --- Structure Rendering Helpers ---
 
 
-def render_structure_to_image(atoms, zoom, rotation, bbox=None):  # noqa: ARG001
-    """Renders an ASE atoms object to a numpy image array.
+def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
+    """Renders an ASE Atoms object to a numpy RGBA image array.
 
-    When *bbox* is supplied, the canvas is fixed so that all
-    structures rendered with the same bbox appear at the same scale.
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to render.
+    zoom : float
+        Zoom level (used by callers for OffsetImage scaling, not by ASE).
+    rotation : str
+        ASE rotation string, e.g. ``"0x,90y,0z"``.
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array with shape ``(H, W, 4)`` and float dtype.
 
     ```{versionadded} 0.1.0
     ```
     """
     buf = io.BytesIO()
-    kw = {"format": "png", "rotation": rotation, "show_unit_cell": 0, "scale": 100}
-    if bbox is not None:
-        kw["bbox"] = bbox
-    ase_write(buf, atoms, **kw)
+    ase_write(
+        buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100
+    )
     buf.seek(0)
     img_data = plt.imread(buf)
     buf.close()
     return img_data
 
 
-def _compute_common_bbox(atoms_list, rotation, scale=100):
-    """Compute a unified bounding box across structures for uniform rendering."""
-    from ase.io.utils import PlottingVariables
+def _check_xyzrender():
+    """Verify that the ``xyzrender`` binary is on PATH.
 
-    all_bbox = []
-    for atoms in atoms_list:
-        pv = PlottingVariables(
-            atoms, rotation=rotation, scale=scale, show_unit_cell=0
+    Raises
+    ------
+    RuntimeError
+        If xyzrender is not found, with install instructions.
+    """
+    if shutil.which("xyzrender") is None:
+        msg = (
+            "xyzrender binary not found on PATH. "
+            "Install with: pip install 'xyzrender>=0.1.3'"
         )
-        all_bbox.append(pv.get_bbox())  # (xlo, ylo, xhi, yhi) in atomic coords
+        raise RuntimeError(msg)
 
-    all_bbox = np.array(all_bbox)
-    return (
-        all_bbox[:, 0].min(),
-        all_bbox[:, 1].min(),
-        all_bbox[:, 2].max(),
-        all_bbox[:, 3].max(),
-    )
+
+def _render_xyzrender(atoms, canvas_size=400):
+    """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to render.
+    canvas_size : int
+        Output image width/height in pixels (passed as ``-S``).
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array with shape ``(H, W, 4)`` and float dtype.
+    """
+    from ase.io import write as _ase_write
+
+    with tempfile.NamedTemporaryFile(
+        suffix=".xyz", delete=False
+    ) as xyz_fh:
+        xyz_path = xyz_fh.name
+    png_path = xyz_path.rsplit(".", 1)[0] + ".png"
+
+    try:
+        _ase_write(xyz_path, atoms, format="xyz")
+        cmd = [
+            "xyzrender",
+            xyz_path,
+            "-o",
+            png_path,
+            "-S",
+            str(canvas_size),
+        ]
+        subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
+        img_data = plt.imread(png_path)
+    finally:
+        import os
+
+        for p in (xyz_path, png_path):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
+    return img_data
 
 
 def plot_structure_strip(
@@ -94,10 +154,20 @@ def plot_structure_strip(
     rotation="0x,90y,0z",
     theme_color="black",
     max_cols=6,
+    renderer="ase",
 ):
     """Renders a horizontal gallery of atomic structures.
 
+    Parameters
+    ----------
+    renderer : str
+        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+
     ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.2.0
+    Added the *renderer* parameter.
     ```
     """
     ax.axis("off")
@@ -112,16 +182,18 @@ def plot_structure_strip(
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
 
-    # Compute a common bbox so all structures render at the same scale
-    common_bbox = _compute_common_bbox(atoms_list, rotation)
+    if renderer == "xyzrender":
+        _check_xyzrender()
 
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
         x_pos, y_pos = col, -row * row_step
 
-        # Image generation with shared bbox
-        img_data = render_structure_to_image(atoms, zoom, rotation, bbox=common_bbox)
+        if renderer == "xyzrender":
+            img_data = _render_xyzrender(atoms, canvas_size=400)
+        else:
+            img_data = render_structure_to_image(atoms, zoom, rotation)
 
         # Adjust zoom for strip
         effective_zoom = zoom * 0.45
@@ -151,14 +223,36 @@ def plot_structure_strip(
 
 
 def plot_structure_inset(
-    ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None
+    ax,
+    atoms,
+    x,
+    y,
+    xybox,
+    rad,
+    zoom=0.4,
+    rotation="0x,90y,0z",
+    arrow_props=None,
+    renderer="ase",
 ):
     """Plots a single structure as an annotation inset.
 
+    Parameters
+    ----------
+    renderer : str
+        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+
     ```{versionadded} 0.1.0
     ```
+
+    ```{versionchanged} 1.2.0
+    Added the *renderer* parameter.
+    ```
     """
-    img_data = render_structure_to_image(atoms, zoom, rotation)
+    if renderer == "xyzrender":
+        _check_xyzrender()
+        img_data = _render_xyzrender(atoms, canvas_size=400)
+    else:
+        img_data = render_structure_to_image(atoms, zoom, rotation)
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
@@ -437,14 +531,13 @@ def plot_landscape_surface(
         actual_nimags = None
 
     # --- 2. Hyperparameter Optimization ---
-    _NYSTROM_THRESHOLD = 1000
     if (
         method == "grad_imq"
-        and len(rmsd_r) > _NYSTROM_THRESHOLD
+        and len(rmsd_r) > NYSTROM_THRESHOLD
     ):
         log.warning(
             "More than %d points, switching to Nystrom",
-            _NYSTROM_THRESHOLD,
+            NYSTROM_THRESHOLD,
         )
         method = method + "_ny"
     model_class = get_surface_model(method)
@@ -557,15 +650,46 @@ def plot_landscape_surface(
         )
 
     if show_pts:
-        ax.scatter(
-            s_data if project_path else rmsd_r,
-            d_data if project_path else rmsd_p,
-            c="k",
-            s=12,
-            marker=".",
-            alpha=0.6,
-            zorder=40,
-        )
+        plot_x = s_data if project_path else rmsd_r
+        plot_y = d_data if project_path else rmsd_p
+
+        # When Nystrom is active, fade non-inducing points so the user
+        # can see which steps actually feed the surface fit.
+        if "_ny" in method and step_data is not None and actual_nimags is not None:
+            n_ind = n_inducing if n_inducing is not None else NYSTROM_N_INDUCING_DEFAULT
+            keep = nystrom_paths_needed(n_ind, actual_nimags)
+            max_step = step_data.max()
+            inducing_mask = step_data >= (max_step - keep + 1)
+            # Background (non-inducing) points
+            ax.scatter(
+                plot_x[~inducing_mask],
+                plot_y[~inducing_mask],
+                c="k",
+                s=8,
+                marker=".",
+                alpha=0.15,
+                zorder=39,
+            )
+            # Inducing points
+            ax.scatter(
+                plot_x[inducing_mask],
+                plot_y[inducing_mask],
+                c="k",
+                s=12,
+                marker=".",
+                alpha=0.6,
+                zorder=40,
+            )
+        else:
+            ax.scatter(
+                plot_x,
+                plot_y,
+                c="k",
+                s=12,
+                marker=".",
+                alpha=0.6,
+                zorder=40,
+            )
 
 
 def plot_landscape_path_overlay(
