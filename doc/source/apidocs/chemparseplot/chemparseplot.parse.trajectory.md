@@ -13,5 +13,6 @@
 :titlesonly:
 :maxdepth: 1
 
+chemparseplot.parse.trajectory.hdf5
 chemparseplot.parse.trajectory.neb
 ```

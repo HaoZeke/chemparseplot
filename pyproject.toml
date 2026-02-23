@@ -67,6 +67,7 @@ plot = [
 ]
 neb = [
   "ase>=3.22",
+  "h5py>=3.0",
   "polars>=0.20",
 ]
 test = [

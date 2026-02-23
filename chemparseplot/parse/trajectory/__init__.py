@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: MIT
 
-from chemparseplot.parse.trajectory import neb
+from chemparseplot.parse.trajectory import hdf5, neb
