@@ -32,15 +32,22 @@ def calculate_landscape_coords(
     :param ira_kmax: kmax factor for IRA.
     :return: A tuple of (rmsd_r, rmsd_p) arrays.
     """
+    from concurrent.futures import ThreadPoolExecutor
+
     from rgpycrumbs.geom.api.alignment import calculate_rmsd_from_ref
 
     log.info("Calculating landscape coordinates (RMSD-R, RMSD-P)...")
-    rmsd_r = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[0], ira_kmax=ira_kmax
-    )
-    rmsd_p = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[-1], ira_kmax=ira_kmax
-    )
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        fut_r = pool.submit(
+            calculate_rmsd_from_ref,
+            atoms_list, ira_instance, ref_atom=atoms_list[0], ira_kmax=ira_kmax,
+        )
+        fut_p = pool.submit(
+            calculate_rmsd_from_ref,
+            atoms_list, ira_instance, ref_atom=atoms_list[-1], ira_kmax=ira_kmax,
+        )
+        rmsd_r = fut_r.result()
+        rmsd_p = fut_p.result()
     return rmsd_r, rmsd_p
 
 
