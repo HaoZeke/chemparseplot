@@ -1,34 +1,21 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [
-  "hatch-vcs",
-  "hatchling",
-]
+requires = ["hatch-vcs", "hatchling"]
 
 [tool.hatch.build.hooks.vcs]
 version-file = "_version.py"
 
 [tool.hatch.build]
-include = [
-  "chemparseplot/**/*.py",
-  "chemparseplot/*.py",
-  "/tests",
-]
+include = ["chemparseplot/**/*.py", "chemparseplot/*.py", "/tests"]
 
 
 [project]
 name = "chemparseplot"
 description = "Parsers and plotting tools for computational chemistry"
 readme = "readme.md"
-keywords = [
-  "compchem",
-  "parser",
-  "plot",
-]
-license = {text = "MIT"}
-authors = [
-    { name = "Rohit Goswami", email = "rog32@hi.is" },
-]
+keywords = ["compchem", "parser", "plot"]
+license = { text = "MIT" }
+authors = [{ name = "Rohit Goswami", email = "rog32@hi.is" }]
 requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -39,14 +26,8 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
-dynamic = [
-  "version",
-]
-dependencies = [
-  "numpy>=1.26.2",
-  "pint>=0.22",
-  "rgpycrumbs>=1.1.0",
-]
+dynamic = ["version"]
+dependencies = ["numpy>=1.26.2", "pint>=0.22", "rgpycrumbs>=1.1.0"]
 
 [project.optional-dependencies]
 doc = [
@@ -61,22 +42,11 @@ doc = [
   "sphinx-togglebutton>=0.3.2",
   "sphinxcontrib-apidoc>=0.4",
 ]
-plot = [
-  "cmcrameri>=1.7",
-  "matplotlib>=3.8.2",
-]
-neb = [
-  "ase>=3.22",
-  "h5py>=3.0",
-  "polars>=0.20",
-]
-test = [
-  "pytest>=7.4.3",
-  "pytest-cov>=4.1.0",
-]
-lint = [
-  "ruff>=0.1.6",
-]
+plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
+neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20"]
+xyzrender = ["xyzrender>=0.1.3"]
+test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
+lint = ["ruff>=0.1.6"]
 [project.urls]
 Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
 Issues = "https://github.com/HaoZeke/chemparseplot/issues"
@@ -136,9 +106,15 @@ ignore = [
   # Allow boolean positional values in function calls, like `dict.get(... True)`
   "FBT003",
   # Ignore checks for possible passwords
-  "S105", "S106", "S107",
+  "S105",
+  "S106",
+  "S107",
   # Ignore complexity
-  "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+  "C901",
+  "PLR0911",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
 ]
 unfixable = [
   # Don't touch unused imports
@@ -161,20 +137,14 @@ ban-relative-imports = "all"
 source_pkgs = ["chemparseplot"]
 branch = true
 parallel = true
-omit = [
-  "_version.py",
-]
+omit = ["_version.py"]
 
 [tool.coverage.paths]
 chemparseplot = ["src/chemparseplot", "*/chemparseplot/src/chemparseplot"]
 tests = ["tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.towncrier]
 start_string = "<!-- towncrier release notes start -->\n"
