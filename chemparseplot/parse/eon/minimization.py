@@ -7,6 +7,9 @@ from pathlib import Path
 def min_e_result(eresp: Path) -> dict:
     """Reads and parses the results.dat file.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Args:
         eresp: Path to the eOn results directory.
 

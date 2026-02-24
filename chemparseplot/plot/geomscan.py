@@ -1,10 +1,15 @@
 import matplotlib.pyplot as plt
-
 from rgpycrumbs.interpolation import spline_interp
+
 from chemparseplot.plot.structs import BasePlotter
 
 
 def plot_energy_paths(energy_paths, units, colormap_fraction=1.0, plotter=None):
+    """Plot multiple energy paths with colormap-indexed colors.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     if plotter is None:
         plotter = BasePlotter()
 

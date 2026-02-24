@@ -1,3 +1,4 @@
+import logging
 import os
 import typing
 
@@ -9,8 +10,18 @@ from ase.calculators.calculator import Calculator, all_changes
 from ase.calculators.nwchem import NWChem
 from ase.io.trajectory import Trajectory
 
+log = logging.getLogger(__name__)
+
+_DOUBLET_MULT = 2
+
 
 class HDF5CalculatorDimerMidpoint(Calculator):
+    """ASE calculator reading energy/forces from an HDF5 dimer midpoint group.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     implemented_properties: typing.ClassVar[list[str]] = ["energy", "forces"]
 
     def __init__(self, from_hdf5, natms, **kwargs):
@@ -20,11 +31,16 @@ class HDF5CalculatorDimerMidpoint(Calculator):
         self.natoms = natms
 
     def calculate(
-        self, atoms=None, properties=["energy", "forces"], system_changes=all_changes
+        self,
+        atoms=None,
+        properties=None,
+        system_changes=all_changes,
     ):
+        if properties is None:
+            properties = ["energy", "forces"]
         Calculator.calculate(self, atoms, properties, system_changes)
 
-        # Access energy and gradients directly from the referenced HDF5 object
+        # Access energy and gradients from the referenced HDF5 object
         energy = self.from_hdf5["energy"][0]
         forces = self.from_hdf5["gradients"][: self.natoms * 3].reshape(-1, 3) * -1
 
@@ -34,6 +50,12 @@ class HDF5CalculatorDimerMidpoint(Calculator):
 
 
 class HDF5Calculator(Calculator):
+    """ASE calculator reading energy/forces from an HDF5 group.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     implemented_properties: typing.ClassVar[list[str]] = ["energy", "forces"]
 
     def __init__(self, from_hdf5, **kwargs):
@@ -42,11 +64,16 @@ class HDF5Calculator(Calculator):
         self.from_hdf5 = from_hdf5
 
     def calculate(
-        self, atoms=None, properties=["energy", "forces"], system_changes=all_changes
+        self,
+        atoms=None,
+        properties=None,
+        system_changes=all_changes,
     ):
+        if properties is None:
+            properties = ["energy", "forces"]
         Calculator.calculate(self, atoms, properties, system_changes)
 
-        # Access energy and gradients directly from the referenced HDF5 object
+        # Access energy and gradients from the referenced HDF5 object
         energy = self.from_hdf5["energy"][0]
         forces = self.from_hdf5["gradients"][:].reshape(-1, 3) * -1
 
@@ -55,17 +82,26 @@ class HDF5Calculator(Calculator):
         self.results["forces"] = forces
 
 
-def get_atoms_from_hdf5(template_atoms: ase.Atoms, hdf5_group: h5py.Group) -> ase.Atoms:
-    """
-    Creates an ASE Atoms object from a template and an HDF5 group containing optimization data.
+def get_atoms_from_hdf5(
+    template_atoms: ase.Atoms,
+    hdf5_group: h5py.Group,
+) -> ase.Atoms:
+    """Create an ASE Atoms object from a template and HDF5 group.
+
+    Contains optimization data.
+
+    ```{versionadded} 0.0.3
+    ```
 
     Args:
-        template_atoms (ase.Atoms): The template ASE Atoms object (initial structure).
-        hdf5_group (h5py.Group): The HDF5 group containing 'energy', 'gradients', and 'positions' datasets.
+        template_atoms (ase.Atoms): The template ASE Atoms
+            object (initial structure).
+        hdf5_group (h5py.Group): The HDF5 group containing
+            'energy', 'gradients', and 'positions' datasets.
 
     Returns:
-        ase.Atoms: An ASE Atoms object with positions, energy, and forces from
-        the HDF5 group.
+        ase.Atoms: An ASE Atoms object with positions, energy,
+            and forces from the HDF5 group.
     """
 
     atoms = template_atoms.copy()
@@ -85,6 +121,9 @@ def create_geom_traj_from_hdf5(
     Creates an ASE trajectory file from an HDF5 file containing optimization
     data. This only outputs the geometry steps after the initial rotations.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Generally this is what you want to see for checking the change in geometry
     along the run. There are initial rotations and 2 additional calls (one in
     the beginning and one at the end) which are not accounted for here.
@@ -93,33 +132,38 @@ def create_geom_traj_from_hdf5(
         hdf5_file (str): Path to the HDF5 file.
         output_traj_file (str): Path to the output trajectory file (e.g.,
         'gprd_run.traj').
-        initial_structure_file (str): Path to the file containing the initial structure (e.g., 'pos.con').
-        outer_loop_group_name (str, optional): Name of the group containing
-        outer loop data. Defaults to "outer_loop".
+        initial_structure_file (str): Path to the file containing
+            the initial structure (e.g., 'pos.con').
+        outer_loop_group_name (str, optional): Name of the group
+            containing outer loop data. Defaults to
+            "outer_loop".
     """
 
     try:
         f = h5py.File(hdf5_file, "r")
     except FileNotFoundError:
-        print(f"Error: HDF5 file '{hdf5_file}' not found.")
+        log.error("HDF5 file '%s' not found.", hdf5_file)
         return
     except Exception as e:
-        print(f"An error occurred while opening HDF5 file: {e}")
+        log.error("Error opening HDF5 file: %s", e)
         return
 
     outer_loop_keys = [
         str(x) for x in np.sort([int(x) for x in f[outer_loop_group_name].keys()])
     ]
-    print(f"Available outer loop keys: {outer_loop_keys}")
+    log.info("Available outer loop keys: %s", outer_loop_keys)
 
     try:
         init = aseio.read(initial_structure_file)
     except FileNotFoundError:
-        print(f"Error: Initial structure file '{initial_structure_file}' not found.")
+        log.error(
+            "Initial structure file '%s' not found.",
+            initial_structure_file,
+        )
         f.close()
         return
     except Exception as e:
-        print(f"An error occurred while reading initial structure file: {e}")
+        log.error("Error reading initial structure file: %s", e)
         f.close()
         return
 
@@ -140,13 +184,20 @@ def create_geom_traj_from_hdf5(
 
             traj.write(atoms)
         except KeyError as e:
-            print(f"Skipping key {key} due to missing data: {e}")
+            log.warning(
+                "Skipping key %s due to missing data: %s",
+                key,
+                e,
+            )
         except Exception as e:
-            print(f"An error occurred while processing key {key}: {e}")
+            log.error("Error processing key %s: %s", key, e)
 
     f.close()
     traj.close()
-    print(f"Trajectory file '{output_traj_file}' created successfully.")
+    log.info(
+        "Trajectory file '%s' created successfully.",
+        output_traj_file,
+    )
 
 
 def create_nwchem_trajectory(
@@ -156,37 +207,45 @@ def create_nwchem_trajectory(
     mult=1,
     outer_loop_group_name: str = "outer_loop",
 ):
-    """
-    Creates an ASE trajectory file with NWChem energy and forces calculated for positions
-    taken from an HDF5 file.
+    """Create an ASE trajectory with NWChem energies and forces.
+
+    Positions are taken from an HDF5 file.
+
+    ```{versionadded} 0.0.3
+    ```
 
     Args:
-        template_atoms (ase.Atoms): The template ASE Atoms object (initial structure).
-        hdf5_file (str): Path to the HDF5 file containing positions.
-        output_traj_file (str): Path to the output trajectory file (e.g., 'nwchem_run.traj').
-        outer_loop_group_name (str, optional): Name of the group containing outer loop data. Defaults to "outer_loop".
+        template_atoms (ase.Atoms): The template ASE Atoms
+            object (initial structure).
+        hdf5_file (str): Path to the HDF5 file containing
+            positions.
+        output_traj_file (str): Path to the output trajectory
+            file (e.g., 'nwchem_run.traj').
+        outer_loop_group_name (str, optional): Name of the
+            group containing outer loop data.
+            Defaults to "outer_loop".
     """
 
     try:
         f = h5py.File(hdf5_file, "r")
     except FileNotFoundError:
-        print(f"Error: HDF5 file '{hdf5_file}' not found.")
+        log.error("HDF5 file '%s' not found.", hdf5_file)
         return
     except Exception as e:
-        print(f"An error occurred while opening HDF5 file: {e}")
+        log.error("Error opening HDF5 file: %s", e)
         return
 
     outer_loop_keys = [
         str(x) for x in np.sort([int(x) for x in f[outer_loop_group_name].keys()])
     ]
-    print(f"Available outer loop keys: {outer_loop_keys}")
+    log.info("Available outer loop keys: %s", outer_loop_keys)
 
     traj = Trajectory(output_traj_file, "w")
 
     nwchem_path = os.environ["NWCHEM_COMMAND"]
     memory = "2 gb"
     nwchem_kwargs = {
-        "command": f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",
+        "command": f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",  # codespell:ignore nwo
         "memory": memory,
         "scf": {
             "nopen": mult - 1,
@@ -196,7 +255,7 @@ def create_nwchem_trajectory(
         "basis": "3-21G",
         "task": "gradient",
     }
-    if mult == 2:
+    if mult == _DOUBLET_MULT:
         nwchem_kwargs["scf"]["uhf"] = None  # switch to unrestricted calculation
 
     for key in outer_loop_keys:
@@ -211,18 +270,25 @@ def create_nwchem_trajectory(
 
             # Assign calculator and calculate energy and forces
             atoms.calc = NWChem(**nwchem_kwargs)
-            print(f"Calculating for {key}")
+            log.info("Calculating for %s", key)
             atoms.get_potential_energy()
 
             # Write to trajectory
             traj.write(atoms)
 
         except KeyError as e:
-            print(f"Skipping key {key} due to missing data: {e}")
+            log.warning(
+                "Skipping key %s due to missing data: %s",
+                key,
+                e,
+            )
 
     f.close()
     traj.close()
-    print(f"NWChem trajectory file '{output_traj_file}' created successfully.")
+    log.info(
+        "NWChem trajectory file '%s' created successfully.",
+        output_traj_file,
+    )
 
 
 def create_full_traj_from_hdf5(
@@ -232,31 +298,41 @@ def create_full_traj_from_hdf5(
     outer_loop_group_name: str = "outer_loop",
     inner_loop_group_name: str = "initial_rotations",
 ):
-    """
-    Creates an ASE trajectory file from an HDF5 file containing optimization
-    data. Includes **estimated points** for the initial rotations and the
-    endpoints. These are correct (correspond to the actual counts) but is
-    slightly convoluted, since the HDF5 contains both the midpoint and the
-    "forward dimer". Instead, the length of the inner rotations keys is the
-    number of (0 energy) points added to the trajectory. This again makes
-    intuitive sense, since we have the Elvl cutoff in the GPRD as well.
+    """Create an ASE trajectory from an HDF5 optimization file.
+
+    Includes **estimated points** for the initial rotations
+    and the endpoints.
+
+    ```{versionadded} 0.0.3
+    ```
+
+    These are correct (correspond to the actual counts) but
+    is slightly convoluted, since the HDF5 contains both the
+    midpoint and the "forward dimer". Instead, the length of
+    the inner rotations keys is the number of (0 energy)
+    points added to the trajectory. This again makes
+    intuitive sense, since we have the Elvl cutoff in the
+    GPRD as well.
 
     Args:
         hdf5_file (str): Path to the HDF5 file.
-        output_traj_file (str): Path to the output trajectory file (e.g.,
-        'gprd_run.traj').
-        initial_structure_file (str): Path to the file containing the initial structure (e.g., 'pos.con').
-        outer_loop_group_name (str, optional): Name of the group containing
-        outer loop data. Defaults to "outer_loop".
+        output_traj_file (str): Path to the output trajectory
+            file (e.g., 'gprd_run.traj').
+        initial_structure_file (str): Path to the file
+            containing the initial structure
+            (e.g., 'pos.con').
+        outer_loop_group_name (str, optional): Name of the
+            group containing outer loop data.
+            Defaults to "outer_loop".
     """
 
     try:
         f = h5py.File(hdf5_file, "r")
     except FileNotFoundError:
-        print(f"Error: HDF5 file '{hdf5_file}' not found.")
+        log.error("HDF5 file '%s' not found.", hdf5_file)
         return
     except Exception as e:
-        print(f"An error occurred while opening HDF5 file: {e}")
+        log.error("Error opening HDF5 file: %s", e)
         return
 
     outer_loop_keys = [
@@ -267,17 +343,20 @@ def create_full_traj_from_hdf5(
         str(x) for x in np.sort([int(x) for x in f[inner_loop_group_name].keys()])
     ]
 
-    print(f"Available innner loop keys: {inner_loop_keys}")
-    print(f"Available outer loop keys: {outer_loop_keys}")
+    log.info("Available inner loop keys: %s", inner_loop_keys)
+    log.info("Available outer loop keys: %s", outer_loop_keys)
 
     try:
         init = aseio.read(initial_structure_file)
     except FileNotFoundError:
-        print(f"Error: Initial structure file '{initial_structure_file}' not found.")
+        log.error(
+            "Initial structure file '%s' not found.",
+            initial_structure_file,
+        )
         f.close()
         return
     except Exception as e:
-        print(f"An error occurred while reading initial structure file: {e}")
+        log.error("Error reading initial structure file: %s", e)
         f.close()
         return
 
@@ -320,10 +399,17 @@ def create_full_traj_from_hdf5(
                 traj.write(atoms)
 
         except KeyError as e:
-            print(f"Skipping key {key} due to missing data: {e}")
+            log.warning(
+                "Skipping key %s due to missing data: %s",
+                key,
+                e,
+            )
         except Exception as e:
-            print(f"An error occurred while processing key {key}: {e}")
+            log.error("Error processing key %s: %s", key, e)
 
     f.close()
     traj.close()
-    print(f"Trajectory file '{output_traj_file}' created successfully.")
+    log.info(
+        "Trajectory file '%s' created successfully.",
+        output_traj_file,
+    )

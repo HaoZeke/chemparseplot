@@ -1,22 +1,27 @@
+import datetime
+import logging
+import time
+from collections import Counter, namedtuple
 from dataclasses import dataclass
 from pathlib import Path
-from collections import Counter
 
+import ase
+import numpy as np
 from ase.io import read
+from rgpycrumbs.basetypes import SaddleMeasure, SpinID
 from rgpycrumbs.time.helpers import one_day_tdelta
 
-from rgpycrumbs.basetypes import SaddleMeasure, SpinID
-import ase
-
-import datetime
-import time
-from collections import namedtuple
-import numpy as np
+log = logging.getLogger(__name__)
 
 SellaLog = namedtuple(
     "SellaLog",
     ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"],
 )
+"""Named tuple for a single Sella log entry.
+
+```{versionadded} 0.0.3
+```
+"""
 
 
 def _sella_loglist(log_f):
@@ -27,7 +32,9 @@ def _sella_loglist(log_f):
             SellaLog(
                 step_id=int(tline[1]),
                 time_float=time.mktime(
-                    datetime.datetime.strptime(tline[2], "%H:%M:%S").timetuple()
+                    datetime.datetime.strptime(tline[2], "%H:%M:%S")
+                    .replace(tzinfo=datetime.UTC)
+                    .timetuple()
                 ),
                 energy=float(tline[3]),
                 fmax=float(tline[4]),
@@ -42,12 +49,24 @@ def _sella_loglist(log_f):
 
 @dataclass
 class LogStart:
+    """Start-of-log record for a Sella calculation.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     tstart: str
     init_energy: float
 
 
 @dataclass
 class LogEnd:
+    """End-of-log record for a Sella calculation.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
     iter_steps: int
     tend: str
     saddle_energy: float
@@ -88,6 +107,9 @@ class LogEnd:
 def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
     """Parses a log line based on its type.
 
+    ```{versionadded} 0.0.3
+    ```
+
     Args:
         line: The log line string.
         line_type: Either "start" or "end" indicating the line type.
@@ -109,12 +131,15 @@ def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
         else:
             return None
     except (IndexError, ValueError):
-        print(f"Warning: Could not parse {line_type} log line: {line}")
+        log.warning("Could not parse %s log line: %s", line_type, line)
         return None
 
 
 def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
     """Parses Sella saddle point calculation results.
+
+    ```{versionadded} 0.0.3
+    ```
 
     Args:
         eresp: Path to the directory containing the results.
@@ -132,25 +157,23 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
             traj = read(traj_file, index=":")
             npes = len(traj)
         except Exception as e:
-            print(
-                f"Warning: Could not read or process trajectory file {traj_file}: {e}"
-            )
+            log.warning("Could not read or process trajectory file %s: %s", traj_file, e)
             return SaddleMeasure()
     else:
-        print(f"Warning: No .traj file found in {eresp}. Using npes.txt or default.")
+        log.warning("No .traj file found in %s. Using npes.txt or default.", eresp)
         respth = eresp / "npes.txt"
         if respth.exists():
             try:
                 npes = int(respth.read_text().split()[-1])
             except (IndexError, ValueError):
-                print(f"Warning: Could not parse npes from {respth}")
+                log.warning("Could not parse npes from %s", respth)
                 return SaddleMeasure()
         else:
             return SaddleMeasure()
 
     log_files = [f for f in eresp.iterdir() if "log" in str(f)]
     if not log_files:
-        print(f"Warning: No log file found in {eresp}")
+        log.warning("No log file found in %s", eresp)
         return SaddleMeasure()
 
     try:
@@ -178,7 +201,7 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
         )
 
     except (IndexError, ValueError) as e:
-        print(f"Warning: Error parsing log data: {e}")
+        log.warning("Error parsing log data: %s", e)
         return SaddleMeasure()
 
 
@@ -197,6 +220,11 @@ def _get_ghosts(traj_f):
 
 
 def get_unique_frames(traj, sloglist: list, nround: int = 2):
+    """Filter trajectory to unique frames by matching rounded fmax values.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     # XXX: This is fairly idiotic, but it turns out empirically filtering by
     # rounding the fmax to 2 seems to give the same number as the number of
     # steps, so those frames are the "unique" ones.
@@ -225,6 +253,11 @@ def get_unique_frames(traj, sloglist: list, nround: int = 2):
 
 
 def make_geom_traj(traj_f, log_f, out_f="geom_step.traj"):
+    """Write a geometry-step trajectory from a Sella trajectory and log file.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
     # XXX: This uses a logfile which has the patch for writing the trajectory ID
     traj = ase.io.read(traj_f, ":")
     sellalog = _sella_loglist(log_f)

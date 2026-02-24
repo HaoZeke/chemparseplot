@@ -32,4 +32,4 @@ codes which is required, not the codes themselves.
 
 - `ORCA` can be obtained (freely) after [registering on their forum](https://orcaforum.kofo.mpg.de/app.php/portal)
 - `ASE`, the [atomic simulation environment](https://wiki.fysik.dtu.dk/ase/), is also on PyPI and can be installed via `pip`
-- `eON` is [freely available](https://eondocs.org/) and on `conda-forge`. 
+- `eON` is [freely available](https://eondocs.org/) and on `conda-forge`.

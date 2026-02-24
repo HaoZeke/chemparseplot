@@ -10,6 +10,7 @@ For parsing outputs from input files like this:
 end
 *xyzfile 0 1 h2_base.xyz
 """
+
 import re
 
 import chemparseplot.parse.converter as conv
@@ -20,6 +21,9 @@ from chemparseplot.units import Q_
 def extract_energy_data(data: str, energy_type: str) -> tuple[Q_, Q_]:
     """
     Extracts and converts the energy data for a specified energy type.
+
+    ```{versionadded} 0.0.2
+    ```
 
     This function assumes the input data is a blob of text. It searches for
     'Calculated Surface' followed by the specified energy type ('Actual' or 'SCF')

@@ -1,5 +1,8 @@
 import io
 import logging
+import shutil
+import subprocess
+import tempfile
 from collections import namedtuple
 from dataclasses import dataclass
 
@@ -9,8 +12,13 @@ from ase.io import write as ase_write
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
-from rgpycrumbs.surfaces import get_surface_model
-import scipy.ndimage as ndimage
+from rgpycrumbs.surfaces import (
+    NYSTROM_N_INDUCING_DEFAULT,
+    NYSTROM_THRESHOLD,
+    get_surface_model,
+    nystrom_paths_needed,
+)
+from scipy import ndimage
 from scipy.interpolate import (
     CubicHermiteSpline,
     splev,
@@ -22,10 +30,21 @@ log = logging.getLogger(__name__)
 
 # --- Data Structures ---
 InsetImagePos = namedtuple("InsetImagePos", "x y rad")
+"""Position specification for an inset structure image (x, y, rad).
+
+```{versionadded} 0.1.0
+```
+"""
 
 
 @dataclass
 class SmoothingParams:
+    """Parameters for Savitzky-Golay smoothing of NEB force profiles.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
+
     window_length: int = 5
     polyorder: int = 2
 
@@ -35,13 +54,91 @@ MIN_PATH_LENGTH = 1e-6
 # --- Structure Rendering Helpers ---
 
 
-def render_structure_to_image(atoms, zoom, rotation):
-    """Renders an ASE atoms object to a numpy image array."""
+def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
+    """Renders an ASE Atoms object to a numpy RGBA image array.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to render.
+    zoom : float
+        Zoom level (used by callers for OffsetImage scaling, not by ASE).
+    rotation : str
+        ASE rotation string, e.g. ``"0x,90y,0z"``.
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array with shape ``(H, W, 4)`` and float dtype.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     buf = io.BytesIO()
     ase_write(buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100)
     buf.seek(0)
     img_data = plt.imread(buf)
     buf.close()
+    return img_data
+
+
+def _check_xyzrender():
+    """Verify that the ``xyzrender`` binary is on PATH.
+
+    Raises
+    ------
+    RuntimeError
+        If xyzrender is not found, with install instructions.
+    """
+    if shutil.which("xyzrender") is None:
+        msg = (
+            "xyzrender binary not found on PATH. "
+            "Install with: pip install 'xyzrender>=0.1.3'"
+        )
+        raise RuntimeError(msg)
+
+
+def _render_xyzrender(atoms, canvas_size=400):
+    """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to render.
+    canvas_size : int
+        Output image width/height in pixels (passed as ``-S``).
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array with shape ``(H, W, 4)`` and float dtype.
+    """
+    from ase.io import write as _ase_write  # noqa: PLC0415
+
+    with tempfile.NamedTemporaryFile(suffix=".xyz", delete=False) as xyz_fh:
+        xyz_path = xyz_fh.name
+    png_path = xyz_path.rsplit(".", 1)[0] + ".png"
+
+    try:
+        _ase_write(xyz_path, atoms, format="xyz")
+        cmd = [
+            "xyzrender",
+            xyz_path,
+            "-o",
+            png_path,
+            "-S",
+            str(canvas_size),
+        ]
+        subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
+        img_data = plt.imread(png_path)
+    finally:
+        import os  # noqa: PLC0415
+
+        for p in (xyz_path, png_path):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
     return img_data
 
 
@@ -53,8 +150,22 @@ def plot_structure_strip(
     rotation="0x,90y,0z",
     theme_color="black",
     max_cols=6,
+    renderer="ase",
 ):
-    """Renders a horizontal gallery of atomic structures."""
+    """Renders a horizontal gallery of atomic structures.
+
+    Parameters
+    ----------
+    renderer : str
+        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+
+    ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.2.0
+    Added the *renderer* parameter.
+    ```
+    """
     ax.axis("off")
     n_plot = len(atoms_list)
     n_cols = min(n_plot, max_cols)
@@ -67,13 +178,18 @@ def plot_structure_strip(
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
 
+    if renderer == "xyzrender":
+        _check_xyzrender()
+
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
         x_pos, y_pos = col, -row * row_step
 
-        # Image generation
-        img_data = render_structure_to_image(atoms, zoom, rotation)
+        if renderer == "xyzrender":
+            img_data = _render_xyzrender(atoms, canvas_size=400)
+        else:
+            img_data = render_structure_to_image(atoms, zoom, rotation)
 
         # Adjust zoom for strip
         effective_zoom = zoom * 0.45
@@ -103,10 +219,36 @@ def plot_structure_strip(
 
 
 def plot_structure_inset(
-    ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None
+    ax,
+    atoms,
+    x,
+    y,
+    xybox,
+    rad,
+    zoom=0.4,
+    rotation="0x,90y,0z",
+    arrow_props=None,
+    renderer="ase",
 ):
-    """Plots a single structure as an annotation inset."""
-    img_data = render_structure_to_image(atoms, zoom, rotation)
+    """Plots a single structure as an annotation inset.
+
+    Parameters
+    ----------
+    renderer : str
+        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+
+    ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.2.0
+    Added the *renderer* parameter.
+    ```
+    """
+    if renderer == "xyzrender":
+        _check_xyzrender()
+        img_data = _render_xyzrender(atoms, canvas_size=400)
+    else:
+        img_data = render_structure_to_image(atoms, zoom, rotation)
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
@@ -143,7 +285,11 @@ def plot_structure_inset(
 def plot_energy_path(
     ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None
 ):
-    """Plots 1D energy profile with optional Hermite spline interpolation."""
+    """Plots 1D energy profile with optional Hermite spline interpolation.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     if smoothing is None:
         smoothing = SmoothingParams()
 
@@ -202,7 +348,11 @@ def plot_energy_path(
 
 
 def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white"):
-    """Plots 1D eigenvalue profile."""
+    """Plots 1D eigenvalue profile.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     try:
         idx = np.argsort(rc)
         rc_s = rc[idx]
@@ -231,7 +381,7 @@ def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="w
     ax.axhline(0, color=grid_color, linestyle=":", linewidth=1.5, alpha=0.8, zorder=1)
 
 
-def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, dE=0.02, num_pts=12):
+def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, d_e=0.02, num_pts=12):
     """
     Creates a 'collar' of synthetic points around the endpoints.
     This forces the RBF interpolator to curve upwards around these points, preventing
@@ -250,7 +400,7 @@ def _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, dE=0.02, num_pts
         ring_r = r0 + radius * np.cos(angles)
         ring_p = p0 + radius * np.sin(angles)
         # Force energy higher to create a bowl shape
-        ring_z = np.full_like(ring_r, z0 + dE)
+        ring_z = np.full_like(ring_r, z0 + d_e)
 
         aug_r.append(ring_r)
         aug_p.append(ring_p)
@@ -296,14 +446,24 @@ def plot_landscape_surface(
     method="grad_matern",
     rbf_smooth=None,
     cmap="viridis",
-    show_pts=True,
+    show_pts=True,  # noqa: FBT002
     variance_threshold=0.05,
-    project_path=True,
+    project_path=True,  # noqa: FBT002
     extra_points=None,
+    n_inducing=None,
 ):
-    """
-    Plots the 2D landscape surface. If project_path evaluates to True,
-    the plot maps into a reaction valley coordinates (Progress $s$ vs Orthogonal Distance $d$).
+    """Plot the 2D landscape surface.
+
+    If project_path evaluates to True, the plot maps into
+    reaction valley coordinates
+    (Progress $s$ vs Orthogonal Distance $d$).
+
+    ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.1.0
+    Added the *project_path* parameter for reaction-valley coordinate projection.
+    ```
     """
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
@@ -367,12 +527,16 @@ def plot_landscape_surface(
         actual_nimags = None
 
     # --- 2. Hyperparameter Optimization ---
-    if "imq" in method and len(rmsd_r) > 1000:
-        log.warning(f"More than 1000 points, switching to Nystrom")
+    if method == "grad_imq" and len(rmsd_r) > NYSTROM_THRESHOLD:
+        log.warning(
+            "More than %d points, switching to Nystrom",
+            NYSTROM_THRESHOLD,
+        )
         method = method + "_ny"
-    ModelClass = get_surface_model(method)
+    model_class = get_surface_model(method)
     is_gradient_model = method.startswith("grad_")
-    h_ls = rbf_smooth if rbf_smooth and rbf_smooth > 1e-4 else 0.5
+    _min_rbf_smooth = 1e-4
+    h_ls = rbf_smooth if rbf_smooth and rbf_smooth > _min_rbf_smooth else 0.5
     h_noise = 1e-2
 
     mask_opt = (
@@ -380,6 +544,11 @@ def plot_landscape_surface(
         if step_data is not None
         else np.ones(len(z_data), dtype=bool)
     )
+    # Build extra kwargs for Nystrom model
+    _approx_kwargs = {}
+    if "_ny" in method and n_inducing is not None:
+        _approx_kwargs["n_inducing"] = n_inducing
+
     opt_kwargs = {
         "x": np.column_stack([rmsd_r, rmsd_p])[mask_opt],
         "y": z_data[mask_opt],
@@ -387,15 +556,20 @@ def plot_landscape_surface(
         "smoothing": h_noise,
         "nimags": len(z_data),
         "optimize": True,
+        **_approx_kwargs,
     }
     if is_gradient_model:
         opt_kwargs["gradients"] = np.column_stack([grad_r, grad_p])[mask_opt]
 
     try:
         learner = (
-            ModelClass(**opt_kwargs)
+            model_class(**opt_kwargs)
             if is_gradient_model
-            else ModelClass(x_obs=opt_kwargs["x"], y_obs=opt_kwargs["y"], **opt_kwargs)
+            else model_class(
+                x_obs=opt_kwargs["x"],
+                y_obs=opt_kwargs["y"],
+                **opt_kwargs,
+            )
         )
         best_ls = getattr(learner, "ls", getattr(learner, "epsilon", h_ls))
         best_noise = getattr(learner, "noise", getattr(learner, "sm", h_noise))
@@ -414,14 +588,16 @@ def plot_landscape_surface(
     else:
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
-    rbf = ModelClass(
+    _grad_stack = np.column_stack([grad_r, grad_p]) if grad_r is not None else None
+    rbf = model_class(
         x=np.column_stack([rmsd_r, rmsd_p]),
         y=z_data,
-        gradients=np.column_stack([grad_r, grad_p]) if grad_r is not None else None,
+        gradients=_grad_stack,
         length_scale=best_ls,
         smoothing=best_noise,
         optimize=False,
-        nimags=actual_nimags,  # Pass the correct integer here too
+        nimags=actual_nimags,
+        **_approx_kwargs,
     )
 
     zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
@@ -430,9 +606,7 @@ def plot_landscape_surface(
         if hasattr(rbf, "predict_var")
         else None
     )
-    var_grid = ndimage.gaussian_filter(
-        var_grid, sigma=2
-    )  # smoothing variances
+    var_grid = ndimage.gaussian_filter(var_grid, sigma=2)  # smoothing variances
 
     # --- 4. Plotting ---
     ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
@@ -469,19 +643,68 @@ def plot_landscape_surface(
         )
 
     if show_pts:
-        ax.scatter(
-            s_data if project_path else rmsd_r,
-            d_data if project_path else rmsd_p,
-            c="k",
-            s=12,
-            marker=".",
-            alpha=0.6,
-            zorder=40,
-        )
+        plot_x = s_data if project_path else rmsd_r
+        plot_y = d_data if project_path else rmsd_p
+
+        # When Nystrom is active, fade non-inducing points so the user
+        # can see which steps actually feed the surface fit.
+        if "_ny" in method and step_data is not None and actual_nimags is not None:
+            n_ind = n_inducing if n_inducing is not None else NYSTROM_N_INDUCING_DEFAULT
+            keep = nystrom_paths_needed(n_ind, actual_nimags)
+            max_step = step_data.max()
+            inducing_mask = step_data >= (max_step - keep + 1)
+            # Background (non-inducing) points
+            ax.scatter(
+                plot_x[~inducing_mask],
+                plot_y[~inducing_mask],
+                c="k",
+                s=8,
+                marker=".",
+                alpha=0.15,
+                zorder=39,
+            )
+            # Inducing points
+            ax.scatter(
+                plot_x[inducing_mask],
+                plot_y[inducing_mask],
+                c="k",
+                s=12,
+                marker=".",
+                alpha=0.6,
+                zorder=40,
+            )
+        else:
+            ax.scatter(
+                plot_x,
+                plot_y,
+                c="k",
+                s=12,
+                marker=".",
+                alpha=0.6,
+                zorder=40,
+            )
 
 
-def plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True):
-    """Overlays the colored path line on the landscape, mapped to the chosen coordinate basis."""
+def plot_landscape_path_overlay(
+    ax,
+    r,
+    p,
+    z,
+    cmap,
+    z_label,
+    project_path=True,  # noqa: FBT002
+):
+    """Overlay the colored path line on the landscape.
+
+    Mapped to the chosen coordinate basis.
+
+    ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.1.0
+    Added the *project_path* parameter for reaction-valley coordinate projection.
+    ```
+    """
     if project_path:
         r_start, p_start = r[0], p[0]
         r_end, p_end = r[-1], p[-1]

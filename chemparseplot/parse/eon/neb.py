@@ -7,6 +7,11 @@ import polars as pl
 from ase import Atoms
 from ase.io import read as ase_read
 
+from chemparseplot.parse.neb_utils import (
+    compute_synthetic_gradients,
+    create_landscape_dataframe,
+)
+
 try:
     from rgpycrumbs._aux import _import_from_parent_env
     from rgpycrumbs.geom.api.alignment import (
@@ -18,27 +23,6 @@ except ImportError:
     ira_mod = None
 
 log = logging.getLogger(__name__)
-
-
-def calculate_landscape_coords(
-    atoms_list: list[Atoms], ira_instance, ira_kmax: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Calculates 2D landscape coordinates (RMSD-R, RMSD-P) for a path.
-
-    :param atoms_list: List of ASE Atoms objects representing the path.
-    :param ira_instance: An instantiated IRA object (or None).
-    :param ira_kmax: kmax factor for IRA.
-    :return: A tuple of (rmsd_r, rmsd_p) arrays.
-    """
-    logging.info("Calculating landscape coordinates (RMSD-R, RMSD-P)...")
-    rmsd_r = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[0], ira_kmax=ira_kmax
-    )
-    rmsd_p = calculate_rmsd_from_ref(
-        atoms_list, ira_instance, ref_atom=atoms_list[-1], ira_kmax=ira_kmax
-    )
-    return rmsd_r, rmsd_p
 
 
 def _validate_data_atoms_match(z_data, atoms, dat_file_name):
@@ -54,12 +38,17 @@ def _validate_data_atoms_match(z_data, atoms, dat_file_name):
 
 def load_or_compute_data(
     cache_file: Path | None,
+    *,
     force_recompute: bool,
     validation_check: Callable[[pl.DataFrame], None],
     computation_callback: Callable[[], pl.DataFrame],
     context_name: str,
 ) -> pl.DataFrame:
-    """Retrieves data from a parquet cache or triggers a computation callback."""
+    """Retrieves data from a parquet cache or triggers a computation callback.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     if cache_file and cache_file.exists() and not force_recompute:
         log.info(f"Loading cached {context_name} data from {cache_file}...")
         try:
@@ -89,7 +78,11 @@ def load_structures_and_calculate_additional_rmsd(
     ira_kmax: float,
     sp_file: Path | None = None,
 ):
-    """Loads the main trajectory and calculates RMSD for any additional comparison structures."""
+    """Loads the main trajectory and calculates RMSD for additional comparison structures.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
     log.info(f"Reading structures from {con_file}")
     atoms_list = ase_read(con_file, index=":")
     log.info(f"Loaded {len(atoms_list)} structures.")
@@ -171,28 +164,16 @@ def _process_single_path_step(
     ref = ref_atoms if ref_atoms is not None else atoms_list_step[0]
     prod = prod_atoms if prod_atoms is not None else atoms_list_step[-1]
 
-    rmsd_r = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax)
-    rmsd_p = calculate_rmsd_from_ref(atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax)
+    rmsd_r = calculate_rmsd_from_ref(
+        atoms_list_step, ira_instance, ref_atom=ref, ira_kmax=ira_kmax
+    )
+    rmsd_p = calculate_rmsd_from_ref(
+        atoms_list_step, ira_instance, ref_atom=prod, ira_kmax=ira_kmax
+    )
 
-    # --- Calculate Synthetic 2D Gradients ---
-    dr = np.gradient(rmsd_r)
-    dp = np.gradient(rmsd_p)
-    norm_ds = np.sqrt(dr**2 + dp**2)
-    norm_ds[norm_ds == 0] = 1.0
-    tr = dr / norm_ds
-    tp = dp / norm_ds
-    grad_r = -f_para_step * tr
-    grad_p = -f_para_step * tp
-
-    return pl.DataFrame(
-        {
-            "r": rmsd_r,
-            "p": rmsd_p,
-            "grad_r": grad_r,
-            "grad_p": grad_p,
-            "z": z_data_step,
-            "step": int(step_idx),
-        }
+    grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, f_para_step)
+    return create_landscape_dataframe(
+        rmsd_r, rmsd_p, grad_r, grad_p, z_data_step, int(step_idx)
     )
 
 
@@ -201,6 +182,7 @@ def aggregate_neb_landscape_data(
     all_con_paths: list[Path],
     y_data_column: int,
     ira_instance,  # Can be None
+    *,
     cache_file: Path | None = None,
     force_recompute: bool = False,
     ira_kmax: float = 1.8,
@@ -210,7 +192,11 @@ def aggregate_neb_landscape_data(
     ref_atoms: Atoms | None = None,
     prod_atoms: Atoms | None = None,
 ) -> pl.DataFrame:
-    """Aggregates data from multiple NEB steps for landscape visualization."""
+    """Aggregates data from multiple NEB steps for landscape visualization.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
 
     # Init IRA if not passed
     if ira_instance is None and ira_mod is not None:
@@ -218,9 +204,11 @@ def aggregate_neb_landscape_data(
 
     def validate_landscape_cache(df: pl.DataFrame):
         if "p" not in df.columns:
-            raise ValueError("Cache missing 'p' column.")
+            msg = "Cache missing 'p' column."
+            raise ValueError(msg)
         if "grad_r" not in df.columns:
-            raise ValueError("Cache missing gradient columns (outdated).")
+            msg = "Cache missing gradient columns (outdated)."
+            raise ValueError(msg)
 
     def compute_landscape_data() -> pl.DataFrame:
         all_dfs = []
@@ -236,7 +224,7 @@ def aggregate_neb_landscape_data(
                 ira_kmax=ira_kmax,
             )
             if not df_aug.is_empty():
-                 all_dfs.append(df_aug)
+                all_dfs.append(df_aug)
 
         # Synchronization check
         paths_dat = all_dat_paths
@@ -290,8 +278,11 @@ def load_augmenting_neb_data(
     """
     Loads external NEB paths (dat+con) to augment the landscape fit.
     Forces projection onto the MAIN path's R/P coordinates.
+
+    ```{versionadded} 0.1.0
+    ```
     """
-    from chemparseplot.parse.file_ import find_file_paths
+    from chemparseplot.parse.file_ import find_file_paths  # noqa: PLC0415
 
     dat_paths = find_file_paths(dat_pattern)
     con_paths = find_file_paths(con_pattern)
@@ -310,7 +301,7 @@ def load_augmenting_neb_data(
     all_dfs = []
     ira_instance = ira_mod.IRA() if ira_mod else None
 
-    for i, (d, c) in enumerate(zip(dat_paths, con_paths)):
+    for _, (d, c) in enumerate(zip(dat_paths, con_paths, strict=False)):
         try:
             # Step -1 indicates 'background/augmented' data
             df = _process_single_path_step(
@@ -332,19 +323,24 @@ def load_augmenting_neb_data(
 
 def compute_profile_rmsd(
     atoms_list: list[Atoms],
+    *,
     cache_file: Path | None,
     force_recompute: bool,
     ira_kmax: float,
 ) -> pl.DataFrame:
-    """Computes RMSD for a 1D profile."""
+    """Computes RMSD for a 1D profile.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
 
     def validate_profile_cache(df: pl.DataFrame):
         if "p" in df.columns:
-            raise ValueError("Cache contains 'p' column (looks like landscape data).")
+            msg = "Cache contains 'p' column (looks like landscape data)."
+            raise ValueError(msg)
         if df.height != len(atoms_list):
-            raise ValueError(
-                f"Size mismatch: {df.height} vs {len(atoms_list)} structures."
-            )
+            msg = f"Size mismatch: {df.height} vs {len(atoms_list)} structures."
+            raise ValueError(msg)
 
     def compute_data() -> pl.DataFrame:
         ira_instance = ira_mod.IRA() if ira_mod else None
@@ -365,6 +361,9 @@ def compute_profile_rmsd(
 def estimate_rbf_smoothing(df: pl.DataFrame) -> float:
     """
     Estimates a smoothing parameter for RBF interpolation.
+
+    ```{versionadded} 0.1.0
+    ```
 
     Calculates the median Euclidean distance between sequential points in the path
     and uses that value as the smoothing factor.

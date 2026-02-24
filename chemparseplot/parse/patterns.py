@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
+"""Regex patterns for parsing multi-column numeric data.
+
+```{versionadded} 0.0.2
+```
+"""
 
 # https://regex101.com/r/jHAG2T/1
 # DIGIT pattern for a floating-point number, possibly negative
@@ -8,6 +13,11 @@ DIGIT = r"-?\d+\.\d+"
 
 
 def create_multicol_pattern(num_cols, pname="multicolnum"):
+    """Build a regex pattern that matches *num_cols* whitespace-separated floats.
+
+    ```{versionadded} 0.0.2
+    ```
+    """
     if num_cols < 1:
         error_message = "Number of columns must be at least 1"
         raise ValueError(error_message)

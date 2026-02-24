@@ -1,6 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
+"""Unit registry and quantity helpers via pint.
+
+```{versionadded} 0.0.2
+```
+"""
+
 import warnings
 
 import pint
