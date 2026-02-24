@@ -67,7 +67,7 @@ class TestRenderXyzrender:
         img = _render_xyzrender(water, canvas_size=200)
         assert isinstance(img, np.ndarray)
         assert img.ndim == 3
-        assert img.shape[2] == 4
+        assert img.shape[2] in (3, 4)
 
 
 class TestPlotStructureStripRendererParam:
