@@ -1,22 +1,23 @@
 
 # Table of Contents
 
--   [About](#org1aaacbd)
-    -   [Ecosystem Overview](#org86a8ea7)
-    -   [Features](#org2d23f41)
-        -   [Supported Engines [WIP]](#orgd14b359)
-    -   [Rationale](#orgd89d807)
--   [License](#orgef56819)
+-   [About](#orgbe0e2c1)
+    -   [Ecosystem Overview](#orgb769d99)
+    -   [Features](#org4d684a5)
+        -   [Supported Engines [WIP]](#orgdb5b5aa)
+    -   [Rationale](#orgc25c267)
+-   [License](#orgbf4b3dd)
 
 
 
-<a id="org1aaacbd"></a>
+<a id="orgbe0e2c1"></a>
 
 # About
 
 ![img](branding/logo/chemparseplot_logo.png)
 
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 
 A **pure-python**<sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup> project to provide unit-aware uniform visualizations
 of common computational chemistry tasks. Essentially this means we provide:
@@ -34,7 +35,7 @@ runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
 
 
-<a id="org86a8ea7"></a>
+<a id="orgb769d99"></a>
 
 ## Ecosystem Overview
 
@@ -43,7 +44,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
 ![img](branding/logo/ecosystem.png)
 
 
-<a id="org2d23f41"></a>
+<a id="org4d684a5"></a>
 
 ## Features
 
@@ -53,7 +54,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
     -   Via `pint`
 
 
-<a id="orgd14b359"></a>
+<a id="orgdb5b5aa"></a>
 
 ### Supported Engines [WIP]
 
@@ -63,7 +64,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
         coordinate)
 
 
-<a id="orgd89d807"></a>
+<a id="orgc25c267"></a>
 
 ## Rationale
 
@@ -74,14 +75,14 @@ either Bohr/Hartree or Angstron/eV or whatever.
 Also I couldn't find (m)any scripts using the scientific colorschemes.
 
 
-<a id="orgef56819"></a>
+<a id="orgbf4b3dd"></a>
 
 # License
 
 MIT. However, this is an academic resource, so **please cite** as much as possible
 via:
 
--   The Zenodo DOI for general use.
+-   The [Zenodo DOI](https://doi.org/10.5281/zenodo.18529752) for general use.
 -   The `wailord` paper for ORCA usage
 
 
