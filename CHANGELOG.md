@@ -2,6 +2,29 @@
 
 <!-- towncrier release notes start -->
 
+## [v1.2.0](https://github.com/HaoZeke/chemparseplot/tree/v1.2.0) - 2026-02-24
+
+### Added
+
+- Add HDF5 NEB reader for ChemGP output (`chemparseplot.parse.trajectory.hdf5`).
+Reads `neb_result.h5` and `neb_history.h5` files with pre-computed parallel
+forces and reaction coordinates. Also declares `h5py` as a dependency in the
+`neb` optional extra. ([#9](https://github.com/HaoZeke/chemparseplot/issues/9))
+- Added optional xyzrender backend for structure strip rendering via renderer parameter. ([#10](https://github.com/HaoZeke/chemparseplot/issues/10))
+- Add generic trajectory NEB parser for ASE-readable formats (extxyz, .traj) via `chemparseplot.parse.trajectory.neb`.
+
+### Changed
+
+- Import `NYSTROM_THRESHOLD` from `rgpycrumbs.surfaces` instead of defining a local constant. The public API is unchanged; the threshold value (1000) is now maintained in one place. ([#11](https://github.com/HaoZeke/chemparseplot/issues/11))
+- RMSD-R and RMSD-P landscape calculations now run concurrently for improved performance.
+- Uniform structure strip sizing via common bounding box across all rendered images.
+
+### Miscellaneous
+
+- Added versionadded directives to all public API docstrings and Zenodo DOI badge.
+- Applied ruff linting fixes across the codebase: replaced print with logging, fixed boolean positional args, exception formatting, and timezone awareness.
+
+
 ## [v1.1.0](https://github.com/HaoZeke/chemparseplot/tree/v1.1.0) - 2026-02-21
 
 ### Added
