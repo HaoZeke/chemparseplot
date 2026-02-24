@@ -153,6 +153,11 @@
 <div class="viewcode-block" id="np_txt">
 <a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.parse.converter.html#chemparseplot.parse.converter.np_txt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">np_txt</span><span class="p">(</span><span class="n">matched_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a matched text block to a numpy array via ``np.loadtxt``.</span>
+
+<span class="sd">    ```{versionadded} 0.0.2</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">datio</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">matched_data</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">datio</span><span class="p">)</span></div>
 

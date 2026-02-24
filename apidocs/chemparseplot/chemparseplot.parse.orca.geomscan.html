@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.parse.orca.geomscan.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="chemparseplot.parse.file_" href="chemparseplot.parse.file_.html" />
+    <link rel="next" title="chemparseplot.parse.trajectory" href="chemparseplot.parse.trajectory.html" />
     <link rel="prev" title="chemparseplot.parse.orca" href="chemparseplot.parse.orca.html" />
 
  
@@ -194,6 +194,9 @@ end
 <dt class="sig sig-object py" id="chemparseplot.parse.orca.geomscan.extract_energy_data">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.orca.geomscan.</span></span><span class="sig-name descname"><span class="pre">extract_energy_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="chemparseplot.units.html#chemparseplot.units.Q_" title="chemparseplot.units.Q_"><span class="pre">chemparseplot.units.Q_</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="chemparseplot.units.html#chemparseplot.units.Q_" title="chemparseplot.units.Q_"><span class="pre">chemparseplot.units.Q_</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/orca/geomscan.html#extract_energy_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.orca.geomscan.extract_energy_data" title="Link to this definition">¶</a></dt>
 <dd><p>Extracts and converts the energy data for a specified energy type.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.2.</span></p>
+</div>
 <p>This function assumes the input data is a blob of text. It searches for
 ‘Calculated Surface’ followed by the specified energy type (‘Actual’ or ‘SCF’)
 and extracts the two-column data (distance and energy values) following it.
@@ -221,8 +224,8 @@ element is an array of energies in Hartree.</p>
   <a class="prev" href="chemparseplot.parse.orca.html" title="Previous">
     &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.orca</span></code>
   </a>
-  <a class="next" href="chemparseplot.parse.file_.html" title="Next">
-    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.file_</span></code> &rarr;
+  <a class="next" href="chemparseplot.parse.trajectory.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory</span></code> &rarr;
   </a>
   <div class="clear"></div>
     </nav>

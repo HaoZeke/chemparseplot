@@ -135,6 +135,8 @@
 </li>
 <li><a class="reference internal" href="#chemparseplot.plot.neb.MIN_PATH_LENGTH"><code class="docutils literal notranslate"><span class="pre">MIN_PATH_LENGTH</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.neb.render_structure_to_image"><code class="docutils literal notranslate"><span class="pre">render_structure_to_image()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.neb._check_xyzrender"><code class="docutils literal notranslate"><span class="pre">_check_xyzrender()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.neb._render_xyzrender"><code class="docutils literal notranslate"><span class="pre">_render_xyzrender()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.neb.plot_structure_strip"><code class="docutils literal notranslate"><span class="pre">plot_structure_strip()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.neb.plot_structure_inset"><code class="docutils literal notranslate"><span class="pre">plot_structure_inset()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.neb.plot_energy_path"><code class="docutils literal notranslate"><span class="pre">plot_energy_path()</span></code></a></li>
@@ -196,7 +198,7 @@
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.SmoothingParams" title="chemparseplot.plot.neb.SmoothingParams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SmoothingParams</span></code></a></p></td>
-<td></td>
+<td><p>Parameters for Savitzky-Golay smoothing of NEB force profiles.</p></td>
 </tr>
 </tbody>
 </table>
@@ -206,7 +208,13 @@
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.render_structure_to_image" title="chemparseplot.plot.neb.render_structure_to_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_structure_to_image</span></code></a></p></td>
-<td><p>Renders an ASE atoms object to a numpy image array.</p></td>
+<td><p>Renders an ASE Atoms object to a numpy RGBA image array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.neb._check_xyzrender" title="chemparseplot.plot.neb._check_xyzrender"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_check_xyzrender</span></code></a></p></td>
+<td><p>Verify that the <code class="docutils literal notranslate"><span class="pre">xyzrender</span></code> binary is on PATH.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.neb._render_xyzrender" title="chemparseplot.plot.neb._render_xyzrender"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_render_xyzrender</span></code></a></p></td>
+<td><p>Render an ASE Atoms object to a numpy RGBA array via xyzrender.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.plot_structure_strip" title="chemparseplot.plot.neb.plot_structure_strip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_structure_strip</span></code></a></p></td>
 <td><p>Renders a horizontal gallery of atomic structures.</p></td>
@@ -230,11 +238,10 @@ artificial wells (overshooting) where the physics dictates a minimum.</p></td>
 This effectively tells the RBF interpolator the local slope.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.plot_landscape_surface" title="chemparseplot.plot.neb.plot_landscape_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_landscape_surface</span></code></a></p></td>
-<td><p>Plots the 2D landscape surface. If project_path evaluates to True,
-the plot maps into a reaction valley coordinates (Progress <span class="math notranslate nohighlight">\(s\)</span> vs Orthogonal Distance <span class="math notranslate nohighlight">\(d\)</span>).</p></td>
+<td><p>Plot the 2D landscape surface.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.plot_landscape_path_overlay" title="chemparseplot.plot.neb.plot_landscape_path_overlay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_landscape_path_overlay</span></code></a></p></td>
-<td><p>Overlays the colored path line on the landscape, mapped to the chosen coordinate basis.</p></td>
+<td><p>Overlay the colored path line on the landscape.</p></td>
 </tr>
 </tbody>
 </table>
@@ -247,7 +254,7 @@ the plot maps into a reaction valley coordinates (Progress <span class="math not
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.InsetImagePos" title="chemparseplot.plot.neb.InsetImagePos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsetImagePos</span></code></a></p></td>
-<td></td>
+<td><p>Position specification for an inset structure image (x, y, rad).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.neb.MIN_PATH_LENGTH" title="chemparseplot.plot.neb.MIN_PATH_LENGTH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MIN_PATH_LENGTH</span></code></a></p></td>
 <td></td>
@@ -267,12 +274,20 @@ the plot maps into a reaction valley coordinates (Progress <span class="math not
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.InsetImagePos">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">InsetImagePos</span></span><a class="headerlink" href="#chemparseplot.plot.neb.InsetImagePos" title="Link to this definition">¶</a></dt>
 <dd><p>‘namedtuple(…)’</p>
+<p>Position specification for an inset structure image (x, y, rad).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.SmoothingParams">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">SmoothingParams</span></span><a class="headerlink" href="#chemparseplot.plot.neb.SmoothingParams" title="Link to this definition">¶</a></dt>
-<dd><dl class="py attribute">
+<dd><p>Parameters for Savitzky-Golay smoothing of NEB force profiles.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+<dl class="py attribute">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.SmoothingParams.window_length">
 <span class="sig-name descname"><span class="pre">window_length</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.plot.neb.SmoothingParams.window_length" title="Link to this definition">¶</a></dt>
 <dd><p>5</p>
@@ -295,36 +310,96 @@ the plot maps into a reaction valley coordinates (Progress <span class="math not
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.render_structure_to_image">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">render_structure_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.render_structure_to_image" title="Link to this definition">¶</a></dt>
-<dd><p>Renders an ASE atoms object to a numpy image array.</p>
+<dd><p>Renders an ASE Atoms object to a numpy RGBA image array.</p>
+<p class="rubric" id="id5">Parameters</p>
+<p>atoms : ase.Atoms
+Structure to render.
+zoom : float
+Zoom level (used by callers for OffsetImage scaling, not by ASE).
+rotation : str
+ASE rotation string, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;0x,90y,0z&quot;</span></code>.</p>
+<p class="rubric" id="id6">Returns</p>
+<p>numpy.ndarray
+RGBA image array with shape <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">4)</span></code> and float dtype.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.neb._check_xyzrender">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_check_xyzrender</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._check_xyzrender" title="Link to this definition">¶</a></dt>
+<dd><p>Verify that the <code class="docutils literal notranslate"><span class="pre">xyzrender</span></code> binary is on PATH.</p>
+<p class="rubric" id="id7">Raises</p>
+<p>RuntimeError
+If xyzrender is not found, with install instructions.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.neb._render_xyzrender">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_xyzrender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_xyzrender" title="Link to this definition">¶</a></dt>
+<dd><p>Render an ASE Atoms object to a numpy RGBA array via xyzrender.</p>
+<p class="rubric" id="id8">Parameters</p>
+<p>atoms : ase.Atoms
+Structure to render.
+canvas_size : int
+Output image width/height in pixels (passed as <code class="docutils literal notranslate"><span class="pre">-S</span></code>).</p>
+<p class="rubric" id="id9">Returns</p>
+<p>numpy.ndarray
+RGBA image array with shape <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">4)</span></code> and float dtype.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_structure_strip">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_strip" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ase'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_strip" title="Link to this definition">¶</a></dt>
 <dd><p>Renders a horizontal gallery of atomic structures.</p>
+<p class="rubric" id="id10">Parameters</p>
+<p>renderer : str
+Rendering backend: <code class="docutils literal notranslate"><span class="pre">&quot;ase&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;xyzrender&quot;</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.2.0: </span>Added the <em>renderer</em> parameter.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_structure_inset">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_inset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xybox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_inset" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_inset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xybox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ase'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_inset" title="Link to this definition">¶</a></dt>
 <dd><p>Plots a single structure as an annotation inset.</p>
+<p class="rubric" id="id11">Parameters</p>
+<p>renderer : str
+Rendering backend: <code class="docutils literal notranslate"><span class="pre">&quot;ase&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;xyzrender&quot;</span></code>.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.2.0: </span>Added the <em>renderer</em> parameter.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_energy_path">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_energy_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_para</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hermite'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_energy_path" title="Link to this definition">¶</a></dt>
 <dd><p>Plots 1D energy profile with optional Hermite spline interpolation.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_eigenvalue_path">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_eigenvalue_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eigenvalue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zorder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'white'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_eigenvalue_path" title="Link to this definition">¶</a></dt>
 <dd><p>Plots 1D eigenvalue profile.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb._augment_minima_points">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_augment_minima_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._augment_minima_points" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_augment_minima_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._augment_minima_points" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a ‘collar’ of synthetic points around the endpoints.
 This forces the RBF interpolator to curve upwards around these points, preventing
 artificial wells (overshooting) where the physics dictates a minimum.</p>
@@ -341,15 +416,30 @@ This effectively tells the RBF interpolator the local slope.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_landscape_surface">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grad_matern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbf_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_surface" title="Link to this definition">¶</a></dt>
-<dd><p>Plots the 2D landscape surface. If project_path evaluates to True,
-the plot maps into a reaction valley coordinates (Progress <span class="math notranslate nohighlight">\(s\)</span> vs Orthogonal Distance <span class="math notranslate nohighlight">\(d\)</span>).</p>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grad_matern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbf_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_inducing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_surface" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the 2D landscape surface.</p>
+<p>If project_path evaluates to True, the plot maps into
+reaction valley coordinates
+(Progress <span class="math notranslate nohighlight">\(s\)</span> vs Orthogonal Distance <span class="math notranslate nohighlight">\(d\)</span>).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.1.0: </span>Added the <em>project_path</em> parameter for reaction-valley coordinate projection.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_landscape_path_overlay">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_path_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_path_overlay" title="Link to this definition">¶</a></dt>
-<dd><p>Overlays the colored path line on the landscape, mapped to the chosen coordinate basis.</p>
+<dd><p>Overlay the colored path line on the landscape.</p>
+<p>Mapped to the chosen coordinate basis.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.1.0: </span>Added the <em>project_path</em> parameter for reaction-valley coordinate projection.</p>
+</div>
 </dd></dl>
 
 </section>

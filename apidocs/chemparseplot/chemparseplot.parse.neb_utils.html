@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.parse.neb_utils &#8212; chemparseplot 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.parse.neb_utils.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chemparseplot.parse.file_" href="chemparseplot.parse.file_.html" />
+    <link rel="prev" title="chemparseplot.parse.trajectory.neb" href="chemparseplot.parse.trajectory.neb.html" />
+
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+<script defer data-domain="chemparseplot.rgoswami.me" src="https://analytics.turtletech.us/js/script.js"></script>
+
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../used_by.html">Used By</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.neb_utils</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.neb_utils.log"><code class="docutils literal notranslate"><span class="pre">log</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords"><code class="docutils literal notranslate"><span class="pre">calculate_landscape_coords()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.neb_utils.compute_synthetic_gradients"><code class="docutils literal notranslate"><span class="pre">compute_synthetic_gradients()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.neb_utils.create_landscape_dataframe"><code class="docutils literal notranslate"><span class="pre">create_landscape_dataframe()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.parse.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.neb_utils</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.parse.neb_utils">
+<span id="chemparseplot-parse-neb-utils"></span><h1><a class="reference internal" href="#module-chemparseplot.parse.neb_utils" title="chemparseplot.parse.neb_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.neb_utils</span></code></a><a class="headerlink" href="#module-chemparseplot.parse.neb_utils" title="Link to this heading">¶</a></h1>
+<p>Shared NEB analysis utilities.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Functions common to all NEB trajectory sources (eOn, extxyz, etc.):
+RMSD landscape coordinate calculation, synthetic 2D gradient projection,
+and landscape DataFrame construction.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords" title="chemparseplot.parse.neb_utils.calculate_landscape_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_landscape_coords</span></code></a></p></td>
+<td><p>Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.compute_synthetic_gradients" title="chemparseplot.parse.neb_utils.compute_synthetic_gradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_synthetic_gradients</span></code></a></p></td>
+<td><p>Project parallel force onto the 2D RMSD coordinate system.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.create_landscape_dataframe" title="chemparseplot.parse.neb_utils.create_landscape_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_landscape_dataframe</span></code></a></p></td>
+<td><p>Build a landscape DataFrame with the standard schema.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.log" title="chemparseplot.parse.neb_utils.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.parse.neb_utils.log">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.log" title="Link to this definition">¶</a></dt>
+<dd><p>‘getLogger(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.neb_utils.calculate_landscape_coords">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">calculate_landscape_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Uses the first frame as reactant reference and the last as product.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms_list</strong> – List of ASE Atoms objects representing the path.</p></li>
+<li><p><strong>ira_instance</strong> – An instantiated IRA object (or None).</p></li>
+<li><p><strong>ira_kmax</strong> – kmax factor for IRA.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of (rmsd_r, rmsd_p) arrays.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.neb_utils.compute_synthetic_gradients">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">compute_synthetic_gradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_para</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.compute_synthetic_gradients" title="Link to this definition">¶</a></dt>
+<dd><p>Project parallel force onto the 2D RMSD coordinate system.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Computes synthetic gradients by projecting the NEB parallel force
+component along the tangent direction in (RMSD-R, RMSD-P) space.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmsd_r</strong> – RMSD from reactant for each image.</p></li>
+<li><p><strong>rmsd_p</strong> – RMSD from product for each image.</p></li>
+<li><p><strong>f_para</strong> – Force component parallel to the path for each image.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(grad_r, grad_p) arrays.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.neb_utils.create_landscape_dataframe">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">create_landscape_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">polars.DataFrame</span></span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.create_landscape_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Build a landscape DataFrame with the standard schema.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rmsd_r</strong> – RMSD from reactant.</p></li>
+<li><p><strong>rmsd_p</strong> – RMSD from product.</p></li>
+<li><p><strong>grad_r</strong> – Synthetic gradient in R direction.</p></li>
+<li><p><strong>grad_p</strong> – Synthetic gradient in P direction.</p></li>
+<li><p><strong>z</strong> – Energy (or eigenvalue) data.</p></li>
+<li><p><strong>step</strong> – Step index for this path segment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Polars DataFrame with columns [r, p, grad_r, grad_p, z, step].</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.parse.trajectory.neb.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.neb</span></code>
+  </a>
+  <a class="next" href="chemparseplot.parse.file_.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.file_</span></code> &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+  &copy; Copyright 2023-2026, <a href="https://rgoswami.me" style="color:inherit;text-decoration:underline;">Rohit Goswami</a>.
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;margin:1.5rem 0;color:#666;font-size:0.9em;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
+        </svg>
+        <span>Analytics by
+          <a href="https://plausible.io/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Plausible</a>
+        </span>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <span>provided by</span>
+        <span style="display:inline-flex;align-items:center;gap:0.3em;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill-rule="evenodd">
+              <ellipse cx="32" cy="11" fill="#80D25B" rx="7" ry="9"/>
+              <path fill="#80D25B" d="M20.302104,46 C20.302104,46 17.1330329,55.8812548 20.6828149,59.7817355 C24.232597,63.6822162 26.8008673,63.215359 26.8008673,53.7414927 C26.8008673,44.2676263 20.302104,46 20.302104,46 Z"/>
+              <path fill="#80D25B" d="M38.302104,46 C38.302104,46 35.1330329,55.8812548 38.6828149,59.7817355 C42.232597,63.6822162 44.8008673,63.215359 44.8008673,53.7414927 C44.8008673,44.2676263 38.302104,46 38.302104,46 Z" transform="matrix(-1 0 0 1 81.8 0)"/>
+              <path fill="#80D25B" d="M20.6227767,21.2218684 C20.6227767,21.2218684 13.956214,15.3844007 10.091955,16.0534044 C6.22769598,16.722408 6,22.2124633 6,23.9992899 C6,25.7861165 7.78917398,37.3159836 9.78726488,36.4967476 C11.7853558,35.6775115 13.7411938,27.959322 13.7411938,27.959322 15.6510232,30.2287702 18.609193,30.4630388"/>
+              <path fill="#80D25B" d="M57.6227767,21.2218684 C57.6227767,21.2218684 50.956214,15.3844007 47.091955,16.0534044 C43.227696,16.722408 43,22.2124633 43,23.9992899 C43,25.7861165 44.789174,37.3159836 46.7872649,36.4967476 C48.7853558,35.6775115 50.7411938,27.959322 50.7411938,27.959322 52.6510232,30.2287702 55.609193,30.4630388" transform="matrix(-1 0 0 1 100.623 0)"/>
+              <path fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32,53 C40.836556,53 48,44.4934102 48,34 C48,23.5065898 46.6814044,17 32,17 C17.3185956,17 16,23.5065898 16,34 C16,44.4934102 23.163444,53 32,53 Z"/>
+              <polygon fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" points="32 22 38.928 26 38.928 34 32 38 25.072 34 25.072 26"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M30,8 C28.8954305,8 28,8.8954305 28,10"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M36,8 C34.8954305,8 34,8.8954305 34,10" transform="matrix(-1 0 0 1 70 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32.1194396 38.1881507L32.1194396 52.4125899M32.0164956 21.7467197L32.0164956 17M25.2141026 26.0041506L17.737148 23.0721126M25.1254173 34.1534318L16.7659494 38.8876521"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M46.2141026,26.0041506 L38.737148,23.0721126" transform="matrix(-1 0 0 1 84.951 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M47.1254173,34.1534318 L38.7659494,38.8876521" transform="matrix(-1 0 0 1 85.891 0)"/>
+            </g>
+          </svg>
+          <a href="https://turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">TurtleTech ehf</a>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+  </body>
+</html>

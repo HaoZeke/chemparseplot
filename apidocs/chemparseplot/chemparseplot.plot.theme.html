@@ -191,6 +191,10 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.plot.theme">
 <span id="chemparseplot-plot-theme"></span><h1><a class="reference internal" href="#module-chemparseplot.plot.theme" title="chemparseplot.plot.theme"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a><a class="headerlink" href="#module-chemparseplot.plot.theme" title="Link to this heading">¶</a></h1>
+<p>Plotting themes and colormap utilities.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <section id="classes">
@@ -262,6 +266,9 @@
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">PlotTheme</span></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme" title="Link to this definition">¶</a></dt>
 <dd><p>Holds all aesthetic parameters for a matplotlib theme.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.PlotTheme.name">
 <span class="sig-name descname"><span class="pre">name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.plot.theme.PlotTheme.name" title="Link to this definition">¶</a></dt>
@@ -346,24 +353,36 @@
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.build_cmap">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">build_cmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hex_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.theme.build_cmap" title="Link to this definition">¶</a></dt>
 <dd><p>Build and register a LinearSegmentedColormap from a list of hex colors.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.setup_global_theme">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">setup_global_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.theme.setup_global_theme" title="Link to this definition">¶</a></dt>
 <dd><p>Sets global plt.rcParams based on the theme.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.apply_axis_theme">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">apply_axis_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">matplotlib.pyplot.Axes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.theme.apply_axis_theme" title="Link to this definition">¶</a></dt>
 <dd><p>Applies theme properties specific to an axis instance.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.theme.get_theme">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.theme.</span></span><span class="sig-name descname"><span class="pre">get_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#chemparseplot.plot.theme.PlotTheme" title="chemparseplot.plot.theme.PlotTheme"><span class="pre">chemparseplot.plot.theme.PlotTheme</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.theme.get_theme" title="Link to this definition">¶</a></dt>
 <dd><p>Retrieves a theme by name and applies optional property overrides.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.1.0.</span></p>
+</div>
 </dd></dl>
 
 </section>

@@ -43,7 +43,7 @@ import matplotlib.pyplot as plt
 
 [36mFile [39m[32m~/work/chemparseplot/chemparseplot/chemparseplot/plot/geomscan.py:1[39m
 [32m----> [39m[32m1[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[34;01m.[39;00m[34;01mpyplot[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mplt[39;00m
-[32m      3[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrgpycrumbs[39;00m[34;01m.[39;00m[34;01minterpolation[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m spline_interp
+[32m      2[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrgpycrumbs[39;00m[34;01m.[39;00m[34;01minterpolation[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m spline_interp
 [32m      4[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01mplot[39;00m[34;01m.[39;00m[34;01mstructs[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m BasePlotter
 
 [31mModuleNotFoundError[39m: No module named 'matplotlib'

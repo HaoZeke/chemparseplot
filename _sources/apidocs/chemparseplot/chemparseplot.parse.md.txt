@@ -14,6 +14,7 @@
 :maxdepth: 3
 
 chemparseplot.parse.orca
+chemparseplot.parse.trajectory
 ```
 
 ## Submodules
@@ -22,6 +23,7 @@ chemparseplot.parse.orca
 :titlesonly:
 :maxdepth: 1
 
+chemparseplot.parse.neb_utils
 chemparseplot.parse.file_
 chemparseplot.parse.patterns
 chemparseplot.parse.converter

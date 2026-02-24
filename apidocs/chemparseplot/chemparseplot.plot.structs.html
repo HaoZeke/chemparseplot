@@ -191,10 +191,10 @@
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.structs.BasePlotter" title="chemparseplot.plot.structs.BasePlotter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasePlotter</span></code></a></p></td>
-<td></td>
+<td><p>Thin wrapper around a matplotlib figure and axes with defaults.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.structs.TwoDimPlot" title="chemparseplot.plot.structs.TwoDimPlot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TwoDimPlot</span></code></a></p></td>
-<td></td>
+<td><p>Interactive 2D plotter with unit-aware axes and spline interpolation.</p></td>
 </tr>
 </tbody>
 </table>
@@ -204,10 +204,10 @@
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.structs.EnergyPath" title="chemparseplot.plot.structs.EnergyPath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnergyPath</span></code></a></p></td>
-<td></td>
+<td><p>Named tuple holding a labeled energy path (label, distance, energy).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.structs.XYData" title="chemparseplot.plot.structs.XYData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">XYData</span></code></a></p></td>
-<td></td>
+<td><p>Named tuple holding generic labeled XY data (label, x, y).</p></td>
 </tr>
 </tbody>
 </table>
@@ -218,18 +218,30 @@
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.EnergyPath">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.structs.</span></span><span class="sig-name descname"><span class="pre">EnergyPath</span></span><a class="headerlink" href="#chemparseplot.plot.structs.EnergyPath" title="Link to this definition">¶</a></dt>
 <dd><p>‘namedtuple(…)’</p>
+<p>Named tuple holding a labeled energy path (label, distance, energy).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.3.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.XYData">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.structs.</span></span><span class="sig-name descname"><span class="pre">XYData</span></span><a class="headerlink" href="#chemparseplot.plot.structs.XYData" title="Link to this definition">¶</a></dt>
 <dd><p>‘namedtuple(…)’</p>
+<p>Named tuple holding generic labeled XY data (label, x, y).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.3.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.BasePlotter">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.structs.</span></span><span class="sig-name descname"><span class="pre">BasePlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3.2,</span> <span class="pre">2.5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">cm.batlow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bmh'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.structs.BasePlotter" title="Link to this definition">¶</a></dt>
-<dd><p class="rubric">Initialization</p>
+<dd><p>Thin wrapper around a matplotlib figure and axes with defaults.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.3.</span></p>
+</div>
+<p class="rubric">Initialization</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.BasePlotter.add_title">
 <span class="sig-name descname"><span class="pre">add_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.structs.BasePlotter.add_title" title="Link to this definition">¶</a></dt>
@@ -241,6 +253,10 @@
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.TwoDimPlot">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.structs.</span></span><span class="sig-name descname"><span class="pre">TwoDimPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.structs.TwoDimPlot" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#chemparseplot.plot.structs.BasePlotter" title="chemparseplot.plot.structs.BasePlotter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chemparseplot.plot.structs.BasePlotter</span></code></a></p>
+<p>Interactive 2D plotter with unit-aware axes and spline interpolation.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.3.</span></p>
+</div>
 <p class="rubric">Initialization</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="chemparseplot.plot.structs.TwoDimPlot.set_labels">

@@ -31,6 +31,14 @@
   - ```{autodoc2-docstring} chemparseplot.plot.neb.render_structure_to_image
     :summary:
     ```
+* - {py:obj}`_check_xyzrender <chemparseplot.plot.neb._check_xyzrender>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._check_xyzrender
+    :summary:
+    ```
+* - {py:obj}`_render_xyzrender <chemparseplot.plot.neb._render_xyzrender>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._render_xyzrender
+    :summary:
+    ```
 * - {py:obj}`plot_structure_strip <chemparseplot.plot.neb.plot_structure_strip>`
   - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
     :summary:
@@ -154,14 +162,28 @@
 ```
 ````
 
-````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6)
+````{py:function} _check_xyzrender()
+:canonical: chemparseplot.plot.neb._check_xyzrender
+
+```{autodoc2-docstring} chemparseplot.plot.neb._check_xyzrender
+```
+````
+
+````{py:function} _render_xyzrender(atoms, canvas_size=400)
+:canonical: chemparseplot.plot.neb._render_xyzrender
+
+```{autodoc2-docstring} chemparseplot.plot.neb._render_xyzrender
+```
+````
+
+````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='ase')
 :canonical: chemparseplot.plot.neb.plot_structure_strip
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
 ```
 ````
 
-````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None)
+````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='ase')
 :canonical: chemparseplot.plot.neb.plot_structure_inset
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
@@ -182,7 +204,7 @@
 ```
 ````
 
-````{py:function} _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, dE=0.02, num_pts=12)
+````{py:function} _augment_minima_points(rmsd_r, rmsd_p, z_data, radius=0.01, d_e=0.02, num_pts=12)
 :canonical: chemparseplot.plot.neb._augment_minima_points
 
 ```{autodoc2-docstring} chemparseplot.plot.neb._augment_minima_points
@@ -196,7 +218,7 @@
 ```
 ````
 
-````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None)
+````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None)
 :canonical: chemparseplot.plot.neb.plot_landscape_surface
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface

@@ -154,6 +154,7 @@
 <span class="sd">end</span>
 <span class="sd">*xyzfile 0 1 h2_base.xyz</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">chemparseplot.parse.converter</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">conv</span>
@@ -166,6 +167,9 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_energy_data</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">energy_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Q_</span><span class="p">,</span> <span class="n">Q_</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extracts and converts the energy data for a specified energy type.</span>
+
+<span class="sd">    ```{versionadded} 0.0.2</span>
+<span class="sd">    ```</span>
 
 <span class="sd">    This function assumes the input data is a blob of text. It searches for</span>
 <span class="sd">    &#39;Calculated Surface&#39; followed by the specified energy type (&#39;Actual&#39; or &#39;SCF&#39;)</span>

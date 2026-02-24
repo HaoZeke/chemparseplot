@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.parse.trajectory.neb &#8212; chemparseplot 1.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.parse.trajectory.neb.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chemparseplot.parse.neb_utils" href="chemparseplot.parse.neb_utils.html" />
+    <link rel="prev" title="chemparseplot.parse.trajectory.hdf5" href="chemparseplot.parse.trajectory.hdf5.html" />
+
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+<script defer data-domain="chemparseplot.rgoswami.me" src="https://analytics.turtletech.us/js/script.js"></script>
+
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../used_by.html">Used By</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.neb</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#data">Data</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.log"><code class="docutils literal notranslate"><span class="pre">log</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb._get_energy"><code class="docutils literal notranslate"><span class="pre">_get_energy()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.load_trajectory"><code class="docutils literal notranslate"><span class="pre">load_trajectory()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.compute_cumulative_distance"><code class="docutils literal notranslate"><span class="pre">compute_cumulative_distance()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.compute_tangent_force"><code class="docutils literal notranslate"><span class="pre">compute_tangent_force()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.extract_profile_data"><code class="docutils literal notranslate"><span class="pre">extract_profile_data()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.trajectory_to_profile_dat"><code class="docutils literal notranslate"><span class="pre">trajectory_to_profile_dat()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.trajectory_to_landscape_df"><code class="docutils literal notranslate"><span class="pre">trajectory_to_landscape_df()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.parse.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.parse.trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.trajectory.neb</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.parse.trajectory.neb">
+<span id="chemparseplot-parse-trajectory-neb"></span><h1><a class="reference internal" href="#module-chemparseplot.parse.trajectory.neb" title="chemparseplot.parse.trajectory.neb"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.neb</span></code></a><a class="headerlink" href="#module-chemparseplot.parse.trajectory.neb" title="Link to this heading">¶</a></h1>
+<p>NEB trajectory parser for ASE-readable formats (extxyz, .traj, etc.).</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Loads trajectory files via ASE, computes NEB profile data (cumulative
+distance, improved Henkelman-Jonsson tangent forces), and converts into
+the formats expected by chemparseplot’s plotting functions.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb._get_energy" title="chemparseplot.parse.trajectory.neb._get_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_energy</span></code></a></p></td>
+<td><p>Extract energy from an Atoms object, checking calc then info.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.load_trajectory" title="chemparseplot.parse.trajectory.neb.load_trajectory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_trajectory</span></code></a></p></td>
+<td><p>Load an extxyz trajectory file, returning all frames.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.compute_cumulative_distance" title="chemparseplot.parse.trajectory.neb.compute_cumulative_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_cumulative_distance</span></code></a></p></td>
+<td><p>Compute cumulative Euclidean path length along the NEB band.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.compute_tangent_force" title="chemparseplot.parse.trajectory.neb.compute_tangent_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_tangent_force</span></code></a></p></td>
+<td><p>Compute force component parallel to the path using the improved
+Henkelman-Jonsson tangent definition.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.extract_profile_data" title="chemparseplot.parse.trajectory.neb.extract_profile_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_profile_data</span></code></a></p></td>
+<td><p>Extract profile data from trajectory frames.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.trajectory_to_profile_dat" title="chemparseplot.parse.trajectory.neb.trajectory_to_profile_dat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trajectory_to_profile_dat</span></code></a></p></td>
+<td><p>Convert trajectory to a (5, N) array matching eOn .dat layout.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.trajectory_to_landscape_df" title="chemparseplot.parse.trajectory.neb.trajectory_to_landscape_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trajectory_to_landscape_df</span></code></a></p></td>
+<td><p>Convert trajectory to a polars DataFrame for plot_landscape_surface.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.trajectory.neb.log" title="chemparseplot.parse.trajectory.neb.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.log">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.log" title="Link to this definition">¶</a></dt>
+<dd><p>‘getLogger(…)’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb._get_energy">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">_get_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ase.Atoms</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb._get_energy" title="Link to this definition">¶</a></dt>
+<dd><p>Extract energy from an Atoms object, checking calc then info.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.load_trajectory">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">load_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traj_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.load_trajectory" title="Link to this definition">¶</a></dt>
+<dd><p>Load an extxyz trajectory file, returning all frames.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.compute_cumulative_distance">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">compute_cumulative_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.compute_cumulative_distance" title="Link to this definition">¶</a></dt>
+<dd><p>Compute cumulative Euclidean path length along the NEB band.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Returns a 1D array of length n_images with the cumulative distance
+from the first image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.compute_tangent_force">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">compute_tangent_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energies</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.compute_tangent_force" title="Link to this definition">¶</a></dt>
+<dd><p>Compute force component parallel to the path using the improved
+Henkelman-Jonsson tangent definition.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>For interior images, the tangent is energy-weighted (uphill neighbor
+gets more weight). Forces are read from each frame’s arrays.</p>
+<p>Returns a 1D array of f_parallel values (one per image).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.extract_profile_data">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">extract_profile_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.extract_profile_data" title="Link to this definition">¶</a></dt>
+<dd><p>Extract profile data from trajectory frames.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Returns (index, distance, energy, f_parallel) arrays.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.trajectory_to_profile_dat">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">trajectory_to_profile_dat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.trajectory_to_profile_dat" title="Link to this definition">¶</a></dt>
+<dd><p>Convert trajectory to a (5, N) array matching eOn .dat layout.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Columns: [index, reaction_coordinate, energy, f_parallel, zeros]
+This output can be fed directly into plot_energy_path as:
+plot_energy_path(ax, data[1], data[2], data[3], …)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.trajectory.neb.trajectory_to_landscape_df">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.trajectory.neb.</span></span><span class="sig-name descname"><span class="pre">trajectory_to_landscape_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.parse.trajectory.neb.trajectory_to_landscape_df" title="Link to this definition">¶</a></dt>
+<dd><p>Convert trajectory to a polars DataFrame for plot_landscape_surface.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.2.0.</span></p>
+</div>
+<p>Columns: r, p, grad_r, grad_p, z, step</p>
+<p>Uses RMSD from reactant (first frame) and product (last frame) as
+the 2D coordinate system, with synthetic gradients projected from
+the parallel force component.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.parse.trajectory.hdf5.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.hdf5</span></code>
+  </a>
+  <a class="next" href="chemparseplot.parse.neb_utils.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.neb_utils</span></code> &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+  &copy; Copyright 2023-2026, <a href="https://rgoswami.me" style="color:inherit;text-decoration:underline;">Rohit Goswami</a>.
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;margin:1.5rem 0;color:#666;font-size:0.9em;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
+        </svg>
+        <span>Analytics by
+          <a href="https://plausible.io/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Plausible</a>
+        </span>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <span>provided by</span>
+        <span style="display:inline-flex;align-items:center;gap:0.3em;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill-rule="evenodd">
+              <ellipse cx="32" cy="11" fill="#80D25B" rx="7" ry="9"/>
+              <path fill="#80D25B" d="M20.302104,46 C20.302104,46 17.1330329,55.8812548 20.6828149,59.7817355 C24.232597,63.6822162 26.8008673,63.215359 26.8008673,53.7414927 C26.8008673,44.2676263 20.302104,46 20.302104,46 Z"/>
+              <path fill="#80D25B" d="M38.302104,46 C38.302104,46 35.1330329,55.8812548 38.6828149,59.7817355 C42.232597,63.6822162 44.8008673,63.215359 44.8008673,53.7414927 C44.8008673,44.2676263 38.302104,46 38.302104,46 Z" transform="matrix(-1 0 0 1 81.8 0)"/>
+              <path fill="#80D25B" d="M20.6227767,21.2218684 C20.6227767,21.2218684 13.956214,15.3844007 10.091955,16.0534044 C6.22769598,16.722408 6,22.2124633 6,23.9992899 C6,25.7861165 7.78917398,37.3159836 9.78726488,36.4967476 C11.7853558,35.6775115 13.7411938,27.959322 13.7411938,27.959322 15.6510232,30.2287702 18.609193,30.4630388"/>
+              <path fill="#80D25B" d="M57.6227767,21.2218684 C57.6227767,21.2218684 50.956214,15.3844007 47.091955,16.0534044 C43.227696,16.722408 43,22.2124633 43,23.9992899 C43,25.7861165 44.789174,37.3159836 46.7872649,36.4967476 C48.7853558,35.6775115 50.7411938,27.959322 50.7411938,27.959322 52.6510232,30.2287702 55.609193,30.4630388" transform="matrix(-1 0 0 1 100.623 0)"/>
+              <path fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32,53 C40.836556,53 48,44.4934102 48,34 C48,23.5065898 46.6814044,17 32,17 C17.3185956,17 16,23.5065898 16,34 C16,44.4934102 23.163444,53 32,53 Z"/>
+              <polygon fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" points="32 22 38.928 26 38.928 34 32 38 25.072 34 25.072 26"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M30,8 C28.8954305,8 28,8.8954305 28,10"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M36,8 C34.8954305,8 34,8.8954305 34,10" transform="matrix(-1 0 0 1 70 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32.1194396 38.1881507L32.1194396 52.4125899M32.0164956 21.7467197L32.0164956 17M25.2141026 26.0041506L17.737148 23.0721126M25.1254173 34.1534318L16.7659494 38.8876521"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M46.2141026,26.0041506 L38.737148,23.0721126" transform="matrix(-1 0 0 1 84.951 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M47.1254173,34.1534318 L38.7659494,38.8876521" transform="matrix(-1 0 0 1 85.891 0)"/>
+            </g>
+          </svg>
+          <a href="https://turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">TurtleTech ehf</a>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+  </body>
+</html>

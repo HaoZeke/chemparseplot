@@ -27,8 +27,16 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`log <chemparseplot.util.log>`
+  - ```{autodoc2-docstring} chemparseplot.util.log
+    :summary:
+    ```
 * - {py:obj}`POSCON_FILENAME <chemparseplot.util.POSCON_FILENAME>`
   - ```{autodoc2-docstring} chemparseplot.util.POSCON_FILENAME
+    :summary:
+    ```
+* - {py:obj}`_EXPECTED_COORD_COLS <chemparseplot.util._EXPECTED_COORD_COLS>`
+  - ```{autodoc2-docstring} chemparseplot.util._EXPECTED_COORD_COLS
     :summary:
     ```
 * - {py:obj}`target_coords_text <chemparseplot.util.target_coords_text>`
@@ -47,12 +55,32 @@
 
 ### API
 
+````{py:data} log
+:canonical: chemparseplot.util.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.util.log
+```
+
+````
+
 ````{py:data} POSCON_FILENAME
 :canonical: chemparseplot.util.POSCON_FILENAME
 :value: >
    'pos.con'
 
 ```{autodoc2-docstring} chemparseplot.util.POSCON_FILENAME
+```
+
+````
+
+````{py:data} _EXPECTED_COORD_COLS
+:canonical: chemparseplot.util._EXPECTED_COORD_COLS
+:value: >
+   3
+
+```{autodoc2-docstring} chemparseplot.util._EXPECTED_COORD_COLS
 ```
 
 ````

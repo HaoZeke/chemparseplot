@@ -122,7 +122,9 @@
 <li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#data">Data</a></li>
 <li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.util.log"><code class="docutils literal notranslate"><span class="pre">log</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.util.POSCON_FILENAME"><code class="docutils literal notranslate"><span class="pre">POSCON_FILENAME</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.util._EXPECTED_COORD_COLS"><code class="docutils literal notranslate"><span class="pre">_EXPECTED_COORD_COLS</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.util.target_coords_text"><code class="docutils literal notranslate"><span class="pre">target_coords_text</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.util.parse_target_coords"><code class="docutils literal notranslate"><span class="pre">parse_target_coords()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.util.atoms"><code class="docutils literal notranslate"><span class="pre">atoms</span></code></a></li>
@@ -187,7 +189,13 @@
 <h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
 <table class="autosummary longtable docutils align-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.util.POSCON_FILENAME" title="chemparseplot.util.POSCON_FILENAME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">POSCON_FILENAME</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.util.log" title="chemparseplot.util.log"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.util.POSCON_FILENAME" title="chemparseplot.util.POSCON_FILENAME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">POSCON_FILENAME</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.util._EXPECTED_COORD_COLS" title="chemparseplot.util._EXPECTED_COORD_COLS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_EXPECTED_COORD_COLS</span></code></a></p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.util.target_coords_text" title="chemparseplot.util.target_coords_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">target_coords_text</span></code></a></p></td>
@@ -205,9 +213,21 @@
 <section id="api">
 <h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
 <dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.util.log">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.util.</span></span><span class="sig-name descname"><span class="pre">log</span></span><a class="headerlink" href="#chemparseplot.util.log" title="Link to this definition">¶</a></dt>
+<dd><p>‘getLogger(…)’</p>
+</dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="chemparseplot.util.POSCON_FILENAME">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.util.</span></span><span class="sig-name descname"><span class="pre">POSCON_FILENAME</span></span><a class="headerlink" href="#chemparseplot.util.POSCON_FILENAME" title="Link to this definition">¶</a></dt>
 <dd><p>‘pos.con’</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.util._EXPECTED_COORD_COLS">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.util.</span></span><span class="sig-name descname"><span class="pre">_EXPECTED_COORD_COLS</span></span><a class="headerlink" href="#chemparseplot.util._EXPECTED_COORD_COLS" title="Link to this definition">¶</a></dt>
+<dd><p>3</p>
 </dd></dl>
 
 <dl class="py data">
@@ -219,6 +239,9 @@
 <dt class="sig sig-object py" id="chemparseplot.util.parse_target_coords">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.util.</span></span><span class="sig-name descname"><span class="pre">parse_target_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text_block</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.util.parse_target_coords" title="Link to this definition">¶</a></dt>
 <dd><p>Parses the multiline string of target coordinates.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 0.0.3.</span></p>
+</div>
 </dd></dl>
 
 <dl class="py data">
