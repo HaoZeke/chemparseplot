@@ -1,5 +1,6 @@
 import configparser
 import gzip
+import logging
 import os
 import re
 from enum import Enum
@@ -10,6 +11,8 @@ from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
 from rgpycrumbs.parsers.bless import BLESS_LOG
 from rgpycrumbs.parsers.common import _NUM
 from rgpycrumbs.search.helpers import tail
+
+log = logging.getLogger(__name__)
 
 
 class EONSaddleStatus(Enum):
@@ -123,7 +126,7 @@ def _find_log_file(eresp: Path) -> Path | None:
     """
     log_files = list(eresp.glob("*.log.gz"))
     if not log_files:
-        print(f"Warning: *.log.gz not found for {eresp}")
+        log.warning("*.log.gz not found for %s", eresp)
         return None
 
     # Sort log files by modification time (most recent first)
@@ -137,7 +140,7 @@ def _find_log_file(eresp: Path) -> Path | None:
         if not fcheck:  # If "Fail" is NOT in any of the last 5 lines
             return f
 
-    print(f"No valid log files found in {eresp}")
+    log.warning("No valid log files found in %s", eresp)
     return None
 
 

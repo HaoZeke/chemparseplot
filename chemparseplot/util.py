@@ -65,30 +65,30 @@ def parse_target_coords(text_block):
 atoms = None
 try:
     # 1. Read the structure using ASE (handles format detection)
-    print(f"Reading {POSCON_FILENAME} using ASE...")
+    log.info("Reading %s using ASE...", POSCON_FILENAME)
     atoms = read(POSCON_FILENAME)
-    print(f"Successfully read {len(atoms)} atoms.")
+    log.info("Successfully read %d atoms.", len(atoms))
     atom_coords_from_poscon = atoms.get_positions()  # Get positions as NumPy array
 
 except FileNotFoundError:
-    print(f"Error: File not found at {POSCON_FILENAME}")
+    log.error("Error: File not found at %s", POSCON_FILENAME)
 except Exception as e:
-    print(f"Error reading {POSCON_FILENAME} with ASE: {e}")
+    log.error("Error reading %s with ASE: %s", POSCON_FILENAME, e)
 
 # 2. Parse the target coordinates
-print("Parsing target coordinates...")
+log.info("Parsing target coordinates...")
 target_coords = parse_target_coords(target_coords_text)
 
 # Proceed only if both steps were successful
 if atoms is not None and target_coords.size > 0:
-    print(f"\nFound {len(atom_coords_from_poscon)} atoms in {POSCON_FILENAME}.")
-    print(f"Found {len(target_coords)} target coordinates to match.")
+    log.info("Found %d atoms in %s.", len(atom_coords_from_poscon), POSCON_FILENAME)
+    log.info("Found %d target coordinates to match.", len(target_coords))
 
     results = []
     atom_symbols = atoms.get_chemical_symbols()  # Get symbols for richer output
 
     # 3. For each target coordinate, find the closest atom
-    print("\nMatching target coordinates to closest atoms...")
+    log.info("Matching target coordinates to closest atoms...")
     for i, target_pos in enumerate(target_coords):
         # Calculate distances (same numpy method)
         distances = np.linalg.norm(atom_coords_from_poscon - target_pos, axis=1)
@@ -112,19 +112,30 @@ if atoms is not None and target_coords.size > 0:
             }
         )
 
-    # 4. Print the results
-    print("\n--- Results ---")
+    # 4. Log the results
+    log.info("--- Results ---")
     for result in results:
-        print(
-            f"Target #{result['target_index']} ({result['target_pos'][0]:.4f}, {result['target_pos'][1]:.4f}, {result['target_pos'][2]:.4f})"
+        tp = result["target_pos"]
+        log.info(
+            "Target #%d (%.4f, %.4f, %.4f)",
+            result["target_index"],
+            tp[0],
+            tp[1],
+            tp[2],
         )
-        print(
-            f"  -> Closest Atom ID: {result['closest_atom_id']} (Symbol: {result['closest_atom_symbol']})"
+        log.info(
+            "  -> Closest Atom ID: %s (Symbol: %s)",
+            result["closest_atom_id"],
+            result["closest_atom_symbol"],
         )
-        print(
-            f"     Position: ({result['closest_atom_pos'][0]:.4f}, {result['closest_atom_pos'][1]:.4f}, {result['closest_atom_pos'][2]:.4f})"
+        cp = result["closest_atom_pos"]
+        log.info(
+            "     Position: (%.4f, %.4f, %.4f)",
+            cp[0],
+            cp[1],
+            cp[2],
         )
-        print(f"     Distance: {result['distance']:.6f}\n")
+        log.info("     Distance: %.6f", result["distance"])
 
 else:
-    print("\nAborted due to errors during parsing or file reading.")
+    log.warning("Aborted due to errors during parsing or file reading.")

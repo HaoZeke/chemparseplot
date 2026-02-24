@@ -38,6 +38,7 @@ def _validate_data_atoms_match(z_data, atoms, dat_file_name):
 
 def load_or_compute_data(
     cache_file: Path | None,
+    *,
     force_recompute: bool,
     validation_check: Callable[[pl.DataFrame], None],
     computation_callback: Callable[[], pl.DataFrame],
@@ -77,7 +78,7 @@ def load_structures_and_calculate_additional_rmsd(
     ira_kmax: float,
     sp_file: Path | None = None,
 ):
-    """Loads the main trajectory and calculates RMSD for any additional comparison structures.
+    """Loads the main trajectory and calculates RMSD for additional comparison structures.
 
     ```{versionadded} 0.1.0
     ```
@@ -181,6 +182,7 @@ def aggregate_neb_landscape_data(
     all_con_paths: list[Path],
     y_data_column: int,
     ira_instance,  # Can be None
+    *,
     cache_file: Path | None = None,
     force_recompute: bool = False,
     ira_kmax: float = 1.8,
@@ -202,9 +204,11 @@ def aggregate_neb_landscape_data(
 
     def validate_landscape_cache(df: pl.DataFrame):
         if "p" not in df.columns:
-            raise ValueError("Cache missing 'p' column.")
+            msg = "Cache missing 'p' column."
+            raise ValueError(msg)
         if "grad_r" not in df.columns:
-            raise ValueError("Cache missing gradient columns (outdated).")
+            msg = "Cache missing gradient columns (outdated)."
+            raise ValueError(msg)
 
     def compute_landscape_data() -> pl.DataFrame:
         all_dfs = []
@@ -278,7 +282,7 @@ def load_augmenting_neb_data(
     ```{versionadded} 0.1.0
     ```
     """
-    from chemparseplot.parse.file_ import find_file_paths
+    from chemparseplot.parse.file_ import find_file_paths  # noqa: PLC0415
 
     dat_paths = find_file_paths(dat_pattern)
     con_paths = find_file_paths(con_pattern)
@@ -297,7 +301,7 @@ def load_augmenting_neb_data(
     all_dfs = []
     ira_instance = ira_mod.IRA() if ira_mod else None
 
-    for i, (d, c) in enumerate(zip(dat_paths, con_paths)):
+    for _, (d, c) in enumerate(zip(dat_paths, con_paths, strict=False)):
         try:
             # Step -1 indicates 'background/augmented' data
             df = _process_single_path_step(
@@ -319,6 +323,7 @@ def load_augmenting_neb_data(
 
 def compute_profile_rmsd(
     atoms_list: list[Atoms],
+    *,
     cache_file: Path | None,
     force_recompute: bool,
     ira_kmax: float,
@@ -331,11 +336,11 @@ def compute_profile_rmsd(
 
     def validate_profile_cache(df: pl.DataFrame):
         if "p" in df.columns:
-            raise ValueError("Cache contains 'p' column (looks like landscape data).")
+            msg = "Cache contains 'p' column (looks like landscape data)."
+            raise ValueError(msg)
         if df.height != len(atoms_list):
-            raise ValueError(
-                f"Size mismatch: {df.height} vs {len(atoms_list)} structures."
-            )
+            msg = f"Size mismatch: {df.height} vs {len(atoms_list)} structures."
+            raise ValueError(msg)
 
     def compute_data() -> pl.DataFrame:
         ira_instance = ira_mod.IRA() if ira_mod else None

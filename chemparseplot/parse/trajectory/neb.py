@@ -29,7 +29,7 @@ def _get_energy(atoms: Atoms) -> float:
         try:
             return atoms.get_potential_energy()
         except Exception:
-            pass
+            log.debug("get_potential_energy() failed; falling back to atoms.info")
     return atoms.info.get("energy", 0.0)
 
 
@@ -180,7 +180,7 @@ def trajectory_to_landscape_df(
     the parallel force component.
     """
     try:
-        from rgpycrumbs._aux import _import_from_parent_env
+        from rgpycrumbs._aux import _import_from_parent_env  # noqa: PLC0415
 
         ira_mod = _import_from_parent_env("ira_mod")
         ira_instance = ira_mod.IRA()

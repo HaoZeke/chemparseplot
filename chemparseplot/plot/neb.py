@@ -75,9 +75,7 @@ def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
     ```
     """
     buf = io.BytesIO()
-    ase_write(
-        buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100
-    )
+    ase_write(buf, atoms, format="png", rotation=rotation, show_unit_cell=0, scale=100)
     buf.seek(0)
     img_data = plt.imread(buf)
     buf.close()
@@ -115,11 +113,9 @@ def _render_xyzrender(atoms, canvas_size=400):
     numpy.ndarray
         RGBA image array with shape ``(H, W, 4)`` and float dtype.
     """
-    from ase.io import write as _ase_write
+    from ase.io import write as _ase_write  # noqa: PLC0415
 
-    with tempfile.NamedTemporaryFile(
-        suffix=".xyz", delete=False
-    ) as xyz_fh:
+    with tempfile.NamedTemporaryFile(suffix=".xyz", delete=False) as xyz_fh:
         xyz_path = xyz_fh.name
     png_path = xyz_path.rsplit(".", 1)[0] + ".png"
 
@@ -136,7 +132,7 @@ def _render_xyzrender(atoms, canvas_size=400):
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
     finally:
-        import os
+        import os  # noqa: PLC0415
 
         for p in (xyz_path, png_path):
             try:
@@ -531,10 +527,7 @@ def plot_landscape_surface(
         actual_nimags = None
 
     # --- 2. Hyperparameter Optimization ---
-    if (
-        method == "grad_imq"
-        and len(rmsd_r) > NYSTROM_THRESHOLD
-    ):
+    if method == "grad_imq" and len(rmsd_r) > NYSTROM_THRESHOLD:
         log.warning(
             "More than %d points, switching to Nystrom",
             NYSTROM_THRESHOLD,
@@ -542,8 +535,8 @@ def plot_landscape_surface(
         method = method + "_ny"
     model_class = get_surface_model(method)
     is_gradient_model = method.startswith("grad_")
-    _MIN_RBF_SMOOTH = 1e-4
-    h_ls = rbf_smooth if rbf_smooth and rbf_smooth > _MIN_RBF_SMOOTH else 0.5
+    _min_rbf_smooth = 1e-4
+    h_ls = rbf_smooth if rbf_smooth and rbf_smooth > _min_rbf_smooth else 0.5
     h_noise = 1e-2
 
     mask_opt = (

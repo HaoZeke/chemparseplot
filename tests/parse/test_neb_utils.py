@@ -89,7 +89,11 @@ class TestCreateLandscapeDataframe:
     def test_step_is_constant(self):
         n = 4
         df = create_landscape_dataframe(
-            np.zeros(n), np.zeros(n), np.zeros(n),
-            np.zeros(n), np.zeros(n), step=7,
+            np.zeros(n),
+            np.zeros(n),
+            np.zeros(n),
+            np.zeros(n),
+            np.zeros(n),
+            step=7,
         )
         assert all(s == 7 for s in df["step"].to_list())

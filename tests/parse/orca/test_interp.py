@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 from rgpycrumbs.basetypes import nebiter
+
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.units import ureg
 

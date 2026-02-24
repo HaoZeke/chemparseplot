@@ -12,6 +12,8 @@ from ase.io.trajectory import Trajectory
 
 log = logging.getLogger(__name__)
 
+_DOUBLET_MULT = 2
+
 
 class HDF5CalculatorDimerMidpoint(Calculator):
     """ASE calculator reading energy/forces from an HDF5 dimer midpoint group.
@@ -243,7 +245,7 @@ def create_nwchem_trajectory(
     nwchem_path = os.environ["NWCHEM_COMMAND"]
     memory = "2 gb"
     nwchem_kwargs = {
-        "command": f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",
+        "command": f"{nwchem_path} PREFIX.nwi > PREFIX.nwo",  # codespell:ignore nwo
         "memory": memory,
         "scf": {
             "nopen": mult - 1,
@@ -253,7 +255,7 @@ def create_nwchem_trajectory(
         "basis": "3-21G",
         "task": "gradient",
     }
-    if mult == 2:
+    if mult == _DOUBLET_MULT:
         nwchem_kwargs["scf"]["uhf"] = None  # switch to unrestricted calculation
 
     for key in outer_loop_keys:

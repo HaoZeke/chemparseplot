@@ -250,10 +250,10 @@ def history_to_landscape_df(h5_file: str, ira_kmax: float = 1.8):
     :return: Polars DataFrame with columns
         ``[r, p, grad_r, grad_p, z, step]``.
     """
-    import polars as pl
+    import polars as pl  # noqa: PLC0415
 
     try:
-        from rgpycrumbs._aux import _import_from_parent_env
+        from rgpycrumbs._aux import _import_from_parent_env  # noqa: PLC0415
 
         ira_mod = _import_from_parent_env("ira_mod")
         ira_instance = ira_mod.IRA()

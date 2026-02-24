@@ -41,10 +41,10 @@ hooks = [
 repo = "https://github.com/astral-sh/ruff-pre-commit"
 rev = "v0.15.2"
 [[repos]]
-hooks = [ { id = "taplo-format" } ]
-repo  = "https://github.com/ComPWA/taplo-pre-commit"
-rev   = "v0.9.3"
+hooks = [{ id = "taplo-format" }]
+repo = "https://github.com/ComPWA/taplo-pre-commit"
+rev = "v0.9.3"
 [[repos]]
-hooks = [ { id = "codespell", args = [ "--skip=*.lock,*.csv" ] } ]
-repo  = "https://github.com/codespell-project/codespell"
-rev   = "v2.4.1"
+hooks = [{ id = "codespell", args = ["--skip=*.lock,*.csv"] }]
+repo = "https://github.com/codespell-project/codespell"
+rev = "v2.4.1"

@@ -11,6 +11,7 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
+import matplotlib.pyplot as plt  # noqa: E402
 from ase import Atoms  # noqa: E402
 
 from chemparseplot.plot.neb import (  # noqa: E402
@@ -39,7 +40,7 @@ class TestRenderStructureToImage:
         assert isinstance(img, np.ndarray)
         assert img.ndim == 3
         assert img.shape[2] == 4
-        assert img.dtype == np.float32 or img.dtype == np.float64
+        assert img.dtype in (np.float32, np.float64)
 
 
 class TestCheckXyzrender:
@@ -73,19 +74,13 @@ class TestPlotStructureStripRendererParam:
     """Renderer dispatch in plot_structure_strip."""
 
     def test_ase_renderer_called(self, water):
-        import matplotlib.pyplot as plt
-
         _, ax = plt.subplots()
         atoms_list = [water, water]
         labels = ["A", "B"]
 
-        with patch(
-            "chemparseplot.plot.neb.render_structure_to_image"
-        ) as mock_render:
+        with patch("chemparseplot.plot.neb.render_structure_to_image") as mock_render:
             mock_render.return_value = np.zeros((10, 10, 4), dtype=np.float32)
-            plot_structure_strip(
-                ax, atoms_list, labels, renderer="ase"
-            )
+            plot_structure_strip(ax, atoms_list, labels, renderer="ase")
             assert mock_render.call_count == len(atoms_list)
 
         plt.close("all")

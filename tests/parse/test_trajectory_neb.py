@@ -6,7 +6,8 @@
 The physics computations (cumulative distance, tangent forces) are validated
 against hand-calculated reference values.
 """
-from unittest.mock import MagicMock, patch
+
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -37,7 +38,7 @@ def _make_atoms(positions, energy=0.0, forces=None):
     """
     atoms = Atoms("H" * len(positions), positions=positions)
     if forces is not None:
-        from ase.calculators.singlepoint import SinglePointCalculator
+        from ase.calculators.singlepoint import SinglePointCalculator  # noqa: PLC0415
 
         calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
         atoms.calc = calc
@@ -52,9 +53,7 @@ class TestGetEnergy:
         assert _get_energy(atoms) == -1.5
 
     def test_energy_from_calc(self):
-        atoms = _make_atoms(
-            [[0, 0, 0]], energy=-2.0, forces=[[0, 0, 0]]
-        )
+        atoms = _make_atoms([[0, 0, 0]], energy=-2.0, forces=[[0, 0, 0]])
         assert _get_energy(atoms) == -2.0
 
     def test_energy_fallback_zero(self):
@@ -168,9 +167,7 @@ class TestComputeTangentForce:
     def test_output_length(self):
         n = 6
         atoms_list = [
-            _make_atoms(
-                [[i, 0, 0]], energy=float(i), forces=[[0.1, 0, 0]]
-            )
+            _make_atoms([[i, 0, 0]], energy=float(i), forces=[[0.1, 0, 0]])
             for i in range(n)
         ]
         energies = np.arange(n, dtype=float)
@@ -200,10 +197,7 @@ class TestExtractProfileData:
 
     def test_energies_match(self):
         expected = [0.0, -1.5, 0.3]
-        atoms_list = [
-            _make_atoms([[i, 0, 0]], energy=e)
-            for i, e in enumerate(expected)
-        ]
+        atoms_list = [_make_atoms([[i, 0, 0]], energy=e) for i, e in enumerate(expected)]
         _, _, energies, _ = extract_profile_data(atoms_list)
         np.testing.assert_array_almost_equal(energies, expected)
 
@@ -211,23 +205,17 @@ class TestExtractProfileData:
 class TestTrajectoryToProfileDat:
     def test_shape_is_5_by_n(self):
         n = 4
-        atoms_list = [
-            _make_atoms([[i, 0, 0]], energy=float(i)) for i in range(n)
-        ]
+        atoms_list = [_make_atoms([[i, 0, 0]], energy=float(i)) for i in range(n)]
         data = trajectory_to_profile_dat(atoms_list)
         assert data.shape == (5, n)
 
     def test_last_row_is_zeros(self):
-        atoms_list = [
-            _make_atoms([[i, 0, 0]], energy=float(i)) for i in range(3)
-        ]
+        atoms_list = [_make_atoms([[i, 0, 0]], energy=float(i)) for i in range(3)]
         data = trajectory_to_profile_dat(atoms_list)
         np.testing.assert_array_equal(data[4], np.zeros(3))
 
     def test_index_row_is_sequential(self):
-        atoms_list = [
-            _make_atoms([[i, 0, 0]], energy=float(i)) for i in range(5)
-        ]
+        atoms_list = [_make_atoms([[i, 0, 0]], energy=float(i)) for i in range(5)]
         data = trajectory_to_profile_dat(atoms_list)
         np.testing.assert_array_equal(data[0], [0, 1, 2, 3, 4])
 
@@ -244,9 +232,7 @@ class TestLoadTrajectory:
             assert len(result) == 1
 
     def test_list_returned_as_is(self):
-        atoms_list = [
-            Atoms("H", positions=[[i, 0, 0]]) for i in range(3)
-        ]
+        atoms_list = [Atoms("H", positions=[[i, 0, 0]]) for i in range(3)]
         with patch(
             "chemparseplot.parse.trajectory.neb.ase_read",
             return_value=atoms_list,

@@ -6,6 +6,7 @@
 All HDF5 files are synthetic, created via h5py in fixtures -- no external
 test data files needed.
 """
+
 import numpy as np
 import pytest
 
@@ -65,9 +66,7 @@ def result_h5(tmp_path):
 
     with h5py.File(fpath, "w") as f:
         path_grp = f.create_group("path")
-        _write_path_group(
-            path_grp, images, energies, gradients, f_para, rxn_coord
-        )
+        _write_path_group(path_grp, images, energies, gradients, f_para, rxn_coord)
 
         conv_grp = f.create_group("convergence")
         conv_grp.create_dataset("max_force", data=np.array([0.5, 0.1, 0.01]))
@@ -76,9 +75,7 @@ def result_h5(tmp_path):
         meta_grp = f.create_group("metadata")
         meta_grp.create_dataset("converged", data=True)
         meta_grp.create_dataset("oracle_calls", data=30)
-        meta_grp.create_dataset(
-            "atomic_numbers", data=np.array([1, 6, 8])
-        )
+        meta_grp.create_dataset("atomic_numbers", data=np.array([1, 6, 8]))
 
     return str(fpath)
 
@@ -91,13 +88,9 @@ def result_h5_with_cell(tmp_path):
 
     with h5py.File(fpath, "w") as f:
         path_grp = f.create_group("path")
-        _write_path_group(
-            path_grp, images, energies, gradients, f_para, rxn_coord
-        )
+        _write_path_group(path_grp, images, energies, gradients, f_para, rxn_coord)
         meta_grp = f.create_group("metadata")
-        meta_grp.create_dataset(
-            "atomic_numbers", data=np.array([1, 6, 8])
-        )
+        meta_grp.create_dataset("atomic_numbers", data=np.array([1, 6, 8]))
         cell = np.eye(3).ravel() * 10.0
         meta_grp.create_dataset("cell", data=cell)
 
@@ -113,20 +106,14 @@ def history_h5(tmp_path):
     with h5py.File(fpath, "w") as f:
         steps_grp = f.create_group("steps")
         for i in range(n_steps):
-            images, energies, gradients, f_para, rxn_coord = (
-                _make_path_arrays()
-            )
+            images, energies, gradients, f_para, rxn_coord = _make_path_arrays()
             # Shift energies per step so they are distinguishable
             energies = energies + i * 0.1
             step_grp = steps_grp.create_group(str(i))
-            _write_path_group(
-                step_grp, images, energies, gradients, f_para, rxn_coord
-            )
+            _write_path_group(step_grp, images, energies, gradients, f_para, rxn_coord)
 
         meta_grp = f.create_group("metadata")
-        meta_grp.create_dataset(
-            "atomic_numbers", data=np.array([1, 6, 8])
-        )
+        meta_grp.create_dataset("atomic_numbers", data=np.array([1, 6, 8]))
 
     return str(fpath)
 
@@ -179,9 +166,7 @@ class TestReconstructAtoms:
         )
         for i, atoms in enumerate(atoms_list):
             expected_pos = images[i].reshape(N_ATOMS, 3)
-            np.testing.assert_array_almost_equal(
-                atoms.positions, expected_pos
-            )
+            np.testing.assert_array_almost_equal(atoms.positions, expected_pos)
 
     def test_energy_attached(self):
         images, energies, gradients, _, _ = _make_path_arrays()
@@ -189,9 +174,7 @@ class TestReconstructAtoms:
             images, np.array([1, 6, 8]), None, gradients, energies
         )
         for i, atoms in enumerate(atoms_list):
-            assert atoms.get_potential_energy() == pytest.approx(
-                energies[i]
-            )
+            assert atoms.get_potential_energy() == pytest.approx(energies[i])
 
     def test_forces_are_negative_gradients(self):
         images, energies, gradients, _, _ = _make_path_arrays()
@@ -200,15 +183,11 @@ class TestReconstructAtoms:
         )
         for i, atoms in enumerate(atoms_list):
             expected_forces = -gradients[i].reshape(N_ATOMS, 3)
-            np.testing.assert_array_almost_equal(
-                atoms.get_forces(), expected_forces
-            )
+            np.testing.assert_array_almost_equal(atoms.get_forces(), expected_forces)
 
     def test_default_atomic_numbers(self):
         images, energies, gradients, _, _ = _make_path_arrays()
-        atoms_list = _reconstruct_atoms(
-            images, None, None, gradients, energies
-        )
+        atoms_list = _reconstruct_atoms(images, None, None, gradients, energies)
         # Default is all hydrogen
         for atoms in atoms_list:
             assert all(z == 1 for z in atoms.numbers)
@@ -220,9 +199,7 @@ class TestReconstructAtoms:
             images, np.array([1, 6, 8]), cell, gradients, energies
         )
         for atoms in atoms_list:
-            np.testing.assert_array_almost_equal(
-                atoms.cell[:], np.eye(3) * 10.0
-            )
+            np.testing.assert_array_almost_equal(atoms.cell[:], np.eye(3) * 10.0)
             assert all(atoms.pbc)
 
 
@@ -233,9 +210,7 @@ class TestResultToProfileDat:
 
     def test_index_row(self, result_h5):
         data = result_to_profile_dat(result_h5)
-        np.testing.assert_array_equal(
-            data[0], np.arange(N_IMAGES, dtype=float)
-        )
+        np.testing.assert_array_equal(data[0], np.arange(N_IMAGES, dtype=float))
 
     def test_rxn_coord_matches_input(self, result_h5):
         _, _, _, _, rxn_coord = _make_path_arrays()
@@ -270,16 +245,12 @@ class TestResultToAtomsList:
     def test_atomic_numbers_from_metadata(self, result_h5):
         atoms_list = result_to_atoms_list(result_h5)
         for atoms in atoms_list:
-            np.testing.assert_array_equal(
-                atoms.numbers, [1, 6, 8]
-            )
+            np.testing.assert_array_equal(atoms.numbers, [1, 6, 8])
 
     def test_cell_from_metadata(self, result_h5_with_cell):
         atoms_list = result_to_atoms_list(result_h5_with_cell)
         for atoms in atoms_list:
-            np.testing.assert_array_almost_equal(
-                atoms.cell[:], np.eye(3) * 10.0
-            )
+            np.testing.assert_array_almost_equal(atoms.cell[:], np.eye(3) * 10.0)
 
 
 class TestLoadNebResult:
@@ -319,9 +290,7 @@ class TestLoadNebHistory:
     def test_energies_differ_across_steps(self, history_h5):
         steps = load_neb_history(history_h5)
         # We shifted energies by step_idx * 0.1
-        assert not np.allclose(
-            steps[0]["energies"], steps[2]["energies"]
-        )
+        assert not np.allclose(steps[0]["energies"], steps[2]["energies"])
 
 
 class TestHistoryToProfileDats:
@@ -337,6 +306,4 @@ class TestHistoryToProfileDats:
     def test_last_row_zeros(self, history_h5):
         dats = history_to_profile_dats(history_h5)
         for dat in dats:
-            np.testing.assert_array_equal(
-                dat[4], np.zeros(N_IMAGES)
-            )
+            np.testing.assert_array_equal(dat[4], np.zeros(N_IMAGES))
