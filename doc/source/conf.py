@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 project = "chemparseplot"
-project_copyright = f"2023-2026, Rohit Goswami"
+project_copyright = "2023-2026, Rohit Goswami"
 author = "Rohit Goswami"
 # The short X.Y version.
 version = "1.1.0"
