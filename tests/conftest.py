@@ -8,7 +8,7 @@ import pytest
 # Define the requirements for each suite/marker
 ENVIRONMENT_REQUIREMENTS = {
     "pure": ["numpy"],
-    "neb": ["numpy", "polars", "ase", "h5py"],
+    "neb": ["numpy", "polars", "ase", "h5py", "scipy", "matplotlib"],
 }
 
 
