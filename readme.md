@@ -1,21 +1,26 @@
 
 # Table of Contents
 
--   [About](#orgbe0e2c1)
-    -   [Ecosystem Overview](#orgb769d99)
-    -   [Features](#org4d684a5)
-        -   [Supported Engines [WIP]](#orgdb5b5aa)
-    -   [Rationale](#orgc25c267)
--   [License](#orgbf4b3dd)
+-   [About](#org92cf9f4)
+    -   [Ecosystem Overview](#orgacc123d)
+    -   [Features](#org41d4f06)
+        -   [Supported Engines [WIP]](#orgd3d7c1b)
+    -   [Rationale](#org7083dde)
+-   [License](#orgae8a918)
 
 
 
-<a id="orgbe0e2c1"></a>
+<a id="org92cf9f4"></a>
 
 # About
 
 ![img](branding/logo/chemparseplot_logo.png)
 
+[![Tests](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml)
+[![PyPI](https://img.shields.io/pypi/v/chemparseplot)](https://pypi.org/project/chemparseplot/)
+[![Python](https://img.shields.io/pypi/pyversions/chemparseplot)](https://pypi.org/project/chemparseplot/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![One Good Tutorial docs checklist v1: adopted](https://onegoodtutorial.org/badge/adopted-v1.svg)](https://onegoodtutorial.org/about/badge/?v=1)
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 
@@ -35,7 +40,7 @@ runs in a specific workflow, while here the goal is to do no input handling and
 very pragmatic output parsing, with the goal of generating uniform plots.
 
 
-<a id="orgb769d99"></a>
+<a id="orgacc123d"></a>
 
 ## Ecosystem Overview
 
@@ -44,7 +49,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
 ![img](branding/logo/ecosystem.png)
 
 
-<a id="org4d684a5"></a>
+<a id="org41d4f06"></a>
 
 ## Features
 
@@ -54,7 +59,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
     -   Via `pint`
 
 
-<a id="orgdb5b5aa"></a>
+<a id="orgd3d7c1b"></a>
 
 ### Supported Engines [WIP]
 
@@ -64,7 +69,7 @@ very pragmatic output parsing, with the goal of generating uniform plots.
         coordinate)
 
 
-<a id="orgc25c267"></a>
+<a id="org7083dde"></a>
 
 ## Rationale
 
@@ -75,7 +80,7 @@ either Bohr/Hartree or Angstron/eV or whatever.
 Also I couldn't find (m)any scripts using the scientific colorschemes.
 
 
-<a id="orgbf4b3dd"></a>
+<a id="orgae8a918"></a>
 
 # License
 
