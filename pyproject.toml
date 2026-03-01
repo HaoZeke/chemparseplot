@@ -45,12 +45,23 @@ doc = [
 plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
 neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20"]
 xyzrender = ["xyzrender>=0.1.2"]
+all = [
+  "chemparseplot[plot,neb,xyzrender]",
+]
 test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
 lint = ["ruff>=0.1.6"]
 [project.urls]
-Documentation = "https://github.com/HaoZeke/chemparseplot#readme"
+Documentation = "https://chemparseplot.rgoswami.me"
 Issues = "https://github.com/HaoZeke/chemparseplot/issues"
 Source = "https://github.com/HaoZeke/chemparseplot"
+Changelog = "https://github.com/HaoZeke/chemparseplot/blob/main/CHANGELOG.md"
+
+[tool.uv]
+index-strategy = "first-index"
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
 
 [tool.uv.sources]
 rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }

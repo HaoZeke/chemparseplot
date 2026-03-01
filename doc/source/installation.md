@@ -4,20 +4,35 @@ The easiest way to install `chemparseplot` is via `pip`:
 
 ```bash
 pip install chemparseplot
-# For plotting
-pip install matplotlib
 ```
 
 This will automatically install [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
 as a dependency, which provides the computational modules used by `chemparseplot`
 (surface fitting, interpolation, data types, etc.).
 
+## Optional extras
+
+```bash
+# Plotting support (matplotlib, cmcrameri colormaps)
+pip install "chemparseplot[plot]"
+
+# NEB analysis (ase, h5py, polars)
+pip install "chemparseplot[neb]"
+
+# 3D structure rendering
+pip install "chemparseplot[xyzrender]"
+
+# Everything
+pip install "chemparseplot[all]"
+```
+
+## Development install
+
 Local clones of the GitHub repo are best served setting up the maximally
 reproducible development environment:
 
 ```bash
-# Probably in $HOME/Git/Github
-git clone git@github.com:HaoZeke/chemparseplot
+git clone https://github.com/HaoZeke/chemparseplot
 cd chemparseplot
 # Install with all dev dependencies
 uv sync --all-extras
