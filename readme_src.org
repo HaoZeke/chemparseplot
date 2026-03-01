@@ -4,6 +4,8 @@
 file:branding/logo/chemparseplot_logo.png
 #+begin_export markdown
 [![Tests](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml)
+[![Linting](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml)
+[![Docs](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml)
 [![PyPI](https://img.shields.io/pypi/v/chemparseplot)](https://pypi.org/project/chemparseplot/)
 [![Python](https://img.shields.io/pypi/pyversions/chemparseplot)](https://pypi.org/project/chemparseplot/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,19 +13,35 @@ file:branding/logo/chemparseplot_logo.png
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 #+end_export
-A *pure-python*[fn:butwhy] project to provide unit-aware uniform visualizations
-of common computational chemistry tasks. Essentially this means we provide:
-- Parsers for various computational chemistry software outputs
-- Plotting scripts for specific workflows
+A *pure-python*[fn:butwhy] parsing and plotting library for computational
+chemistry outputs. ~chemparseplot~ extracts structured data from quantum
+chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality,
+unit-aware visualizations with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]].
 
 Computational tasks (surface fitting, structure analysis, interpolation) are
 handled by [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]], which is a required dependency. ~chemparseplot~ parses
 output files, delegates heavy computation to ~rgpycrumbs~, and produces
 publication-quality plots.
 
-This is a spin-off from ~wailord~ ([[https://wailord.xyz][here]]) which is meant to handle aggregated
-runs in a specific workflow, while here the goal is to do no input handling and
-very pragmatic output parsing, with the goal of generating uniform plots.
+** Installation
+
+#+begin_src bash
+pip install chemparseplot
+# With plotting support
+pip install "chemparseplot[plot]"
+# Everything
+pip install "chemparseplot[all]"
+#+end_src
+
+For development:
+
+#+begin_src bash
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+uv sync --all-extras
+#+end_src
+
+See the [[https://chemparseplot.rgoswami.me/installation.html][installation guide]] and [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart]] for details.
 
 ** Ecosystem Overview
    ~chemparseplot~ is part of the ~rgpycrumbs~ suite of interlinked libraries.
@@ -31,29 +49,48 @@ very pragmatic output parsing, with the goal of generating uniform plots.
 [[file:branding/logo/ecosystem.png]]
 
 ** Features
-- [[https://www.fabiocrameri.ch/colourmaps/][Scientific color maps]] for the plots
-  + Camera ready
-- Unit preserving
-  + Via ~pint~
+- *Parsing* computational chemistry output files into structured data
+- *Plotting* with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]] (camera-ready)
+- *Unit preserving* throughout via ~pint~
+- *Computation* delegated to [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for surface fitting, interpolation,
+  and structure analysis
 
-*** Supported Engines [WIP]
+*** Supported Engines
 - ORCA (*5.x*)
-  + Scanning energies over a degree of freedom (~OPT~ scans)
-  + Nudged elastic band (~NEB~) visualizations (over the "linearized" reaction
-    coordinate)
-** Rationale
-~wailord~ is for production runs, however often there is a need to collect
-"spot" calculation visualizations, which should nevertheless be uniform, i.e.
-either Bohr/Hartree or Angstron/eV or whatever.
+  + Geometry scan (~OPT~) energy profiles
+  + Nudged elastic band (~NEB~) path visualization
+- eOn
+  + Saddle search parsing (Dimer, GPRD, LBFGS methods)
+  + NEB path energy profiles with landscape projections
+- Sella
+  + Saddle point optimization result parsing
+- Trajectory formats
+  + HDF5 trajectories (ChemGP output with pre-computed forces)
+  + Generic ASE-readable formats (extxyz, .traj) for NEB analysis
 
-Also I couldn't find (m)any scripts using the scientific colorschemes.
+** Documentation
+
+Full documentation is at [[https://chemparseplot.rgoswami.me]]. This includes:
+- A [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart guide]]
+- [[https://chemparseplot.rgoswami.me/tutorials/index.html][Tutorials]] for common workflows
+- [[https://chemparseplot.rgoswami.me/apidocs/index.html][API reference]]
+
+** Contributing
+
+Contributions are welcome. See [[https://github.com/HaoZeke/chemparseplot/blob/main/CONTRIBUTING.md][CONTRIBUTING.md]] for development setup and
+guidelines, and our [[https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md][Code of Conduct]].
+
+For bug reports or questions, open an issue on [[https://github.com/HaoZeke/chemparseplot/issues][GitHub]].
+
 * License
 MIT. However, this is an academic resource, so *please cite* as much as possible
 via:
 - The [[https://doi.org/10.5281/zenodo.18529752][Zenodo DOI]] for general use.
 - The ~wailord~ paper for ORCA usage
 
-[fn:butwhy] To distinguish it from my other thin-python wrapper projects
+* Acknowledgments
+This project builds on work supported by the University of Iceland and the
+Icelandic Research Fund. ~chemparseplot~ relies on [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for computational
+modules.
 
-# ** Logo
-# The logo was generated via DALL-E accessed through ChatGPT-4 using a prompt.
+[fn:butwhy] To distinguish it from my other thin-python wrapper projects
