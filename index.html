@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://chemparseplot.rgoswami.me/index.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="apidocs/index.html" />
+    <link rel="next" title="Quickstart" href="quickstart.html" />
 
  
 
@@ -99,12 +99,20 @@
   
 </ul>
 <h3>Contents</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="used_by.html">Used By</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
@@ -114,9 +122,7 @@
 <h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>: Chemical Parsers and Plotters</a><ul>
-<li><a class="reference internal" href="#about">About</a></li>
-<li><a class="reference internal" href="#documentation-toc">Documentation TOC</a><ul>
-<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#about">About</a><ul>
 </ul>
 </li>
 <li><a class="reference internal" href="#license">License</a></li>
@@ -160,32 +166,42 @@
 <img alt="_images/chemparseplot_logo.png" src="_images/chemparseplot_logo.png" />
 <section id="about">
 <h2>About<a class="headerlink" href="#about" title="Link to this heading">¶</a></h2>
-<p>A <strong>pure-python</strong> <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>  project to provide unit-aware uniform visualizations
-of common computational chemistry tasks. Essentially this means we provide:</p>
-<ul class="simple">
-<li><p>Parsers for various computational chemistry software outputs</p></li>
-<li><p>Plotting scripts for specific workflows</p></li>
-</ul>
+<p>A <strong>pure-python</strong> parsing and plotting library for computational chemistry
+outputs. <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> extracts structured data from quantum chemistry codes
+(ORCA, eOn, Sella, ChemGP) and produces publication-quality, unit-aware
+visualizations with <a class="reference external" href="https://www.fabiocrameri.ch/colourmaps/">scientific color maps</a>.</p>
 <p>Computational tasks (surface fitting, interpolation, structure analysis) are
-delegated to <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code>, which is a required dependency. <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
-parses output files, calls <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code> for heavy computation, and produces
-publication-quality plots. For more information check the <cite>features</cite> page.</p>
-</section>
-<section id="documentation-toc">
-<h2>Documentation TOC<a class="headerlink" href="#documentation-toc" title="Link to this heading">¶</a></h2>
+delegated to <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs">rgpycrumbs</a>, which is a
+required dependency. For more information check the <a class="reference internal" href="features.html"><span class="doc">Features</span></a> page.</p>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apidocs/chemparseplot/chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/orca/geomscan.html">Geometry Scan</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/orca/geomscan.html#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#parsing-an-orca-geometry-scan">Parsing an ORCA geometry scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#plotting-with-unit-awareness">Plotting with unit awareness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#parsing-eon-saddle-searches">Parsing eOn saddle searches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#optional-extras">Optional extras</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#development-install">Development install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#auxiliary-software">Auxiliary Software</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="features.html#supported-engines">Supported Engines</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/orca/geomscan.html">Geometry Scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/orca/geomscan.html#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
@@ -195,8 +211,13 @@ publication-quality plots. For more information check the <cite>features</cite> 
 <li class="toctree-l2"><a class="reference internal" href="contributing.html#development">Development</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="features.html#supported-engines-wip">Supported Engines [WIP]</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidocs/chemparseplot/chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="used_by.html">Used By</a><ul>
@@ -210,24 +231,14 @@ publication-quality plots. For more information check the <cite>features</cite> 
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
 </ul>
 </div>
-<section id="features">
-<h3>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p><a class="reference external" href="https://www.fabiocrameri.ch/colourmaps/">Scientific color maps</a> for the plots
-- Camera ready</p></li>
-<li><p>Unit preserving
-- Via <code class="docutils literal notranslate"><span class="pre">pint</span></code></p></li>
-</ul>
-<p>These are supported for:</p>
-</section>
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
-<p>MIT. However, this is an academic resource, so <strong>please cite</strong> as much as possible
-via:</p>
+<p>MIT. However, this is an academic resource, so <strong>please cite</strong> as much as
+possible via:</p>
 <ul class="simple">
-<li><p>The Zenodo DOI for general use.</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">wailord</span></code> paper for ORCA usage</p></li>
+<li><p>The <a class="reference external" href="https://doi.org/10.5281/zenodo.18529752">Zenodo DOI</a> for general use.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">wailord</span></code> paper for ORCA usage.</p></li>
 </ul>
 </section>
 </section>
@@ -238,19 +249,13 @@ via:</p>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="doc-footnote">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>To distinguish it from my other thin-python wrapper projects</p>
-</aside>
-</aside>
 </section>
 
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="next" href="apidocs/index.html" title="Next">
-    API Reference &rarr;
+  <a class="next" href="quickstart.html" title="Next">
+    Quickstart &rarr;
   </a>
   <div class="clear"></div>
     </nav>

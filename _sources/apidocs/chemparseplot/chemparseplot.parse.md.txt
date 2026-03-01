@@ -23,8 +23,8 @@ chemparseplot.parse.trajectory
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.parse.neb_utils
-chemparseplot.parse.file_
 chemparseplot.parse.patterns
 chemparseplot.parse.converter
+chemparseplot.parse.file_
+chemparseplot.parse.neb_utils
 ```

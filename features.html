@@ -24,8 +24,8 @@
     <link rel="canonical" href="https://chemparseplot.rgoswami.me/features.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Used By" href="used_by.html" />
-    <link rel="prev" title="Contributing to chemparseplot" href="contributing.html" />
+    <link rel="next" title="Tutorial Introduction" href="tutorials/index.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
 
  
 
@@ -100,15 +100,23 @@
   
 </ul>
 <h3>Contents</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Features</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#supported-engines-wip">Supported Engines [WIP]</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#supported-engines">Supported Engines</a></li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidocs/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="used_by.html">Used By</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
@@ -118,7 +126,13 @@
 <h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#">Features</a><ul>
-<li><a class="reference internal" href="#supported-engines-wip">Supported Engines [WIP]</a></li>
+<li><a class="reference internal" href="#supported-engines">Supported Engines</a><ul>
+<li><a class="reference internal" href="#orca-5-x">ORCA (5.x)</a></li>
+<li><a class="reference internal" href="#eon">eOn</a></li>
+<li><a class="reference internal" href="#sella">Sella</a></li>
+<li><a class="reference internal" href="#trajectory-formats">Trajectory Formats</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -157,43 +171,56 @@
 <h1>Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h1>
 <ul class="simple">
 <li><p><strong>Parsing</strong> computational chemistry output files into structured data</p></li>
-<li><p><strong>Plotting</strong> with <a class="reference external" href="https://www.fabiocrameri.ch/colourmaps/">scientific color maps</a></p>
-<ul>
-<li><p>Camera ready</p></li>
-</ul>
-</li>
+<li><p><strong>Plotting</strong> with <a class="reference external" href="https://www.fabiocrameri.ch/colourmaps/">scientific color maps</a>
+(camera-ready)</p></li>
 <li><p><strong>Unit preserving</strong> throughout via <code class="docutils literal notranslate"><span class="pre">pint</span></code></p></li>
 <li><p><strong>Computation</strong> delegated to <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs"><code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code></a>
 for surface fitting, interpolation, and structure analysis</p></li>
+<li><p><strong>Concurrent</strong> RMSD landscape calculations via <code class="docutils literal notranslate"><span class="pre">ThreadPoolExecutor</span></code></p></li>
 </ul>
-<section id="supported-engines-wip">
-<h2>Supported Engines [WIP]<a class="headerlink" href="#supported-engines-wip" title="Link to this heading">¶</a></h2>
+<section id="supported-engines">
+<h2>Supported Engines<a class="headerlink" href="#supported-engines" title="Link to this heading">¶</a></h2>
+<section id="orca-5-x">
+<h3>ORCA (5.x)<a class="headerlink" href="#orca-5-x" title="Link to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>ORCA (<strong>5.x</strong>)</p>
-<ul>
-<li><p>Scanning energies over a degree of freedom (<code class="docutils literal notranslate"><span class="pre">OPT</span></code> scans)</p></li>
-<li><p>Nudged elastic band (<code class="docutils literal notranslate"><span class="pre">NEB</span></code>) visualizations (over the “linearized” reaction
-coordinate)</p></li>
+<li><p>Geometry scan (<code class="docutils literal notranslate"><span class="pre">OPT</span></code>) energy profiles</p></li>
+<li><p>Nudged elastic band (<code class="docutils literal notranslate"><span class="pre">NEB</span></code>) path visualization over the linearized reaction
+coordinate</p></li>
 </ul>
-</li>
-<li><p>eOn</p>
-<ul>
-<li><p>Saddle search parsing and visualization</p></li>
-<li><p>NEB path energy profiles with surface models</p></li>
+</section>
+<section id="eon">
+<h3>eOn<a class="headerlink" href="#eon" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Saddle search parsing (Dimer, GPRD, LBFGS methods) with status tracking</p></li>
+<li><p>NEB path energy profiles with RMSD landscape projections</p></li>
 </ul>
-</li>
+</section>
+<section id="sella">
+<h3>Sella<a class="headerlink" href="#sella" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Saddle point optimization result parsing</p></li>
 </ul>
+</section>
+<section id="trajectory-formats">
+<h3>Trajectory Formats<a class="headerlink" href="#trajectory-formats" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>HDF5 trajectories from ChemGP output (pre-computed forces and reaction
+coordinates)</p></li>
+<li><p>Generic ASE-readable formats (extxyz, <code class="docutils literal notranslate"><span class="pre">.traj</span></code>) for NEB analysis with
+tangent force computation and RMSD landscape coordinates</p></li>
+</ul>
+</section>
 </section>
 </section>
 
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="contributing.html" title="Previous">
-    &larr; Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
+  <a class="prev" href="installation.html" title="Previous">
+    &larr; Installation
   </a>
-  <a class="next" href="used_by.html" title="Next">
-    Used By &rarr;
+  <a class="next" href="tutorials/index.html" title="Next">
+    Tutorial Introduction &rarr;
   </a>
   <div class="clear"></div>
     </nav>

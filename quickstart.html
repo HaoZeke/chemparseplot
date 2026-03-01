@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; chemparseplot 1.2.0 documentation</title>
+    <title>Quickstart &#8212; chemparseplot 1.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="_static/library/library.css?v=fa49c7df" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
@@ -21,11 +21,11 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <link rel="canonical" href="https://chemparseplot.rgoswami.me/installation.html" />
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/quickstart.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Features" href="features.html" />
-    <link rel="prev" title="Quickstart" href="quickstart.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="chemparseplot: Chemical Parsers and Plotters" href="index.html" />
 
  
 
@@ -102,13 +102,15 @@
 <h3>Contents</h3>
 <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#optional-extras">Optional extras</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#development-install">Development install</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#auxiliary-software">Auxiliary Software</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parsing-an-orca-geometry-scan">Parsing an ORCA geometry scan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-with-unit-awareness">Plotting with unit awareness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parsing-eon-saddle-searches">Parsing eOn saddle searches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
@@ -127,10 +129,15 @@
 
 <h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#optional-extras">Optional extras</a></li>
+<li><a class="reference internal" href="#">Quickstart</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#development-install">Development install</a></li>
-<li><a class="reference internal" href="#auxiliary-software">Auxiliary Software</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#parsing-an-orca-geometry-scan">Parsing an ORCA geometry scan</a></li>
+<li><a class="reference internal" href="#plotting-with-unit-awareness">Plotting with unit awareness</a></li>
+<li><a class="reference internal" href="#parsing-eon-saddle-searches">Parsing eOn saddle searches</a></li>
+<li><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 </ul>
@@ -159,58 +166,104 @@
     <nav class="related breadcrumbs" role="navigation">
   <a class="nav-item" href="index.html">Index</a>
   <span class="delim"> &#187;</span>
-  <span class="nav-item">Installation</span>
+  <span class="nav-item">Quickstart</span>
     </nav>
     
 
     <main class="body" role="main" id="main">
       
-  <section class="tex2jax_ignore mathjax_ignore" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
-<p>The easiest way to install <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading">¶</a></h1>
+<p>This guide walks through installing <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> and running a minimal
+parsing and plotting example.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<p>The simplest route is via <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>chemparseplot
 </pre></div>
 </div>
-<p>This will automatically install <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs"><code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code></a>
-as a dependency, which provides the computational modules used by <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>
-(surface fitting, interpolation, data types, etc.).</p>
-<section id="optional-extras">
-<h2>Optional extras<a class="headerlink" href="#optional-extras" title="Link to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plotting support (matplotlib, cmcrameri colormaps)</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[plot]&quot;</span>
-
-<span class="c1"># NEB analysis (ase, h5py, polars)</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[neb]&quot;</span>
-
-<span class="c1"># 3D structure rendering</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[xyzrender]&quot;</span>
-
-<span class="c1"># Everything</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[all]&quot;</span>
+<p>For plotting support, add the <code class="docutils literal notranslate"><span class="pre">plot</span></code> extra:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[plot]&quot;</span>
 </pre></div>
 </div>
-</section>
+<p>Or install everything at once:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;chemparseplot[all]&quot;</span>
+</pre></div>
+</div>
+<p>This pulls in <a class="reference external" href="https://github.com/HaoZeke/rgpycrumbs"><code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code></a>
+automatically, which provides the computational backend (surface fitting,
+interpolation, structure analysis).</p>
 <section id="development-install">
-<h2>Development install<a class="headerlink" href="#development-install" title="Link to this heading">¶</a></h2>
-<p>Local clones of the GitHub repo are best served setting up the maximally
-reproducible development environment:</p>
+<h3>Development install<a class="headerlink" href="#development-install" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HaoZeke/chemparseplot
 <span class="nb">cd</span><span class="w"> </span>chemparseplot
-<span class="c1"># Install with all dev dependencies</span>
 uv<span class="w"> </span>sync<span class="w"> </span>--all-extras
 </pre></div>
 </div>
 </section>
-<section id="auxiliary-software">
-<h2>Auxiliary Software<a class="headerlink" href="#auxiliary-software" title="Link to this heading">¶</a></h2>
-<p>Since <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to facilitate working with the results of
-computational chemistry / atomic physics codes, some links to commonly used
-tools are enumerated below. Note that technically it is the <strong>outputs</strong> of these
-codes which is required, not the codes themselves.</p>
+</section>
+<section id="parsing-an-orca-geometry-scan">
+<h2>Parsing an ORCA geometry scan<a class="headerlink" href="#parsing-an-orca-geometry-scan" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> ships parsers for several computational chemistry codes.
+Here is a minimal example extracting energies from an ORCA geometry scan
+output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
+
+<span class="c1"># Read the ORCA output (plain text)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;scan_output.out&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">orca_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="c1"># Extract actual energies with units attached</span>
+<span class="n">distance</span><span class="p">,</span> <span class="n">energy</span> <span class="o">=</span> <span class="n">geomscan</span><span class="o">.</span><span class="n">extract_energy_data</span><span class="p">(</span><span class="n">orca_text</span><span class="p">,</span> <span class="s2">&quot;Actual&quot;</span><span class="p">)</span>
+
+<span class="c1"># Units are pint Quantities</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">distance</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>  <span class="c1"># bohr</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>    <span class="c1"># hartree</span>
+
+<span class="c1"># Convert freely</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">distance</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;angstrom&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="plotting-with-unit-awareness">
+<h2>Plotting with unit awareness<a class="headerlink" href="#plotting-with-unit-awareness" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">TwoDimPlot</span></code> class handles unit-aware axes and scientific colormaps:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.structs</span><span class="w"> </span><span class="kn">import</span> <span class="n">TwoDimPlot</span><span class="p">,</span> <span class="n">EnergyPath</span>
+
+<span class="n">plot</span> <span class="o">=</span> <span class="n">TwoDimPlot</span><span class="p">()</span>
+<span class="n">plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s2">&quot;angstrom&quot;</span><span class="p">,</span> <span class="s2">&quot;hartree&quot;</span><span class="p">)</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="n">EnergyPath</span><span class="p">(</span><span class="s2">&quot;H2 scan&quot;</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">energy</span><span class="p">)</span>
+<span class="n">plot</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">plot</span><span class="o">.</span><span class="n">show_plot</span><span class="p">(</span><span class="s2">&quot;H2 Bond Length Scan&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Changing units redraws the axes automatically:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plot</span><span class="o">.</span><span class="n">set_units</span><span class="p">(</span><span class="s2">&quot;bohr&quot;</span><span class="p">,</span> <span class="s2">&quot;electron_volt&quot;</span><span class="p">)</span>
+<span class="n">plot</span><span class="o">.</span><span class="n">fig</span>  <span class="c1"># updated figure</span>
+</pre></div>
+</div>
+</section>
+<section id="parsing-eon-saddle-searches">
+<h2>Parsing eOn saddle searches<a class="headerlink" href="#parsing-eon-saddle-searches" title="Link to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.eon.saddle_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_eon_saddle</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">parse_eon_saddle</span><span class="p">(</span>
+    <span class="n">eresp</span><span class="o">=</span><span class="s2">&quot;results_saddle.dat&quot;</span><span class="p">,</span>
+    <span class="n">rloc</span><span class="o">=</span><span class="s2">&quot;saddle/&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>     <span class="c1"># EONSaddleStatus</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>     <span class="c1"># saddle point energy</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>     <span class="c1"># Dimer, GPRD, or LBFGS</span>
+</pre></div>
+</div>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">ORCA</span></code> can be obtained (freely) after <a class="reference external" href="https://orcaforum.kofo.mpg.de/app.php/portal">registering on their forum</a></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ASE</span></code>, the <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/">atomic simulation environment</a>, is also on PyPI and can be installed via <code class="docutils literal notranslate"><span class="pre">pip</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">eON</span></code> is <a class="reference external" href="https://eondocs.org/">freely available</a> and on <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p></li>
+<li><p>Browse the <a class="reference internal" href="tutorials/index.html"><span class="doc std std-doc">tutorials</span></a> for full worked examples</p></li>
+<li><p>See the <a class="reference internal" href="features.html"><span class="doc std std-doc">features</span></a> page for all supported engines</p></li>
+<li><p>Check the <a class="reference internal" href="apidocs/index.html"><span class="doc std std-doc">API reference</span></a> for detailed module documentation</p></li>
 </ul>
 </section>
 </section>
@@ -218,11 +271,11 @@ codes which is required, not the codes themselves.</p>
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="quickstart.html" title="Previous">
-    &larr; Quickstart
+  <a class="prev" href="index.html" title="Previous">
+    &larr; <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>: Chemical Parsers and Plotters
   </a>
-  <a class="next" href="features.html" title="Next">
-    Features &rarr;
+  <a class="next" href="installation.html" title="Next">
+    Installation &rarr;
   </a>
   <div class="clear"></div>
     </nav>
