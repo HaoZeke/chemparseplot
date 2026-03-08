@@ -19,6 +19,9 @@ def __getattr__(name):
     if name == "structs":
         from chemparseplot.plot import structs as _mod
         return _mod
+    if name == "chemgp":
+        from chemparseplot.plot import chemgp as _mod
+        return _mod
     if name == "ureg":
         from chemparseplot.units import ureg as _ureg
         _ureg.setup_matplotlib(True)
