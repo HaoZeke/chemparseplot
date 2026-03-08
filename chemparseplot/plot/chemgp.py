@@ -100,11 +100,18 @@ def plot_convergence_curve(
     y: str = "max_fatom",
     color: str = "method",
     log_y: bool = True,
-    conv_tol: float | None = None,
+    conv_tol: float | dict | None = None,
     width: float = 3.2,
     height: float = 2.5,
 ) -> ggplot:
-    """Log-scale convergence: oracle calls vs force, colored by method."""
+    """Log-scale convergence: oracle calls vs force, colored by method.
+
+    Parameters
+    ----------
+    conv_tol
+        Single float draws one horizontal line. Dict mapping method name
+        to threshold draws per-method dashed lines in matching colors.
+    """
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
 
@@ -124,12 +131,23 @@ def plot_convergence_curve(
     if log_y:
         p = p + scale_y_log10()
     if conv_tol is not None:
-        p = p + geom_hline(
-            yintercept=conv_tol,
-            linetype="dashed",
-            color="grey",
-            size=0.5,
-        )
+        if isinstance(conv_tol, dict):
+            for method_name, tol_val in conv_tol.items():
+                method_color = palette.get(method_name, "grey")
+                p = p + geom_hline(
+                    yintercept=tol_val,
+                    linetype="dashed",
+                    color=method_color,
+                    size=0.4,
+                    alpha=0.6,
+                )
+        else:
+            p = p + geom_hline(
+                yintercept=conv_tol,
+                linetype="dashed",
+                color="grey",
+                size=0.5,
+            )
     return p
 
 
