@@ -1,8 +1,12 @@
-"""ChemGP visualization functions using plotnine + polars.
+"""ChemGP visualization functions.
 
-Plotnine (ggplot2 grammar) plotting functions for GP-based
-optimization convergence, surfaces, and diagnostics. All functions
-accept polars DataFrames and return ggplot objects.
+Mixed plotnine (for 1D line charts) and matplotlib (for 2D
+contour surfaces) plotting functions for GP-based optimization
+convergence, surfaces, and diagnostics.
+
+Surface plots use matplotlib contourf with the RUHI colormap,
+matching the plt-neb landscape style. Line charts use plotnine
+for ggplot2 grammar.
 
 ```{versionadded} 1.4.0
 ```
@@ -10,33 +14,31 @@ accept polars DataFrames and return ggplot objects.
 
 import logging
 
+import matplotlib.pyplot as plt
 import numpy as np
-import polars as pl
+import pandas as pd
 from plotnine import (
     aes,
-    annotate,
     element_text,
     facet_grid,
     facet_wrap,
-    geom_contour,
     geom_hline,
     geom_line,
-    geom_path,
     geom_point,
-    geom_tile,
+    geom_ribbon,
     ggplot,
     labs,
     scale_color_manual,
-    scale_fill_gradient2,
-    scale_fill_gradientn,
-    scale_x_continuous,
-    scale_y_continuous,
     scale_y_log10,
     theme,
     theme_minimal,
 )
 
-from chemparseplot.plot.theme import RUHI_COLORS
+from chemparseplot.plot.theme import (
+    RUHI_COLORS,
+    setup_publication_theme,
+    get_theme,
+)
 
 log = logging.getLogger(__name__)
 
@@ -57,42 +59,30 @@ _JOST_THEME = theme_minimal() + theme(
 )
 
 
-def _grid_to_long(
-    grid_x,
-    grid_y,
-    grid_z,
-    value_name: str = "value",
-) -> pl.DataFrame:
-    """Convert 2D meshgrid arrays to a long-form polars DataFrame.
+def _ensure_ruhi_cmap():
+    """Ensure the ruhi_diverging colormap is registered."""
+    # theme.py registers it on import, but be safe
+    try:
+        plt.colormaps["ruhi_diverging"]
+    except KeyError:
+        from chemparseplot.plot.theme import build_cmap
+        build_cmap(
+            [
+                RUHI_COLORS["teal"],
+                RUHI_COLORS["sky"],
+                RUHI_COLORS["magenta"],
+                RUHI_COLORS["coral"],
+                RUHI_COLORS["sunshine"],
+            ],
+            name="ruhi_diverging",
+        )
 
-    Parameters
-    ----------
-    grid_x : array-like
-        2D array of x coordinates (from meshgrid).
-    grid_y : array-like
-        2D array of y coordinates (from meshgrid).
-    grid_z : array-like
-        2D array of values.
-    value_name : str
-        Column name for the z values.
 
-    Returns
-    -------
-    pl.DataFrame
-        Columns: x, y, <value_name>.
-    """
-    gx = np.asarray(grid_x).ravel()
-    gy = np.asarray(grid_y).ravel()
-    gz = np.asarray(grid_z).ravel()
-    return pl.DataFrame({
-        "x": gx,
-        "y": gy,
-        value_name: gz,
-    })
+# ---- Plotnine-based 1D line charts ----
 
 
 def plot_convergence_curve(
-    df: pl.DataFrame,
+    df: pd.DataFrame,
     x: str = "oracle_calls",
     y: str = "max_fatom",
     color: str = "method",
@@ -105,7 +95,7 @@ def plot_convergence_curve(
 
     Parameters
     ----------
-    df : pl.DataFrame
+    df : pd.DataFrame
         Must contain columns named by *x*, *y*, and *color*.
     x : str
         Column for the horizontal axis (default: oracle_calls).
@@ -126,12 +116,11 @@ def plot_convergence_curve(
     -------
     ggplot
     """
-    pdf = df.to_pandas()
-    methods = pdf[color].unique()
+    methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
 
     p = (
-        ggplot(pdf, aes(x=x, y=y, color=color))
+        ggplot(df, aes(x=x, y=y, color=color))
         + geom_line(size=0.9)
         + geom_point(size=1.5, alpha=0.7)
         + scale_color_manual(values=palette)
@@ -155,167 +144,8 @@ def plot_convergence_curve(
     return p
 
 
-def plot_surface_contour(
-    grid_x,
-    grid_y,
-    grid_z,
-    paths: dict[str, tuple] | None = None,
-    points: dict[str, tuple] | None = None,
-    width: float = 3.2,
-    height: float = 2.5,
-) -> ggplot:
-    """2D filled contour with optional path and point overlays.
-
-    Parameters
-    ----------
-    grid_x, grid_y, grid_z : array-like
-        2D meshgrid arrays for the surface.
-    paths : dict or None
-        ``{label: (xs, ys)}`` paths to overlay as lines.
-    points : dict or None
-        ``{label: (xs, ys)}`` scatter points to overlay.
-    width : float
-        Figure width in inches.
-    height : float
-        Figure height in inches.
-
-    Returns
-    -------
-    ggplot
-    """
-    long_df = _grid_to_long(grid_x, grid_y, grid_z, "energy")
-    pdf = long_df.to_pandas()
-
-    p = (
-        ggplot(pdf, aes(x="x", y="y"))
-        + geom_tile(aes(fill="energy"))
-        + geom_contour(
-            aes(z="energy"),
-            color="white",
-            alpha=0.4,
-            size=0.3,
-        )
-        + scale_fill_gradientn(
-            colors=[
-                RUHI_COLORS["teal"],
-                RUHI_COLORS["sky"],
-                RUHI_COLORS["sunshine"],
-                RUHI_COLORS["coral"],
-            ],
-        )
-        + labs(x="x", y="y", fill="Energy")
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
-    )
-
-    if paths is not None:
-        for i, (label, (xs, ys)) in enumerate(
-            paths.items()
-        ):
-            path_df = pl.DataFrame({
-                "x": np.asarray(xs),
-                "y": np.asarray(ys),
-            }).to_pandas()
-            col = _METHOD_PALETTE[i % len(_METHOD_PALETTE)]
-            p = p + geom_path(
-                data=path_df,
-                mapping=aes(x="x", y="y"),
-                color=col,
-                size=0.8,
-            )
-
-    if points is not None:
-        for i, (label, (xs, ys)) in enumerate(
-            points.items()
-        ):
-            pt_df = pl.DataFrame({
-                "x": np.asarray(xs),
-                "y": np.asarray(ys),
-            }).to_pandas()
-            col = _METHOD_PALETTE[i % len(_METHOD_PALETTE)]
-            p = p + geom_point(
-                data=pt_df,
-                mapping=aes(x="x", y="y"),
-                color=col,
-                size=2.0,
-            )
-
-    return p
-
-
-def plot_gp_progression(
-    grids: dict[int, dict],
-    true_energy,
-    x_range,
-    y_range,
-    n_cols: int = 2,
-    width: float = 6.4,
-    height: float = 5.0,
-) -> ggplot:
-    """Faceted contour panels showing GP mean at different training sizes.
-
-    Parameters
-    ----------
-    grids : dict
-        ``{n_train: {"gp_mean": 2d_array, "train_x": 1d, ...}}``.
-        Each entry produces one facet panel.
-    true_energy : array-like
-        2D array of the true energy surface (same shape as
-        gp_mean arrays).
-    x_range : array-like
-        1D array of x coordinates for the grid.
-    y_range : array-like
-        1D array of y coordinates for the grid.
-    n_cols : int
-        Number of columns in the facet layout.
-    width : float
-        Figure width in inches.
-    height : float
-        Figure height in inches.
-
-    Returns
-    -------
-    ggplot
-    """
-    xv, yv = np.meshgrid(x_range, y_range)
-    frames = []
-    for n_train, data in sorted(grids.items()):
-        gp_mean = np.asarray(data["gp_mean"])
-        panel_df = _grid_to_long(xv, yv, gp_mean, "energy")
-        panel_df = panel_df.with_columns(
-            pl.lit(f"N={n_train}").alias("panel"),
-        )
-        frames.append(panel_df)
-
-    all_df = pl.concat(frames).to_pandas()
-
-    p = (
-        ggplot(all_df, aes(x="x", y="y"))
-        + geom_tile(aes(fill="energy"))
-        + geom_contour(
-            aes(z="energy"),
-            color="white",
-            alpha=0.4,
-            size=0.3,
-        )
-        + facet_wrap("panel", ncol=n_cols)
-        + scale_fill_gradientn(
-            colors=[
-                RUHI_COLORS["teal"],
-                RUHI_COLORS["sky"],
-                RUHI_COLORS["sunshine"],
-                RUHI_COLORS["coral"],
-            ],
-        )
-        + labs(x="x", y="y", fill="GP mean")
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
-    )
-    return p
-
-
 def plot_rff_quality(
-    df: pl.DataFrame,
+    df: pd.DataFrame,
     exact_e_mae: float,
     exact_g_mae: float,
     width: float = 3.2,
@@ -325,7 +155,7 @@ def plot_rff_quality(
 
     Parameters
     ----------
-    df : pl.DataFrame
+    df : pd.DataFrame
         Must have columns: d_rff, energy_mae, gradient_mae.
     exact_e_mae : float
         Exact GP energy MAE (shown as horizontal baseline).
@@ -340,25 +170,18 @@ def plot_rff_quality(
     -------
     ggplot
     """
-    e_df = df.select(
-        pl.col("d_rff"),
-        pl.col("energy_mae").alias("mae"),
-    ).with_columns(
-        pl.lit("Energy MAE").alias("metric"),
-    )
-    g_df = df.select(
-        pl.col("d_rff"),
-        pl.col("gradient_mae").alias("mae"),
-    ).with_columns(
-        pl.lit("Gradient MAE").alias("metric"),
-    )
-    long = pl.concat([e_df, g_df]).to_pandas()
+    e_df = df[["d_rff", "energy_mae"]].rename(
+        columns={"energy_mae": "mae"}
+    ).assign(metric="Energy MAE")
+    g_df = df[["d_rff", "gradient_mae"]].rename(
+        columns={"gradient_mae": "mae"}
+    ).assign(metric="Gradient MAE")
+    long = pd.concat([e_df, g_df], ignore_index=True)
 
-    # Baselines for each facet
-    baselines = pl.DataFrame({
+    baselines = pd.DataFrame({
         "metric": ["Energy MAE", "Gradient MAE"],
         "exact": [exact_e_mae, exact_g_mae],
-    }).to_pandas()
+    })
 
     p = (
         ggplot(long, aes(x="d_rff", y="mae"))
@@ -379,77 +202,8 @@ def plot_rff_quality(
     return p
 
 
-def plot_nll_landscape(
-    grid_x,
-    grid_y,
-    grid_nll,
-    optimum: tuple[float, float] | None = None,
-    width: float = 3.2,
-    height: float = 2.5,
-) -> ggplot:
-    """NLL contour in (log sigma^2, log theta) space.
-
-    Parameters
-    ----------
-    grid_x, grid_y : array-like
-        2D meshgrid of log sigma^2 and log theta values.
-    grid_nll : array-like
-        2D array of NLL values.
-    optimum : tuple or None
-        (log_sigma2, log_theta) of the MAP optimum to mark.
-    width : float
-        Figure width in inches.
-    height : float
-        Figure height in inches.
-
-    Returns
-    -------
-    ggplot
-    """
-    long_df = _grid_to_long(
-        grid_x, grid_y, grid_nll, "nll"
-    ).to_pandas()
-
-    p = (
-        ggplot(long_df, aes(x="x", y="y"))
-        + geom_tile(aes(fill="nll"))
-        + geom_contour(
-            aes(z="nll"),
-            color="white",
-            alpha=0.5,
-            size=0.3,
-            bins=20,
-        )
-        + scale_fill_gradientn(
-            colors=[
-                RUHI_COLORS["teal"],
-                RUHI_COLORS["sky"],
-                RUHI_COLORS["sunshine"],
-                RUHI_COLORS["coral"],
-            ],
-        )
-        + labs(
-            x="log sigma^2",
-            y="log theta",
-            fill="NLL",
-        )
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
-    )
-    if optimum is not None:
-        p = p + annotate(
-            "point",
-            x=optimum[0],
-            y=optimum[1],
-            color=RUHI_COLORS["coral"],
-            size=4,
-            shape="*",
-        )
-    return p
-
-
 def plot_hyperparameter_sensitivity(
-    df: pl.DataFrame,
+    df: pd.DataFrame,
     width: float = 6.4,
     height: float = 5.0,
 ) -> ggplot:
@@ -457,10 +211,9 @@ def plot_hyperparameter_sensitivity(
 
     Parameters
     ----------
-    df : pl.DataFrame
+    df : pd.DataFrame
         Must have columns: x, y_true, y_pred, y_lower, y_upper,
-        ell, sigma_f. The ell and sigma_f columns are used for
-        faceting.
+        ell, sigma_f.
     width : float
         Figure width in inches.
     height : float
@@ -470,10 +223,8 @@ def plot_hyperparameter_sensitivity(
     -------
     ggplot
     """
-    pdf = df.to_pandas()
-
     p = (
-        ggplot(pdf, aes(x="x"))
+        ggplot(df, aes(x="x"))
         + geom_line(
             aes(y="y_true"),
             color="grey",
@@ -494,7 +245,7 @@ def plot_hyperparameter_sensitivity(
 
 
 def plot_trust_region(
-    df: pl.DataFrame,
+    df: pd.DataFrame,
     train_points: tuple | None = None,
     width: float = 3.2,
     height: float = 2.5,
@@ -503,9 +254,8 @@ def plot_trust_region(
 
     Parameters
     ----------
-    df : pl.DataFrame
-        Must have columns: x, y_pred, y_lower, y_upper,
-        in_trust (bool).
+    df : pd.DataFrame
+        Must have columns: x, y_pred, y_lower, y_upper.
     train_points : tuple or None
         ``(xs, ys)`` of training observations to overlay.
     width : float
@@ -517,12 +267,8 @@ def plot_trust_region(
     -------
     ggplot
     """
-    from plotnine import geom_ribbon
-
-    pdf = df.to_pandas()
-
     p = (
-        ggplot(pdf, aes(x="x"))
+        ggplot(df, aes(x="x"))
         + geom_ribbon(
             aes(ymin="y_lower", ymax="y_upper"),
             fill=RUHI_COLORS["sky"],
@@ -540,118 +286,16 @@ def plot_trust_region(
 
     if train_points is not None:
         xs, ys = train_points
-        tp_df = pl.DataFrame({
+        tp_df = pd.DataFrame({
             "x": np.asarray(xs),
             "y": np.asarray(ys),
-        }).to_pandas()
+        })
         p = p + geom_point(
             data=tp_df,
             mapping=aes(x="x", y="y"),
             color=RUHI_COLORS["coral"],
             size=2.5,
         )
-    return p
-
-
-def plot_variance_overlay(
-    grid_x,
-    grid_y,
-    grid_energy,
-    grid_variance,
-    train_points: tuple | None = None,
-    stationary: dict | None = None,
-    width: float = 3.2,
-    height: float = 2.5,
-) -> ggplot:
-    """Variance heatmap overlaid on energy surface.
-
-    Parameters
-    ----------
-    grid_x, grid_y : array-like
-        2D meshgrid arrays.
-    grid_energy : array-like
-        2D array of energy values (shown as contour lines).
-    grid_variance : array-like
-        2D array of variance values (shown as fill).
-    train_points : tuple or None
-        ``(xs, ys)`` of training data locations.
-    stationary : dict or None
-        ``{"min": (x,y), "saddle": (x,y), ...}`` labeled
-        stationary points.
-    width : float
-        Figure width in inches.
-    height : float
-        Figure height in inches.
-
-    Returns
-    -------
-    ggplot
-    """
-    var_df = _grid_to_long(
-        grid_x, grid_y, grid_variance, "variance"
-    )
-    e_df = _grid_to_long(
-        grid_x, grid_y, grid_energy, "energy"
-    )
-    # Merge energy into the variance frame for contour overlay
-    combined = var_df.with_columns(
-        e_df.get_column("energy"),
-    ).to_pandas()
-
-    p = (
-        ggplot(combined, aes(x="x", y="y"))
-        + geom_tile(aes(fill="variance"))
-        + geom_contour(
-            aes(z="energy"),
-            color=RUHI_COLORS["teal"],
-            alpha=0.6,
-            size=0.4,
-        )
-        + scale_fill_gradient2(
-            low="white",
-            mid=RUHI_COLORS["sky"],
-            high=RUHI_COLORS["coral"],
-            midpoint=float(
-                np.median(np.asarray(grid_variance))
-            ),
-        )
-        + labs(x="x", y="y", fill="Variance")
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
-    )
-
-    if train_points is not None:
-        xs, ys = train_points
-        tp_df = pl.DataFrame({
-            "x": np.asarray(xs),
-            "y": np.asarray(ys),
-        }).to_pandas()
-        p = p + geom_point(
-            data=tp_df,
-            mapping=aes(x="x", y="y"),
-            color=RUHI_COLORS["teal"],
-            size=1.5,
-            shape="x",
-        )
-
-    if stationary is not None:
-        for label, (sx, sy) in stationary.items():
-            p = p + annotate(
-                "point",
-                x=sx,
-                y=sy,
-                color=RUHI_COLORS["coral"],
-                size=3,
-            ) + annotate(
-                "text",
-                x=sx,
-                y=sy,
-                label=label,
-                color=RUHI_COLORS["teal"],
-                size=8,
-                va="bottom",
-                ha="left",
-            )
     return p
 
 
@@ -680,17 +324,17 @@ def plot_fps_projection(
     -------
     ggplot
     """
-    sel_df = pl.DataFrame({
+    sel_df = pd.DataFrame({
         "pc1": np.asarray(selected_pc1),
         "pc2": np.asarray(selected_pc2),
-        "group": ["Selected"] * len(selected_pc1),
+        "group": "Selected",
     })
-    prn_df = pl.DataFrame({
+    prn_df = pd.DataFrame({
         "pc1": np.asarray(pruned_pc1),
         "pc2": np.asarray(pruned_pc2),
-        "group": ["Pruned"] * len(pruned_pc1),
+        "group": "Pruned",
     })
-    all_df = pl.concat([prn_df, sel_df]).to_pandas()
+    all_df = pd.concat([prn_df, sel_df], ignore_index=True)
 
     palette = {
         "Selected": RUHI_COLORS["teal"],
@@ -709,7 +353,7 @@ def plot_fps_projection(
 
 
 def plot_energy_profile(
-    df: pl.DataFrame,
+    df: pd.DataFrame,
     x: str = "image",
     y: str = "energy",
     color: str = "method",
@@ -720,7 +364,7 @@ def plot_energy_profile(
 
     Parameters
     ----------
-    df : pl.DataFrame
+    df : pd.DataFrame
         Must contain columns named by *x*, *y*, and *color*.
     x : str
         Column for the image index or reaction coordinate.
@@ -737,12 +381,11 @@ def plot_energy_profile(
     -------
     ggplot
     """
-    pdf = df.to_pandas()
-    methods = pdf[color].unique()
+    methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
 
     p = (
-        ggplot(pdf, aes(x=x, y=y, color=color))
+        ggplot(df, aes(x=x, y=y, color=color))
         + geom_line(size=0.9)
         + geom_point(size=2.0)
         + scale_color_manual(values=palette)
@@ -755,3 +398,340 @@ def plot_energy_profile(
         + theme(figure_size=(width, height))
     )
     return p
+
+
+# ---- Matplotlib-based 2D surface plots ----
+
+
+def plot_surface_contour(
+    grid_x,
+    grid_y,
+    grid_z,
+    paths: dict[str, tuple] | None = None,
+    points: dict[str, tuple] | None = None,
+    clamp_lo: float | None = None,
+    clamp_hi: float | None = None,
+    width: float = 7.0,
+    height: float = 5.0,
+) -> plt.Figure:
+    """2D filled contour with optional path and point overlays.
+
+    Uses matplotlib contourf with the RUHI colormap, matching
+    the plt-neb landscape style.
+
+    Parameters
+    ----------
+    grid_x, grid_y, grid_z : array-like
+        2D meshgrid arrays for the surface.
+    paths : dict or None
+        ``{label: (xs, ys)}`` paths to overlay as lines.
+    points : dict or None
+        ``{label: (xs, ys)}`` scatter points to overlay.
+    clamp_lo, clamp_hi : float or None
+        Optional value clamping for the z data.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    _ensure_ruhi_cmap()
+    setup_publication_theme(get_theme("ruhi"))
+
+    gz = np.asarray(grid_z).copy()
+    if clamp_lo is not None:
+        gz = np.clip(gz, clamp_lo, None)
+    if clamp_hi is not None:
+        gz = np.clip(gz, None, clamp_hi)
+
+    fig, ax = plt.subplots(figsize=(width, height))
+    cf = ax.contourf(
+        np.asarray(grid_x),
+        np.asarray(grid_y),
+        gz,
+        levels=20,
+        cmap="ruhi_diverging",
+        alpha=0.85,
+    )
+    ax.contour(
+        np.asarray(grid_x),
+        np.asarray(grid_y),
+        gz,
+        levels=20,
+        colors="white",
+        linewidths=0.3,
+        alpha=0.5,
+    )
+    fig.colorbar(cf, ax=ax, label="Energy", shrink=0.8)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+
+    if paths is not None:
+        for i, (label, (xs, ys)) in enumerate(paths.items()):
+            col = _METHOD_PALETTE[i % len(_METHOD_PALETTE)]
+            ax.plot(
+                xs, ys,
+                color=col, linewidth=1.5, zorder=30,
+                label=label,
+            )
+            # Start/end markers
+            ax.plot(
+                xs[0], ys[0],
+                marker="o", color=col, markersize=8,
+                markeredgecolor="white", markeredgewidth=0.8,
+                zorder=31,
+            )
+            ax.plot(
+                xs[-1], ys[-1],
+                marker="*", color=col, markersize=12,
+                markeredgecolor="white", markeredgewidth=0.5,
+                zorder=31,
+            )
+
+    if points is not None:
+        for i, (label, (xs, ys)) in enumerate(points.items()):
+            col = _METHOD_PALETTE[i % len(_METHOD_PALETTE)]
+            ax.scatter(
+                xs, ys,
+                c=col, s=40, marker="D",
+                edgecolors="white", linewidths=0.5,
+                zorder=32, label=label,
+            )
+
+    if (paths and len(paths) > 1) or (points and len(points) > 1):
+        ax.legend(fontsize=9, loc="best")
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_gp_progression(
+    grids: dict[int, dict],
+    true_energy,
+    x_range,
+    y_range,
+    n_cols: int = 2,
+    width: float = 10.0,
+    height: float = 8.0,
+) -> plt.Figure:
+    """Faceted contour panels showing GP mean at different training sizes.
+
+    Parameters
+    ----------
+    grids : dict
+        ``{n_train: {"gp_mean": 2d_array, ...}}``.
+    true_energy : array-like
+        2D array of the true energy surface.
+    x_range, y_range : array-like
+        1D coordinate arrays for the grid.
+    n_cols : int
+        Number of columns in the panel layout.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    _ensure_ruhi_cmap()
+    setup_publication_theme(get_theme("ruhi"))
+
+    sorted_grids = sorted(grids.items())
+    n_panels = len(sorted_grids)
+    n_rows = (n_panels + n_cols - 1) // n_cols
+
+    xv, yv = np.meshgrid(x_range, y_range)
+
+    # Shared color range across all panels
+    vmin = min(np.asarray(d["gp_mean"]).min() for _, d in sorted_grids)
+    vmax = max(np.asarray(d["gp_mean"]).max() for _, d in sorted_grids)
+
+    fig, axes = plt.subplots(
+        n_rows, n_cols, figsize=(width, height),
+        squeeze=False, layout="constrained",
+    )
+
+    for idx, (n_train, data) in enumerate(sorted_grids):
+        row, col = divmod(idx, n_cols)
+        ax = axes[row][col]
+        gp_mean = np.asarray(data["gp_mean"])
+
+        cf = ax.contourf(
+            xv, yv, gp_mean,
+            levels=20,
+            cmap="ruhi_diverging",
+            alpha=0.85,
+            vmin=vmin, vmax=vmax,
+        )
+        ax.contour(
+            xv, yv, gp_mean,
+            levels=20,
+            colors="white",
+            linewidths=0.3,
+            alpha=0.5,
+        )
+        ax.set_title(f"N = {n_train}", fontsize=11)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+
+    # Hide unused axes
+    for idx in range(n_panels, n_rows * n_cols):
+        row, col = divmod(idx, n_cols)
+        axes[row][col].set_visible(False)
+
+    fig.colorbar(cf, ax=axes.ravel().tolist(), label="GP mean", shrink=0.8)
+    return fig
+
+
+def plot_nll_landscape(
+    grid_x,
+    grid_y,
+    grid_nll,
+    optimum: tuple[float, float] | None = None,
+    width: float = 7.0,
+    height: float = 5.0,
+) -> plt.Figure:
+    """NLL contour in (log sigma^2, log theta) space.
+
+    Parameters
+    ----------
+    grid_x, grid_y : array-like
+        2D meshgrid of log sigma^2 and log theta values.
+    grid_nll : array-like
+        2D array of NLL values.
+    optimum : tuple or None
+        (log_sigma2, log_theta) of the MAP optimum to mark.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    _ensure_ruhi_cmap()
+    setup_publication_theme(get_theme("ruhi"))
+
+    fig, ax = plt.subplots(figsize=(width, height))
+    gx = np.asarray(grid_x)
+    gy = np.asarray(grid_y)
+    gz = np.asarray(grid_nll)
+
+    cf = ax.contourf(
+        gx, gy, gz,
+        levels=20,
+        cmap="ruhi_diverging",
+        alpha=0.85,
+    )
+    ax.contour(
+        gx, gy, gz,
+        levels=20,
+        colors="white",
+        linewidths=0.3,
+        alpha=0.5,
+    )
+    fig.colorbar(cf, ax=ax, label="NLL", shrink=0.8)
+    ax.set_xlabel(r"$\log\,\sigma^2$")
+    ax.set_ylabel(r"$\log\,\theta$")
+
+    if optimum is not None:
+        ax.plot(
+            optimum[0], optimum[1],
+            marker="*", color=RUHI_COLORS["coral"],
+            markersize=15, markeredgecolor="white",
+            markeredgewidth=0.8, zorder=30,
+        )
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_variance_overlay(
+    grid_x,
+    grid_y,
+    grid_energy,
+    grid_variance,
+    train_points: tuple | None = None,
+    stationary: dict | None = None,
+    width: float = 7.0,
+    height: float = 5.0,
+) -> plt.Figure:
+    """Variance heatmap overlaid on energy surface.
+
+    Parameters
+    ----------
+    grid_x, grid_y : array-like
+        2D meshgrid arrays.
+    grid_energy : array-like
+        2D array of energy values (shown as contour lines).
+    grid_variance : array-like
+        2D array of variance values (shown as fill).
+    train_points : tuple or None
+        ``(xs, ys)`` of training data locations.
+    stationary : dict or None
+        ``{"min": (x,y), "saddle": (x,y), ...}`` labeled
+        stationary points.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    setup_publication_theme(get_theme("ruhi"))
+
+    fig, ax = plt.subplots(figsize=(width, height))
+    gx = np.asarray(grid_x)
+    gy = np.asarray(grid_y)
+
+    # Variance as filled contour
+    cf = ax.contourf(
+        gx, gy,
+        np.asarray(grid_variance),
+        levels=20,
+        cmap="YlOrRd",
+        alpha=0.8,
+    )
+    fig.colorbar(cf, ax=ax, label="Variance", shrink=0.8)
+
+    # Energy as contour lines on top
+    ax.contour(
+        gx, gy,
+        np.asarray(grid_energy),
+        levels=15,
+        colors=RUHI_COLORS["teal"],
+        linewidths=0.6,
+        alpha=0.7,
+    )
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+
+    if train_points is not None:
+        xs, ys = train_points
+        ax.scatter(
+            xs, ys,
+            c=RUHI_COLORS["teal"], s=30,
+            marker="x", linewidths=1.5,
+            zorder=30, label="Training",
+        )
+
+    if stationary is not None:
+        for label, (sx, sy) in stationary.items():
+            marker = "v" if "min" in label else "^"
+            ax.plot(
+                sx, sy,
+                marker=marker, color=RUHI_COLORS["coral"],
+                markersize=10, markeredgecolor="white",
+                markeredgewidth=0.8, zorder=31,
+            )
+            ax.annotate(
+                label, (sx, sy),
+                textcoords="offset points",
+                xytext=(5, 5),
+                fontsize=8,
+                color=RUHI_COLORS["teal"],
+            )
+
+    fig.tight_layout()
+    return fig
