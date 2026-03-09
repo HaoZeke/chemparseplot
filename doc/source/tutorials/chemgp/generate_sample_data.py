@@ -6,9 +6,10 @@ Run once to create the data/ directory contents:
 Not committed to git; the generated .h5 files are committed instead.
 """
 
-import numpy as np
-import h5py
 from pathlib import Path
+
+import h5py
+import numpy as np
 
 DATA = Path(__file__).parent / "data"
 DATA.mkdir(exist_ok=True)
@@ -60,7 +61,7 @@ def _write_surface(path: Path):
         eg.attrs["y_length"] = n
 
         # Variance grid
-        V = np.exp(-X**2 - Y**2) * 2.0
+        V = np.exp(-(X**2) - Y**2) * 2.0
         vg = f.create_dataset("grids/variance", data=V)
         vg.attrs["x_range"] = [-2.0, 2.0]
         vg.attrs["y_range"] = [-2.0, 2.0]

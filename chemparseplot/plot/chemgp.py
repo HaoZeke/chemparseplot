@@ -25,7 +25,6 @@ from plotnine import (
     geom_hline,
     geom_line,
     geom_point,
-    geom_ribbon,
     ggplot,
     labs,
     scale_color_manual,
@@ -36,8 +35,8 @@ from plotnine import (
 
 from chemparseplot.plot.theme import (
     RUHI_COLORS,
-    setup_publication_theme,
     get_theme,
+    setup_publication_theme,
 )
 
 log = logging.getLogger(__name__)
@@ -67,6 +66,7 @@ def _ensure_ruhi_cmap():
         plt.colormaps["ruhi_diverging"]
     except KeyError:
         from chemparseplot.plot.theme import build_cmap
+
         build_cmap(
             [
                 RUHI_COLORS["teal"],
@@ -133,13 +133,15 @@ def plot_convergence_curve(
     Examples
     --------
     >>> import pandas as pd
-    >>> df = pd.DataFrame({"oracle_calls": [1, 2, 3], "max_fatom": [1.0, 0.5, 0.1], "method": ["GP"] * 3})
+    >>> cols = {"oracle_calls": [1, 2, 3], "max_fatom": [1.0, 0.5, 0.1]}
+    >>> cols["method"] = ["GP"] * 3
+    >>> df = pd.DataFrame(cols)
     >>> fig = plot_convergence_curve(df, conv_tol=0.2)
 
     .. versionadded:: 1.4.0
     """
     methods = df[color].unique()
-    palette = dict(zip(methods, _METHOD_PALETTE))
+    palette = dict(zip(methods, _METHOD_PALETTE, strict=False))
 
     y_label = {
         "ci_force": r"CI $|F|$ (eV/$\AA$)",
@@ -212,23 +214,31 @@ def plot_rff_quality(
     Examples
     --------
     >>> import pandas as pd
-    >>> df = pd.DataFrame({"d_rff": [50, 100, 200], "energy_mae": [0.5, 0.2, 0.1], "gradient_mae": [1.0, 0.4, 0.2]})
+    >>> cols = {"d_rff": [50, 100, 200], "energy_mae": [0.5, 0.2, 0.1]}
+    >>> cols["gradient_mae"] = [1.0, 0.4, 0.2]
+    >>> df = pd.DataFrame(cols)
     >>> fig = plot_rff_quality(df, exact_e_mae=0.05, exact_g_mae=0.1)
 
     .. versionadded:: 1.4.0
     """
-    e_df = df[["d_rff", "energy_mae"]].rename(
-        columns={"energy_mae": "mae"}
-    ).assign(metric="Energy MAE")
-    g_df = df[["d_rff", "gradient_mae"]].rename(
-        columns={"gradient_mae": "mae"}
-    ).assign(metric="Gradient MAE")
+    e_df = (
+        df[["d_rff", "energy_mae"]]
+        .rename(columns={"energy_mae": "mae"})
+        .assign(metric="Energy MAE")
+    )
+    g_df = (
+        df[["d_rff", "gradient_mae"]]
+        .rename(columns={"gradient_mae": "mae"})
+        .assign(metric="Gradient MAE")
+    )
     long = pd.concat([e_df, g_df], ignore_index=True)
 
-    baselines = pd.DataFrame({
-        "metric": ["Energy MAE", "Gradient MAE"],
-        "exact": [exact_e_mae, exact_g_mae],
-    })
+    baselines = pd.DataFrame(
+        {
+            "metric": ["Energy MAE", "Gradient MAE"],
+            "exact": [exact_e_mae, exact_g_mae],
+        }
+    )
 
     p = (
         ggplot(long, aes(x="d_rff", y="mae"))
@@ -299,7 +309,7 @@ def plot_hyperparameter_sensitivity(
     for j in range(3):  # lengthscale (columns)
         for i in range(3):  # signal variance (rows)
             ax = axes[i][j]
-            name = f"gp_ls{j+1}_sv{i+1}"
+            name = f"gp_ls{j + 1}_sv{i + 1}"
             if name not in panels:
                 ax.set_visible(False)
                 continue
@@ -312,14 +322,13 @@ def plot_hyperparameter_sensitivity(
                 x_slice,
                 e_pred - 2 * e_std,
                 e_pred + 2 * e_std,
-                color=RUHI_COLORS["sky"], alpha=0.3,
+                color=RUHI_COLORS["sky"],
+                alpha=0.3,
             )
             # True surface
-            ax.plot(x_slice, y_true,
-                    color="black", linewidth=1.0, linestyle="--")
+            ax.plot(x_slice, y_true, color="black", linewidth=1.0, linestyle="--")
             # GP mean
-            ax.plot(x_slice, e_pred,
-                    color=RUHI_COLORS["teal"], linewidth=1.5)
+            ax.plot(x_slice, e_pred, color=RUHI_COLORS["teal"], linewidth=1.5)
 
             ax.set_ylim(-250, 100)
 
@@ -338,8 +347,9 @@ def plot_hyperparameter_sensitivity(
                 ax.set_xticklabels([])
 
     # Legend below the grid
-    from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+
     handles = [
         Line2D([0], [0], color="black", linestyle="--", label="True surface"),
         Line2D([0], [0], color=RUHI_COLORS["teal"], linewidth=1.5, label="GP mean"),
@@ -398,7 +408,8 @@ def plot_trust_region(
     --------
     >>> import numpy as np
     >>> x = np.linspace(-2, 2, 100)
-    >>> fig = plot_trust_region(x, np.sin(x), np.sin(x) * 0.9, np.full(100, 0.1), (np.abs(x) < 1).astype(float))
+    >>> trust = (np.abs(x) < 1).astype(float)
+    >>> fig = plot_trust_region(x, np.sin(x), np.sin(x) * 0.9, np.full(100, 0.1), trust)
 
     .. versionadded:: 1.4.0
     """
@@ -411,26 +422,31 @@ def plot_trust_region(
         x_slice,
         e_pred - 2 * e_std,
         e_pred + 2 * e_std,
-        color=RUHI_COLORS["sky"], alpha=0.25,
+        color=RUHI_COLORS["sky"],
+        alpha=0.25,
         label=r"$\pm 2\sigma$",
     )
 
     # True surface
-    ax.plot(x_slice, e_true,
-            color="black", linewidth=1.0, linestyle="--",
-            label="True surface")
+    ax.plot(
+        x_slice,
+        e_true,
+        color="black",
+        linewidth=1.0,
+        linestyle="--",
+        label="True surface",
+    )
 
     # GP mean
-    ax.plot(x_slice, e_pred,
-            color=RUHI_COLORS["teal"], linewidth=1.5,
-            label="GP mean")
+    ax.plot(x_slice, e_pred, color=RUHI_COLORS["teal"], linewidth=1.5, label="GP mean")
 
     # Trust boundary vertical lines
     trust_bool = np.asarray(in_trust) > 0.5
     boundary_idx = np.where(np.diff(trust_bool.astype(int)) != 0)[0]
     for bi in boundary_idx:
-        ax.axvline(x_slice[bi], color=RUHI_COLORS["magenta"],
-                   linewidth=1.0, linestyle=":")
+        ax.axvline(
+            x_slice[bi], color=RUHI_COLORS["magenta"], linewidth=1.0, linestyle=":"
+        )
 
     # Training points projected to true surface
     if train_x is not None and len(train_x) > 0:
@@ -447,24 +463,39 @@ def plot_trust_region(
     e_bad_pred = e_pred[idx_bad]
     e_bad_true = e_true[idx_bad]
 
-    ax.scatter([x_bad], [e_bad_pred], marker="X", s=100,
-               c=RUHI_COLORS["coral"], zorder=31)
-    ax.scatter([x_bad], [e_bad_true], marker="*", s=100,
-               c=RUHI_COLORS["teal"], zorder=31)
+    ax.scatter(
+        [x_bad], [e_bad_pred], marker="X", s=100, c=RUHI_COLORS["coral"], zorder=31
+    )
+    ax.scatter([x_bad], [e_bad_true], marker="*", s=100, c=RUHI_COLORS["teal"], zorder=31)
 
-    ax.annotate("GP step", (x_bad, e_bad_pred),
-                textcoords="offset points", xytext=(5, 8),
-                fontsize=9, color=RUHI_COLORS["coral"])
-    ax.annotate("Oracle fallback", (x_bad, e_bad_true),
-                textcoords="offset points", xytext=(5, 8),
-                fontsize=9, color=RUHI_COLORS["teal"])
+    ax.annotate(
+        "GP step",
+        (x_bad, e_bad_pred),
+        textcoords="offset points",
+        xytext=(5, 8),
+        fontsize=9,
+        color=RUHI_COLORS["coral"],
+    )
+    ax.annotate(
+        "Oracle fallback",
+        (x_bad, e_bad_true),
+        textcoords="offset points",
+        xytext=(5, 8),
+        fontsize=9,
+        color=RUHI_COLORS["teal"],
+    )
 
     # Trust boundary label
     if len(boundary_idx) > 0:
         bx = x_slice[boundary_idx[-1]]
-        ax.annotate("trust\nboundary", (bx, -50),
-                    textcoords="offset points", xytext=(5, 0),
-                    fontsize=8, color=RUHI_COLORS["magenta"])
+        ax.annotate(
+            "trust\nboundary",
+            (bx, -50),
+            textcoords="offset points",
+            xytext=(5, 0),
+            fontsize=8,
+            color=RUHI_COLORS["magenta"],
+        )
 
     ax.set_ylim(-250, 100)
     ax.set_xlabel(r"$x$")
@@ -506,16 +537,20 @@ def plot_fps_projection(
 
     .. versionadded:: 1.4.0
     """
-    sel_df = pd.DataFrame({
-        "pc1": np.asarray(selected_pc1),
-        "pc2": np.asarray(selected_pc2),
-        "group": "Selected",
-    })
-    prn_df = pd.DataFrame({
-        "pc1": np.asarray(pruned_pc1),
-        "pc2": np.asarray(pruned_pc2),
-        "group": "Pruned",
-    })
+    sel_df = pd.DataFrame(
+        {
+            "pc1": np.asarray(selected_pc1),
+            "pc2": np.asarray(selected_pc2),
+            "group": "Selected",
+        }
+    )
+    prn_df = pd.DataFrame(
+        {
+            "pc1": np.asarray(pruned_pc1),
+            "pc2": np.asarray(pruned_pc2),
+            "group": "Pruned",
+        }
+    )
     all_df = pd.concat([prn_df, sel_df], ignore_index=True)
 
     palette = {
@@ -565,13 +600,14 @@ def plot_energy_profile(
     Examples
     --------
     >>> import pandas as pd
-    >>> df = pd.DataFrame({"image": [0, 1, 2], "energy": [0.0, 0.5, 0.0], "method": ["NEB"] * 3})
+    >>> cols = {"image": [0, 1, 2], "energy": [0.0, 0.5, 0.0], "method": ["NEB"] * 3}
+    >>> df = pd.DataFrame(cols)
     >>> fig = plot_energy_profile(df)
 
     .. versionadded:: 1.4.0
     """
     methods = df[color].unique()
-    palette = dict(zip(methods, _METHOD_PALETTE))
+    palette = dict(zip(methods, _METHOD_PALETTE, strict=False))
 
     p = (
         ggplot(df, aes(x=x, y=y, color=color))
@@ -602,7 +638,7 @@ def plot_surface_contour(
     clamp_hi: float | None = None,
     levels: int | np.ndarray | None = None,
     contour_step: float | None = None,
-    point_style: str = "star",
+    _point_style: str = "star",
     width: float = 7.0,
     height: float = 5.0,
 ) -> plt.Figure:
@@ -671,26 +707,36 @@ def plot_surface_contour(
     gy = np.asarray(grid_y)
 
     cf = ax.contourf(gx, gy, gz, levels=levels, cmap="ruhi_diverging")
-    ax.contour(gx, gy, gz, levels=contour_levels,
-               colors="black", linewidths=0.3)
+    ax.contour(gx, gy, gz, levels=contour_levels, colors="black", linewidths=0.3)
     fig.colorbar(cf, ax=ax, label=r"$E$ (eV)", shrink=0.8)
     ax.set_xlabel(r"$x$")
     ax.set_ylabel(r"$y$")
 
     # NEB paths: white line + coral circles + numbered images
     if paths is not None:
-        for label, (xs, ys) in paths.items():
+        for _label, (xs, ys) in paths.items():
             xs = np.asarray(xs)
             ys = np.asarray(ys)
             ax.plot(xs, ys, color="white", linewidth=2.0, zorder=30)
-            ax.scatter(xs, ys, c=RUHI_COLORS["coral"], s=50,
-                       marker="o", edgecolors="white", linewidths=1.0,
-                       zorder=31)
+            ax.scatter(
+                xs,
+                ys,
+                c=RUHI_COLORS["coral"],
+                s=50,
+                marker="o",
+                edgecolors="white",
+                linewidths=1.0,
+                zorder=31,
+            )
             for j in range(len(xs)):
                 ax.annotate(
-                    str(j + 1), (xs[j], ys[j]),
-                    textcoords="offset points", xytext=(4, 4),
-                    fontsize=8, color="white", fontweight="bold",
+                    str(j + 1),
+                    (xs[j], ys[j]),
+                    textcoords="offset points",
+                    xytext=(4, 4),
+                    fontsize=8,
+                    color="white",
+                    fontweight="bold",
                     zorder=32,
                 )
 
@@ -705,33 +751,66 @@ def plot_surface_contour(
 
             if "minim" in pname.lower():
                 # White circles with black stroke + letter labels
-                ax.scatter(xs, ys, c="white", s=80, marker="o",
-                           edgecolors="black", linewidths=1.5, zorder=33)
+                ax.scatter(
+                    xs,
+                    ys,
+                    c="white",
+                    s=80,
+                    marker="o",
+                    edgecolors="black",
+                    linewidths=1.5,
+                    zorder=33,
+                )
                 for k in range(len(xs)):
                     lbl = next(_min_labels, f"M{k}")
                     ax.annotate(
-                        lbl, (xs[k], ys[k]),
-                        textcoords="offset points", xytext=(6, 6),
-                        fontsize=12, fontweight="bold", color="white",
-                        path_effects=_STROKE, zorder=34,
+                        lbl,
+                        (xs[k], ys[k]),
+                        textcoords="offset points",
+                        xytext=(6, 6),
+                        fontsize=12,
+                        fontweight="bold",
+                        color="white",
+                        path_effects=_STROKE,
+                        zorder=34,
                     )
             elif "saddle" in pname.lower():
                 # White x markers with black stroke + S labels
-                ax.scatter(xs, ys, c="white", s=100, marker="X",
-                           edgecolors="black", linewidths=1.5, zorder=33)
+                ax.scatter(
+                    xs,
+                    ys,
+                    c="white",
+                    s=100,
+                    marker="X",
+                    edgecolors="black",
+                    linewidths=1.5,
+                    zorder=33,
+                )
                 for k in range(len(xs)):
                     lbl = next(_sad_labels, f"S{k}")
                     ax.annotate(
-                        lbl, (xs[k], ys[k]),
-                        textcoords="offset points", xytext=(6, 6),
-                        fontsize=12, fontweight="bold", color="white",
-                        path_effects=_STROKE, zorder=34,
+                        lbl,
+                        (xs[k], ys[k]),
+                        textcoords="offset points",
+                        xytext=(6, 6),
+                        fontsize=12,
+                        fontweight="bold",
+                        color="white",
+                        path_effects=_STROKE,
+                        zorder=34,
                     )
             else:
                 # Endpoints or generic: sunshine stars
-                ax.scatter(xs, ys, c=RUHI_COLORS["sunshine"], s=120,
-                           marker="*", edgecolors="white", linewidths=1.0,
-                           zorder=33)
+                ax.scatter(
+                    xs,
+                    ys,
+                    c=RUHI_COLORS["sunshine"],
+                    s=120,
+                    marker="*",
+                    edgecolors="white",
+                    linewidths=1.0,
+                    zorder=33,
+                )
 
     ax.set_aspect("equal")
     fig.tight_layout()
@@ -740,7 +819,7 @@ def plot_surface_contour(
 
 def plot_gp_progression(
     grids: dict[int, dict],
-    true_energy,
+    _true_energy,
     x_range,
     y_range,
     clamp_lo: float = -200.0,
@@ -779,8 +858,9 @@ def plot_gp_progression(
     >>> import numpy as np
     >>> x = np.linspace(-2, 2, 40)
     >>> X, Y = np.meshgrid(x, x)
-    >>> grids = {5: {"gp_mean": np.sin(X) * np.cos(Y), "train_x": [0, 1], "train_y": [0, 1]}}
-    >>> fig = plot_gp_progression(grids, np.sin(X) * np.cos(Y), x, x)
+    >>> gp_mean = np.sin(X) * np.cos(Y)
+    >>> grids = {5: {"gp_mean": gp_mean, "train_x": [0, 1], "train_y": [0, 1]}}
+    >>> fig = plot_gp_progression(grids, gp_mean, x, x)
 
     .. versionadded:: 1.4.0
     """
@@ -795,8 +875,11 @@ def plot_gp_progression(
     contour_levels = np.arange(clamp_lo, clamp_hi + 25, 25)
 
     fig, axes = plt.subplots(
-        n_rows, n_cols, figsize=(width, height),
-        squeeze=False, layout="constrained",
+        n_rows,
+        n_cols,
+        figsize=(width, height),
+        squeeze=False,
+        layout="constrained",
     )
 
     cf = None
@@ -805,16 +888,21 @@ def plot_gp_progression(
         ax = axes[row][col]
         gp_mean = np.clip(np.asarray(data["gp_mean"]), clamp_lo, clamp_hi)
 
-        cf = ax.contourf(xv, yv, gp_mean, levels=levels,
-                         cmap="ruhi_diverging")
-        ax.contour(xv, yv, gp_mean, levels=contour_levels,
-                   colors="black", linewidths=0.3)
+        cf = ax.contourf(xv, yv, gp_mean, levels=levels, cmap="ruhi_diverging")
+        ax.contour(xv, yv, gp_mean, levels=contour_levels, colors="black", linewidths=0.3)
 
         # Training points
         if "train_x" in data and "train_y" in data:
-            ax.scatter(data["train_x"], data["train_y"],
-                       c="black", s=15, marker="o",
-                       edgecolors="white", linewidths=0.5, zorder=30)
+            ax.scatter(
+                data["train_x"],
+                data["train_y"],
+                c="black",
+                s=15,
+                marker="o",
+                edgecolors="white",
+                linewidths=0.5,
+                zorder=30,
+            )
 
         ax.set_title(f"$N = {n_train}$", fontsize=11)
         ax.set_aspect("equal")
@@ -829,8 +917,7 @@ def plot_gp_progression(
         axes[row][col].set_visible(False)
 
     if cf is not None:
-        fig.colorbar(cf, ax=axes.ravel().tolist(),
-                     label=r"$E$ (a.u.)", shrink=0.8)
+        fig.colorbar(cf, ax=axes.ravel().tolist(), label=r"$E$ (a.u.)", shrink=0.8)
 
     return fig
 
@@ -898,10 +985,10 @@ def plot_nll_landscape(
     gz_clipped = np.clip(gz_log, 0, hi)
 
     # Reversed RUHI colormap (Julia: Reverse(ENERGY_COLORMAP))
-    cf = ax.contourf(gx, gy, gz_clipped, levels=20,
-                     cmap="ruhi_diverging_r")
+    cf = ax.contourf(gx, gy, gz_clipped, levels=20, cmap="ruhi_diverging_r")
     fig.colorbar(
-        cf, ax=ax,
+        cf,
+        ax=ax,
         label=r"$\log_{10}(\mathcal{L}_{\mathrm{MAP}} - \mathcal{L}_{\min} + 1)$",
         shrink=0.8,
     )
@@ -914,18 +1001,29 @@ def plot_nll_landscape(
             g_lo = np.quantile(g_finite, 0.05)
             g_hi = np.quantile(g_finite, 0.80)
             gg_clipped = np.clip(gg, g_lo, g_hi)
-            ax.contour(gx, gy, gg_clipped, levels=8,
-                       colors="black", linewidths=0.5, linestyles="--")
+            ax.contour(
+                gx,
+                gy,
+                gg_clipped,
+                levels=8,
+                colors="black",
+                linewidths=0.5,
+                linestyles="--",
+            )
 
     ax.set_xlabel(r"$\ln\,\sigma^2$")
     ax.set_ylabel(r"$\ln\,\theta$")
 
     if optimum is not None:
         ax.plot(
-            optimum[0], optimum[1],
-            marker="*", color=RUHI_COLORS["coral"],
-            markersize=15, markeredgecolor="white",
-            markeredgewidth=0.8, zorder=30,
+            optimum[0],
+            optimum[1],
+            marker="*",
+            color=RUHI_COLORS["coral"],
+            markersize=15,
+            markeredgecolor="white",
+            markeredgewidth=0.8,
+            zorder=30,
         )
 
     fig.tight_layout()
@@ -998,8 +1096,7 @@ def plot_variance_overlay(
 
     # Energy surface as filled contour (shows basins clearly)
     cf = ax.contourf(gx, gy, ge, levels=levels, cmap="ruhi_diverging")
-    ax.contour(gx, gy, ge, levels=contour_levels,
-               colors="black", linewidths=0.3)
+    ax.contour(gx, gy, ge, levels=contour_levels, colors="black", linewidths=0.3)
     fig.colorbar(cf, ax=ax, label="Energy", shrink=0.8)
 
     # Hatching for high-variance regions (75th percentile of positive values)
@@ -1009,7 +1106,9 @@ def plot_variance_overlay(
 
         # Use contourf with hatching for the high-variance region
         ax.contourf(
-            gx, gy, gv,
+            gx,
+            gy,
+            gv,
             levels=[high_thresh, gv.max() * 1.1],
             colors="none",
             hatches=["//"],
@@ -1018,7 +1117,9 @@ def plot_variance_overlay(
 
         # Magenta boundary contour at the threshold
         ax.contour(
-            gx, gy, gv,
+            gx,
+            gy,
+            gv,
             levels=[high_thresh],
             colors=[RUHI_COLORS["magenta"]],
             linewidths=1.2,
@@ -1030,8 +1131,16 @@ def plot_variance_overlay(
     # Training points
     if train_points is not None:
         xs, ys = train_points
-        ax.scatter(xs, ys, c="black", s=20, marker="o",
-                   edgecolors="white", linewidths=0.5, zorder=30)
+        ax.scatter(
+            xs,
+            ys,
+            c="black",
+            s=20,
+            marker="o",
+            edgecolors="white",
+            linewidths=0.5,
+            zorder=30,
+        )
 
     # Stationary points with labels matching Julia (A/B/C for minima, S1/S2 for saddles)
     if stationary is not None:
@@ -1041,37 +1150,89 @@ def plot_variance_overlay(
         for pname, (sx, sy) in stationary.items():
             if "min" in pname:
                 lbl = next(min_labels, pname)
-                ax.plot(sx, sy, marker="o", color="white",
-                        markersize=10, markeredgecolor="black",
-                        markeredgewidth=1.5, zorder=31)
+                ax.plot(
+                    sx,
+                    sy,
+                    marker="o",
+                    color="white",
+                    markersize=10,
+                    markeredgecolor="black",
+                    markeredgewidth=1.5,
+                    zorder=31,
+                )
             else:
                 lbl = next(sad_labels, pname)
-                ax.plot(sx, sy, marker="x", color="white",
-                        markersize=12, markeredgecolor="black",
-                        markeredgewidth=1.5, zorder=31)
+                ax.plot(
+                    sx,
+                    sy,
+                    marker="x",
+                    color="white",
+                    markersize=12,
+                    markeredgecolor="black",
+                    markeredgewidth=1.5,
+                    zorder=31,
+                )
             ax.annotate(
-                lbl, (sx, sy),
-                textcoords="offset points", xytext=(6, 6),
-                fontsize=12, fontweight="bold", color="white",
-                path_effects=_STROKE, zorder=32,
+                lbl,
+                (sx, sy),
+                textcoords="offset points",
+                xytext=(6, 6),
+                fontsize=12,
+                fontweight="bold",
+                color="white",
+                path_effects=_STROKE,
+                zorder=32,
             )
 
     # Legend
-    from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
+
     handles = [
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="black",
-               markeredgecolor="white", markersize=5, label="Training"),
-        Line2D([0], [0], marker="o", color="w", markerfacecolor="white",
-               markeredgecolor="black", markersize=8, label="Minima"),
-        Line2D([0], [0], marker="x", color="white",
-               markeredgecolor="black", markersize=10,
-               markeredgewidth=1.5, label="Saddles"),
-        Line2D([0], [0], color=RUHI_COLORS["magenta"], linewidth=1.2,
-               label=r"High $\sigma^2$ boundary"),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor="black",
+            markeredgecolor="white",
+            markersize=5,
+            label="Training",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="o",
+            color="w",
+            markerfacecolor="white",
+            markeredgecolor="black",
+            markersize=8,
+            label="Minima",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="x",
+            color="white",
+            markeredgecolor="black",
+            markersize=10,
+            markeredgewidth=1.5,
+            label="Saddles",
+        ),
+        Line2D(
+            [0],
+            [0],
+            color=RUHI_COLORS["magenta"],
+            linewidth=1.2,
+            label=r"High $\sigma^2$ boundary",
+        ),
     ]
-    ax.legend(handles=handles, loc="lower center",
-              bbox_to_anchor=(0.5, -0.18), ncol=4, fontsize=9)
+    ax.legend(
+        handles=handles,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=4,
+        fontsize=9,
+    )
 
     fig.tight_layout()
     return fig
