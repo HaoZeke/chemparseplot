@@ -115,6 +115,13 @@ def plot_convergence_curve(
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
 
+    y_label = {
+        "ci_force": r"CI $|F|$ (eV/$\AA$)",
+        "max_fatom": r"$|F|_{\max}$ (eV/$\AA$)",
+        "max_force": r"$|F|_{\max}$ (eV/$\AA$)",
+        "force_norm": r"$\|F\|$ (eV/$\AA$)",
+    }.get(y, y)
+
     p = (
         ggplot(df, aes(x=x, y=y, color=color))
         + geom_line(size=0.9)
@@ -122,7 +129,7 @@ def plot_convergence_curve(
         + scale_color_manual(values=palette)
         + labs(
             x="Oracle calls",
-            y="Max per-atom force (eV/A)",
+            y=y_label,
             color="Method",
         )
         + _JOST_THEME
@@ -184,7 +191,7 @@ def plot_rff_quality(
             size=0.5,
         )
         + facet_wrap("metric", ncol=2, scales="free_y")
-        + labs(x="D_rff", y="MAE")
+        + labs(x=r"$D_{\mathrm{RFF}}$", y="MAE")
         + _JOST_THEME
         + theme(figure_size=(width, height))
     )
@@ -411,7 +418,7 @@ def plot_fps_projection(
         ggplot(all_df, aes(x="pc1", y="pc2", color="group"))
         + geom_point(size=1.5, alpha=0.7)
         + scale_color_manual(values=palette)
-        + labs(x="PC1", y="PC2", color="")
+        + labs(x=r"$\mathrm{PC}_1$", y=r"$\mathrm{PC}_2$", color="")
         + _JOST_THEME
         + theme(figure_size=(width, height))
     )
