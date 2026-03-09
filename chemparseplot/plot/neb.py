@@ -172,11 +172,16 @@ def plot_structure_strip(
     n_rows = (n_plot + max_cols - 1) // max_cols
     row_step = 8.5
 
-    ax.set_xlim(-0.5, n_cols - 0.5)
+    # Widen spacing for many items to prevent label overlap
+    col_step = max(1.0, 1.2 if n_cols > 4 else 1.0)
+    ax.set_xlim(-0.5, (n_cols - 1) * col_step + 0.5)
     # Heuristic layout from plt_neb.py
     y_min = -((n_rows - 1) * row_step) - 0.8
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
+
+    # Adaptive font size: shrink for many items
+    label_fontsize = min(11, max(7, 14 - n_plot))
 
     if renderer == "xyzrender":
         _check_xyzrender()
@@ -184,7 +189,7 @@ def plot_structure_strip(
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
-        x_pos, y_pos = col, -row * row_step
+        x_pos, y_pos = col * col_step, -row * row_step
 
         if renderer == "xyzrender":
             img_data = _render_xyzrender(atoms, canvas_size=400)
@@ -212,7 +217,7 @@ def plot_structure_strip(
                 labels[i],
                 ha="center",
                 va="top",
-                fontsize=11,
+                fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
             )

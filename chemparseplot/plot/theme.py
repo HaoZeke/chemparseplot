@@ -168,6 +168,30 @@ def apply_axis_theme(ax: plt.Axes, theme: PlotTheme):
     ax.title.set_color(theme.textcolor)
 
 
+def setup_publication_theme(theme: PlotTheme):
+    """Extended theme setup for publication-quality figures.
+
+    Calls ``setup_global_theme`` and adds line widths, spine removal,
+    DPI, and tight bounding box defaults.
+
+    ```{versionadded} 1.3.0
+    ```
+    """
+    setup_global_theme(theme)
+    plt.rcParams.update(
+        {
+            "axes.linewidth": 0.8,
+            "lines.linewidth": 1.8,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "figure.dpi": 150,
+            "savefig.dpi": 300,
+            "savefig.bbox": "tight",
+            "savefig.pad_inches": 0.05,
+        }
+    )
+
+
 def get_theme(name: str, **overrides) -> PlotTheme:
     """Retrieves a theme by name and applies optional property overrides.
 
