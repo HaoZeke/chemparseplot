@@ -7,7 +7,7 @@ Traceback (most recent call last):
   File "/home/runner/work/chemparseplot/chemparseplot/.venv/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
     return loop.run_until_complete(inner)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+  File "/home/runner/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
     return future.result()
            ^^^^^^^^^^^^^^^
   File "/home/runner/work/chemparseplot/chemparseplot/.venv/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
@@ -37,14 +37,23 @@ import matplotlib.pyplot as plt
 [32m      1[39m [38;5;66;03m# SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>[39;00m
 [32m      2[39m [38;5;66;03m#[39;00m
 [32m      3[39m [38;5;66;03m# SPDX-License-Identifier: MIT[39;00m
-[32m----> [39m[32m5[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01mplot[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m geomscan, structs
-[32m      6[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01munits[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m ureg
-[32m      8[39m ureg.setup_matplotlib([38;5;28;01mTrue[39;00m)
+[32m----> [39m[32m5[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01mplot[39;00m[34;01m.[39;00m[34;01mtheme[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m (
+[32m      6[39m     RUHI_COLORS,
+[32m      7[39m     RUHI_THEME,
+[32m      8[39m     PlotTheme,
+[32m      9[39m     get_theme,
+[32m     10[39m     setup_global_theme,
+[32m     11[39m     setup_publication_theme,
+[32m     12[39m )
+[32m     15[39m [38;5;66;03m# Lazy imports for submodules with heavy deps (cmcrameri, pint, etc.)[39;00m
+[32m     16[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34m__getattr__[39m(name):
 
-[36mFile [39m[32m~/work/chemparseplot/chemparseplot/chemparseplot/plot/geomscan.py:1[39m
-[32m----> [39m[32m1[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[34;01m.[39;00m[34;01mpyplot[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mplt[39;00m
-[32m      2[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mrgpycrumbs[39;00m[34;01m.[39;00m[34;01minterpolation[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m spline_interp
-[32m      4[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01mplot[39;00m[34;01m.[39;00m[34;01mstructs[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m BasePlotter
+[36mFile [39m[32m~/work/chemparseplot/chemparseplot/chemparseplot/plot/theme.py:10[39m
+[32m      7[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mlogging[39;00m
+[32m      8[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mdataclasses[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m dataclass, replace
+[32m---> [39m[32m10[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mmpl[39;00m
+[32m     11[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[34;01m.[39;00m[34;01mpyplot[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mplt[39;00m
+[32m     12[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[34;01m.[39;00m[34;01mcolors[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m LinearSegmentedColormap
 
 [31mModuleNotFoundError[39m: No module named 'matplotlib'
 

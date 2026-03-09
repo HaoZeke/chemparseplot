@@ -39,6 +39,10 @@
   - ```{autodoc2-docstring} chemparseplot.plot.theme.apply_axis_theme
     :summary:
     ```
+* - {py:obj}`setup_publication_theme <chemparseplot.plot.theme.setup_publication_theme>`
+  - ```{autodoc2-docstring} chemparseplot.plot.theme.setup_publication_theme
+    :summary:
+    ```
 * - {py:obj}`get_theme <chemparseplot.plot.theme.get_theme>`
   - ```{autodoc2-docstring} chemparseplot.plot.theme.get_theme
     :summary:
@@ -261,6 +265,13 @@
 :canonical: chemparseplot.plot.theme.apply_axis_theme
 
 ```{autodoc2-docstring} chemparseplot.plot.theme.apply_axis_theme
+```
+````
+
+````{py:function} setup_publication_theme(theme: chemparseplot.plot.theme.PlotTheme)
+:canonical: chemparseplot.plot.theme.setup_publication_theme
+
+```{autodoc2-docstring} chemparseplot.plot.theme.setup_publication_theme
 ```
 ````
 

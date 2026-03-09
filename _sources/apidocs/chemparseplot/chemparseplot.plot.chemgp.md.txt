@@ -1,0 +1,216 @@
+# {py:mod}`chemparseplot.plot.chemgp`
+
+```{py:module} chemparseplot.plot.chemgp
+```
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_ensure_ruhi_cmap <chemparseplot.plot.chemgp._ensure_ruhi_cmap>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._ensure_ruhi_cmap
+    :summary:
+    ```
+* - {py:obj}`_setup <chemparseplot.plot.chemgp._setup>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._setup
+    :summary:
+    ```
+* - {py:obj}`plot_convergence_curve <chemparseplot.plot.chemgp.plot_convergence_curve>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_convergence_curve
+    :summary:
+    ```
+* - {py:obj}`plot_rff_quality <chemparseplot.plot.chemgp.plot_rff_quality>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_rff_quality
+    :summary:
+    ```
+* - {py:obj}`plot_hyperparameter_sensitivity <chemparseplot.plot.chemgp.plot_hyperparameter_sensitivity>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_hyperparameter_sensitivity
+    :summary:
+    ```
+* - {py:obj}`plot_trust_region <chemparseplot.plot.chemgp.plot_trust_region>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_trust_region
+    :summary:
+    ```
+* - {py:obj}`plot_fps_projection <chemparseplot.plot.chemgp.plot_fps_projection>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_fps_projection
+    :summary:
+    ```
+* - {py:obj}`plot_energy_profile <chemparseplot.plot.chemgp.plot_energy_profile>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_energy_profile
+    :summary:
+    ```
+* - {py:obj}`plot_surface_contour <chemparseplot.plot.chemgp.plot_surface_contour>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_surface_contour
+    :summary:
+    ```
+* - {py:obj}`plot_gp_progression <chemparseplot.plot.chemgp.plot_gp_progression>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_gp_progression
+    :summary:
+    ```
+* - {py:obj}`plot_nll_landscape <chemparseplot.plot.chemgp.plot_nll_landscape>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_nll_landscape
+    :summary:
+    ```
+* - {py:obj}`plot_variance_overlay <chemparseplot.plot.chemgp.plot_variance_overlay>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_variance_overlay
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.plot.chemgp.log>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.log
+    :summary:
+    ```
+* - {py:obj}`_METHOD_PALETTE <chemparseplot.plot.chemgp._METHOD_PALETTE>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._METHOD_PALETTE
+    :summary:
+    ```
+* - {py:obj}`_JOST_THEME <chemparseplot.plot.chemgp._JOST_THEME>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._JOST_THEME
+    :summary:
+    ```
+* - {py:obj}`_STROKE <chemparseplot.plot.chemgp._STROKE>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._STROKE
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.plot.chemgp.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.log
+```
+
+````
+
+````{py:data} _METHOD_PALETTE
+:canonical: chemparseplot.plot.chemgp._METHOD_PALETTE
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._METHOD_PALETTE
+```
+
+````
+
+````{py:data} _JOST_THEME
+:canonical: chemparseplot.plot.chemgp._JOST_THEME
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._JOST_THEME
+```
+
+````
+
+````{py:data} _STROKE
+:canonical: chemparseplot.plot.chemgp._STROKE
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._STROKE
+```
+
+````
+
+````{py:function} _ensure_ruhi_cmap()
+:canonical: chemparseplot.plot.chemgp._ensure_ruhi_cmap
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._ensure_ruhi_cmap
+```
+````
+
+````{py:function} _setup()
+:canonical: chemparseplot.plot.chemgp._setup
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._setup
+```
+````
+
+````{py:function} plot_convergence_curve(df: pandas.DataFrame, x: str = 'oracle_calls', y: str = 'max_fatom', color: str = 'method', log_y: bool = True, conv_tol: float | dict | None = None, width: float = 3.2, height: float = 2.5) -> plotnine.ggplot
+:canonical: chemparseplot.plot.chemgp.plot_convergence_curve
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_convergence_curve
+```
+````
+
+````{py:function} plot_rff_quality(df: pandas.DataFrame, exact_e_mae: float, exact_g_mae: float, width: float = 3.2, height: float = 2.5) -> plotnine.ggplot
+:canonical: chemparseplot.plot.chemgp.plot_rff_quality
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_rff_quality
+```
+````
+
+````{py:function} plot_hyperparameter_sensitivity(x_slice: numpy.ndarray, y_true: numpy.ndarray, panels: dict[str, dict], width: float = 10.5, height: float = 9.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_hyperparameter_sensitivity
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_hyperparameter_sensitivity
+```
+````
+
+````{py:function} plot_trust_region(x_slice: numpy.ndarray, e_true: numpy.ndarray, e_pred: numpy.ndarray, e_std: numpy.ndarray, in_trust: numpy.ndarray, train_x: numpy.ndarray | None = None, width: float = 7.0, height: float = 5.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_trust_region
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_trust_region
+```
+````
+
+````{py:function} plot_fps_projection(selected_pc1, selected_pc2, pruned_pc1, pruned_pc2, width: float = 3.2, height: float = 2.5) -> plotnine.ggplot
+:canonical: chemparseplot.plot.chemgp.plot_fps_projection
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_fps_projection
+```
+````
+
+````{py:function} plot_energy_profile(df: pandas.DataFrame, x: str = 'image', y: str = 'energy', color: str = 'method', width: float = 3.2, height: float = 2.5) -> plotnine.ggplot
+:canonical: chemparseplot.plot.chemgp.plot_energy_profile
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_energy_profile
+```
+````
+
+````{py:function} plot_surface_contour(grid_x, grid_y, grid_z, paths: dict[str, tuple] | None = None, points: dict[str, tuple] | None = None, clamp_lo: float | None = None, clamp_hi: float | None = None, levels: int | numpy.ndarray | None = None, contour_step: float | None = None, _point_style: str = 'star', width: float = 7.0, height: float = 5.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_surface_contour
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_surface_contour
+```
+````
+
+````{py:function} plot_gp_progression(grids: dict[int, dict], _true_energy, x_range, y_range, clamp_lo: float = -200.0, clamp_hi: float = 50.0, n_cols: int = 2, width: float = 10.0, height: float = 8.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_gp_progression
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_gp_progression
+```
+````
+
+````{py:function} plot_nll_landscape(grid_x, grid_y, grid_nll, grid_grad_norm=None, optimum: tuple[float, float] | None = None, width: float = 7.0, height: float = 5.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_nll_landscape
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_nll_landscape
+```
+````
+
+````{py:function} plot_variance_overlay(grid_x, grid_y, grid_energy, grid_variance, train_points: tuple | None = None, stationary: dict | None = None, clamp_lo: float = -200.0, clamp_hi: float = 50.0, width: float = 7.0, height: float = 5.0) -> matplotlib.pyplot.Figure
+:canonical: chemparseplot.plot.chemgp.plot_variance_overlay
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_variance_overlay
+```
+````

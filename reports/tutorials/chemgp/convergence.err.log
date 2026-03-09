@@ -18,23 +18,26 @@ Traceback (most recent call last):
     raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
 ------------------
-import gzip
+import h5py
+import numpy as np
+import pandas as pd
 from pathlib import Path
-from ase.build import molecule
-import matplotlib.pyplot as plt
 
-from chemparseplot.parse.orca import geomscan
+from chemparseplot.plot.chemgp import (
+    plot_convergence_curve,
+    plot_rff_quality,
+    plot_energy_profile,
+    plot_fps_projection,
+)
 ------------------
 
 
 [31m---------------------------------------------------------------------------[39m
 [31mModuleNotFoundError[39m                       Traceback (most recent call last)
-[36mCell[39m[36m [39m[32mIn[1][39m[32m, line 3[39m
-[32m      1[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mgzip[39;00m
-[32m      2[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mpathlib[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m Path
-[32m----> [39m[32m3[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mase[39;00m[34;01m.[39;00m[34;01mbuild[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m molecule
-[32m      4[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mmatplotlib[39;00m[34;01m.[39;00m[34;01mpyplot[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mplt[39;00m
-[32m      6[39m [38;5;28;01mfrom[39;00m[38;5;250m [39m[34;01mchemparseplot[39;00m[34;01m.[39;00m[34;01mparse[39;00m[34;01m.[39;00m[34;01morca[39;00m[38;5;250m [39m[38;5;28;01mimport[39;00m geomscan
+[36mCell[39m[36m [39m[32mIn[1][39m[32m, line 1[39m
+[32m----> [39m[32m1[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mh5py[39;00m
+[32m      2[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mnumpy[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mnp[39;00m
+[32m      3[39m [38;5;28;01mimport[39;00m[38;5;250m [39m[34;01mpandas[39;00m[38;5;250m [39m[38;5;28;01mas[39;00m[38;5;250m [39m[34;01mpd[39;00m
 
-[31mModuleNotFoundError[39m: No module named 'ase'
+[31mModuleNotFoundError[39m: No module named 'h5py'
 

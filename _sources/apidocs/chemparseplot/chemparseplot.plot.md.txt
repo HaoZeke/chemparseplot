@@ -17,4 +17,28 @@ chemparseplot.plot.geomscan
 chemparseplot.plot.neb
 chemparseplot.plot.structs
 chemparseplot.plot.theme
+chemparseplot.plot.chemgp
 ```
+
+## Package Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`__getattr__ <chemparseplot.plot.__getattr__>`
+  - ```{autodoc2-docstring} chemparseplot.plot.__getattr__
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} __getattr__(name)
+:canonical: chemparseplot.plot.__getattr__
+
+```{autodoc2-docstring} chemparseplot.plot.__getattr__
+```
+````
