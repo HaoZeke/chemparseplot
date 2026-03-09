@@ -2,6 +2,25 @@
 
 <!-- towncrier release notes start -->
 
+## [v1.3.0](https://github.com/HaoZeke/chemparseplot/tree/v1.3.0) - 2026-03-09
+
+### Added
+
+- ChemGP plotnine visualization module with convergence curves, RFF quality, hyperparameter sensitivity, trust region, FPS projection, and energy profile plots. ([#chemgp-plotnine](https://github.com/HaoZeke/chemparseplot/issues/chemgp-plotnine))
+- Log-scale NLL landscape plot for revealing basin structure in hyperparameter optimization. ([#nll-logscale](https://github.com/HaoZeke/chemparseplot/issues/nll-logscale))
+- Re-export RUHI theme from ``chemparseplot.plot`` package with ``setup_publication_theme`` helper. ([#ruhi-reexport](https://github.com/HaoZeke/chemparseplot/issues/ruhi-reexport))
+- Matplotlib contourf surface plots (GP progression, NLL landscape, variance overlay) with RUHI colormap matching Julia CairoMakie originals. ([#surface-contourf](https://github.com/HaoZeke/chemparseplot/issues/surface-contourf))
+
+### Changed
+
+- CI-generated README pushed to orphan ``readme`` branch instead of main. ([#ci-readme](https://github.com/HaoZeke/chemparseplot/issues/ci-readme))
+- Lazy-import geomscan/structs submodules to avoid mandatory cmcrameri dependency at import time. ([#lazy-imports](https://github.com/HaoZeke/chemparseplot/issues/lazy-imports))
+
+### Miscellaneous
+
+- Taplo TOML formatting, stop tracking autodoc2 generated files. ([#taplo-autodoc](https://github.com/HaoZeke/chemparseplot/issues/taplo-autodoc))
+
+
 ## [v1.2.0](https://github.com/HaoZeke/chemparseplot/tree/v1.2.0) - 2026-02-24
 
 ### Added
