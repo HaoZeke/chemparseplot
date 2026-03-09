@@ -25,6 +25,16 @@
 
 - Saddle point optimization result parsing
 
+### ChemGP
+
+GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp`):
+
+- **1D plotnine charts**: convergence curves, RFF quality sweeps, NEB energy
+  profiles, FPS subset scatter (PCA projection)
+- **2D matplotlib surfaces**: PES contour with NEB path overlay, GP surrogate
+  progression panels, MAP-NLL landscape, variance overlay with hatching,
+  trust region illustration, hyperparameter sensitivity grid
+
 ### Trajectory Formats
 
 - HDF5 trajectories from ChemGP output (pre-computed forces and reaction

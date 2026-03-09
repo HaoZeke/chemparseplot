@@ -1,4 +1,6 @@
 .pixi
+CLAUDE.md
+.claude/
 apidocs/*
 doc/source/apidocs/
 doc/jupyter_execute/

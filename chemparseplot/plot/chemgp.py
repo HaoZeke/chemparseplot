@@ -108,9 +108,35 @@ def plot_convergence_curve(
 
     Parameters
     ----------
-    conv_tol
+    df : pandas.DataFrame
+        Long-form table with at least columns *x*, *y*, and *color*.
+    x : str
+        Column for the horizontal axis (default ``"oracle_calls"``).
+    y : str
+        Column for the vertical axis.  Auto-selects LaTeX label for
+        ``ci_force``, ``max_fatom``, ``max_force``, ``force_norm``.
+    color : str
+        Column used to color lines by method.
+    log_y : bool
+        Apply log10 scale to the y axis.
+    conv_tol : float or dict or None
         Single float draws one horizontal line. Dict mapping method name
         to threshold draws per-method dashed lines in matching colors.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    plotnine.ggplot
+        A ggplot object.  Call ``.save()`` or assign to render.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"oracle_calls": [1, 2, 3], "max_fatom": [1.0, 0.5, 0.1], "method": ["GP"] * 3})
+    >>> fig = plot_convergence_curve(df, conv_tol=0.2)
+
+    .. versionadded:: 1.4.0
     """
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
@@ -165,7 +191,32 @@ def plot_rff_quality(
     width: float = 3.2,
     height: float = 2.5,
 ) -> ggplot:
-    """Two-panel plot of energy and gradient MAE vs D_rff."""
+    """Two-panel plot of energy and gradient MAE vs RFF dimension.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Table with columns ``d_rff``, ``energy_mae``, ``gradient_mae``.
+    exact_e_mae : float
+        Exact GP energy MAE baseline (drawn as dashed horizontal line).
+    exact_g_mae : float
+        Exact GP gradient MAE baseline.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    plotnine.ggplot
+        Two-facet plot: Energy MAE and Gradient MAE vs D_rff.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"d_rff": [50, 100, 200], "energy_mae": [0.5, 0.2, 0.1], "gradient_mae": [1.0, 0.4, 0.2]})
+    >>> fig = plot_rff_quality(df, exact_e_mae=0.05, exact_g_mae=0.1)
+
+    .. versionadded:: 1.4.0
+    """
     e_df = df[["d_rff", "energy_mae"]].rename(
         columns={"energy_mae": "mae"}
     ).assign(metric="Energy MAE")
@@ -207,17 +258,36 @@ def plot_hyperparameter_sensitivity(
 ) -> plt.Figure:
     """3x3 grid of 1D GP slices with confidence bands.
 
+    Columns correspond to lengthscale values, rows to signal variance.
+    Each panel shows the true surface (dashed), GP mean (teal), and a
+    +/- 2 sigma confidence band (sky).
+
     Parameters
     ----------
-    x_slice : array
+    x_slice : numpy.ndarray
         Shared x coordinates for all panels.
-    y_true : array
-        True surface values.
-    panels : dict
+    y_true : numpy.ndarray
+        True surface values at *x_slice*.
+    panels : dict[str, dict]
         ``{"gp_ls1_sv1": {"E_pred": array, "E_std": array}, ...}``
-        for each of the 9 panels.
+        for each of the 9 panels.  Keys follow the pattern
+        ``gp_ls{col}_sv{row}`` with col, row in 1..3.
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The 3x3 figure with a shared legend below the grid.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-2, 2, 50)
+    >>> panels = {"gp_ls1_sv1": {"E_pred": np.sin(x), "E_std": np.full_like(x, 0.1)}}
+    >>> fig = plot_hyperparameter_sensitivity(x, np.sin(x), panels)
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
@@ -298,22 +368,39 @@ def plot_trust_region(
     """Trust region illustration with confidence band, boundary markers,
     and hypothetical bad step + oracle fallback.
 
+    Shows the GP mean, +/- 2 sigma band, true surface, trust boundary
+    (magenta dotted), a bad GP step (coral X) outside the trust region,
+    and the oracle fallback (teal star) at the true energy.
+
     Parameters
     ----------
-    x_slice : array
+    x_slice : numpy.ndarray
         X coordinates along the 1D slice.
-    e_true : array
+    e_true : numpy.ndarray
         True energy values.
-    e_pred : array
+    e_pred : numpy.ndarray
         GP predicted energy values.
-    e_std : array
+    e_std : numpy.ndarray
         GP standard deviation.
-    in_trust : array
+    in_trust : numpy.ndarray
         Boolean mask (1.0 for in trust, 0.0 for outside).
-    train_x : array or None
+    train_x : numpy.ndarray or None
         X coordinates of training points (projected to true surface).
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Single-axis figure with trust region annotations.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-2, 2, 100)
+    >>> fig = plot_trust_region(x, np.sin(x), np.sin(x) * 0.9, np.full(100, 0.1), (np.abs(x) < 1).astype(float))
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
@@ -396,7 +483,29 @@ def plot_fps_projection(
     width: float = 3.2,
     height: float = 2.5,
 ) -> ggplot:
-    """PCA scatter: selected (teal) vs pruned (grey) points."""
+    """PCA scatter of FPS-selected (teal) vs pruned (grey) points.
+
+    Parameters
+    ----------
+    selected_pc1, selected_pc2 : array-like
+        PCA coordinates of the selected (retained) subset.
+    pruned_pc1, pruned_pc2 : array-like
+        PCA coordinates of the pruned (discarded) points.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    plotnine.ggplot
+        Scatter plot with two groups colored by selection status.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> fig = plot_fps_projection([0, 1, 2], [0, 1, 0], [0.5, 1.5], [0.3, 0.8])
+
+    .. versionadded:: 1.4.0
+    """
     sel_df = pd.DataFrame({
         "pc1": np.asarray(selected_pc1),
         "pc2": np.asarray(selected_pc2),
@@ -433,7 +542,34 @@ def plot_energy_profile(
     width: float = 3.2,
     height: float = 2.5,
 ) -> ggplot:
-    """NEB energy profile across images."""
+    """NEB energy profile: image index vs relative energy, colored by method.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Long-form table with columns *x*, *y*, and *color*.
+    x : str
+        Column for horizontal axis (default ``"image"``).
+    y : str
+        Column for vertical axis (default ``"energy"``).
+    color : str
+        Column used to color lines by method.
+    width, height : float
+        Figure size in inches.
+
+    Returns
+    -------
+    plotnine.ggplot
+        Line + point plot of NEB energy profile.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"image": [0, 1, 2], "energy": [0.0, 0.5, 0.0], "method": ["NEB"] * 3})
+    >>> fig = plot_energy_profile(df)
+
+    .. versionadded:: 1.4.0
+    """
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE))
 
@@ -496,6 +632,21 @@ def plot_surface_contour(
         Default point style: "star" or "labeled".
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Contour figure with optional overlays.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-2, 2, 50)
+    >>> X, Y = np.meshgrid(x, x)
+    >>> Z = np.sin(X) * np.cos(Y)
+    >>> fig = plot_surface_contour(X, Y, Z, clamp_lo=-1, clamp_hi=1)
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
@@ -617,6 +768,21 @@ def plot_gp_progression(
         Number of columns in the panel layout.
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Multi-panel contour figure with shared colorbar.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-2, 2, 40)
+    >>> X, Y = np.meshgrid(x, x)
+    >>> grids = {5: {"gp_mean": np.sin(X) * np.cos(Y), "train_x": [0, 1], "train_y": [0, 1]}}
+    >>> fig = plot_gp_progression(grids, np.sin(X) * np.cos(Y), x, x)
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
@@ -695,6 +861,21 @@ def plot_nll_landscape(
         (log_sigma2, log_theta) of the MAP optimum to mark.
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        NLL contour with optional gradient norm overlay and optimum marker.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-3, 3, 25)
+    >>> X, Y = np.meshgrid(x, x)
+    >>> nll = (X - 0.5)**2 + (Y + 1)**2
+    >>> fig = plot_nll_landscape(X, Y, nll, optimum=(0.5, -1.0))
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
@@ -786,6 +967,22 @@ def plot_variance_overlay(
         Energy clamping range for display.
     width, height : float
         Figure size in inches.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        Energy contour with hatched high-variance overlay and legend.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x = np.linspace(-2, 2, 40)
+    >>> X, Y = np.meshgrid(x, x)
+    >>> E = np.sin(X) * np.cos(Y) * 100
+    >>> V = np.exp(-X**2 - Y**2)
+    >>> fig = plot_variance_overlay(X, Y, E, V, clamp_lo=-100, clamp_hi=50)
+
+    .. versionadded:: 1.4.0
     """
     _setup()
 
