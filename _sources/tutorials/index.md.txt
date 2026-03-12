@@ -1,9 +1,55 @@
 # Tutorial Introduction
 
-Here we will focus on a few standard workflows where `chemparseplot` is meant to
-be used.
+Here we will focus on a few standard workflows where `chemparseplot` is meant to be used.
+
+## Available Tutorials
 
 ```{toctree}
+:maxdepth: 2
+:caption: Chemistry Engines
+
 chemgp/index
 orca/geomscan
+```
+
+## Quick Start
+
+### Parsing ORCA Geometry Scan Output
+
+```python
+from chemparseplot.parse.orca import geomscan
+
+# Extract geometry scan data
+energy_data = geomscan.extract_energy_data(orca_output, "Actual")
+print(f"Number of points: {len(energy_data)}")
+```
+
+### Parsing ChemGP HDF5 Output
+
+```python
+import h5py
+from chemparseplot.plot.chemgp import plot_convergence_curve
+
+# Load convergence data from HDF5
+with h5py.File("output.h5") as f:
+    tbl = f["table/convergence"]
+    conv_df = pd.DataFrame({
+        "oracle_calls": tbl["oracle_calls"][:],
+        "max_fatom": tbl["max_fatom"][:],
+    })
+
+# Plot convergence
+fig = plot_convergence_curve(conv_df, conv_tol=1e-3)
+```
+
+### Unit-Aware Data
+
+All parsed data includes units via `pint`:
+
+```python
+from chemparseplot.units import ureg
+
+# Energy with units
+energy = energy_data[0][1]  # Returns Q_ (quantity)
+print(energy.to("kcal/mol"))
 ```

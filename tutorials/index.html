@@ -110,9 +110,8 @@
 <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/index.html">ChemGP Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html">Geometry Scan</a></li>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-tutorials">Available Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
@@ -124,6 +123,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Tutorial Introduction</a><ul>
+<li><a class="reference internal" href="#available-tutorials">Available Tutorials</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#parsing-orca-geometry-scan-output">Parsing ORCA Geometry Scan Output</a></li>
+<li><a class="reference internal" href="#parsing-chemgp-hdf5-output">Parsing ChemGP HDF5 Output</a></li>
+<li><a class="reference internal" href="#unit-aware-data">Unit-Aware Data</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <script>
   function toggleMode(theme) {
@@ -158,41 +171,19 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="tutorial-introduction">
 <h1>Tutorial Introduction<a class="headerlink" href="#tutorial-introduction" title="Link to this heading">¶</a></h1>
-<p>Here we will focus on a few standard workflows where <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to
-be used.</p>
+<p>Here we will focus on a few standard workflows where <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to be used.</p>
+<section id="available-tutorials">
+<h2>Available Tutorials<a class="headerlink" href="#available-tutorials" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Chemistry Engines</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="chemgp/index.html">ChemGP Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/convergence.html">ChemGP 1D Plots (Convergence, RFF, Profile, FPS)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#load-sample-data">Load sample data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#convergence-curve">Convergence curve</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="chemgp/convergence.html#per-method-thresholds">Per-method thresholds</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#rff-quality">RFF quality</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#energy-profile">Energy profile</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#fps-projection">FPS projection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/surfaces.html">ChemGP 2D Plots (Surfaces, GP Progression, NLL, Variance, Trust, Sensitivity)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#load-sample-data">Load sample data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#pes-contour-with-neb-path">PES contour with NEB path</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#gp-surrogate-progression">GP surrogate progression</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#nll-landscape">NLL landscape</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#variance-overlay">Variance overlay</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#trust-region">Trust region</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#hyperparameter-sensitivity">Hyperparameter sensitivity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#next-steps">Next steps</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="chemgp/convergence.html">ChemGP 1D Plots (Convergence, RFF, Profile, FPS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemgp/surfaces.html">ChemGP 2D Plots (Surfaces, GP Progression, NLL, Variance, Trust, Sensitivity)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="orca/geomscan.html">Geometry Scan</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#system-construction">System construction</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="orca/geomscan.html#orca-input">ORCA Input</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#system-construction">System construction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#execution">Execution</a></li>
 </ul>
 </li>
@@ -202,6 +193,49 @@ be used.</p>
 </li>
 </ul>
 </div>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<section id="parsing-orca-geometry-scan-output">
+<h3>Parsing ORCA Geometry Scan Output<a class="headerlink" href="#parsing-orca-geometry-scan-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
+
+<span class="c1"># Extract geometry scan data</span>
+<span class="n">energy_data</span> <span class="o">=</span> <span class="n">geomscan</span><span class="o">.</span><span class="n">extract_energy_data</span><span class="p">(</span><span class="n">orca_output</span><span class="p">,</span> <span class="s2">&quot;Actual&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of points: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parsing-chemgp-hdf5-output">
+<h3>Parsing ChemGP HDF5 Output<a class="headerlink" href="#parsing-chemgp-hdf5-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.chemgp</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_convergence_curve</span>
+
+<span class="c1"># Load convergence data from HDF5</span>
+<span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;output.h5&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">tbl</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;table/convergence&quot;</span><span class="p">]</span>
+    <span class="n">conv_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s2">&quot;oracle_calls&quot;</span><span class="p">:</span> <span class="n">tbl</span><span class="p">[</span><span class="s2">&quot;oracle_calls&quot;</span><span class="p">][:],</span>
+        <span class="s2">&quot;max_fatom&quot;</span><span class="p">:</span> <span class="n">tbl</span><span class="p">[</span><span class="s2">&quot;max_fatom&quot;</span><span class="p">][:],</span>
+    <span class="p">})</span>
+
+<span class="c1"># Plot convergence</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_convergence_curve</span><span class="p">(</span><span class="n">conv_df</span><span class="p">,</span> <span class="n">conv_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="unit-aware-data">
+<h3>Unit-Aware Data<a class="headerlink" href="#unit-aware-data" title="Link to this heading">¶</a></h3>
+<p>All parsed data includes units via <code class="docutils literal notranslate"><span class="pre">pint</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span>
+
+<span class="c1"># Energy with units</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">energy_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Returns Q_ (quantity)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
