@@ -130,9 +130,9 @@
 <li><a class="reference internal" href="#">Tutorial Introduction</a><ul>
 <li><a class="reference internal" href="#available-tutorials">Available Tutorials</a></li>
 <li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
-<li><a class="reference internal" href="#parsing-orca-geometry-scan-output">Parsing ORCA Geometry Scan Output</a></li>
-<li><a class="reference internal" href="#parsing-chemgp-hdf5-output">Parsing ChemGP HDF5 Output</a></li>
-<li><a class="reference internal" href="#unit-aware-data">Unit-Aware Data</a></li>
+<li><a class="reference internal" href="#parsing-orca-output">Parsing ORCA Output</a></li>
+<li><a class="reference internal" href="#parsing-eon-saddle-searches">Parsing eOn Saddle Searches</a></li>
+<li><a class="reference internal" href="#plotting-neb-profiles">Plotting NEB Profiles</a></li>
 </ul>
 </li>
 </ul>
@@ -171,7 +171,7 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="tutorial-introduction">
 <h1>Tutorial Introduction<a class="headerlink" href="#tutorial-introduction" title="Link to this heading">¶</a></h1>
-<p>Here we will focus on a few standard workflows where <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to be used.</p>
+<p>Here we focus on standard workflows for <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>.</p>
 <section id="available-tutorials">
 <h2>Available Tutorials<a class="headerlink" href="#available-tutorials" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -191,47 +191,50 @@
 <li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#plotting">Plotting</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="eon/saddle.html">eOn Saddle Search Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#parsing-saddle-search-results">Parsing Saddle Search Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#accessing-saddle-search-data">Accessing Saddle Search Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 <section id="quick-start">
 <h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
-<section id="parsing-orca-geometry-scan-output">
-<h3>Parsing ORCA Geometry Scan Output<a class="headerlink" href="#parsing-orca-geometry-scan-output" title="Link to this heading">¶</a></h3>
+<section id="parsing-orca-output">
+<h3>Parsing ORCA Output<a class="headerlink" href="#parsing-orca-output" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
 
 <span class="c1"># Extract geometry scan data</span>
 <span class="n">energy_data</span> <span class="o">=</span> <span class="n">geomscan</span><span class="o">.</span><span class="n">extract_energy_data</span><span class="p">(</span><span class="n">orca_output</span><span class="p">,</span> <span class="s2">&quot;Actual&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of points: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="parsing-chemgp-hdf5-output">
-<h3>Parsing ChemGP HDF5 Output<a class="headerlink" href="#parsing-chemgp-hdf5-output" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">h5py</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.chemgp</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_convergence_curve</span>
+<section id="parsing-eon-saddle-searches">
+<h3>Parsing eOn Saddle Searches<a class="headerlink" href="#parsing-eon-saddle-searches" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.eon.saddle_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_eon_saddle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.basetypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpinID</span>
 
-<span class="c1"># Load convergence data from HDF5</span>
-<span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;output.h5&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">tbl</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;table/convergence&quot;</span><span class="p">]</span>
-    <span class="n">conv_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-        <span class="s2">&quot;oracle_calls&quot;</span><span class="p">:</span> <span class="n">tbl</span><span class="p">[</span><span class="s2">&quot;oracle_calls&quot;</span><span class="p">][:],</span>
-        <span class="s2">&quot;max_fatom&quot;</span><span class="p">:</span> <span class="n">tbl</span><span class="p">[</span><span class="s2">&quot;max_fatom&quot;</span><span class="p">][:],</span>
-    <span class="p">})</span>
-
-<span class="c1"># Plot convergence</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plot_convergence_curve</span><span class="p">(</span><span class="n">conv_df</span><span class="p">,</span> <span class="n">conv_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">parse_eon_saddle</span><span class="p">(</span><span class="n">results_dir</span><span class="p">,</span> <span class="n">SpinID</span><span class="p">(</span><span class="n">mol_id</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Barrier: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">barrier</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
-<section id="unit-aware-data">
-<h3>Unit-Aware Data<a class="headerlink" href="#unit-aware-data" title="Link to this heading">¶</a></h3>
-<p>All parsed data includes units via <code class="docutils literal notranslate"><span class="pre">pint</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ureg</span>
+<section id="plotting-neb-profiles">
+<h3>Plotting NEB Profiles<a class="headerlink" href="#plotting-neb-profiles" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.neb</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_energy_path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="c1"># Energy with units</span>
-<span class="n">energy</span> <span class="o">=</span> <span class="n">energy_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Returns Q_ (quantity)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;kcal/mol&quot;</span><span class="p">))</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">123.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.5</span><span class="p">])</span>
+<span class="n">f_para</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">])</span>
+
+<span class="n">plot_energy_path</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">f_para</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
