@@ -26,3 +26,29 @@ chemparseplot.plot
 chemparseplot.units
 chemparseplot.util
 ```
+
+## Package Contents
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`__all__ <chemparseplot.__all__>`
+  - ```{autodoc2-docstring} chemparseplot.__all__
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} __all__
+:canonical: chemparseplot.__all__
+:value: >
+   ['parse', 'units']
+
+```{autodoc2-docstring} chemparseplot.__all__
+```
+
+````
