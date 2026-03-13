@@ -127,17 +127,8 @@
 <h3>Page Contents</h3>
 <ul>
 <li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
-<li><a class="reference internal" href="#examples">Examples</a></li>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
-<li><a class="reference internal" href="#data">Data</a></li>
-<li><a class="reference internal" href="#api">API</a><ul>
-<li><a class="reference internal" href="#chemparseplot.__all__"><code class="docutils literal notranslate"><span class="pre">__all__</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -176,30 +167,6 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot">
 <span id="chemparseplot"></span><h1><a class="reference internal" href="#module-chemparseplot" title="chemparseplot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><a class="headerlink" href="#module-chemparseplot" title="Link to this heading">¶</a></h1>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
-<p>Parse ORCA output:</p>
-<blockquote>
-<div><blockquote>
-<div><blockquote>
-<div><p>from chemparseplot import parse
-data = parse.orca.read_log(“output.log”)</p>
-</div></blockquote>
-</div></blockquote>
-</div></blockquote>
-<p>Use unit-aware quantities:</p>
-<blockquote>
-<div><blockquote>
-<div><blockquote>
-<div><p>from chemparseplot import units
-energy = units.Q_(1.5, “eV”)</p>
-</div></blockquote>
-</div></blockquote>
-</div></blockquote>
-</section>
-<p>chemparseplot - Parsers and plotting tools for computational chemistry.</p>
-<p>This module provides parsing utilities for quantum chemistry output files
-(ORCA, eOn, Sella, ChemGP) and publication-quality plotting functions.</p>
 <section id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -239,28 +206,6 @@ energy = units.Q_(1.5, “eV”)</p>
 <li class="toctree-l1"><a class="reference internal" href="chemparseplot.util.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.util</span></code></a></li>
 </ul>
 </div>
-</section>
-<section id="package-contents">
-<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
-<section id="data">
-<h3>Data<a class="headerlink" href="#data" title="Link to this heading">¶</a></h3>
-<table class="autosummary longtable docutils align-left">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.__all__" title="chemparseplot.__all__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__all__</span></code></a></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="api">
-<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
-<dl class="py data">
-<dt class="sig sig-object py" id="chemparseplot.__all__">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.</span></span><span class="sig-name descname"><span class="pre">__all__</span></span><a class="headerlink" href="#chemparseplot.__all__" title="Link to this definition">¶</a></dt>
-<dd><p>[‘parse’, ‘units’]</p>
-</dd></dl>
-
-</section>
 </section>
 </section>
 
