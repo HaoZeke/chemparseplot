@@ -54,7 +54,7 @@ the main branch.
 ### Pre-commit
 
 A `pre-commit` job is set up on CI to enforce consistent styles. It is advisable
-to set it up locally as well using [pipx](https://pypa.github.io/pipx/) for
+to set it up locally as well using [pipx](https://pipx.pypa.io/) for
 isolation:
 
 ```bash

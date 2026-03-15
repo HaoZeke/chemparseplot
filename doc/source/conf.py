@@ -33,7 +33,12 @@ myst_enable_extensions = [
     "dollarmath",
 ]
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    # Link to other rgpkgs packages
+    "rgpycrumbs": ("https://rgpycrumbs.rgoswami.me", None),
+    "pychum": ("https://pychum.rgoswami.me", None),
+}
 templates_path = ["_templates"]
 exclude_patterns = []
 
