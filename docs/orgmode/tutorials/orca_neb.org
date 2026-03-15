@@ -54,6 +54,7 @@ This creates output files:
 Create a Python script (=plot_neb.py=):
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 from pathlib import Path
 from chemparseplot.parse.orca.neb import parse_orca_neb
 
@@ -89,6 +90,7 @@ Barrier (reverse): 1.15 eV
 Add plotting code to your script:
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 from chemparseplot.plot.neb import plot_orca_neb_energy_profile
 
 # Create energy profile plot
@@ -121,6 +123,7 @@ This creates =neb_profile.pdf= with:
 If your ORCA calculation includes geometry output, you can create a 2D landscape:
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 from chemparseplot.plot.neb import plot_orca_neb_landscape
 
 # Create 2D landscape plot
@@ -147,6 +150,7 @@ The landscape plot shows:
 You can customize plots using matplotlib after creation:
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 import matplotlib.pyplot as plt
 from chemparseplot.plot.neb import plot_orca_neb_energy_profile
 
@@ -171,6 +175,7 @@ plt.close(fig)
 Here's a complete script you can use as a template:
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 #!/usr/bin/env python3
 """Plot ORCA NEB calculation results."""
 
@@ -247,6 +252,7 @@ pip install orca-pi
 OPI requires ORCA 6.1+. For older versions, use the legacy parser:
 
 #+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
 from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
 
 data = parse_orca_neb_fallback("job", Path("."))
