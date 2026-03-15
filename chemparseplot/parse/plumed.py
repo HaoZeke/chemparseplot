@@ -9,6 +9,11 @@ import warnings
 
 import numpy as np
 
+_MIN_COLS_1D = 5
+_MIN_COLS_2D = 7
+_ALPHABET_SIZE = 26
+_MIN_BIN_SIZE = 2
+
 
 def _calculate_fes_2d(hills_data, x, y, per, npoints):
     """
@@ -112,7 +117,8 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
             'hillsfile' (np.ndarray): The hills data. For 1D FES, shape is (N, 5).
                                       For 2D FES, shape is (N, 7).
                                       Columns are typically:
-                                      time, cv1, (cv2), sigma_cv1, (sigma_cv2), height, ...
+                                      time, cv1, (cv2), sigma_cv1,
+                                      (sigma_cv2), height, ...
             'per' (list or tuple): A boolean list indicating periodicity for each CV.
                                    e.g., [False, False].
             'pcv1' (list or tuple): Periodic boundary limits for CV1. e.g., [0, 2*pi].
@@ -145,7 +151,8 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
     # --- Parameter Validation and Setup ---
     if imax is not None and num_hills < imax:
         warnings.warn(
-            f"Warning: You requested imax={imax}, but only {num_hills} hills are available. Using all hills.",
+            f"Warning: You requested imax={imax}, but only "
+            f"{num_hills} hills are available. Using all hills.",
             stacklevel=2,
         )
         imax = num_hills
@@ -154,7 +161,8 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
         imax = num_hills
 
     if imax > 0 and imin > imax:
-        raise ValueError("Error: imax cannot be lower than imin.")
+        msg = "Error: imax cannot be lower than imin."
+        raise ValueError(msg)
 
     # Convert 1-based R-style indexing to 0-based Python slicing
     # Note: The `imax` in a Python slice [start:end] is exclusive, so it's correct.
@@ -164,7 +172,7 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
     # --- Main Logic: Branch based on dimension (number of columns) ---
 
     # --- Case 1: 2D FES (CV1, CV2, sigma1, sigma2, height) ---
-    if num_cols >= 7:  # Usually 7 for Plumed output
+    if num_cols >= _MIN_COLS_2D:  # Usually 7 for Plumed output
         dimension = 2
 
         if imax == 0:
@@ -224,7 +232,7 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
         }
 
     # --- Case 2: 1D FES (CV1, sigma1, height) ---
-    elif num_cols >= 5:  # Usually 5 for Plumed output
+    elif num_cols >= _MIN_COLS_1D:  # Usually 5 for Plumed output
         dimension = 1
 
         if imax == 0:
@@ -267,10 +275,11 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
         }
 
     else:
-        raise ValueError(
+        msg = (
             f"Unsupported number of columns in hillsfile: {num_cols}. "
-            "Expected >= 5 for 1D or >= 7 for 2D."
+            f"Expected >= {_MIN_COLS_1D} for 1D or >= {_MIN_COLS_2D} for 2D."
         )
+        raise ValueError(msg)
 
     return result
 
@@ -297,17 +306,17 @@ def find_fes_minima(fes_result, nbins=8):
     per = fes_result["per"]
 
     if rows % nbins != 0:
-        raise ValueError(
-            "Error: npoints (rows) in FES must be an integer multiple of nbins."
-        )
+        msg = "Error: npoints (rows) in FES must be an integer multiple of nbins."
+        raise ValueError(msg)
 
     rb = rows // nbins
-    if rb < 2:
-        raise ValueError("Error: nbins is too high for the grid size, try reducing it.")
+    if rb < _MIN_BIN_SIZE:
+        msg = "Error: nbins is too high for the grid size, try reducing it."
+        raise ValueError(msg)
 
     minima_info = []
 
-    if dimension == 2:
+    if dimension == 2:  # noqa: PLR2004
         for i in range(nbins):
             for j in range(nbins):
                 # Define the search window for this bin, including a 1-point border
@@ -391,7 +400,7 @@ def find_fes_minima(fes_result, nbins=8):
     import pandas as pd
 
     minima_df = pd.DataFrame(minima_info)
-    if dimension == 2:
+    if dimension == 2:  # noqa: PLR2004
         minima_df = minima_df.drop_duplicates(subset=["CV1bin", "CV2bin"]).reset_index(
             drop=True
         )
@@ -403,7 +412,7 @@ def find_fes_minima(fes_result, nbins=8):
 
     # Generate labels (A, B, ..., Z, AA, AB, ...)
     labels = list(string.ascii_uppercase)
-    if len(minima_df) > 26:
+    if len(minima_df) > _ALPHABET_SIZE:
         extra_labels = [
             f"{c1}{c2}" for c1 in string.ascii_uppercase for c2 in string.ascii_uppercase
         ]

@@ -21,7 +21,6 @@ HDF5 Layout
 
 from typing import Any
 
-import h5py
 import numpy as np
 
 
@@ -170,5 +169,6 @@ def validate_hdf5_structure(
 
     missing = [g for g in required_groups if g not in f]
     if missing:
-        raise ValueError(f"Invalid HDF5 structure. Missing groups: {missing}")
+        msg = f"Invalid HDF5 structure. Missing groups: {missing}"
+        raise ValueError(msg)
     return missing
