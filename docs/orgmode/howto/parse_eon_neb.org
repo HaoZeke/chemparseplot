@@ -1,0 +1,148 @@
+#+TITLE: How-to: Parse eOn NEB Calculations
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You have eOn NEB output (CON/DAT file pairs) and want to extract energies, RMSD coordinates, and gradients for plotting.
+
+* Solution
+
+** Load Structures and Compute RMSD
+
+#+begin_src python
+from pathlib import Path
+from chemparseplot.parse.eon.neb import load_structures_and_calculate_additional_rmsd
+
+atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_rmsd(
+    con_file=Path("neb.con"),
+    additional_con=[
+        (Path("saddle.con"), "Saddle Point"),
+        (Path("minima.con"), "Local Minimum"),
+    ],
+    ira_kmax=1.8,
+    sp_file=Path("sp.con"),  # explicit saddle point (optional)
+)
+#+end_src
+
+This returns:
+- =atoms_list=: ASE Atoms objects from the main trajectory
+- =additional_data=: list of =(atoms, rmsd_r, rmsd_p, label)= tuples
+- =sp_data=: dict with ="atoms"=, ="r"=, ="p"= for the explicit saddle point
+
+** Aggregate Landscape Data from Multiple Steps
+
+eOn NEB runs produce one DAT/CON pair per optimization step. Aggregate them into a single Polars DataFrame:
+
+#+begin_src python
+from pathlib import Path
+from chemparseplot.parse.eon.neb import aggregate_neb_landscape_data
+
+dat_paths = sorted(Path("neb_run").glob("*.dat"))
+con_paths = sorted(Path("neb_run").glob("*.con"))
+
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,          # column index for energy in DAT files
+    ira_instance=None,        # auto-creates IRA if ira_mod available
+    ira_kmax=1.8,
+)
+
+print(df.columns)  # ['r', 'p', 'grad_r', 'grad_p', 'z', 'step']
+print(df.shape)
+#+end_src
+
+** Use Parquet Caching
+
+Landscape aggregation is expensive (RMSD calculation per image). Cache the result:
+
+#+begin_src python
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,
+    ira_instance=None,
+    cache_file=Path("landscape_cache.parquet"),
+    force_recompute=False,    # set True to bypass cache
+    ira_kmax=1.8,
+)
+#+end_src
+
+On subsequent runs, the function loads from =landscape_cache.parquet= and validates the schema (checks for =p= and =grad_r= columns).
+
+** Augment with External NEB Paths
+
+Add data from other NEB runs to improve landscape surface fits:
+
+#+begin_src python
+from ase.io import read as ase_read
+
+ref_atoms = ase_read("reactant.con")
+prod_atoms = ase_read("product.con")
+
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,
+    ira_instance=None,
+    cache_file=Path("landscape_cache.parquet"),
+    augment_dat="extra_run/*.dat",
+    augment_con="extra_run/*.con",
+    ref_atoms=ref_atoms,
+    prod_atoms=prod_atoms,
+)
+#+end_src
+
+Augmented paths get =step=-1= in the DataFrame, distinguishing them from the primary path.
+
+** Compute 1D Profile RMSD
+
+For simple energy profiles (no landscape), compute RMSD from reactant only:
+
+#+begin_src python
+from chemparseplot.parse.eon.neb import compute_profile_rmsd
+
+atoms_list = ase_read("neb.con", index=":")
+df_profile = compute_profile_rmsd(
+    atoms_list,
+    cache_file=Path("profile_cache.parquet"),
+    force_recompute=False,
+    ira_kmax=1.8,
+)
+# df_profile has column: 'r' (RMSD from first frame)
+#+end_src
+
+** Estimate RBF Smoothing
+
+Before fitting a landscape surface, estimate a smoothing parameter:
+
+#+begin_src python
+from chemparseplot.parse.eon.neb import estimate_rbf_smoothing
+
+smoothing = estimate_rbf_smoothing(df)
+print(f"Estimated smoothing: {smoothing:.4f}")
+#+end_src
+
+This calculates the median inter-image distance in (r, p) space for each step.
+
+* Data Format
+
+The aggregated DataFrame uses this schema:
+
+| Column | Type | Description |
+|--------+------+-------------|
+| =r= | =Float64= | RMSD from reactant (Angstrom) |
+| =p= | =Float64= | RMSD from product (Angstrom) |
+| =grad_r= | =Float64= | Synthetic gradient in R direction |
+| =grad_p= | =Float64= | Synthetic gradient in P direction |
+| =z= | =Float64= | Energy or eigenvalue |
+| =step= | =Int64= | Optimization step index (-1 for augmented) |
+
+* See Also
+
+- [[file:../tutorials/orca_neb.org][Tutorial: ORCA NEB Parsing and Plotting]]
+- [[file:../reference/eon_neb_api.org][eOn NEB API Reference]]
+- [[file:create_neb_figures.org][How-to: Create Publication NEB Figures]]
+- [[file:parse_orca_neb.org][How-to: Parse ORCA NEB Calculations]]

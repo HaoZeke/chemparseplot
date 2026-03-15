@@ -171,3 +171,11 @@ cython_debug/
 /_version.py
 /.pdm-python
 *.ipynb
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db
+
+# Lychee link checker cache
+.lycheecache
+.beads/

@@ -140,7 +140,7 @@ twodim_plot.fig
 ```
 
 [^1]: I use [ChemCraft](https://chemcraftprog.com/) for visualization
-[^2]: Discussed in more detail [here](https://rgoswami.me/posts/intro-highthrough-calc/#chemical)
+[^2]: Discussed in more detail in computational chemistry documentation
 
 ```{code-cell} ipython3
 

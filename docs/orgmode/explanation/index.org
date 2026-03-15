@@ -1,0 +1,28 @@
+#+TITLE: Explanation
+#+OPTIONS: toc:nil num:nil
+
+* Explanation
+
+Explanation documents are understanding-oriented. Use them to understand concepts and design.
+
+** Available Explanations
+
+| Explanation | Description |
+|-------------+-------------|
+| [[file:orca_neb_design.org][ORCA NEB Integration Design]] | Why OPI, lazy loading, compatible formats |
+| [[file:lazy_imports.org][Lazy Import Pattern]] | How ensure_import() works |
+| [[file:neb_parsing_design.org][NEB Parsing Design]] | Unified data format rationale |
+
+** Structure
+
+Each explanation includes:
+- Problem statement
+- Solution rationale
+- Design trade-offs
+- Future improvements
+
+** Getting Help
+
+- [[file:../tutorials/index.org][Tutorials]] - Learn from scratch
+- [[file:../howto/index.org][How-to Guides]] - Solve problems
+- [[file:../reference/index.org][Reference]] - API documentation

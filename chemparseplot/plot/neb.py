@@ -1,3 +1,6 @@
+from pathlib import Path
+from functools import lru_cache
+from typing import Any
 import io
 import logging
 import shutil
@@ -151,7 +154,7 @@ def plot_structure_strip(
     theme_color="black",
     max_cols=6,
     renderer="ase",
-):
+) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
     Parameters
@@ -234,7 +237,7 @@ def plot_structure_inset(
     rotation="0x,90y,0z",
     arrow_props=None,
     renderer="ase",
-):
+) -> Any:
     """Plots a single structure as an annotation inset.
 
     Parameters
@@ -289,7 +292,7 @@ def plot_structure_inset(
 
 def plot_energy_path(
     ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None
-):
+) -> Any:
     """Plots 1D energy profile with optional Hermite spline interpolation.
 
     ```{versionadded} 0.1.0
@@ -456,12 +459,16 @@ def plot_landscape_surface(
     project_path=True,  # noqa: FBT002
     extra_points=None,
     n_inducing=None,
-):
-    """Plot the 2D landscape surface.
+) -> Any:
+    """Plot the 2D landscape surface using reaction valley projection.
 
     If project_path evaluates to True, the plot maps into
     reaction valley coordinates
     (Progress $s$ vs Orthogonal Distance $d$).
+
+    Implements 2D reaction valley projection method from cite:[goswami2026valley].
+    The method rotates the RMSD plane into reaction progress and orthogonal
+    deviation coordinates.
 
     ```{versionadded} 0.1.0
     ```
@@ -573,7 +580,8 @@ def plot_landscape_surface(
             else model_class(
                 x_obs=opt_kwargs["x"],
                 y_obs=opt_kwargs["y"],
-                **opt_kwargs,
+                smoothing=opt_kwargs["smoothing"],
+                optimize=opt_kwargs["optimize"],
             )
         )
         best_ls = getattr(learner, "ls", getattr(learner, "epsilon", h_ls))
@@ -698,7 +706,7 @@ def plot_landscape_path_overlay(
     cmap,
     z_label,
     project_path=True,  # noqa: FBT002
-):
+) -> Any:
     """Overlay the colored path line on the landscape.
 
     Mapped to the chosen coordinate basis.
@@ -760,3 +768,320 @@ def plot_landscape_path_overlay(
         plt.cm.ScalarMappable(norm=norm, cmap=colormap), ax=ax, label=z_label
     )
     return cb
+
+
+def plot_orca_neb_profile(
+    neb_data: dict[str, Any],
+    output: Path,
+    *,
+    width: float = 7.0,
+    height: float = 5.0,
+    dpi: int = 200,
+) -> None:
+    """Plot ORCA NEB energy profile from OPI-parsed data.
+    
+    Parameters
+    ----------
+    neb_data
+        Dictionary from parse_orca_neb() containing:
+        - energies: list of energies in eV
+        - n_images: number of images
+        - barrier_forward, barrier_reverse: barrier heights
+    output
+        Output file path
+    width, height
+        Figure dimensions in inches
+    dpi
+        Output resolution
+        
+    Example
+    -------
+    >>> from chemparseplot.parse.orca.neb import parse_orca_neb
+    >>> from chemparseplot.plot.neb import plot_orca_neb_profile
+    >>> data = parse_orca_neb("job", Path("calc"))
+    >>> plot_orca_neb_profile(data, "neb_profile.pdf")
+    """
+    import matplotlib.pyplot as plt
+    
+    energies = neb_data.get("energies", [])
+    n_images = neb_data.get("n_images", len(energies))
+    
+    if not energies:
+        msg = "No energy data in neb_data"
+        raise ValueError(msg)
+    
+    # Create figure
+    fig, ax = plt.subplots(figsize=(width, height), dpi=dpi)
+    
+    # Plot energy profile
+    image_indices = list(range(n_images))
+    ax.plot(image_indices, energies, 'o-', linewidth=2, markersize=8)
+    
+    # Label reactant, product, and saddle
+    if len(energies) >= 3:
+        ax.plot(0, energies[0], 'go', markersize=12, label='Reactant')
+        ax.plot(-1, energies[-1], 'ro', markersize=12, label='Product')
+        
+        # Find saddle point
+        saddle_idx = energies.index(max(energies))
+        if saddle_idx != 0 and saddle_idx != len(energies) - 1:
+            ax.plot(saddle_idx, energies[saddle_idx], 'ys', markersize=12, label='Saddle')
+    
+    # Add barrier annotations
+    barrier_fwd = neb_data.get("barrier_forward")
+    barrier_rev = neb_data.get("barrier_reverse")
+    
+    if barrier_fwd is not None and barrier_fwd > 0:
+        ax.annotate(
+            f"ΔE‡ = {barrier_fwd:.2f} eV",
+            xy=(saddle_idx, energies[saddle_idx]),
+            xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
+            arrowprops=dict(arrowstyle='->', color='black'),
+            fontsize=10,
+        )
+    
+    # Labels and formatting
+    ax.set_xlabel("Image Index")
+    ax.set_ylabel("Energy (eV)")
+    ax.set_title("ORCA NEB Energy Profile")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.minorticks_on()
+    
+    # Save
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_orca_neb_energy_profile(
+    neb_data: dict[str, Any],
+    output: Path,
+    *,
+    width: float = 5.37,
+    height: float = 5.37,
+    dpi: int = 200,
+    method: str = "hermite",
+    smoothing: Any = None,
+) -> None:
+    """Plot ORCA NEB energy profile using existing eOn-style plotting.
+    
+    Creates publication-quality energy profile similar to eOn NEB plots.
+    Uses the same plotting functions as eOn NEB for consistency.
+    
+    Parameters
+    ----------
+    neb_data
+        Dictionary from parse_orca_neb() containing:
+        - energies: array of energies in eV
+        - rmsd_r, rmsd_p: RMSD coordinates (optional)
+        - grad_r, grad_p: gradients (optional)
+        - n_images: number of images
+    output
+        Output file path
+    width, height
+        Figure dimensions in inches
+    dpi
+        Output resolution
+    method
+        Interpolation method: 'hermite' or 'spline'
+    smoothing
+        Smoothing parameters
+        
+    Example
+    -------
+    >>> from chemparseplot.parse.orca.neb import parse_orca_neb
+    >>> from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+    >>> data = parse_orca_neb("job", Path("calc"))
+    >>> plot_orca_neb_energy_profile(data, "orca_neb_profile.pdf")
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.gridspec import GridSpec
+    
+    energies = neb_data.get("energies", [])
+    rmsd_r = neb_data.get("rmsd_r")
+    rmsd_p = neb_data.get("rmsd_p")
+    grad_r = neb_data.get("grad_r")
+    grad_p = neb_data.get("grad_p")
+    n_images = neb_data.get("n_images", len(energies))
+    barrier_fwd = neb_data.get("barrier_forward")
+    barrier_rev = neb_data.get("barrier_reverse")
+    
+    if len(energies) == 0:
+        msg = "No energy data in neb_data"
+        raise ValueError(msg)
+    
+    # Use RMSD as reaction coordinate if available, otherwise use image index
+    if rmsd_r is not None and rmsd_p is not None:
+        # Use progress coordinate (similar to eOn)
+        rc = rmsd_r
+        f_para = grad_r if grad_r is not None else np.zeros_like(rc)
+        xlabel = r"RMSD from Reactant ($\AA$)"
+    else:
+        rc = np.arange(n_images)
+        f_para = np.zeros(n_images)
+        xlabel = "Image Index"
+    
+    # Create figure
+    fig = plt.figure(figsize=(width, height), dpi=dpi)
+    gs = GridSpec(1, 1, figure=fig)
+    ax = fig.add_subplot(gs[0])
+    
+    # Plot energy profile using same function as eOn
+    from chemparseplot.plot.theme import get_theme
+    theme = get_theme("ruhi")
+    
+    color = "#1f77b4"  # Default blue color
+    plot_energy_path(
+        ax, rc, energies, f_para,
+        color=color, alpha=1.0, zorder=10,
+        method=method, smoothing=smoothing
+    )
+    
+    # Label key points
+    if n_images >= 2:
+        ax.plot(rc[0], energies[0], 'go', markersize=10, label='Reactant', zorder=20)
+        ax.plot(rc[-1], energies[-1], 'ro', markersize=10, label='Product', zorder=20)
+        
+        # Find and label saddle
+        saddle_idx = int(np.argmax(energies))
+        if saddle_idx != 0 and saddle_idx != n_images - 1:
+            ax.plot(rc[saddle_idx], energies[saddle_idx], 'ys', markersize=12, 
+                   label='Saddle', zorder=20)
+            
+            # Add barrier annotation
+            if barrier_fwd is not None and barrier_fwd > 0:
+                ax.annotate(
+                    f"$\\Delta E^\\ddagger = {barrier_fwd:.2f}$ eV",
+                    xy=(rc[saddle_idx], energies[saddle_idx]),
+                    xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
+                    arrowprops=dict(arrowstyle='->', color='black', lw=1.5),
+                    fontsize=9,
+                    zorder=30,
+                )
+    
+    # Labels and formatting
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Energy (eV)")
+    ax.set_title("ORCA NEB Energy Profile")
+    ax.legend(frameon=False)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.minorticks_on()
+    
+    # Save
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_orca_neb_landscape(
+    neb_data: dict[str, Any],
+    output: Path,
+    *,
+    width: float = 5.37,
+    height: float = 5.37,
+    dpi: int = 200,
+    method: str = "grad_matern",
+    project_path: bool = True,
+) -> None:
+    """Plot ORCA NEB 2D landscape using existing eOn-style plotting.
+    
+    Creates publication-quality landscape plot similar to eOn NEB plots.
+    Uses the same plotting functions as eOn NEB for consistency.
+    
+    Parameters
+    ----------
+    neb_data
+        Dictionary from parse_orca_neb() containing:
+        - energies: array of energies in eV
+        - rmsd_r, rmsd_p: RMSD coordinates
+        - grad_r, grad_p: gradients
+        - n_images: number of images
+    output
+        Output file path
+    width, height
+        Figure dimensions in inches
+    dpi
+        Output resolution
+    method
+        Surface interpolation method
+    project_path
+        Whether to project into reaction valley coordinates
+        
+    Example
+    -------
+    >>> from chemparseplot.parse.orca.neb import parse_orca_neb
+    >>> from chemparseplot.plot.neb import plot_orca_neb_landscape
+    >>> data = parse_orca_neb("job", Path("calc"))
+    >>> plot_orca_neb_landscape(data, "orca_neb_landscape.pdf")
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.gridspec import GridSpec
+    
+    energies = neb_data.get("energies", [])
+    rmsd_r = neb_data.get("rmsd_r")
+    rmsd_p = neb_data.get("rmsd_p")
+    grad_r = neb_data.get("grad_r")
+    grad_p = neb_data.get("grad_p")
+    
+    # Convert to numpy arrays if lists
+    rmsd_r = np.asarray(rmsd_r)
+    rmsd_p = np.asarray(rmsd_p)
+    energies = np.asarray(energies)
+
+    if rmsd_r is None or rmsd_p is None:
+        msg = (
+            "RMSD coordinates required for landscape plot. "
+            "Re-run ORCA calculation with geometry output enabled."
+        )
+        raise ValueError(msg)
+    
+    # Create figure
+    fig = plt.figure(figsize=(width, height), dpi=dpi)
+    gs = GridSpec(1, 1, figure=fig)
+    ax = fig.add_subplot(gs[0])
+    
+    # Get theme
+    from chemparseplot.plot.theme import get_theme
+    theme = get_theme("ruhi")
+    cmap = theme.cmap_landscape
+    
+    # Plot 2D landscape surface using same function as eOn
+    plot_landscape_surface(
+        ax,
+        rmsd_r, rmsd_p,
+        grad_r if grad_r is not None else np.zeros_like(rmsd_r),
+        grad_p if grad_p is not None else np.zeros_like(rmsd_p),
+        energies,
+        method=method,
+        cmap=cmap,
+        show_pts=True,
+        project_path=project_path,
+    )
+    
+    # Overlay path using same function as eOn
+    plot_landscape_path_overlay(
+        ax,
+        rmsd_r, rmsd_p, energies,
+        cmap=cmap,
+        z_label="Energy (eV)",
+        project_path=project_path,
+    )
+    
+    # Labels and formatting
+    if project_path:
+        ax.set_xlabel(r"Reaction progress $s$ ($\AA$)")
+        ax.set_ylabel(r"Orthogonal deviation $d$ ($\AA$)")
+        ax.set_title("ORCA NEB Reaction Landscape")
+    else:
+        ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+        ax.set_ylabel(r"RMSD from Product ($\AA$)")
+        ax.set_title("ORCA NEB RMSD Landscape")
+    
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.minorticks_on()
+    
+    # Save
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
