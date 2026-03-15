@@ -38,7 +38,7 @@ def _make_atoms(positions, energy=0.0, forces=None):
     """
     atoms = Atoms("H" * len(positions), positions=positions)
     if forces is not None:
-        from ase.calculators.singlepoint import SinglePointCalculator  # noqa: PLC0415
+        from ase.calculators.singlepoint import SinglePointCalculator
 
         calc = SinglePointCalculator(atoms, energy=energy, forces=forces)
         atoms.calc = calc

@@ -6,8 +6,8 @@
 
 import pytest
 
-adjustText = pytest.importorskip("adjustText")
-polars = pytest.importorskip("polars")
+pytest.importorskip("adjustText")
+pytest.importorskip("polars")
 pytestmark = pytest.mark.pure
 
 

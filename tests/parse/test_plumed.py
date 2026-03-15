@@ -39,10 +39,12 @@ class TestCalculateFES1D:
         """Test FES from multiple 1D Gaussian hills."""
         from chemparseplot.parse.plumed import calculate_fes_from_hills
 
-        hills_data = np.array([
-            [0.0, -1.0, 0.2, 2.0, 0.0],
-            [1.0, 1.0, 0.2, 2.0, 0.0],
-        ])
+        hills_data = np.array(
+            [
+                [0.0, -1.0, 0.2, 2.0, 0.0],
+                [1.0, 1.0, 0.2, 2.0, 0.0],
+            ]
+        )
         hills = {
             "hillsfile": hills_data,
             "per": [False],

@@ -145,6 +145,9 @@ ban-relative-imports = "all"
   "S603",
   "T201",
 ] # doctest scripts
+"chemparseplot/parse/**/*" = [
+  "PLC0415",
+] # deferred imports for optional deps (h5py, pandas, polars)
 "chemparseplot/scripts/**/*" = [
   "ARG001",
   "E501",
@@ -158,6 +161,7 @@ ban-relative-imports = "all"
   "E402",
   "F401",
   "ICN001",
+  "PLC0415",
   "PLR2004",
   "PLW2901",
   "S101",
