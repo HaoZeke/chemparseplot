@@ -42,7 +42,7 @@ from pathlib import Path
 
 import adjustText  # noqa: F401
 import click
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
@@ -362,7 +362,7 @@ def main(
         if show_legend:
             from matplotlib.cm import ScalarMappable
 
-            norm = matplotlib.colors.Normalize(
+            norm = mpl.colors.Normalize(
                 vmin=df_final["z"].min(), vmax=df_final["z"].max()
             )
             sm = ScalarMappable(cmap=active_theme.cmap_landscape, norm=norm)
@@ -413,7 +413,8 @@ def main(
         plt.close(fig)
     else:
         log.info(
-            "Profile plot not yet implemented in thin wrapper - use chemparseplot directly"
+            "Profile plot not yet implemented in thin wrapper"
+            " - use chemparseplot directly"
         )
         plt.close(fig)
 

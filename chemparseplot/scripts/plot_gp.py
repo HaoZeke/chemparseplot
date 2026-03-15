@@ -568,11 +568,7 @@ def batch(
     parallel: int,
 ):
     """Generate multiple plots from a TOML config."""
-    try:
-        import tomllib
-    except ImportError:
-        import tomli as tomllib
-
+    import tomllib
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
     with open(config_path, "rb") as fp:

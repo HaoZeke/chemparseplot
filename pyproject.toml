@@ -145,6 +145,15 @@ ban-relative-imports = "all"
   "S603",
   "T201",
 ] # doctest scripts
+"chemparseplot/scripts/**/*" = [
+  "ARG001",
+  "E501",
+  "ICN001",
+  "PLC0415",
+  "PLR2004",
+  "S603",
+  "T201",
+] # PEP 723 CLI scripts with optional deps
 "tests/**/*" = [
   "E402",
   "F401",
