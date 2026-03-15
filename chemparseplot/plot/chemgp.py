@@ -1238,3 +1238,77 @@ def plot_variance_overlay(
 
     fig.tight_layout()
     return fig
+
+
+# ---- Utility functions for ChemGP plotting ----
+
+
+def safe_plot(func):
+    """Decorator for graceful error handling in plot generation.
+
+    Catches common errors and logs helpful messages.
+    """
+    import functools
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except FileNotFoundError as e:
+            log.error("Input file not found: %s", e.filename)
+            raise
+        except KeyError as e:
+            log.error("Missing HDF5 group or key: %s", e)
+            raise
+        except Exception as e:
+            log.error("Plot generation failed: %s", type(e).__name__)
+            raise
+
+    return wrapper
+
+
+# MB surfaces need [-200, 50], LEPS need [-5, 5]
+_CLAMP_PRESETS = {
+    "mb": (-200.0, 50.0, 25.0),  # (lo, hi, contour_step)
+    "leps": (-5.0, 5.0, 0.5),
+}
+
+
+@lru_cache(maxsize=128)
+def detect_clamp(filename: str):
+    """Detect energy clamping preset from filename.
+
+    Returns
+    -------
+    tuple
+        (clamp_lo, clamp_hi, contour_step) or (None, None, None)
+    """
+    stem = filename.lower()
+    for prefix, (lo, hi, step) in _CLAMP_PRESETS.items():
+        if prefix in stem:
+            return lo, hi, step
+    return None, None, None
+
+
+def save_plot(fig, output, dpi=300):
+    """Save a plotnine ggplot or matplotlib Figure to file.
+
+    Parameters
+    ----------
+    fig
+        A matplotlib Figure or plotnine ggplot object.
+    output : pathlib.Path
+        Output file path.
+    dpi : int
+        Resolution in dots per inch.
+    """
+    from pathlib import Path
+
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(fig, plt.Figure):
+        fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+        plt.close(fig)
+    else:
+        # plotnine ggplot
+        fig.save(str(output), dpi=dpi, verbose=False)
