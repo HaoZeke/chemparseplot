@@ -49,14 +49,3 @@ rev = "v0.9.3"
 hooks = [{ id = "codespell", args = ["--skip=*.lock,*.csv"] }]
 repo = "https://github.com/codespell-project/codespell"
 rev = "v2.4.1"
-
-[[repos]]
-hooks = [
-  {
-    id = "lychee",
-    args = ["--no-progress", "--cache", "--max-cache-age=1d", "--accept", "200..=399"],
-    files = "\\.(md|rst|html)$"
-  }
-]
-repo = "https://github.com/lycheeverse/lychee"
-rev = "lychee-v0.23.0"
