@@ -11,10 +11,10 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
-import matplotlib.pyplot as plt  # noqa: E402
-from ase import Atoms  # noqa: E402
+import matplotlib.pyplot as plt
+from ase import Atoms
 
-from chemparseplot.plot.neb import (  # noqa: E402
+from chemparseplot.plot.neb import (
     _check_xyzrender,
     _render_xyzrender,
     plot_structure_strip,

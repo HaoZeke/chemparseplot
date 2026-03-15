@@ -8,7 +8,7 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
-from chemparseplot.parse.neb_utils import (  # noqa: E402
+from chemparseplot.parse.neb_utils import (
     compute_synthetic_gradients,
     create_landscape_dataframe,
 )

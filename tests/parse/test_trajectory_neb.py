@@ -16,9 +16,9 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
-from ase import Atoms  # noqa: E402
+from ase import Atoms
 
-from chemparseplot.parse.trajectory.neb import (  # noqa: E402
+from chemparseplot.parse.trajectory.neb import (
     _get_energy,
     compute_cumulative_distance,
     compute_tangent_force,
