@@ -117,7 +117,6 @@ def parse_orca_neb(basename: str, working_dir: Path | None = None) -> dict[str, 
     if all(g is not None for g in geometries) and len(geometries) >= 2:
         try:
             from ase import Atoms
-            from ase.calculators.singlepoint import SinglePointCalculator
 
             # Convert to ASE Atoms
             atoms_list = []

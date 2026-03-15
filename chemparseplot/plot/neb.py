@@ -5,7 +5,6 @@ import subprocess
 import tempfile
 from collections import namedtuple
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -116,7 +115,7 @@ def _render_xyzrender(atoms, canvas_size=400):
     numpy.ndarray
         RGBA image array with shape ``(H, W, 4)`` and float dtype.
     """
-    from ase.io import write as _ase_write  # noqa: PLC0415
+    from ase.io import write as _ase_write
 
     with tempfile.NamedTemporaryFile(suffix=".xyz", delete=False) as xyz_fh:
         xyz_path = xyz_fh.name
@@ -135,7 +134,7 @@ def _render_xyzrender(atoms, canvas_size=400):
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
     finally:
-        import os  # noqa: PLC0415
+        import os
 
         for p in (xyz_path, png_path):
             try:
@@ -829,14 +828,14 @@ def plot_orca_neb_profile(
 
     # Add barrier annotations
     barrier_fwd = neb_data.get("barrier_forward")
-    barrier_rev = neb_data.get("barrier_reverse")
+    neb_data.get("barrier_reverse")
 
     if barrier_fwd is not None and barrier_fwd > 0:
         ax.annotate(
             f"ΔE‡ = {barrier_fwd:.2f} eV",
             xy=(saddle_idx, energies[saddle_idx]),
             xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
-            arrowprops=dict(arrowstyle="->", color="black"),
+            arrowprops={"arrowstyle": "->", "color": "black"},
             fontsize=10,
         )
 
@@ -902,10 +901,10 @@ def plot_orca_neb_energy_profile(
     rmsd_r = neb_data.get("rmsd_r")
     rmsd_p = neb_data.get("rmsd_p")
     grad_r = neb_data.get("grad_r")
-    grad_p = neb_data.get("grad_p")
+    neb_data.get("grad_p")
     n_images = neb_data.get("n_images", len(energies))
     barrier_fwd = neb_data.get("barrier_forward")
-    barrier_rev = neb_data.get("barrier_reverse")
+    neb_data.get("barrier_reverse")
 
     if len(energies) == 0:
         msg = "No energy data in neb_data"
@@ -930,7 +929,7 @@ def plot_orca_neb_energy_profile(
     # Plot energy profile using same function as eOn
     from chemparseplot.plot.theme import get_theme
 
-    theme = get_theme("ruhi")
+    get_theme("ruhi")
 
     color = "#1f77b4"  # Default blue color
     plot_energy_path(
@@ -968,7 +967,7 @@ def plot_orca_neb_energy_profile(
                     f"$\\Delta E^\\ddagger = {barrier_fwd:.2f}$ eV",
                     xy=(rc[saddle_idx], energies[saddle_idx]),
                     xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
-                    arrowprops=dict(arrowstyle="->", color="black", lw=1.5),
+                    arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
                     fontsize=9,
                     zorder=30,
                 )

@@ -144,13 +144,22 @@ ban-relative-imports = "all"
 # Plot modules use inline imports for optional deps, magic values for layout,
 # boolean params for toggle switches, and loop var reassignment for type coercion
 "chemparseplot/plot/chemgp.py" = [
+  "E402",
+  "F401",
   "PLC0415",
   "PLR2004",
   "FBT001",
   "FBT002",
   "PLW2901",
 ]
-"chemparseplot/plot/neb.py" = ["PLR2004"]
+"chemparseplot/plot/neb.py" = ["PLR2004", "PLC0415", "C408"]
+"chemparseplot/parse/orca/neb/opi_parser.py" = [
+  "PLC0415", # late imports for optional deps (ase)
+  "PLW0603", # global for lazy-loaded OPI module
+  "N806",    # Output class reference
+  "PLR2004", # magic value 2 in len check
+  "ARG001",  # unused atoms_list kept for API compat
+]
 # Tutorial scripts use print and uppercase physics variables (X, Y, Z, NLL, etc.)
 "doc/source/tutorials/**/*" = ["T201", "N806"]
 
