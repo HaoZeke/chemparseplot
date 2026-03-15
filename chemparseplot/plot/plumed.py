@@ -48,9 +48,7 @@ def plot_fes_2d(fes_result, minima_result=None, cmap=None, figsize=(8, 6), dpi=3
 
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     contour = ax.contourf(x, y, fes_data.T, levels=25, cmap=cmap)
-    ax.contour(
-        x, y, fes_data.T, levels=contour.levels, colors="black", linewidths=0.5
-    )
+    ax.contour(x, y, fes_data.T, levels=contour.levels, colors="black", linewidths=0.5)
     fig.colorbar(contour, ax=ax, label="Free Energy (kJ/mol)")
     ax.set_xlabel("Collective Variable 1")
     ax.set_ylabel("Collective Variable 2")
