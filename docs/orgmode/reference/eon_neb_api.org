@@ -1,0 +1,171 @@
+#+TITLE: eOn NEB API Reference
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Module: =chemparseplot.parse.eon.neb=
+
+** =load_structures_and_calculate_additional_rmsd(con_file, additional_con, ira_kmax, sp_file=None)=
+
+Loads the main NEB trajectory and calculates RMSD for additional comparison structures.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =con_file= | =Path= | - | Path to main trajectory CON file |
+| =additional_con= | =list[tuple[Path, str]]= | - | List of (path, label) pairs for extra structures |
+| =ira_kmax= | =float= | - | kmax factor for IRA alignment |
+| =sp_file= | =Path= or =None= | =None= | Path to explicit saddle point CON file |
+
+*** Returns
+
+=tuple= of three elements:
+
+| Element | Type | Description |
+|---------+------+-------------|
+| =atoms_list= | =list[Atoms]= | ASE Atoms from main trajectory |
+| =additional_atoms_data= | =list[tuple]= | List of =(atoms, rmsd_r, rmsd_p, label)= |
+| =sp_data= | =dict= or =None= | ={ "atoms", "r", "p" }= for saddle point |
+
+*** Notes
+
+- Uses IRA (Iterative Rotations and Assignments) for RMSD when =ira_mod= is available
+- Falls back to simple RMSD if =ira_mod= is not installed
+- RMSD computed relative to first frame (reactant) and last frame (product)
+- Empty labels default to the file stem
+
+** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=1.8, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
+
+Aggregates data from multiple NEB optimization steps for 2D landscape visualization.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =all_dat_paths= | =list[Path]= | - | Sorted list of DAT file paths |
+| =all_con_paths= | =list[Path]= | - | Sorted list of CON file paths (must match DAT order) |
+| =y_data_column= | =int= | - | Column index in DAT file for energy/eigenvalue |
+| =ira_instance= | object or =None= | - | IRA instance (auto-created if =None= and =ira_mod= available) |
+| =cache_file= | =Path= or =None= | =None= | Parquet file for caching results |
+| =force_recompute= | =bool= | =False= | Bypass cache and recompute |
+| =ira_kmax= | =float= | =1.8= | kmax factor for IRA alignment |
+| =augment_dat= | =str= or =None= | =None= | Glob pattern for augmentation DAT files |
+| =augment_con= | =str= or =None= | =None= | Glob pattern for augmentation CON files |
+| =ref_atoms= | =Atoms= or =None= | =None= | Reference reactant for augmentation projection |
+| =prod_atoms= | =Atoms= or =None= | =None= | Reference product for augmentation projection |
+
+*** Returns
+
+=pl.DataFrame= with columns =[r, p, grad_r, grad_p, z, step]=
+
+*** Raises
+
+| Exception | Condition |
+|-----------+-----------|
+| =RuntimeError= | No data could be aggregated from any step |
+
+*** Notes
+
+- DAT files contain columns: image index, energy, eigenvalue, parallel force, perpendicular force
+- Column index 1 selects energy, column index 2 selects eigenvalue
+- Cache validation checks for =p= and =grad_r= columns (rejects outdated caches)
+- Augmentation paths receive =step=-1= to distinguish from primary data
+- Mismatched DAT/CON counts are truncated to the shorter list with a warning
+
+** =load_augmenting_neb_data(dat_pattern, con_pattern, ref_atoms, prod_atoms, y_data_column, ira_kmax)=
+
+Loads external NEB paths to augment the landscape surface fit.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =dat_pattern= | =str= | - | Glob pattern for DAT files |
+| =con_pattern= | =str= | - | Glob pattern for CON files |
+| =ref_atoms= | =Atoms= | - | Reactant atoms for RMSD reference |
+| =prod_atoms= | =Atoms= | - | Product atoms for RMSD reference |
+| =y_data_column= | =int= | - | Column index for energy in DAT files |
+| =ira_kmax= | =float= | - | kmax factor for IRA |
+
+*** Returns
+
+=pl.DataFrame= -- Same schema as =aggregate_neb_landscape_data()=, or empty DataFrame if no files match.
+
+*** Notes
+
+- Forces RMSD projection onto the main path's reactant/product coordinate frame
+- All augmented data gets =step=-1=
+
+** =compute_profile_rmsd(atoms_list, *, cache_file, force_recompute, ira_kmax)=
+
+Computes RMSD from reactant for a 1D energy profile.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =atoms_list= | =list[Atoms]= | - | NEB trajectory as ASE Atoms |
+| =cache_file= | =Path= or =None= | - | Parquet cache path |
+| =force_recompute= | =bool= | - | Bypass cache |
+| =ira_kmax= | =float= | - | kmax factor for IRA |
+
+*** Returns
+
+=pl.DataFrame= with column =[r]= (RMSD from first frame)
+
+*** Notes
+
+- Cache validation rejects DataFrames that contain a =p= column (landscape data)
+- Cache validation checks row count matches =len(atoms_list)=
+
+** =estimate_rbf_smoothing(df)=
+
+Estimates a smoothing parameter for RBF surface interpolation.
+
+*** Parameters
+
+| Parameter | Type | Description |
+|-----------+------+-------------|
+| =df= | =pl.DataFrame= | Landscape DataFrame with =r=, =p=, =step= columns |
+
+*** Returns
+
+=float= -- Median Euclidean distance between sequential images within each step. Returns =0.0= if the median is None or zero.
+
+** =load_or_compute_data(cache_file, *, force_recompute, validation_check, computation_callback, context_name)=
+
+Generic caching helper. Loads from parquet or computes via callback.
+
+*** Parameters
+
+| Parameter | Type | Description |
+|-----------+------+-------------|
+| =cache_file= | =Path= or =None= | Parquet path (=None= disables caching) |
+| =force_recompute= | =bool= | Skip cache and compute |
+| =validation_check= | =Callable[[pl.DataFrame], None]= | Raises on invalid cache |
+| =computation_callback= | =Callable[[], pl.DataFrame]= | Called when cache misses |
+| =context_name= | =str= | Label for log messages |
+
+*** Returns
+
+=pl.DataFrame=
+
+* DataFrame Schema
+
+All landscape DataFrames follow this schema:
+
+| Column | Polars Type | Unit | Description |
+|--------+-------------+------+-------------|
+| =r= | =Float64= | Angstrom | RMSD from reactant reference |
+| =p= | =Float64= | Angstrom | RMSD from product reference |
+| =grad_r= | =Float64= | (projected) | Synthetic gradient in R direction |
+| =grad_p= | =Float64= | (projected) | Synthetic gradient in P direction |
+| =z= | =Float64= | eV or unitless | Energy or eigenvalue |
+| =step= | =Int64= | - | Optimization step index (-1 = augmented) |
+
+* See Also
+
+- [[file:../howto/parse_eon_neb.org][How-to: Parse eOn NEB Calculations]]
+- [[file:plotting_api.org][Plotting API Reference]]
+- [[file:../explanation/neb_parsing_design.org][NEB Parsing Design]]

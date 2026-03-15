@@ -1,0 +1,198 @@
+#+TITLE: Troubleshooting Guide
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Troubleshooting Guide
+
+Common problems and their solutions.
+
+** Installation Issues
+
+*** Problem: "ModuleNotFoundError: No module named 'chemparseplot'"
+
+**Cause:** Package not installed in current Python environment.
+
+**Solution:**
+#+begin_src bash
+# Check which Python is active
+which python
+python --version
+
+# Install in correct environment
+python -m pip install chemparseplot
+
+# Or use full path
+/path/to/python -m pip install chemparseplot
+#+end_src
+
+*** Problem: "ImportError: No module named 'matplotlib'"
+
+**Cause:** Plotting dependencies not installed.
+
+**Solution:**
+#+begin_src bash
+pip install "chemparseplot[plot]"
+#+end_src
+
+*** Problem: "ImportError: No module named 'opi'"
+
+**Cause:** OPI not installed (needed for ORCA 6.1+ parsing).
+
+**Solution:**
+#+begin_src bash
+pip install orca-pi
+#+end_src
+
+Or use legacy parser for ORCA < 6.1:
+#+begin_src python
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+data = parse_orca_neb_fallback("job", Path("calc"))
+#+end_src
+
+** Parsing Issues
+
+*** Problem: "FileNotFoundError: [Errno 2] No such file or directory: 'job.json'"
+
+**Cause:** ORCA 6.1+ JSON output not found.
+
+**Solution:**
+1. Ensure ORCA 6.1+ was used
+2. Check ORCA input includes JSON output:
+#+begin_src text
+%output
+  Print[JSON] true
+end
+#+end_src
+3. Verify job completed successfully
+
+*** Problem: "ValueError: No energy data in neb_data"
+
+**Cause:** NEB calculation did not produce energy data.
+
+**Solution:**
+1. Check ORCA/eOn output for errors
+2. Verify NEB calculation completed
+3. Check .interp file exists (for legacy parser)
+
+*** Problem: "RMSD coordinates required for landscape plot"
+
+**Cause:** Geometry output not available.
+
+**Solution:**
+Add to ORCA input:
+#+begin_src text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+#+end_src
+
+** Plotting Issues
+
+*** Problem: "Contour levels must be increasing"
+
+**Cause:** Energy data has numerical issues or duplicate values.
+
+**Solution:**
+#+begin_src python
+import numpy as np
+
+# Check for issues
+print(f"Min energy: {energies.min()}")
+print(f"Max energy: {energies.max()}")
+print(f"Unique values: {len(np.unique(energies))}")
+
+# Filter or smooth if needed
+from scipy.ndimage import gaussian_filter1d
+energies_smooth = gaussian_filter1d(energies, sigma=1)
+#+end_src
+
+*** Problem: "Spline failed (only integer scalar arrays can be converted to a scalar index)"
+
+**Cause:** Spline interpolation issue with array indices.
+
+**Solution:**
+Use alternative interpolation method:
+#+begin_src python
+plot_orca_neb_energy_profile(
+    data, "profile.pdf",
+    method="spline"  # Instead of "hermite"
+)
+#+end_src
+
+*** Problem: "Module 'jax' is not installed"
+
+**Cause:** JAX required for GP surface fitting.
+
+**Solution:**
+#+begin_src bash
+pip install "jax[cpu]"  # CPU-only
+# or
+pip install "jax[cuda12]"  # With CUDA support
+#+end_src
+
+Or use simpler interpolation:
+#+begin_src python
+plot_orca_neb_landscape(
+    data, "landscape.pdf",
+    method="rbf"  # Instead of "grad_matern"
+)
+#+end_src
+
+** Performance Issues
+
+*** Problem: Batch plotting is very slow
+
+**Cause:** Sequential processing of many plots.
+
+**Solution:**
+Use parallel processing:
+#+begin_src bash
+rgpycrumbs chemgp batch -c config.toml -j 8
+#+end_src
+
+*** Problem: Landscape plotting takes too long
+
+**Cause:** Surface fitting is computationally expensive.
+
+**Solution:**
+1. Reduce number of points (downsample)
+2. Use simpler method:
+#+begin_src python
+plot_orca_neb_landscape(
+    data, "landscape.pdf",
+    method="rbf",  # Faster than GP methods
+    n_inducing=100  # Fewer inducing points
+)
+#+end_src
+
+** Common Error Messages
+
+| Error | Cause | Solution |
+|-------+-------+----------|
+| "No images found" | NEB calculation incomplete | Check ORCA output for errors |
+| "Barrier is negative" | Product higher than saddle | Check calculation converged |
+| "RMSD values are identical" | Structures not loaded | Verify .xyz/.con files exist |
+| "Color map not found" | Invalid colormap name | Use "cmc.batlow" or "viridis" |
+
+** Getting Help
+
+If these solutions don't help:
+
+1. Check [[file:faq.org][FAQ]] for common questions
+2. Search [[file:../reference/glossary.org][Glossary]] for term definitions
+3. Create issue on [[https://github.com/HaoZeke/chemparseplot/issues][GitHub Issues]]
+
+Include:
+- chemparseplot version
+- Python version
+- ORCA/eOn version
+- Minimal reproducible example
+- Full error message
+
+** See Also
+
+- [[file:faq.org][FAQ]] - Common questions
+- [[file:install.org][Installation Guide]] - Installation troubleshooting
+- [[file:../reference/glossary.org][Glossary]] - Term definitions

@@ -1,0 +1,273 @@
+#+TITLE: How-to: Create Publication NEB Figures
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You have parsed NEB data (eOn or ORCA) and want publication-quality figures for energy profiles, 2D landscapes, and structure galleries.
+
+* 1D Energy Profiles
+
+** Hermite Spline (Default)
+
+Uses cubic Hermite splines with Savitzky-Golay smoothed force derivatives:
+
+#+begin_src python
+import matplotlib.pyplot as plt
+import numpy as np
+from chemparseplot.plot.neb import plot_energy_path, SmoothingParams
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+plot_energy_path(
+    ax,
+    rc=rmsd_r,             # reaction coordinate (RMSD from reactant)
+    energy=energies,       # energy array
+    f_para=f_parallel,     # parallel force component
+    color="#1f77b4",
+    alpha=1.0,
+    zorder=10,
+    method="hermite",
+    smoothing=SmoothingParams(window_length=5, polyorder=2),
+)
+
+ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+ax.set_ylabel("Energy (eV)")
+fig.savefig("profile.pdf", dpi=300, bbox_inches="tight")
+#+end_src
+
+** Standard Cubic Spline
+
+Use =method="spline"= for B-spline interpolation without force information:
+
+#+begin_src python
+plot_energy_path(
+    ax, rc, energy, f_para,
+    color="#1f77b4", alpha=1.0, zorder=10,
+    method="spline",
+)
+#+end_src
+
+** Eigenvalue Profile
+
+Plot the lowest eigenvalue along the path (useful for saddle point characterization):
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_eigenvalue_path
+
+plot_eigenvalue_path(
+    ax,
+    rc=rmsd_r,
+    eigenvalue=eigenvalues,
+    color="#d62728",
+    alpha=0.8,
+    zorder=10,
+    grid_color="white",    # horizontal zero-line color
+)
+#+end_src
+
+* 2D Landscape Surfaces
+
+** Gradient-Enhanced Matern (Default)
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_landscape_surface, plot_landscape_path_overlay
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+plot_landscape_surface(
+    ax,
+    rmsd_r=df["r"].to_numpy(),
+    rmsd_p=df["p"].to_numpy(),
+    grad_r=df["grad_r"].to_numpy(),
+    grad_p=df["grad_p"].to_numpy(),
+    z_data=df["z"].to_numpy(),
+    step_data=df["step"].to_numpy(),
+    method="grad_matern",
+    cmap="viridis",
+    show_pts=True,
+    variance_threshold=0.05,
+    project_path=True,       # reaction valley projection
+)
+
+# Overlay the colored NEB path
+plot_landscape_path_overlay(
+    ax,
+    r=latest_r, p=latest_p, z=latest_z,
+    cmap="viridis",
+    z_label="Energy (eV)",
+    project_path=True,
+)
+#+end_src
+
+** Gradient-Enhanced IMQ
+
+For datasets over 500 points, =grad_imq= switches automatically to Nystrom approximation:
+
+#+begin_src python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    n_inducing=200,          # number of inducing points for Nystrom
+)
+#+end_src
+
+** Standard RMSD Axes (No Projection)
+
+Set =project_path=False= to plot in raw (RMSD-R, RMSD-P) coordinates:
+
+#+begin_src python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    project_path=False,
+)
+ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+ax.set_ylabel(r"RMSD from Product ($\AA$)")
+#+end_src
+
+** Extra Points on the Surface
+
+Plot additional structures (saddle points, local minima) on the landscape:
+
+#+begin_src python
+import numpy as np
+
+extra = np.array([
+    [sp_rmsd_r, sp_rmsd_p],
+    [min_rmsd_r, min_rmsd_p],
+])
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    extra_points=extra,
+)
+#+end_src
+
+* Structure Rendering
+
+** Structure Strip (Gallery)
+
+Renders a horizontal gallery of atomic structures below the energy profile:
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_structure_strip
+
+fig, (ax_energy, ax_struct) = plt.subplots(
+    2, 1, figsize=(7, 6), height_ratios=[3, 1]
+)
+
+plot_structure_strip(
+    ax_struct,
+    atoms_list=[atoms_list[0], atoms_list[3], atoms_list[-1]],
+    labels=["Reactant", "TS", "Product"],
+    zoom=0.3,
+    rotation="0x,90y,0z",
+    theme_color="black",
+    max_cols=6,
+    renderer="ase",          # or "xyzrender" for ray-traced images
+)
+#+end_src
+
+** Inset Structure Annotation
+
+Place a structure image as an annotation on an energy profile:
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_structure_inset
+
+plot_structure_inset(
+    ax,
+    atoms=atoms_list[3],
+    x=rmsd_r[3],             # data x coordinate
+    y=energies[3],           # data y coordinate
+    xybox=(40, 40),          # offset in points
+    rad=0.3,                 # arrow curvature
+    zoom=0.4,
+    rotation="0x,90y,0z",
+    renderer="ase",          # or "xyzrender"
+)
+#+end_src
+
+** xyzrender Backend
+
+For ray-traced structure images, use the xyzrender renderer:
+
+#+begin_src python
+# Requires: pip install 'xyzrender>=0.1.3'
+plot_structure_strip(
+    ax, atoms_list, labels,
+    renderer="xyzrender",
+)
+#+end_src
+
+* Theme System
+
+** Built-in Themes
+
+#+begin_src python
+from chemparseplot.plot.theme import get_theme, setup_global_theme
+
+# Available themes: "ruhi", "cmc.batlow"
+theme = get_theme("ruhi")
+setup_global_theme(theme)
+#+end_src
+
+** Custom Theme Overrides
+
+#+begin_src python
+theme = get_theme("ruhi", font_size=14, facecolor="#f5f5f5")
+setup_global_theme(theme)
+#+end_src
+
+** Publication Preset
+
+Adds line width, spine removal, and DPI defaults on top of the base theme:
+
+#+begin_src python
+from chemparseplot.plot.theme import setup_publication_theme
+
+theme = get_theme("ruhi")
+setup_publication_theme(theme)
+#+end_src
+
+** Per-Axis Theming
+
+#+begin_src python
+from chemparseplot.plot.theme import apply_axis_theme
+
+apply_axis_theme(ax, theme)
+#+end_src
+
+* Journal Export
+
+** DPI and Size for Common Journals
+
+#+begin_src python
+# ACS journals: single column = 3.25 in, double = 7.0 in
+fig, ax = plt.subplots(figsize=(3.25, 3.25), dpi=300)
+
+# Nature: single column = 89 mm = 3.5 in
+fig, ax = plt.subplots(figsize=(3.5, 3.5), dpi=300)
+#+end_src
+
+** Save as Vector (PDF/EPS)
+
+#+begin_src python
+fig.savefig("figure.pdf", dpi=300, bbox_inches="tight", pad_inches=0.05)
+fig.savefig("figure.eps", dpi=300, bbox_inches="tight")
+#+end_src
+
+** Save as Raster (PNG/TIFF)
+
+#+begin_src python
+fig.savefig("figure.png", dpi=600, bbox_inches="tight")
+fig.savefig("figure.tiff", dpi=600, bbox_inches="tight")
+#+end_src
+
+* See Also
+
+- [[file:parse_eon_neb.org][How-to: Parse eOn NEB Calculations]]
+- [[file:parse_orca_neb.org][How-to: Parse ORCA NEB Calculations]]
+- [[file:../reference/plotting_api.org][Plotting API Reference]]
+- [[file:../explanation/neb_parsing_design.org][NEB Parsing Design]]

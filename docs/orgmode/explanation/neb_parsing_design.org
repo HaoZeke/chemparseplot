@@ -1,0 +1,85 @@
+#+TITLE: NEB Parsing Design
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Overview
+
+chemparseplot parses NEB output from multiple codes (eOn, ORCA) into a unified data format. This document explains the design decisions behind the parsing layer.
+
+* Unified Data Format Across Codes
+
+** The Problem
+
+eOn and ORCA produce different file formats:
+- eOn: paired DAT/CON files per optimization step, with columns for energy, eigenvalue, parallel force, and perpendicular force
+- ORCA: JSON output via OPI, or legacy =.interp= text files
+
+Without a common format, every plotting function needs code-specific branches.
+
+** The Solution
+
+Both parsers produce compatible output. eOn produces a Polars DataFrame with columns =[r, p, grad_r, grad_p, z, step]=. ORCA produces a dict with fields =energies=, =rmsd_r=, =rmsd_p=, =grad_r=, =grad_p=, =n_images=, =converged=. The shared columns (=r=, =rmsd_r=, etc.) represent the same physical quantities: RMSD from reactant and product in Angstrom.
+
+This means =plot_energy_path()= and =plot_landscape_surface()= work identically for both codes. Adding a new parser (VASP, Quantum ESPRESSO) requires only producing the same columns.
+
+* RMSD Calculation
+
+** Simple vs IRA
+
+Two RMSD methods exist:
+
+- *Simple RMSD*: =sqrt(mean(|r_ref - r_mob|^2))= without alignment. Used in =opi_parser.py= as a fallback.
+- *IRA RMSD*: Iterative Rotations and Assignments (from =rgpycrumbs.geom.api.alignment=). Handles permutational symmetry and optimal rotation. Used in =parse/eon/neb.py= and =parse/neb_utils.py=.
+
+IRA is the preferred method because NEB images along a reaction path can have large rotational differences from the reference. Simple RMSD inflates the coordinate values and distorts the landscape surface.
+
+** Threading
+
+=calculate_landscape_coords()= in =neb_utils.py= computes RMSD-R and RMSD-P in parallel using =ThreadPoolExecutor(max_workers=2)=. The two calculations are independent (different reference atoms), so this halves the wall time.
+
+* Synthetic Gradient Projection
+
+The 2D landscape needs gradient information for the GP surface fit. NEB codes provide =f_para= (force parallel to the path) but not gradients in (RMSD-R, RMSD-P) space.
+
+The projection formula in =compute_synthetic_gradients()=:
+
+1. Compute the tangent direction in RMSD space: =dr = gradient(rmsd_r)=, =dp = gradient(rmsd_p)=
+2. Normalize: =norm = sqrt(dr^2 + dp^2)=, then =t_r = dr/norm=, =t_p = dp/norm=
+3. Project: =grad_r = -f_para * t_r=, =grad_p = -f_para * t_p=
+
+The negation converts force to gradient (=grad = -force=). This produces approximate 2D gradients that guide the surface interpolator. The gradient-enhanced kernel (=grad_matern=, =grad_imq=) uses these to produce smoother surfaces, particularly in regions with sparse data.
+
+The landscape surface also uses two augmentation strategies:
+- *Minima collars*: Synthetic points in a ring around endpoints with slightly higher energy, forcing the interpolator to curve upward (preventing artificial wells)
+- *Gradient helpers*: Four offset points per data point (=+/- epsilon= in R and P), with energy adjusted by =epsilon * gradient=, encoding the local slope
+
+* Caching Strategy
+
+** Why Parquet
+
+RMSD calculation via IRA is the bottleneck. For a 200-image NEB with 50 optimization steps, computing RMSD for all images takes minutes. Parquet caching avoids this on re-runs.
+
+Parquet over other formats:
+- *vs HDF5*: No h5py dependency required. Polars reads/writes parquet natively.
+- *vs CSV*: Parquet preserves column types (Float64, Int64) without parsing overhead. Compressed by default.
+- *vs pickle*: Format-stable across Python/Polars versions. Not vulnerable to arbitrary code execution.
+
+** Validation
+
+Cached DataFrames are validated before use:
+- Landscape cache: must contain =p= and =grad_r= columns (rejects old-format caches that lack gradient data)
+- Profile cache: must NOT contain =p= column (rejects landscape data), and row count must match =len(atoms_list)=
+
+If validation fails, the cache is discarded and data is recomputed.
+
+** Generic Caching
+
+=load_or_compute_data()= provides the caching pattern used by all eOn NEB functions. It takes a =validation_check= callable and a =computation_callback= callable, so each caller defines its own schema requirements.
+
+* Related
+
+- [[file:orca_neb_design.org][ORCA NEB Integration Design]]
+- [[file:lazy_imports.org][Lazy Import Pattern]]
+- [[file:../reference/eon_neb_api.org][eOn NEB API Reference]]
+- [[file:../reference/plotting_api.org][Plotting API Reference]]

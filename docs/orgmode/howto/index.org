@@ -1,0 +1,28 @@
+#+TITLE: How-to Guides
+#+OPTIONS: toc:nil num:nil
+
+* How-to Guides
+
+How-to guides are goal-oriented. Use them to solve specific problems.
+
+** Available How-tos
+
+| Guide | Description |
+|-------+-------------|
+| [[file:parse_orca_neb.org][Parse ORCA NEB Calculations]] | Extract energies and barriers from ORCA NEB |
+| [[file:parse_eon_neb.org][Parse eOn NEB Calculations]] | Extract data from eOn NEB calculations |
+| [[file:create_neb_figures.org][Create Publication-quality NEB Figures]] | Advanced plotting tips |
+
+** Structure
+
+Each how-to guide follows this structure:
+1. Problem statement
+2. Solution with code examples
+3. Data format (if applicable)
+4. See also links
+
+** Getting Help
+
+- [[file:../tutorials/index.org][Tutorials]] - Learn from scratch
+- [[file:../reference/index.org][Reference]] - API documentation
+- [[file:../explanation/index.org][Explanation]] - Understand concepts

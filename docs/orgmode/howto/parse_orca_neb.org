@@ -1,0 +1,79 @@
+#+TITLE: How-to: Parse ORCA NEB Calculations
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You have an ORCA NEB calculation and want to extract energies, geometries, and barriers.
+
+* Solution
+
+** For ORCA 6.1+ (Recommended)
+
+Use OPI-based parser:
+
+#+begin_src python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+data = parse_orca_neb("job", working_dir=Path("calculation"))
+
+# Access parsed data
+energies = data["energies"]  # eV
+n_images = data["n_images"]
+barrier = data["barrier_forward"]
+converged = data["converged"]
+#+end_src
+
+** For ORCA < 6.1
+
+Use legacy .interp file parser:
+
+#+begin_src python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("calculation"))
+
+if data is None:
+    print("Parsing failed - check .interp file exists")
+#+end_src
+
+** Automatic Fallback
+
+Let the parser choose automatically:
+
+#+begin_src python
+from chemparseplot.parse.orca.neb import parse_orca_neb, HAS_OPI
+
+if HAS_OPI:
+    data = parse_orca_neb("job", Path("calc"))
+else:
+    data = parse_orca_neb_fallback("job", Path("calc"))
+#+end_src
+
+* Data Format
+
+Returned dictionary contains:
+
+| Key | Type | Description |
+|-----+------+-------------|
+| =energies= | =np.ndarray= | Energies in eV |
+| =rmsd_r= | =np.ndarray= or =None= | RMSD from reactant |
+| =rmsd_p= | =np.ndarray= or =None= | RMSD from product |
+| =grad_r= | =np.ndarray= or =None= | Gradients (RMSD-r) |
+| =grad_p= | =np.ndarray= or =None= | Gradients (RMSD-p) |
+| =forces= | =list= or =None= | Force vectors |
+| =converged= | =bool= | Normal termination |
+| =n_images= | =int= | Number of NEB images |
+| =barrier_forward= | =float= or =None= | Forward barrier (eV) |
+| =barrier_reverse= | =float= or =None= | Reverse barrier (eV) |
+| =source= | =str= | ='opi'= or ='legacy_interp'= |
+| =orca_version= | =str= | ORCA version string |
+
+* See Also
+
+- [[file:../tutorials/orca_neb.org][Tutorial: ORCA NEB Parsing and Plotting]]
+- [[file:../reference/orca_neb_api.org][ORCA NEB API Reference]]
+- [[file:parse_eon_neb.org][How-to: Parse eOn NEB Calculations]]

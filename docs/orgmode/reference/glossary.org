@@ -1,0 +1,164 @@
+#+TITLE: Glossary
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Glossary of Computational Chemistry Terms
+
+This glossary defines technical terms used throughout chemparseplot documentation.
+
+** A
+
+*** ASE
+Atomic Simulation Environment. Python library for atomistic simulations. Used for structure handling and RMSD calculations.
+
+See: [[https://wiki.fysik.dtu.dk/ase/][ASE Documentation]]
+
+*** Auto-install
+Feature that automatically installs optional dependencies when first needed. Enabled via =RGPYCRUMBS_AUTO_DEPS=1= environment variable.
+
+** B
+
+*** Barrier
+Energy difference between reactant/product and saddle point. Forward barrier = E_saddle - E_reactant. Reverse barrier = E_saddle - E_product.
+
+** C
+
+*** CI-NEB
+Climbing Image Nudged Elastic Band. NEB variant where highest energy image climbs to saddle point.
+
+*** Convergence
+State where optimization algorithm has found stationary point. Typically defined by force threshold (e.g., 0.01 eV/Angstrom).
+
+** E
+
+*** Energy Profile
+Plot of energy vs reaction coordinate (image index or RMSD). Shows energy changes along reaction path.
+
+*** eOn
+Python framework for automated saddle point searches using NEB and dimer methods.
+
+See: [[https://eon.zih.tu-dresden.de/][eOn Website]]
+
+** G
+
+*** GBW
+Gaussian Basis Wavefunction. ORCA binary file format containing wavefunction data.
+
+*** Gradient
+First derivative of energy with respect to coordinates. Points in direction of steepest ascent.
+
+*** GPRD
+Gaussian Process Regression Dimer. Saddle search method using GP surrogate models.
+
+** H
+
+*** HDF5
+Hierarchical Data Format version 5. File format for storing large numerical datasets. Used by ChemGP for output.
+
+*** Hartree
+Atomic unit of energy. 1 Hartree = 27.211386245988 eV. Symbol: E_h.
+
+** I
+
+*** Image
+In NEB context, a replica of the system at a point along reaction path. Typical calculations use 5-20 images.
+
+*** Interpolation
+Estimation of values between known data points. Used for smoothing energy profiles.
+
+** J
+
+*** JAX
+High-performance numerical computing library. Used for Gaussian Process surface fitting in rgpycrumbs.
+
+See: [[https://jax.readthedocs.io/][JAX Documentation]]
+
+** L
+
+*** Landscape
+2D plot of energy surface in RMSD coordinates (RMSD from reactant vs RMSD from product).
+
+*** Lazy Import
+Pattern that defers module import until first use. Reduces startup time and optional dependencies.
+
+** N
+
+*** NEB
+Nudged Elastic Band. Method for finding minimum energy path between reactant and product.
+
+*** Nudged
+Projection of spring forces along path and true forces perpendicular to path. Prevents corner-cutting.
+
+*** Nystrom
+Approximation method for Gaussian Processes using inducing points. Reduces O(n^3) to O(m^2 n) where m << n.
+
+** O
+
+*** OPI
+ORCA Python Interface. Official Python library for parsing ORCA 6.1+ output.
+
+See: [[https://github.com/faccts/opi][OPI GitHub]]
+
+*** ORCA
+Quantum chemistry software package. Supports DFT, wavefunction methods, NEB calculations.
+
+See: [[https://www.faccts.de/orca/][ORCA Website]]
+
+** P
+
+*** PES
+Potential Energy Surface. Energy as function of nuclear coordinates.
+
+*** PEP 723
+Python Enhancement Proposal for inline script metadata. Allows specifying dependencies in script comments.
+
+*** Profile
+1D plot showing energy or other property along reaction coordinate.
+
+** R
+
+*** RBF
+Radial Basis Function. Interpolation method using radially symmetric basis functions.
+
+*** RMSD
+Root Mean Square Deviation. Measure of structural difference. RMSD = sqrt(sum((r1-r2)^2)/N).
+
+*** Reaction Coordinate
+Parameter that describes progress along reaction path. Can be image index, RMSD, or interpolated arc length.
+
+*** Reactant
+Starting structure of chemical reaction. Local minimum on PES.
+
+*** RFF
+Random Fourier Features. Approximation method for kernel methods using random feature maps.
+
+** S
+
+*** Saddle Point
+First-order saddle point on PES. Maximum along reaction coordinate, minimum in all other directions. Also called transition state.
+
+*** SCF
+Self-Consistent Field. Iterative method for solving Hartree-Fock or Kohn-Sham equations.
+
+*** Spring
+In NEB, fictitious springs between images that maintain equal spacing.
+
+** T
+
+*** Transition State
+See Saddle Point.
+
+*** TS
+Abbreviation for Transition State.
+
+** U
+
+*** Unit Registry
+Pint object that handles unit conversions. chemparseplot uses =ureg= for unit-aware quantities.
+
+** See Also
+
+- [[file:../tutorials/index.org][Tutorials]] - Learn how to use these concepts
+- [[file:../howto/index.org][How-to Guides]] - Solve problems with these concepts
+- [[file:../explanation/index.org][Explanation]] - Understand these concepts in depth

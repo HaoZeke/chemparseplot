@@ -1,0 +1,70 @@
+#+TITLE: chemparseplot Documentation
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:t author:t title:t
+
+* Welcome to chemparseplot Documentation
+
+chemparseplot is a pure-Python parsing and plotting library for computational chemistry outputs.
+
+* Documentation Structure (Diataxis)
+
+This documentation follows the [[https://diataxis.fr/][Diataxis]] framework:
+
+| Type          | Purpose                          | For Users Who Want To...        |
+|---------------+----------------------------------+---------------------------------|
+| [[file:tutorials/index.org][Tutorials]]   | Learning-oriented                  | Study and learn                 |
+| [[file:howto/index.org][How-to Guides]] | Goal-oriented                      | Solve a specific problem        |
+| [[file:reference/index.org][Reference]]   | Information-oriented               | Find technical information      |
+| [[file:explanation/index.org][Explanation]] | Understanding-oriented             | Understand concepts and design  |
+
+* Quick Start
+
+** Installation
+
+#+begin_src bash
+pip install chemparseplot
+# With plotting support
+pip install "chemparseplot[plot]"
+# With ORCA NEB support (ORCA 6.1+)
+pip install orca-pi
+#+end_src
+
+** Basic Usage
+
+#+begin_src python
+from chemparseplot import parse, units
+
+# Parse ORCA output
+data = parse.orca.read_log("output.log")
+
+# Use unit-aware quantities
+energy = units.Q_(1.5, "eV")
+#+end_src
+
+* Contents
+
+** Tutorials
+- [[file:tutorials/orca_neb.org][ORCA NEB Parsing and Plotting]] - Complete end-to-end tutorial
+
+** How-to Guides
+- [[file:howto/parse_orca_neb.org][Parse ORCA NEB calculations]]
+- [[file:howto/parse_eon_neb.org][Parse eOn NEB calculations]]
+- [[file:howto/create_neb_figures.org][Create publication-quality NEB figures]]
+
+** Reference
+- [[file:reference/orca_neb_api.org][ORCA NEB API Reference]]
+- [[file:reference/eon_neb_api.org][eOn NEB API Reference]]
+- [[file:reference/plotting_api.org][Plotting API Reference]]
+
+** Explanation
+- [[file:explanation/neb_parsing_design.org][NEB Parsing Design]]
+- [[file:explanation/lazy_imports.org][Lazy Import Pattern]]
+
+* Related Projects
+
+- [[https://rgpycrumbs.rgoswami.me][rgpycrumbs]] - Core library and CLI orchestrator
+- [[https://pychum.rgoswami.me][pychum]] - Input file generators
+- [[https://www.faccts.de/orca/][ORCA]] - Quantum chemistry program
+- [[https://github.com/faccts/opi][OPI]] - ORCA Python Interface
+
