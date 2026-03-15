@@ -11,14 +11,14 @@ Supports both:
 
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.parse.orca.neb.opi_parser import (
+    HAS_OPI,
     parse_orca_neb,
     parse_orca_neb_fallback,
-    HAS_OPI,
 )
 
 __all__ = [
+    "HAS_OPI",
     "extract_interp_points",
     "parse_orca_neb",
     "parse_orca_neb_fallback",
-    "HAS_OPI",
 ]

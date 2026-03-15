@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 """ChemGP visualization functions.
 
 Mixed plotnine (for 1D line charts) and matplotlib (for 2D

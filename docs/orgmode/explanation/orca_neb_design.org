@@ -94,7 +94,7 @@ Both parsers return compatible dict:
 #+begin_src python
 # eOn NEB data
 data_eon = parse_eon_neb(...)
-# ORCA NEB data  
+# ORCA NEB data
 data_orca = parse_orca_neb(...)
 
 # Same plotting functions work for both!

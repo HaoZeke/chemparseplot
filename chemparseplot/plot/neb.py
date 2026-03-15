@@ -1,6 +1,3 @@
-from pathlib import Path
-from functools import lru_cache
-from typing import Any
 import io
 import logging
 import shutil
@@ -8,6 +5,9 @@ import subprocess
 import tempfile
 from collections import namedtuple
 from dataclasses import dataclass
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -779,7 +779,7 @@ def plot_orca_neb_profile(
     dpi: int = 200,
 ) -> None:
     """Plot ORCA NEB energy profile from OPI-parsed data.
-    
+
     Parameters
     ----------
     neb_data
@@ -793,7 +793,7 @@ def plot_orca_neb_profile(
         Figure dimensions in inches
     dpi
         Output resolution
-        
+
     Example
     -------
     >>> from chemparseplot.parse.orca.neb import parse_orca_neb
@@ -802,44 +802,44 @@ def plot_orca_neb_profile(
     >>> plot_orca_neb_profile(data, "neb_profile.pdf")
     """
     import matplotlib.pyplot as plt
-    
+
     energies = neb_data.get("energies", [])
     n_images = neb_data.get("n_images", len(energies))
-    
+
     if not energies:
         msg = "No energy data in neb_data"
         raise ValueError(msg)
-    
+
     # Create figure
     fig, ax = plt.subplots(figsize=(width, height), dpi=dpi)
-    
+
     # Plot energy profile
     image_indices = list(range(n_images))
-    ax.plot(image_indices, energies, 'o-', linewidth=2, markersize=8)
-    
+    ax.plot(image_indices, energies, "o-", linewidth=2, markersize=8)
+
     # Label reactant, product, and saddle
     if len(energies) >= 3:
-        ax.plot(0, energies[0], 'go', markersize=12, label='Reactant')
-        ax.plot(-1, energies[-1], 'ro', markersize=12, label='Product')
-        
+        ax.plot(0, energies[0], "go", markersize=12, label="Reactant")
+        ax.plot(-1, energies[-1], "ro", markersize=12, label="Product")
+
         # Find saddle point
         saddle_idx = energies.index(max(energies))
         if saddle_idx != 0 and saddle_idx != len(energies) - 1:
-            ax.plot(saddle_idx, energies[saddle_idx], 'ys', markersize=12, label='Saddle')
-    
+            ax.plot(saddle_idx, energies[saddle_idx], "ys", markersize=12, label="Saddle")
+
     # Add barrier annotations
     barrier_fwd = neb_data.get("barrier_forward")
     barrier_rev = neb_data.get("barrier_reverse")
-    
+
     if barrier_fwd is not None and barrier_fwd > 0:
         ax.annotate(
             f"ΔE‡ = {barrier_fwd:.2f} eV",
             xy=(saddle_idx, energies[saddle_idx]),
             xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
-            arrowprops=dict(arrowstyle='->', color='black'),
+            arrowprops=dict(arrowstyle="->", color="black"),
             fontsize=10,
         )
-    
+
     # Labels and formatting
     ax.set_xlabel("Image Index")
     ax.set_ylabel("Energy (eV)")
@@ -847,7 +847,7 @@ def plot_orca_neb_profile(
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.minorticks_on()
-    
+
     # Save
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
@@ -865,10 +865,10 @@ def plot_orca_neb_energy_profile(
     smoothing: Any = None,
 ) -> None:
     """Plot ORCA NEB energy profile using existing eOn-style plotting.
-    
+
     Creates publication-quality energy profile similar to eOn NEB plots.
     Uses the same plotting functions as eOn NEB for consistency.
-    
+
     Parameters
     ----------
     neb_data
@@ -887,7 +887,7 @@ def plot_orca_neb_energy_profile(
         Interpolation method: 'hermite' or 'spline'
     smoothing
         Smoothing parameters
-        
+
     Example
     -------
     >>> from chemparseplot.parse.orca.neb import parse_orca_neb
@@ -897,7 +897,7 @@ def plot_orca_neb_energy_profile(
     """
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    
+
     energies = neb_data.get("energies", [])
     rmsd_r = neb_data.get("rmsd_r")
     rmsd_p = neb_data.get("rmsd_p")
@@ -906,11 +906,11 @@ def plot_orca_neb_energy_profile(
     n_images = neb_data.get("n_images", len(energies))
     barrier_fwd = neb_data.get("barrier_forward")
     barrier_rev = neb_data.get("barrier_reverse")
-    
+
     if len(energies) == 0:
         msg = "No energy data in neb_data"
         raise ValueError(msg)
-    
+
     # Use RMSD as reaction coordinate if available, otherwise use image index
     if rmsd_r is not None and rmsd_p is not None:
         # Use progress coordinate (similar to eOn)
@@ -921,53 +921,66 @@ def plot_orca_neb_energy_profile(
         rc = np.arange(n_images)
         f_para = np.zeros(n_images)
         xlabel = "Image Index"
-    
+
     # Create figure
     fig = plt.figure(figsize=(width, height), dpi=dpi)
     gs = GridSpec(1, 1, figure=fig)
     ax = fig.add_subplot(gs[0])
-    
+
     # Plot energy profile using same function as eOn
     from chemparseplot.plot.theme import get_theme
+
     theme = get_theme("ruhi")
-    
+
     color = "#1f77b4"  # Default blue color
     plot_energy_path(
-        ax, rc, energies, f_para,
-        color=color, alpha=1.0, zorder=10,
-        method=method, smoothing=smoothing
+        ax,
+        rc,
+        energies,
+        f_para,
+        color=color,
+        alpha=1.0,
+        zorder=10,
+        method=method,
+        smoothing=smoothing,
     )
-    
+
     # Label key points
     if n_images >= 2:
-        ax.plot(rc[0], energies[0], 'go', markersize=10, label='Reactant', zorder=20)
-        ax.plot(rc[-1], energies[-1], 'ro', markersize=10, label='Product', zorder=20)
-        
+        ax.plot(rc[0], energies[0], "go", markersize=10, label="Reactant", zorder=20)
+        ax.plot(rc[-1], energies[-1], "ro", markersize=10, label="Product", zorder=20)
+
         # Find and label saddle
         saddle_idx = int(np.argmax(energies))
         if saddle_idx != 0 and saddle_idx != n_images - 1:
-            ax.plot(rc[saddle_idx], energies[saddle_idx], 'ys', markersize=12, 
-                   label='Saddle', zorder=20)
-            
+            ax.plot(
+                rc[saddle_idx],
+                energies[saddle_idx],
+                "ys",
+                markersize=12,
+                label="Saddle",
+                zorder=20,
+            )
+
             # Add barrier annotation
             if barrier_fwd is not None and barrier_fwd > 0:
                 ax.annotate(
                     f"$\\Delta E^\\ddagger = {barrier_fwd:.2f}$ eV",
                     xy=(rc[saddle_idx], energies[saddle_idx]),
                     xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
-                    arrowprops=dict(arrowstyle='->', color='black', lw=1.5),
+                    arrowprops=dict(arrowstyle="->", color="black", lw=1.5),
                     fontsize=9,
                     zorder=30,
                 )
-    
+
     # Labels and formatting
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Energy (eV)")
     ax.set_title("ORCA NEB Energy Profile")
     ax.legend(frameon=False)
-    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
-    
+
     # Save
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
@@ -985,10 +998,10 @@ def plot_orca_neb_landscape(
     project_path: bool = True,
 ) -> None:
     """Plot ORCA NEB 2D landscape using existing eOn-style plotting.
-    
+
     Creates publication-quality landscape plot similar to eOn NEB plots.
     Uses the same plotting functions as eOn NEB for consistency.
-    
+
     Parameters
     ----------
     neb_data
@@ -1007,7 +1020,7 @@ def plot_orca_neb_landscape(
         Surface interpolation method
     project_path
         Whether to project into reaction valley coordinates
-        
+
     Example
     -------
     >>> from chemparseplot.parse.orca.neb import parse_orca_neb
@@ -1017,13 +1030,13 @@ def plot_orca_neb_landscape(
     """
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    
+
     energies = neb_data.get("energies", [])
     rmsd_r = neb_data.get("rmsd_r")
     rmsd_p = neb_data.get("rmsd_p")
     grad_r = neb_data.get("grad_r")
     grad_p = neb_data.get("grad_p")
-    
+
     # Convert to numpy arrays if lists
     rmsd_r = np.asarray(rmsd_r)
     rmsd_p = np.asarray(rmsd_p)
@@ -1035,21 +1048,23 @@ def plot_orca_neb_landscape(
             "Re-run ORCA calculation with geometry output enabled."
         )
         raise ValueError(msg)
-    
+
     # Create figure
     fig = plt.figure(figsize=(width, height), dpi=dpi)
     gs = GridSpec(1, 1, figure=fig)
     ax = fig.add_subplot(gs[0])
-    
+
     # Get theme
     from chemparseplot.plot.theme import get_theme
+
     theme = get_theme("ruhi")
     cmap = theme.cmap_landscape
-    
+
     # Plot 2D landscape surface using same function as eOn
     plot_landscape_surface(
         ax,
-        rmsd_r, rmsd_p,
+        rmsd_r,
+        rmsd_p,
         grad_r if grad_r is not None else np.zeros_like(rmsd_r),
         grad_p if grad_p is not None else np.zeros_like(rmsd_p),
         energies,
@@ -1058,16 +1073,18 @@ def plot_orca_neb_landscape(
         show_pts=True,
         project_path=project_path,
     )
-    
+
     # Overlay path using same function as eOn
     plot_landscape_path_overlay(
         ax,
-        rmsd_r, rmsd_p, energies,
+        rmsd_r,
+        rmsd_p,
+        energies,
         cmap=cmap,
         z_label="Energy (eV)",
         project_path=project_path,
     )
-    
+
     # Labels and formatting
     if project_path:
         ax.set_xlabel(r"Reaction progress $s$ ($\AA$)")
@@ -1077,10 +1094,10 @@ def plot_orca_neb_landscape(
         ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
         ax.set_ylabel(r"RMSD from Product ($\AA$)")
         ax.set_title("ORCA NEB RMSD Landscape")
-    
-    ax.grid(True, alpha=0.3, linestyle='--')
+
+    ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
-    
+
     # Save
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(str(output), dpi=dpi, bbox_inches="tight")

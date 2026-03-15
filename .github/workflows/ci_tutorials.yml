@@ -9,16 +9,16 @@ on:
 jobs:
   test-tutorials:
     runs-on: ubuntu-22.04
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
-      
+
       - name: Extract and test ORCA NEB tutorial
         run: |
           # Extract code blocks from org tutorial
@@ -28,7 +28,7 @@ jobs:
           from pathlib import Path
           import numpy as np
           import tempfile
-          
+
           # Test imports
           from chemparseplot.parse.orca.neb import (
               parse_orca_neb,
@@ -39,7 +39,7 @@ jobs:
               plot_orca_neb_energy_profile,
               plot_orca_neb_landscape,
           )
-          
+
           # Test with mock data
           test_data = {
               "energies": np.array([0.0, 0.3, 0.6, 0.9, 1.2, 0.9, 0.6, 0.3, 0.1]),
@@ -54,7 +54,7 @@ jobs:
               "source": "test",
               "orca_version": "test",
           }
-          
+
           with tempfile.TemporaryDirectory() as tmpdir:
               output = Path(tmpdir) / "profile.pdf"
               plot_orca_neb_energy_profile(
@@ -62,24 +62,24 @@ jobs:
               )
               assert output.exists(), "Profile not created"
               print(f"✓ Energy profile created: {output.stat().st_size} bytes")
-          
+
           # Test legacy fallback
           result = parse_orca_neb_fallback("nonexistent", Path("/tmp"))
           assert result is None, "Fallback should return None"
           print("✓ Legacy fallback works")
-          
+
           print("\n✓ All ORCA NEB tutorial tests passed!")
           TUTORIAL_EOF
-          
+
           # Run tutorial test
           uv run --with matplotlib --with ase --with polars --with adjustText --with cmcrameri --with "jax[cpu]" python3 /tmp/test_orca_neb_tutorial.py
-      
+
       - name: Test parsing modules compile
         run: |
           uv run python3 -m py_compile chemparseplot/parse/orca/neb/opi_parser.py
           uv run python3 -m py_compile chemparseplot/parse/orca/neb/interp.py
           echo "✓ All parsing modules compile"
-      
+
       - name: Test plotting modules compile
         run: |
           uv run python3 -m py_compile chemparseplot/plot/neb.py

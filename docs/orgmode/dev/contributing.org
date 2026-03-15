@@ -76,7 +76,7 @@ def plot_energy_profile(
     width: float = 5.37,
 ) -> None:
     """Plot NEB energy profile.
-    
+
     Parameters
     ----------
     data
@@ -85,7 +85,7 @@ def plot_energy_profile(
         Output file path
     width
         Figure width in inches
-    
+
     Example
     -------
     >>> data = parse_orca_neb("job")

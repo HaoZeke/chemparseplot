@@ -146,10 +146,10 @@ def validate_neb_data(data: dict) -> bool:
     for key in required_keys:
         if key not in data:
             return False
-    
+
     if len(data["energies"]) != data["n_images"]:
         return False
-    
+
     return True
 #+end_src
 
@@ -160,14 +160,14 @@ def validate_neb_data(data: dict) -> bool:
 #+begin_src python
 def plot_profile(data, output):
     """Plot energy profile.
-    
+
     Parameters
     ----------
     data : dict
         Parsed NEB data
     output : Path
         Output file path
-    
+
     Example
     -------
     >>> data = parse_orca_neb("job")

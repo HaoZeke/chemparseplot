@@ -192,18 +192,18 @@ def main():
     work_dir = Path(".")
     output_dir = Path("figures")
     output_dir.mkdir(exist_ok=True)
-    
+
     # Parse ORCA output
     print(f"Parsing {basename}...")
     data = parse_orca_neb(basename, working_dir=work_dir)
-    
+
     # Print summary
     print(f"\nNEB Calculation Summary:")
     print(f"  Images: {data['n_images']}")
     print(f"  Converged: {data['converged']}")
     print(f"  Barrier (forward): {data['barrier_forward']:.2f} eV")
     print(f"  Barrier (reverse): {data['barrier_reverse']:.2f} eV")
-    
+
     # Create energy profile
     profile_out = output_dir / "neb_profile.pdf"
     print(f"\nCreating energy profile: {profile_out}")
@@ -214,7 +214,7 @@ def main():
         height=5.37,
         dpi=300,
     )
-    
+
     # Create landscape (if RMSD data available)
     if data['rmsd_r'] is not None:
         landscape_out = output_dir / "neb_landscape.pdf"
@@ -230,7 +230,7 @@ def main():
     else:
         print("\nNo RMSD data available - skipping landscape plot")
         print("Re-run ORCA with geometry output enabled.")
-    
+
     print("\nDone!")
 
 if __name__ == "__main__":

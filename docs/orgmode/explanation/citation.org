@@ -55,7 +55,7 @@ cite:[goswami2024chemparseplot goswami2026valley goswami2026neb goswami2025gpr g
 ** Acknowledgments
 
 #+begin_src text
-Computational chemistry data was parsed and visualized using chemparseplot 
+Computational chemistry data was parsed and visualized using chemparseplot
 (https://github.com/HaoZeke/chemparseplot). Reaction path visualization employed
 the 2D reaction valley projection method [cite:@goswami2026valley]. NEB calculations
 used the enhanced CI-NEB method [cite:@goswami2026neb]. Gaussian process surface
