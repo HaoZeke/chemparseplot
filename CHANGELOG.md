@@ -2,6 +2,19 @@
 
 <!-- towncrier release notes start -->
 
+## [1.4.0](https://github.com/HaoZeke/chemparseplot/tree/1.4.0) - 2026-03-15
+
+### Added
+
+- Diataxis documentation structure: tutorials (ORCA NEB, eOn saddle), how-to guides
+(parsing, figure creation, install, troubleshooting), explanations (architecture,
+NEB design, lazy imports), and reference (API docs, glossary). ([#docs_tutorials](https://github.com/HaoZeke/chemparseplot/issues/docs_tutorials))
+- Migrated ChemGP and PLUMED modules from rgpycrumbs: ``parse/chemgp_hdf5`` (HDF5 I/O),
+``parse/chemgp_jsonl`` (JSONL parsers), ``parse/plumed`` (HILLS parsing, FES reconstruction,
+minima finding), ``plot/plumed`` (FES visualization), ``scripts/plot_gp`` (ChemGP CLI),
+``scripts/plt_neb`` (NEB landscape CLI). ([#scope_migration](https://github.com/HaoZeke/chemparseplot/issues/scope_migration))
+
+
 ## [v1.3.0](https://github.com/HaoZeke/chemparseplot/tree/v1.3.0) - 2026-03-09
 
 ### Added
