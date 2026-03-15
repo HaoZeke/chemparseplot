@@ -1,0 +1,496 @@
+# {py:mod}`chemparseplot.parse.chemgp_jsonl`
+
+```{py:module} chemparseplot.parse.chemgp_jsonl
+```
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`OptimizerTrace <chemparseplot.parse.chemgp_jsonl.OptimizerTrace>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace
+    :summary:
+    ```
+* - {py:obj}`ComparisonData <chemparseplot.parse.chemgp_jsonl.ComparisonData>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.ComparisonData
+    :summary:
+    ```
+* - {py:obj}`RFFQualityData <chemparseplot.parse.chemgp_jsonl.RFFQualityData>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData
+    :summary:
+    ```
+* - {py:obj}`GPQualityGrid <chemparseplot.parse.chemgp_jsonl.GPQualityGrid>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid
+    :summary:
+    ```
+* - {py:obj}`StationaryPoint <chemparseplot.parse.chemgp_jsonl.StationaryPoint>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint
+    :summary:
+    ```
+* - {py:obj}`GPQualityData <chemparseplot.parse.chemgp_jsonl.GPQualityData>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityData
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`parse_comparison_jsonl <chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl
+    :summary:
+    ```
+* - {py:obj}`parse_rff_quality_jsonl <chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl
+    :summary:
+    ```
+* - {py:obj}`parse_gp_quality_jsonl <chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} OptimizerTrace
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace
+```
+
+````{py:attribute} method
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace.method
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace.method
+```
+
+````
+
+````{py:attribute} steps
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace.steps
+:type: list[int]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace.steps
+```
+
+````
+
+````{py:attribute} oracle_calls
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace.oracle_calls
+:type: list[int]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace.oracle_calls
+```
+
+````
+
+````{py:attribute} energies
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace.energies
+:type: list[float] | None
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace.energies
+```
+
+````
+
+````{py:attribute} forces
+:canonical: chemparseplot.parse.chemgp_jsonl.OptimizerTrace.forces
+:type: list[float] | None
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.OptimizerTrace.forces
+```
+
+````
+
+`````
+
+`````{py:class} ComparisonData
+:canonical: chemparseplot.parse.chemgp_jsonl.ComparisonData
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.ComparisonData
+```
+
+````{py:attribute} traces
+:canonical: chemparseplot.parse.chemgp_jsonl.ComparisonData.traces
+:type: dict[str, chemparseplot.parse.chemgp_jsonl.OptimizerTrace]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.ComparisonData.traces
+```
+
+````
+
+````{py:attribute} summary
+:canonical: chemparseplot.parse.chemgp_jsonl.ComparisonData.summary
+:type: dict[str, typing.Any] | None
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.ComparisonData.summary
+```
+
+````
+
+`````
+
+````{py:function} parse_comparison_jsonl(path: str | pathlib.Path) -> chemparseplot.parse.chemgp_jsonl.ComparisonData
+:canonical: chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl
+```
+````
+
+`````{py:class} RFFQualityData
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData
+```
+
+````{py:attribute} exact_energy_mae
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_energy_mae
+:type: float
+:value: >
+   0.0
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_energy_mae
+```
+
+````
+
+````{py:attribute} exact_gradient_mae
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_gradient_mae
+:type: float
+:value: >
+   0.0
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_gradient_mae
+```
+
+````
+
+````{py:attribute} d_rff_values
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.d_rff_values
+:type: list[int]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.d_rff_values
+```
+
+````
+
+````{py:attribute} energy_mae_vs_true
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_true
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_true
+```
+
+````
+
+````{py:attribute} gradient_mae_vs_true
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_true
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_true
+```
+
+````
+
+````{py:attribute} energy_mae_vs_gp
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_gp
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_gp
+```
+
+````
+
+````{py:attribute} gradient_mae_vs_gp
+:canonical: chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_gp
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_gp
+```
+
+````
+
+`````
+
+````{py:function} parse_rff_quality_jsonl(path: str | pathlib.Path) -> chemparseplot.parse.chemgp_jsonl.RFFQualityData
+:canonical: chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl
+```
+````
+
+`````{py:class} GPQualityGrid
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid
+```
+
+````{py:attribute} n_train
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.n_train
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.n_train
+```
+
+````
+
+````{py:attribute} nx
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.nx
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.nx
+```
+
+````
+
+````{py:attribute} ny
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.ny
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.ny
+```
+
+````
+
+````{py:attribute} x
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.x
+:type: list[list[float]]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.x
+```
+
+````
+
+````{py:attribute} y
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.y
+:type: list[list[float]]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.y
+```
+
+````
+
+````{py:attribute} true_e
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.true_e
+:type: list[list[float]]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.true_e
+```
+
+````
+
+````{py:attribute} gp_e
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_e
+:type: list[list[float]]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_e
+```
+
+````
+
+````{py:attribute} gp_var
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_var
+:type: list[list[float]]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_var
+```
+
+````
+
+````{py:attribute} train_x
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_x
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_x
+```
+
+````
+
+````{py:attribute} train_y
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_y
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_y
+```
+
+````
+
+````{py:attribute} train_e
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_e
+:type: list[float]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_e
+```
+
+````
+
+`````
+
+`````{py:class} StationaryPoint
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint
+```
+
+````{py:attribute} kind
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint.kind
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint.kind
+```
+
+````
+
+````{py:attribute} id
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint.id
+:type: int
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint.id
+```
+
+````
+
+````{py:attribute} x
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint.x
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint.x
+```
+
+````
+
+````{py:attribute} y
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint.y
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint.y
+```
+
+````
+
+````{py:attribute} energy
+:canonical: chemparseplot.parse.chemgp_jsonl.StationaryPoint.energy
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.StationaryPoint.energy
+```
+
+````
+
+`````
+
+`````{py:class} GPQualityData
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityData
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityData
+```
+
+````{py:attribute} meta
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityData.meta
+:type: dict[str, typing.Any]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityData.meta
+```
+
+````
+
+````{py:attribute} stationary
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityData.stationary
+:type: list[chemparseplot.parse.chemgp_jsonl.StationaryPoint]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityData.stationary
+```
+
+````
+
+````{py:attribute} grids
+:canonical: chemparseplot.parse.chemgp_jsonl.GPQualityData.grids
+:type: dict[int, chemparseplot.parse.chemgp_jsonl.GPQualityGrid]
+:value: >
+   'field(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.GPQualityData.grids
+```
+
+````
+
+`````
+
+````{py:function} parse_gp_quality_jsonl(path: str | pathlib.Path) -> chemparseplot.parse.chemgp_jsonl.GPQualityData
+:canonical: chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl
+```
+````

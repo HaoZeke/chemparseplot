@@ -18,6 +18,7 @@ chemparseplot.plot.neb
 chemparseplot.plot.structs
 chemparseplot.plot.theme
 chemparseplot.plot.chemgp
+chemparseplot.plot.plumed
 ```
 
 ## Package Contents

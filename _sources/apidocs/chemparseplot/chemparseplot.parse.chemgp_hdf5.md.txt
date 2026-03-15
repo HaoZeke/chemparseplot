@@ -1,0 +1,86 @@
+# {py:mod}`chemparseplot.parse.chemgp_hdf5`
+
+```{py:module} chemparseplot.parse.chemgp_hdf5
+```
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`read_h5_table <chemparseplot.parse.chemgp_hdf5.read_h5_table>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_table
+    :summary:
+    ```
+* - {py:obj}`read_h5_grid <chemparseplot.parse.chemgp_hdf5.read_h5_grid>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_grid
+    :summary:
+    ```
+* - {py:obj}`read_h5_path <chemparseplot.parse.chemgp_hdf5.read_h5_path>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_path
+    :summary:
+    ```
+* - {py:obj}`read_h5_points <chemparseplot.parse.chemgp_hdf5.read_h5_points>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_points
+    :summary:
+    ```
+* - {py:obj}`read_h5_metadata <chemparseplot.parse.chemgp_hdf5.read_h5_metadata>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_metadata
+    :summary:
+    ```
+* - {py:obj}`validate_hdf5_structure <chemparseplot.parse.chemgp_hdf5.validate_hdf5_structure>`
+  - ```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.validate_hdf5_structure
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} read_h5_table(f: typing.Any, name: str = 'table') -> typing.Any
+:canonical: chemparseplot.parse.chemgp_hdf5.read_h5_table
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_table
+```
+````
+
+````{py:function} read_h5_grid(f: typing.Any, name: str) -> tuple[numpy.ndarray, numpy.ndarray | None, numpy.ndarray | None]
+:canonical: chemparseplot.parse.chemgp_hdf5.read_h5_grid
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_grid
+```
+````
+
+````{py:function} read_h5_path(f: typing.Any, name: str) -> dict[str, numpy.ndarray]
+:canonical: chemparseplot.parse.chemgp_hdf5.read_h5_path
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_path
+```
+````
+
+````{py:function} read_h5_points(f: typing.Any, name: str) -> dict[str, numpy.ndarray]
+:canonical: chemparseplot.parse.chemgp_hdf5.read_h5_points
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_points
+```
+````
+
+````{py:function} read_h5_metadata(f: typing.Any) -> dict[str, typing.Any]
+:canonical: chemparseplot.parse.chemgp_hdf5.read_h5_metadata
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.read_h5_metadata
+```
+````
+
+````{py:function} validate_hdf5_structure(f: typing.Any, required_groups: list[str] | None = None) -> list[str]
+:canonical: chemparseplot.parse.chemgp_hdf5.validate_hdf5_structure
+
+```{autodoc2-docstring} chemparseplot.parse.chemgp_hdf5.validate_hdf5_structure
+```
+````

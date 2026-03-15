@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chemparseplot.parse.plumed &#8212; chemparseplot 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../../_static/documentation_options.js?v=1f29e9d3"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/_modules/chemparseplot/parse/plumed.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+<script defer src="https://analytics.turtletech.us/script.js" data-website-id="95def988-c3e6-4297-9d39-cc3b3032703e"></script>
+<script>window.umami=window.umami||{track:function(){}};document.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname)umami.track('Outbound Link',{url:a.href})});</script>
+
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../features.html">Features</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorial Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../used_by.html">Used By</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../../index.html">Module code</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.plumed</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <h1>Source code for chemparseplot.parse.plumed</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2023-present Rohit Goswami &lt;rog32@hi.is&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># SPDX-License-Identifier: MIT</span>
+
+<span class="sd">&quot;&quot;&quot;PLUMED metadynamics HILLS file parsing and FES reconstruction.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">_MIN_COLS_1D</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">_MIN_COLS_2D</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">_ALPHABET_SIZE</span> <span class="o">=</span> <span class="mi">26</span>
+<span class="n">_MIN_BIN_SIZE</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<div class="viewcode-block" id="_calculate_fes_2d">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.parse.plumed.html#chemparseplot.parse.plumed._calculate_fes_2d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_fes_2d</span><span class="p">(</span><span class="n">hills_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">per</span><span class="p">,</span> <span class="n">npoints</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to calculate the 2D Free Energy Surface.</span>
+
+<span class="sd">    The FES is calculated as the negative sum of Gaussian kernels.</span>
+<span class="sd">    FES(x, y) = - sum_{i} [ H_i * exp( - (dx_i^2 / (2*sx_i^2)) - (dy_i^2 / (2*sy_i^2)) ) ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create a 2D grid of coordinates</span>
+    <span class="c1"># Note: The &#39;ij&#39; indexing ensures the output grid has shape (len(x), len(y))</span>
+    <span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Initialize FES to zero</span>
+    <span class="n">fes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">npoints</span><span class="p">,</span> <span class="n">npoints</span><span class="p">))</span>
+
+    <span class="c1"># Get periodicity and ranges</span>
+    <span class="n">per_x</span><span class="p">,</span> <span class="n">per_y</span> <span class="o">=</span> <span class="n">per</span>
+    <span class="n">range_x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">range_y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Unpack hills data for clarity</span>
+    <span class="n">centers_x</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">centers_y</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">sigmas_x</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">sigmas_y</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span>
+
+    <span class="c1"># Loop over each Gaussian hill and add it to the FES</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">)):</span>
+        <span class="c1"># Calculate distance from grid points to the center of the current hill</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">grid_x</span> <span class="o">-</span> <span class="n">centers_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">grid_y</span> <span class="o">-</span> <span class="n">centers_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Apply periodic boundary conditions if necessary</span>
+        <span class="k">if</span> <span class="n">per_x</span><span class="p">:</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">range_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dx</span> <span class="o">/</span> <span class="n">range_x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">per_y</span><span class="p">:</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">dy</span> <span class="o">-</span> <span class="n">range_y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dy</span> <span class="o">/</span> <span class="n">range_y</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the Gaussian kernel for the current hill</span>
+        <span class="n">arg_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">/</span> <span class="n">sigmas_x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">arg_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">dy</span> <span class="o">/</span> <span class="n">sigmas_y</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># Add the contribution of this hill to the total bias potential</span>
+        <span class="n">fes</span> <span class="o">+=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">arg_x</span> <span class="o">+</span> <span class="n">arg_y</span><span class="p">))</span>
+
+    <span class="c1"># The Free Energy Surface is the negative of the summed bias potential</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">fes</span></div>
+
+
+
+<div class="viewcode-block" id="_calculate_fes_1d">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.parse.plumed.html#chemparseplot.parse.plumed._calculate_fes_1d">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_fes_1d</span><span class="p">(</span><span class="n">hills_data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">per</span><span class="p">,</span> <span class="n">npoints</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to calculate the 1D Free Energy Surface.</span>
+
+<span class="sd">    FES(x) = - sum_{i} [ H_i * exp( - (dx_i^2 / (2*sx_i^2)) ) ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Grid is just the 1D vector x</span>
+    <span class="n">grid_x</span> <span class="o">=</span> <span class="n">x</span>
+
+    <span class="c1"># Initialize FES to zero</span>
+    <span class="n">fes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npoints</span><span class="p">)</span>
+
+    <span class="c1"># Get periodicity and range</span>
+    <span class="n">per_x</span> <span class="o">=</span> <span class="n">per</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">range_x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Unpack hills data</span>
+    <span class="n">centers_x</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">sigmas_x</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">heights</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># Loop over each Gaussian hill</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">heights</span><span class="p">)):</span>
+        <span class="c1"># Calculate distance</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">grid_x</span> <span class="o">-</span> <span class="n">centers_x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Apply periodic boundary conditions if necessary</span>
+        <span class="k">if</span> <span class="n">per_x</span><span class="p">:</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">range_x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">dx</span> <span class="o">/</span> <span class="n">range_x</span><span class="p">)</span>
+
+        <span class="c1"># Calculate Gaussian kernel</span>
+        <span class="n">arg_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">/</span> <span class="n">sigmas_x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># Add to bias potential</span>
+        <span class="n">fes</span> <span class="o">+=</span> <span class="n">heights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">arg_x</span><span class="p">)</span>
+
+    <span class="c1"># The FES is the negative of the bias potential</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">fes</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_fes_from_hills">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.parse.plumed.html#chemparseplot.parse.plumed.calculate_fes_from_hills">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_fes_from_hills</span><span class="p">(</span><span class="n">hills</span><span class="p">,</span> <span class="n">imin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">imax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">npoints</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a 1D or 2D Free Energy Surface (FES) from a metadynamics hills file.</span>
+
+<span class="sd">    .. versionadded:: 0.0.3</span>
+
+<span class="sd">    This is a Python/NumPy translation of the R function fes2.hillsfile.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hills (dict): A dictionary containing the metadynamics data. Expected keys:</span>
+<span class="sd">            &#39;hillsfile&#39; (np.ndarray): The hills data. For 1D FES, shape is (N, 5).</span>
+<span class="sd">                                      For 2D FES, shape is (N, 7).</span>
+<span class="sd">                                      Columns are typically:</span>
+<span class="sd">                                      time, cv1, (cv2), sigma_cv1,</span>
+<span class="sd">                                      (sigma_cv2), height, ...</span>
+<span class="sd">            &#39;per&#39; (list or tuple): A boolean list indicating periodicity for each CV.</span>
+<span class="sd">                                   e.g., [False, False].</span>
+<span class="sd">            &#39;pcv1&#39; (list or tuple): Periodic boundary limits for CV1. e.g., [0, 2*pi].</span>
+<span class="sd">            &#39;pcv2&#39; (list or tuple): Periodic boundary limits for CV2.</span>
+<span class="sd">        imin (int, optional): The starting hill index (1-based) to include in the FES.</span>
+<span class="sd">                              Defaults to 1.</span>
+<span class="sd">        imax (int, optional): The final hill index (1-based) to include. If None, all</span>
+<span class="sd">                              hills from imin to the end are used. Defaults to None.</span>
+<span class="sd">        xlim (list or tuple, optional): Manual limits for the x-axis (CV1).</span>
+<span class="sd">                                        Defaults to None, which auto-detects limits.</span>
+<span class="sd">        ylim (list or tuple, optional): Manual limits for the y-axis (CV2).</span>
+<span class="sd">                                        Defaults to None, which auto-detects limits.</span>
+<span class="sd">        npoints (int, optional): The number of grid points for each dimension.</span>
+<span class="sd">                                 Defaults to 256.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary containing the FES and associated metadata, with keys:</span>
+<span class="sd">              &#39;fes&#39;: The calculated FES as a 1D or 2D NumPy array.</span>
+<span class="sd">              &#39;hills&#39;: The original hills data used.</span>
+<span class="sd">              &#39;rows&#39;: Number of grid points (npoints).</span>
+<span class="sd">              &#39;dimension&#39;: 1 or 2.</span>
+<span class="sd">              &#39;per&#39;: Periodicity flags.</span>
+<span class="sd">              &#39;x&#39;: The grid coordinates for the first dimension (CV1).</span>
+<span class="sd">              &#39;y&#39;: The grid coordinates for the second dimension (CV2, if applicable).</span>
+<span class="sd">              &#39;pcv1&#39;, &#39;pcv2&#39;: Periodic boundary values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hills_data</span> <span class="o">=</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;hillsfile&quot;</span><span class="p">]</span>
+    <span class="n">num_hills</span><span class="p">,</span> <span class="n">num_cols</span> <span class="o">=</span> <span class="n">hills_data</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># --- Parameter Validation and Setup ---</span>
+    <span class="k">if</span> <span class="n">imax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">num_hills</span> <span class="o">&lt;</span> <span class="n">imax</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Warning: You requested imax=</span><span class="si">{</span><span class="n">imax</span><span class="si">}</span><span class="s2">, but only &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num_hills</span><span class="si">}</span><span class="s2"> hills are available. Using all hills.&quot;</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="n">num_hills</span>
+
+    <span class="k">if</span> <span class="n">imax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="n">num_hills</span>
+
+    <span class="k">if</span> <span class="n">imax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">imin</span> <span class="o">&gt;</span> <span class="n">imax</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error: imax cannot be lower than imin.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># Convert 1-based R-style indexing to 0-based Python slicing</span>
+    <span class="c1"># Note: The `imax` in a Python slice [start:end] is exclusive, so it&#39;s correct.</span>
+    <span class="n">start_index</span> <span class="o">=</span> <span class="n">imin</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">end_index</span> <span class="o">=</span> <span class="n">imax</span>
+
+    <span class="c1"># --- Main Logic: Branch based on dimension (number of columns) ---</span>
+
+    <span class="c1"># --- Case 1: 2D FES (CV1, CV2, sigma1, sigma2, height) ---</span>
+    <span class="k">if</span> <span class="n">num_cols</span> <span class="o">&gt;=</span> <span class="n">_MIN_COLS_2D</span><span class="p">:</span>  <span class="c1"># Usually 7 for Plumed output</span>
+        <span class="n">dimension</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">imax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Create an empty grid if no hills are requested</span>
+            <span class="n">min_cv1</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">xlim</span>
+            <span class="n">min_cv2</span><span class="p">,</span> <span class="n">max_cv2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ylim</span>
+
+            <span class="c1"># Add 5% padding</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">max_cv2</span> <span class="o">-</span> <span class="n">min_cv2</span>
+            <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
+            <span class="n">ylims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv2</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">max_cv2</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">]</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xlims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ylims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+            <span class="n">fesm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">npoints</span><span class="p">,</span> <span class="n">npoints</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Determine grid boundaries</span>
+            <span class="n">min_cv1</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">min_cv2</span><span class="p">,</span> <span class="n">max_cv2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">max_cv2</span> <span class="o">-</span> <span class="n">min_cv2</span>
+            <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
+            <span class="n">ylims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv2</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">max_cv2</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">]</span>
+
+            <span class="c1"># Override with user-defined or periodic limits</span>
+            <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">xlims</span> <span class="o">=</span> <span class="n">xlim</span>
+            <span class="k">elif</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;pcv1&quot;</span> <span class="ow">in</span> <span class="n">hills</span><span class="p">:</span>
+                <span class="n">xlims</span> <span class="o">=</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;pcv1&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ylims</span> <span class="o">=</span> <span class="n">ylim</span>
+            <span class="k">elif</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;pcv2&quot;</span> <span class="ow">in</span> <span class="n">hills</span><span class="p">:</span>
+                <span class="n">ylims</span> <span class="o">=</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;pcv2&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Create grid coordinates</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xlims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ylims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ylims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+
+            <span class="c1"># Select hills and calculate FES</span>
+            <span class="n">selected_hills</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[</span><span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">]</span>
+            <span class="n">fesm</span> <span class="o">=</span> <span class="n">_calculate_fes_2d</span><span class="p">(</span><span class="n">selected_hills</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+
+        <span class="c1"># Prepare results</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fes&quot;</span><span class="p">:</span> <span class="n">fesm</span><span class="p">,</span>
+            <span class="s2">&quot;hills&quot;</span><span class="p">:</span> <span class="n">hills_data</span><span class="p">,</span>
+            <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="n">npoints</span><span class="p">,</span>
+            <span class="s2">&quot;dimension&quot;</span><span class="p">:</span> <span class="n">dimension</span><span class="p">,</span>
+            <span class="s2">&quot;per&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">y</span><span class="p">,</span>
+            <span class="s2">&quot;pcv1&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pcv1&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;pcv2&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pcv2&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="c1"># --- Case 2: 1D FES (CV1, sigma1, height) ---</span>
+    <span class="k">elif</span> <span class="n">num_cols</span> <span class="o">&gt;=</span> <span class="n">_MIN_COLS_1D</span><span class="p">:</span>  <span class="c1"># Usually 5 for Plumed output</span>
+        <span class="n">dimension</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">imax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Create an empty line</span>
+            <span class="n">min_cv1</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">xlim</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
+            <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xlims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+            <span class="n">fesm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">npoints</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Determine grid boundaries</span>
+            <span class="n">min_cv1</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
+            <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
+
+            <span class="c1"># Override with user-defined or periodic limits</span>
+            <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">xlims</span> <span class="o">=</span> <span class="n">xlim</span>
+            <span class="k">elif</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;pcv1&quot;</span> <span class="ow">in</span> <span class="n">hills</span><span class="p">:</span>
+                <span class="n">xlims</span> <span class="o">=</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;pcv1&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Create grid coordinates</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xlims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xlims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+
+            <span class="c1"># Select hills and calculate FES</span>
+            <span class="n">selected_hills</span> <span class="o">=</span> <span class="n">hills_data</span><span class="p">[</span><span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">]</span>
+            <span class="n">fesm</span> <span class="o">=</span> <span class="n">_calculate_fes_1d</span><span class="p">(</span><span class="n">selected_hills</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">],</span> <span class="n">npoints</span><span class="p">)</span>
+
+        <span class="c1"># Prepare results</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;fes&quot;</span><span class="p">:</span> <span class="n">fesm</span><span class="p">,</span>
+            <span class="s2">&quot;hills&quot;</span><span class="p">:</span> <span class="n">hills_data</span><span class="p">,</span>
+            <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="n">npoints</span><span class="p">,</span>
+            <span class="s2">&quot;dimension&quot;</span><span class="p">:</span> <span class="n">dimension</span><span class="p">,</span>
+            <span class="s2">&quot;per&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s2">&quot;pcv1&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pcv1&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;pcv2&quot;</span><span class="p">:</span> <span class="n">hills</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pcv2&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unsupported number of columns in hillsfile: </span><span class="si">{</span><span class="n">num_cols</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Expected &gt;= </span><span class="si">{</span><span class="n">_MIN_COLS_1D</span><span class="si">}</span><span class="s2"> for 1D or &gt;= </span><span class="si">{</span><span class="n">_MIN_COLS_2D</span><span class="si">}</span><span class="s2"> for 2D.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="find_fes_minima">
+<a class="viewcode-back" href="../../../apidocs/chemparseplot/chemparseplot.parse.plumed.html#chemparseplot.parse.plumed.find_fes_minima">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_fes_minima</span><span class="p">(</span><span class="n">fes_result</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds local minima on a Free Energy Surface by dividing it into bins.</span>
+
+<span class="sd">    .. versionadded:: 0.0.3</span>
+
+<span class="sd">    This is a Python/Pandas translation of the R function fesminima.fes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fes_result (dict): The output dictionary from calculate_fes_from_hills.</span>
+<span class="sd">        nbins (int): The number of bins to divide each dimension into for the search.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary containing a pandas DataFrame of the minima and the original</span>
+<span class="sd">              FES data. Returns None if no minima are found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fes</span> <span class="o">=</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;fes&quot;</span><span class="p">]</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;rows&quot;</span><span class="p">]</span>
+    <span class="n">dimension</span> <span class="o">=</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;dimension&quot;</span><span class="p">]</span>
+    <span class="n">per</span> <span class="o">=</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;per&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">rows</span> <span class="o">%</span> <span class="n">nbins</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error: npoints (rows) in FES must be an integer multiple of nbins.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">rb</span> <span class="o">=</span> <span class="n">rows</span> <span class="o">//</span> <span class="n">nbins</span>
+    <span class="k">if</span> <span class="n">rb</span> <span class="o">&lt;</span> <span class="n">_MIN_BIN_SIZE</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error: nbins is too high for the grid size, try reducing it.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">minima_info</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># noqa: PLR2004</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins</span><span class="p">):</span>
+                <span class="c1"># Define the search window for this bin, including a 1-point border</span>
+                <span class="c1"># This is the key to checking if a minimum is truly local</span>
+                <span class="c1"># and not on the edge of the search window.</span>
+                <span class="n">i_start</span><span class="p">,</span> <span class="n">i_end</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">j_start</span><span class="p">,</span> <span class="n">j_end</span> <span class="o">=</span> <span class="n">j</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">+</span> <span class="mi">1</span>
+
+                <span class="c1"># Create index arrays for slicing, handling periodicity and boundaries</span>
+                <span class="n">indices_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">i_start</span><span class="p">,</span> <span class="n">i_end</span><span class="p">)</span>
+                <span class="n">indices_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">j_start</span><span class="p">,</span> <span class="n">j_end</span><span class="p">)</span>
+
+                <span class="c1"># Handle non-periodic boundaries by clipping</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">per</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">indices_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">indices_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">per</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">indices_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">indices_j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># Create the sub-FES view, using np.take for periodic wrapping</span>
+                <span class="n">sub_fes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">fes</span><span class="p">,</span> <span class="n">indices_i</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wrap&quot;</span> <span class="k">if</span> <span class="n">per</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;clip&quot;</span><span class="p">),</span>
+                    <span class="n">indices_j</span><span class="p">,</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wrap&quot;</span> <span class="k">if</span> <span class="n">per</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;clip&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Find the location of the minimum within this sub-grid</span>
+                <span class="n">min_loc_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">sub_fes</span><span class="p">)</span>
+                <span class="n">min_loc_i</span><span class="p">,</span> <span class="n">min_loc_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">min_loc_flat</span><span class="p">,</span> <span class="n">sub_fes</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+                <span class="c1"># CRUCIAL CHECK: Is the minimum on the border of the search window?</span>
+                <span class="c1"># If so, it&#39;s not a true local minimum for this bin, so we discard it.</span>
+                <span class="n">is_on_border</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">min_loc_i</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">or</span> <span class="n">min_loc_i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices_i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="ow">or</span> <span class="n">min_loc_j</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="ow">or</span> <span class="n">min_loc_j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices_j</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">is_on_border</span><span class="p">:</span>
+                    <span class="c1"># Convert local sub-grid index to global FES index</span>
+                    <span class="n">global_i</span> <span class="o">=</span> <span class="n">indices_i</span><span class="p">[</span><span class="n">min_loc_i</span><span class="p">]</span> <span class="o">%</span> <span class="n">rows</span>
+                    <span class="n">global_j</span> <span class="o">=</span> <span class="n">indices_j</span><span class="p">[</span><span class="n">min_loc_j</span><span class="p">]</span> <span class="o">%</span> <span class="n">rows</span>
+                    <span class="n">minima_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;CV1bin&quot;</span><span class="p">:</span> <span class="n">global_i</span><span class="p">,</span>
+                            <span class="s2">&quot;CV2bin&quot;</span><span class="p">:</span> <span class="n">global_j</span><span class="p">,</span>
+                            <span class="s2">&quot;CV1&quot;</span><span class="p">:</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="n">global_i</span><span class="p">],</span>
+                            <span class="s2">&quot;CV2&quot;</span><span class="p">:</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">][</span><span class="n">global_j</span><span class="p">],</span>
+                            <span class="s2">&quot;free_energy&quot;</span><span class="p">:</span> <span class="n">fes</span><span class="p">[</span><span class="n">global_i</span><span class="p">,</span> <span class="n">global_j</span><span class="p">],</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins</span><span class="p">):</span>
+            <span class="n">i_start</span><span class="p">,</span> <span class="n">i_end</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">rb</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">indices_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">i_start</span><span class="p">,</span> <span class="n">i_end</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">per</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">indices_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">indices_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">sub_fes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">fes</span><span class="p">,</span> <span class="n">indices_i</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;wrap&quot;</span> <span class="k">if</span> <span class="n">per</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;clip&quot;</span><span class="p">)</span>
+            <span class="n">min_loc_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">sub_fes</span><span class="p">)</span>
+
+            <span class="n">is_on_border</span> <span class="o">=</span> <span class="n">min_loc_i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">min_loc_i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices_i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_on_border</span><span class="p">:</span>
+                <span class="n">global_i</span> <span class="o">=</span> <span class="n">indices_i</span><span class="p">[</span><span class="n">min_loc_i</span><span class="p">]</span> <span class="o">%</span> <span class="n">rows</span>
+                <span class="n">minima_info</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;CV1bin&quot;</span><span class="p">:</span> <span class="n">global_i</span><span class="p">,</span>
+                        <span class="s2">&quot;CV1&quot;</span><span class="p">:</span> <span class="n">fes_result</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="n">global_i</span><span class="p">],</span>
+                        <span class="s2">&quot;free_energy&quot;</span><span class="p">:</span> <span class="n">fes</span><span class="p">[</span><span class="n">global_i</span><span class="p">],</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">minima_info</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># No minima found</span>
+
+    <span class="c1"># Convert to a pandas DataFrame and remove duplicates</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+    <span class="n">minima_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">minima_info</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># noqa: PLR2004</span>
+        <span class="n">minima_df</span> <span class="o">=</span> <span class="n">minima_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;CV1bin&quot;</span><span class="p">,</span> <span class="s2">&quot;CV2bin&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+            <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">minima_df</span> <span class="o">=</span> <span class="n">minima_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;CV1bin&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Sort by free energy and add letter labels</span>
+    <span class="n">minima_df</span> <span class="o">=</span> <span class="n">minima_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;free_energy&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Generate labels (A, B, ..., Z, AA, AB, ...)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">minima_df</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">_ALPHABET_SIZE</span><span class="p">:</span>
+        <span class="n">extra_labels</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c1</span><span class="si">}{</span><span class="n">c2</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">c1</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="k">for</span> <span class="n">c2</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span>
+        <span class="p">]</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_labels</span><span class="p">)</span>
+    <span class="n">minima_df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;letter&quot;</span><span class="p">,</span> <span class="n">labels</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">minima_df</span><span class="p">)])</span>
+
+    <span class="c1"># Create a copy of the input dictionary and add the minima DataFrame</span>
+    <span class="n">minima_result</span> <span class="o">=</span> <span class="n">fes_result</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">minima_result</span><span class="p">[</span><span class="s2">&quot;minima&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minima_df</span>
+    <span class="k">return</span> <span class="n">minima_result</span></div>
+
+</pre></div>
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+  &copy; Copyright 2023-2026, <a href="https://rgoswami.me" style="color:inherit;text-decoration:underline;">Rohit Goswami</a>.
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;margin:1.5rem 0;color:#666;font-size:0.9em;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
+        </svg>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <span>provided by</span>
+        <span style="display:inline-flex;align-items:center;gap:0.3em;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill-rule="evenodd">
+              <ellipse cx="32" cy="11" fill="#80D25B" rx="7" ry="9"/>
+              <path fill="#80D25B" d="M20.302104,46 C20.302104,46 17.1330329,55.8812548 20.6828149,59.7817355 C24.232597,63.6822162 26.8008673,63.215359 26.8008673,53.7414927 C26.8008673,44.2676263 20.302104,46 20.302104,46 Z"/>
+              <path fill="#80D25B" d="M38.302104,46 C38.302104,46 35.1330329,55.8812548 38.6828149,59.7817355 C42.232597,63.6822162 44.8008673,63.215359 44.8008673,53.7414927 C44.8008673,44.2676263 38.302104,46 38.302104,46 Z" transform="matrix(-1 0 0 1 81.8 0)"/>
+              <path fill="#80D25B" d="M20.6227767,21.2218684 C20.6227767,21.2218684 13.956214,15.3844007 10.091955,16.0534044 C6.22769598,16.722408 6,22.2124633 6,23.9992899 C6,25.7861165 7.78917398,37.3159836 9.78726488,36.4967476 C11.7853558,35.6775115 13.7411938,27.959322 13.7411938,27.959322 15.6510232,30.2287702 18.609193,30.4630388"/>
+              <path fill="#80D25B" d="M57.6227767,21.2218684 C57.6227767,21.2218684 50.956214,15.3844007 47.091955,16.0534044 C43.227696,16.722408 43,22.2124633 43,23.9992899 C43,25.7861165 44.789174,37.3159836 46.7872649,36.4967476 C48.7853558,35.6775115 50.7411938,27.959322 50.7411938,27.959322 52.6510232,30.2287702 55.609193,30.4630388" transform="matrix(-1 0 0 1 100.623 0)"/>
+              <path fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32,53 C40.836556,53 48,44.4934102 48,34 C48,23.5065898 46.6814044,17 32,17 C17.3185956,17 16,23.5065898 16,34 C16,44.4934102 23.163444,53 32,53 Z"/>
+              <polygon fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" points="32 22 38.928 26 38.928 34 32 38 25.072 34 25.072 26"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M30,8 C28.8954305,8 28,8.8954305 28,10"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M36,8 C34.8954305,8 34,8.8954305 34,10" transform="matrix(-1 0 0 1 70 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32.1194396 38.1881507L32.1194396 52.4125899M32.0164956 21.7467197L32.0164956 17M25.2141026 26.0041506L17.737148 23.0721126M25.1254173 34.1534318L16.7659494 38.8876521"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M46.2141026,26.0041506 L38.737148,23.0721126" transform="matrix(-1 0 0 1 84.951 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M47.1254173,34.1534318 L38.7659494,38.8876521" transform="matrix(-1 0 0 1 85.891 0)"/>
+            </g>
+          </svg>
+          <a href="https://turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">TurtleTech ehf</a>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+  </body>
+</html>

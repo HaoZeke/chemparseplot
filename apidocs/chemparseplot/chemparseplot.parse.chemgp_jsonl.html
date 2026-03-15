@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>chemparseplot.parse.chemgp_jsonl &#8212; chemparseplot 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.parse.chemgp_jsonl.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="chemparseplot.parse.file_" href="chemparseplot.parse.file_.html" />
+    <link rel="prev" title="chemparseplot.parse.converter" href="chemparseplot.parse.converter.html" />
+
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+<script defer src="https://analytics.turtletech.us/script.js" data-website-id="95def988-c3e6-4297-9d39-cc3b3032703e"></script>
+<script>window.umami=window.umami||{track:function(){}};document.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname)umami.track('Outbound Link',{url:a.href})});</script>
+
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../features.html">Features</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../used_by.html">Used By</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_jsonl</span></code></a><ul>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#api">API</a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.method"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace.method</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.steps"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace.steps</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.oracle_calls"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace.oracle_calls</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.energies"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace.energies</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.forces"><code class="docutils literal notranslate"><span class="pre">OptimizerTrace.forces</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData"><code class="docutils literal notranslate"><span class="pre">ComparisonData</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData.traces"><code class="docutils literal notranslate"><span class="pre">ComparisonData.traces</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData.summary"><code class="docutils literal notranslate"><span class="pre">ComparisonData.summary</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl"><code class="docutils literal notranslate"><span class="pre">parse_comparison_jsonl()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData"><code class="docutils literal notranslate"><span class="pre">RFFQualityData</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_energy_mae"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.exact_energy_mae</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_gradient_mae"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.exact_gradient_mae</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.d_rff_values"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.d_rff_values</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_true"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.energy_mae_vs_true</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_true"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.gradient_mae_vs_true</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_gp"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.energy_mae_vs_gp</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_gp"><code class="docutils literal notranslate"><span class="pre">RFFQualityData.gradient_mae_vs_gp</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl"><code class="docutils literal notranslate"><span class="pre">parse_rff_quality_jsonl()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.n_train"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.n_train</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.nx"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.nx</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.ny"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.ny</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.x"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.x</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.y"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.y</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.true_e"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.true_e</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_e"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.gp_e</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_var"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.gp_var</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_x"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.train_x</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_y"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.train_y</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_e"><code class="docutils literal notranslate"><span class="pre">GPQualityGrid.train_e</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint"><code class="docutils literal notranslate"><span class="pre">StationaryPoint</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.kind"><code class="docutils literal notranslate"><span class="pre">StationaryPoint.kind</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.id"><code class="docutils literal notranslate"><span class="pre">StationaryPoint.id</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.x"><code class="docutils literal notranslate"><span class="pre">StationaryPoint.x</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.y"><code class="docutils literal notranslate"><span class="pre">StationaryPoint.y</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.energy"><code class="docutils literal notranslate"><span class="pre">StationaryPoint.energy</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData"><code class="docutils literal notranslate"><span class="pre">GPQualityData</span></code></a><ul>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.meta"><code class="docutils literal notranslate"><span class="pre">GPQualityData.meta</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.stationary"><code class="docutils literal notranslate"><span class="pre">GPQualityData.stationary</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.grids"><code class="docutils literal notranslate"><span class="pre">GPQualityData.grids</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl"><code class="docutils literal notranslate"><span class="pre">parse_gp_quality_jsonl()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../index.html">API Reference</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="chemparseplot.parse.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.chemgp_jsonl</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.parse.chemgp_jsonl">
+<span id="chemparseplot-parse-chemgp-jsonl"></span><h1><a class="reference internal" href="#module-chemparseplot.parse.chemgp_jsonl" title="chemparseplot.parse.chemgp_jsonl"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_jsonl</span></code></a><a class="headerlink" href="#module-chemparseplot.parse.chemgp_jsonl" title="Link to this heading">¶</a></h1>
+<p>Parsers for ChemGP JSONL output formats.</p>
+<p>ChemGP Rust examples produce JSONL files with method comparison data,
+GP quality grids, and RFF approximation benchmarks. This module provides
+structured parsing into typed containers for downstream plotting.</p>
+<p>.. versionadded:: 1.5.0</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace" title="chemparseplot.parse.chemgp_jsonl.OptimizerTrace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OptimizerTrace</span></code></a></p></td>
+<td><p>Single optimizer trace from a comparison JSONL.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData" title="chemparseplot.parse.chemgp_jsonl.ComparisonData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ComparisonData</span></code></a></p></td>
+<td><p>Parsed optimizer comparison from a single JSONL file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData" title="chemparseplot.parse.chemgp_jsonl.RFFQualityData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RFFQualityData</span></code></a></p></td>
+<td><p>Parsed RFF approximation quality data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid" title="chemparseplot.parse.chemgp_jsonl.GPQualityGrid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GPQualityGrid</span></code></a></p></td>
+<td><p>GP quality grid data for a single training set size.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint" title="chemparseplot.parse.chemgp_jsonl.StationaryPoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StationaryPoint</span></code></a></p></td>
+<td><p>A stationary point (minimum or saddle) on the PES.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData" title="chemparseplot.parse.chemgp_jsonl.GPQualityData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GPQualityData</span></code></a></p></td>
+<td><p>Complete GP quality data from mb_gp_quality.jsonl.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl" title="chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_comparison_jsonl</span></code></a></p></td>
+<td><p>Parse a ChemGP optimizer comparison JSONL file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl" title="chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_rff_quality_jsonl</span></code></a></p></td>
+<td><p>Parse a ChemGP RFF quality JSONL file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl" title="chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_gp_quality_jsonl</span></code></a></p></td>
+<td><p>Parse a ChemGP GP quality JSONL file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">OptimizerTrace</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#OptimizerTrace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace" title="Link to this definition">¶</a></dt>
+<dd><p>Single optimizer trace from a comparison JSONL.</p>
+<p class="rubric" id="id9">Attributes</p>
+<p>method : str
+Optimizer name (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;gp_minimize&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;neb&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;otgpd&quot;</span></code>).
+steps : list[int]
+Step indices.
+oracle_calls : list[int]
+Cumulative oracle call counts.
+energies : list[float] | None
+Energy at each step (minimize, dimer).
+forces : list[float] | None
+Force norm at each step (dimer: <code class="docutils literal notranslate"><span class="pre">force</span></code>, NEB: <code class="docutils literal notranslate"><span class="pre">max_force</span></code>).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace.method">
+<span class="sig-name descname"><span class="pre">method</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.method" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace.steps">
+<span class="sig-name descname"><span class="pre">steps</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.steps" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace.oracle_calls">
+<span class="sig-name descname"><span class="pre">oracle_calls</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.oracle_calls" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace.energies">
+<span class="sig-name descname"><span class="pre">energies</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.energies" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.OptimizerTrace.forces">
+<span class="sig-name descname"><span class="pre">forces</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace.forces" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.ComparisonData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">ComparisonData</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#ComparisonData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData" title="Link to this definition">¶</a></dt>
+<dd><p>Parsed optimizer comparison from a single JSONL file.</p>
+<p class="rubric" id="id10">Attributes</p>
+<p>traces : dict[str, OptimizerTrace]
+Keyed by method name.
+summary : dict | None
+Summary record if present.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.ComparisonData.traces">
+<span class="sig-name descname"><span class="pre">traces</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.OptimizerTrace" title="chemparseplot.parse.chemgp_jsonl.OptimizerTrace"><span class="pre">chemparseplot.parse.chemgp_jsonl.OptimizerTrace</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData.traces" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.ComparisonData.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData.summary" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">parse_comparison_jsonl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.ComparisonData" title="chemparseplot.parse.chemgp_jsonl.ComparisonData"><span class="pre">chemparseplot.parse.chemgp_jsonl.ComparisonData</span></a></span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#parse_comparison_jsonl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.parse_comparison_jsonl" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a ChemGP optimizer comparison JSONL file.</p>
+<p>Handles minimize, dimer, and NEB comparison formats. Each line is a
+JSON object with a <code class="docutils literal notranslate"><span class="pre">method</span></code> field (or <code class="docutils literal notranslate"><span class="pre">summary:</span> <span class="pre">true</span></code>).</p>
+<p class="rubric" id="id11">Parameters</p>
+<p>path
+Path to the JSONL file.</p>
+<p class="rubric" id="id12">Returns</p>
+<p>ComparisonData
+Parsed traces keyed by method name.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">RFFQualityData</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#RFFQualityData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData" title="Link to this definition">¶</a></dt>
+<dd><p>Parsed RFF approximation quality data.</p>
+<p class="rubric" id="id13">Attributes</p>
+<p>exact_energy_mae : float
+Exact GP energy MAE vs true surface.
+exact_gradient_mae : float
+Exact GP gradient MAE vs true surface.
+d_rff_values : list[int]
+RFF feature counts tested.
+energy_mae_vs_true : list[float]
+RFF energy MAE vs true surface.
+gradient_mae_vs_true : list[float]
+RFF gradient MAE vs true surface.
+energy_mae_vs_gp : list[float]
+RFF energy MAE vs exact GP.
+gradient_mae_vs_gp : list[float]
+RFF gradient MAE vs exact GP.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_energy_mae">
+<span class="sig-name descname"><span class="pre">exact_energy_mae</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_energy_mae" title="Link to this definition">¶</a></dt>
+<dd><p>0.0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_gradient_mae">
+<span class="sig-name descname"><span class="pre">exact_gradient_mae</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.exact_gradient_mae" title="Link to this definition">¶</a></dt>
+<dd><p>0.0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.d_rff_values">
+<span class="sig-name descname"><span class="pre">d_rff_values</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.d_rff_values" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_true">
+<span class="sig-name descname"><span class="pre">energy_mae_vs_true</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_true" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_true">
+<span class="sig-name descname"><span class="pre">gradient_mae_vs_true</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_true" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_gp">
+<span class="sig-name descname"><span class="pre">energy_mae_vs_gp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.energy_mae_vs_gp" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_gp">
+<span class="sig-name descname"><span class="pre">gradient_mae_vs_gp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData.gradient_mae_vs_gp" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">parse_rff_quality_jsonl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.RFFQualityData" title="chemparseplot.parse.chemgp_jsonl.RFFQualityData"><span class="pre">chemparseplot.parse.chemgp_jsonl.RFFQualityData</span></a></span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#parse_rff_quality_jsonl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.parse_rff_quality_jsonl" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a ChemGP RFF quality JSONL file.</p>
+<p class="rubric" id="id14">Parameters</p>
+<p>path
+Path to the JSONL file.</p>
+<p class="rubric" id="id15">Returns</p>
+<p>RFFQualityData
+Parsed exact GP and RFF metrics.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">GPQualityGrid</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#GPQualityGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid" title="Link to this definition">¶</a></dt>
+<dd><p>GP quality grid data for a single training set size.</p>
+<p class="rubric" id="id16">Attributes</p>
+<p>n_train : int
+Number of training points.
+nx : int
+Grid x resolution.
+ny : int
+Grid y resolution.
+x : list[list[float]]
+Grid x coordinates (ny x nx).
+y : list[list[float]]
+Grid y coordinates (ny x nx).
+true_e : list[list[float]]
+True energy on grid.
+gp_e : list[list[float]]
+GP predicted energy on grid.
+gp_var : list[list[float]]
+GP variance on grid.
+train_x : list[float]
+Training point x coordinates.
+train_y : list[float]
+Training point y coordinates.
+train_e : list[float]
+Training point energies.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.n_train">
+<span class="sig-name descname"><span class="pre">n_train</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.n_train" title="Link to this definition">¶</a></dt>
+<dd><p>0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.nx">
+<span class="sig-name descname"><span class="pre">nx</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.nx" title="Link to this definition">¶</a></dt>
+<dd><p>0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.ny">
+<span class="sig-name descname"><span class="pre">ny</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.ny" title="Link to this definition">¶</a></dt>
+<dd><p>0</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.x">
+<span class="sig-name descname"><span class="pre">x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.x" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.y">
+<span class="sig-name descname"><span class="pre">y</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.y" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.true_e">
+<span class="sig-name descname"><span class="pre">true_e</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.true_e" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_e">
+<span class="sig-name descname"><span class="pre">gp_e</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_e" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_var">
+<span class="sig-name descname"><span class="pre">gp_var</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.gp_var" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_x">
+<span class="sig-name descname"><span class="pre">train_x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_x" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_y">
+<span class="sig-name descname"><span class="pre">train_y</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_y" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_e">
+<span class="sig-name descname"><span class="pre">train_e</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid.train_e" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">StationaryPoint</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#StationaryPoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint" title="Link to this definition">¶</a></dt>
+<dd><p>A stationary point (minimum or saddle) on the PES.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint.kind">
+<span class="sig-name descname"><span class="pre">kind</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.kind" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint.id">
+<span class="sig-name descname"><span class="pre">id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.id" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint.x">
+<span class="sig-name descname"><span class="pre">x</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.x" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint.y">
+<span class="sig-name descname"><span class="pre">y</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.y" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.StationaryPoint.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint.energy" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityData">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">GPQualityData</span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#GPQualityData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData" title="Link to this definition">¶</a></dt>
+<dd><p>Complete GP quality data from mb_gp_quality.jsonl.</p>
+<p class="rubric" id="id17">Attributes</p>
+<p>meta : dict
+Grid metadata (nx, ny, x_min, x_max, y_min, y_max).
+stationary : list[StationaryPoint]
+Minima and saddle points.
+grids : dict[int, GPQualityGrid]
+Grid data keyed by n_train.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityData.meta">
+<span class="sig-name descname"><span class="pre">meta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.meta" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityData.stationary">
+<span class="sig-name descname"><span class="pre">stationary</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.StationaryPoint" title="chemparseplot.parse.chemgp_jsonl.StationaryPoint"><span class="pre">chemparseplot.parse.chemgp_jsonl.StationaryPoint</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.stationary" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.GPQualityData.grids">
+<span class="sig-name descname"><span class="pre">grids</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityGrid" title="chemparseplot.parse.chemgp_jsonl.GPQualityGrid"><span class="pre">chemparseplot.parse.chemgp_jsonl.GPQualityGrid</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData.grids" title="Link to this definition">¶</a></dt>
+<dd><p>‘field(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.chemgp_jsonl.</span></span><span class="sig-name descname"><span class="pre">parse_gp_quality_jsonl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#chemparseplot.parse.chemgp_jsonl.GPQualityData" title="chemparseplot.parse.chemgp_jsonl.GPQualityData"><span class="pre">chemparseplot.parse.chemgp_jsonl.GPQualityData</span></a></span></span><a class="reference internal" href="../../_modules/chemparseplot/parse/chemgp_jsonl.html#parse_gp_quality_jsonl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#chemparseplot.parse.chemgp_jsonl.parse_gp_quality_jsonl" title="Link to this definition">¶</a></dt>
+<dd><p>Parse a ChemGP GP quality JSONL file.</p>
+<p class="rubric" id="id18">Parameters</p>
+<p>path
+Path to the JSONL file (e.g. <code class="docutils literal notranslate"><span class="pre">mb_gp_quality.jsonl</span></code>).</p>
+<p class="rubric" id="id19">Returns</p>
+<p>GPQualityData
+Structured grid data with metadata and stationary points.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <a class="prev" href="chemparseplot.parse.converter.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.converter</span></code>
+  </a>
+  <a class="next" href="chemparseplot.parse.file_.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.file_</span></code> &rarr;
+  </a>
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+  &copy; Copyright 2023-2026, <a href="https://rgoswami.me" style="color:inherit;text-decoration:underline;">Rohit Goswami</a>.
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;margin:1.5rem 0;color:#666;font-size:0.9em;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
+        </svg>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <span>provided by</span>
+        <span style="display:inline-flex;align-items:center;gap:0.3em;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill-rule="evenodd">
+              <ellipse cx="32" cy="11" fill="#80D25B" rx="7" ry="9"/>
+              <path fill="#80D25B" d="M20.302104,46 C20.302104,46 17.1330329,55.8812548 20.6828149,59.7817355 C24.232597,63.6822162 26.8008673,63.215359 26.8008673,53.7414927 C26.8008673,44.2676263 20.302104,46 20.302104,46 Z"/>
+              <path fill="#80D25B" d="M38.302104,46 C38.302104,46 35.1330329,55.8812548 38.6828149,59.7817355 C42.232597,63.6822162 44.8008673,63.215359 44.8008673,53.7414927 C44.8008673,44.2676263 38.302104,46 38.302104,46 Z" transform="matrix(-1 0 0 1 81.8 0)"/>
+              <path fill="#80D25B" d="M20.6227767,21.2218684 C20.6227767,21.2218684 13.956214,15.3844007 10.091955,16.0534044 C6.22769598,16.722408 6,22.2124633 6,23.9992899 C6,25.7861165 7.78917398,37.3159836 9.78726488,36.4967476 C11.7853558,35.6775115 13.7411938,27.959322 13.7411938,27.959322 15.6510232,30.2287702 18.609193,30.4630388"/>
+              <path fill="#80D25B" d="M57.6227767,21.2218684 C57.6227767,21.2218684 50.956214,15.3844007 47.091955,16.0534044 C43.227696,16.722408 43,22.2124633 43,23.9992899 C43,25.7861165 44.789174,37.3159836 46.7872649,36.4967476 C48.7853558,35.6775115 50.7411938,27.959322 50.7411938,27.959322 52.6510232,30.2287702 55.609193,30.4630388" transform="matrix(-1 0 0 1 100.623 0)"/>
+              <path fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32,53 C40.836556,53 48,44.4934102 48,34 C48,23.5065898 46.6814044,17 32,17 C17.3185956,17 16,23.5065898 16,34 C16,44.4934102 23.163444,53 32,53 Z"/>
+              <polygon fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" points="32 22 38.928 26 38.928 34 32 38 25.072 34 25.072 26"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M30,8 C28.8954305,8 28,8.8954305 28,10"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M36,8 C34.8954305,8 34,8.8954305 34,10" transform="matrix(-1 0 0 1 70 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32.1194396 38.1881507L32.1194396 52.4125899M32.0164956 21.7467197L32.0164956 17M25.2141026 26.0041506L17.737148 23.0721126M25.1254173 34.1534318L16.7659494 38.8876521"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M46.2141026,26.0041506 L38.737148,23.0721126" transform="matrix(-1 0 0 1 84.951 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M47.1254173,34.1534318 L38.7659494,38.8876521" transform="matrix(-1 0 0 1 85.891 0)"/>
+            </g>
+          </svg>
+          <a href="https://turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">TurtleTech ehf</a>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -1,0 +1,42 @@
+# {py:mod}`chemparseplot.plot.plumed`
+
+```{py:module} chemparseplot.plot.plumed
+```
+
+```{autodoc2-docstring} chemparseplot.plot.plumed
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`plot_fes_2d <chemparseplot.plot.plumed.plot_fes_2d>`
+  - ```{autodoc2-docstring} chemparseplot.plot.plumed.plot_fes_2d
+    :summary:
+    ```
+* - {py:obj}`plot_fes_1d <chemparseplot.plot.plumed.plot_fes_1d>`
+  - ```{autodoc2-docstring} chemparseplot.plot.plumed.plot_fes_1d
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} plot_fes_2d(fes_result, minima_result=None, cmap=None, figsize=(8, 6), dpi=300)
+:canonical: chemparseplot.plot.plumed.plot_fes_2d
+
+```{autodoc2-docstring} chemparseplot.plot.plumed.plot_fes_2d
+```
+````
+
+````{py:function} plot_fes_1d(fes_result, minima_result=None, figsize=(8, 5), dpi=300)
+:canonical: chemparseplot.plot.plumed.plot_fes_1d
+
+```{autodoc2-docstring} chemparseplot.plot.plumed.plot_fes_1d
+```
+````

@@ -7,6 +7,15 @@
 :allowtitles:
 ```
 
+## Subpackages
+
+```{toctree}
+:titlesonly:
+:maxdepth: 3
+
+chemparseplot.parse.orca.neb
+```
+
 ## Submodules
 
 ```{toctree}

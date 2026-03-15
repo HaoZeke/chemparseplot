@@ -1,0 +1,53 @@
+# {py:mod}`chemparseplot.parse.orca.neb.interp`
+
+```{py:module} chemparseplot.parse.orca.neb.interp
+```
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.interp
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`extract_interp_points <chemparseplot.parse.orca.neb.interp.extract_interp_points>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.interp.extract_interp_points
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`INTERP_PAT <chemparseplot.parse.orca.neb.interp.INTERP_PAT>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.interp.INTERP_PAT
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} INTERP_PAT
+:canonical: chemparseplot.parse.orca.neb.interp.INTERP_PAT
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.interp.INTERP_PAT
+```
+
+````
+
+````{py:function} extract_interp_points(text: str) -> list[int, chemparseplot.units.Q_, chemparseplot.units.Q_]
+:canonical: chemparseplot.parse.orca.neb.interp.extract_interp_points
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.interp.extract_interp_points
+```
+````

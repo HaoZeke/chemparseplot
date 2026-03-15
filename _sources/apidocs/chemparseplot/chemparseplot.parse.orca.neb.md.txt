@@ -1,0 +1,44 @@
+# {py:mod}`chemparseplot.parse.orca.neb`
+
+```{py:module} chemparseplot.parse.orca.neb
+```
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb
+:allowtitles:
+```
+
+## Submodules
+
+```{toctree}
+:titlesonly:
+:maxdepth: 1
+
+chemparseplot.parse.orca.neb.interp
+chemparseplot.parse.orca.neb.opi_parser
+```
+
+## Package Contents
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`__all__ <chemparseplot.parse.orca.neb.__all__>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.__all__
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} __all__
+:canonical: chemparseplot.parse.orca.neb.__all__
+:value: >
+   ['HAS_OPI', 'extract_interp_points', 'parse_orca_neb', 'parse_orca_neb_fallback']
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.__all__
+```
+
+````

@@ -71,6 +71,18 @@
   - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
     :summary:
     ```
+* - {py:obj}`plot_orca_neb_profile <chemparseplot.plot.neb.plot_orca_neb_profile>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_profile
+    :summary:
+    ```
+* - {py:obj}`plot_orca_neb_energy_profile <chemparseplot.plot.neb.plot_orca_neb_energy_profile>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_energy_profile
+    :summary:
+    ```
+* - {py:obj}`plot_orca_neb_landscape <chemparseplot.plot.neb.plot_orca_neb_landscape>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_landscape
+    :summary:
+    ```
 ````
 
 ### Data
@@ -176,21 +188,21 @@
 ```
 ````
 
-````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='ase')
+````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='ase') -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_strip
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
 ```
 ````
 
-````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='ase')
+````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='ase') -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_inset
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
 ```
 ````
 
-````{py:function} plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method='hermite', smoothing=None)
+````{py:function} plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method='hermite', smoothing=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_energy_path
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_energy_path
@@ -218,16 +230,37 @@
 ```
 ````
 
-````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None)
+````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_landscape_surface
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface
 ```
 ````
 
-````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True)
+````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_landscape_path_overlay
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
+```
+````
+
+````{py:function} plot_orca_neb_profile(neb_data: dict[str, typing.Any], output: pathlib.Path, *, width: float = 7.0, height: float = 5.0, dpi: int = 200) -> None
+:canonical: chemparseplot.plot.neb.plot_orca_neb_profile
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_profile
+```
+````
+
+````{py:function} plot_orca_neb_energy_profile(neb_data: dict[str, typing.Any], output: pathlib.Path, *, width: float = 5.37, height: float = 5.37, dpi: int = 200, method: str = 'hermite', smoothing: typing.Any = None) -> None
+:canonical: chemparseplot.plot.neb.plot_orca_neb_energy_profile
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_energy_profile
+```
+````
+
+````{py:function} plot_orca_neb_landscape(neb_data: dict[str, typing.Any], output: pathlib.Path, *, width: float = 5.37, height: float = 5.37, dpi: int = 200, method: str = 'grad_matern', project_path: bool = True) -> None
+:canonical: chemparseplot.plot.neb.plot_orca_neb_landscape
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_orca_neb_landscape
 ```
 ````

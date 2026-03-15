@@ -15,6 +15,7 @@
 
 chemparseplot.parse
 chemparseplot.plot
+chemparseplot.scripts
 ```
 
 ## Submodules

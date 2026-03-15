@@ -1,0 +1,128 @@
+# {py:mod}`chemparseplot.parse.plumed`
+
+```{py:module} chemparseplot.parse.plumed
+```
+
+```{autodoc2-docstring} chemparseplot.parse.plumed
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_calculate_fes_2d <chemparseplot.parse.plumed._calculate_fes_2d>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._calculate_fes_2d
+    :summary:
+    ```
+* - {py:obj}`_calculate_fes_1d <chemparseplot.parse.plumed._calculate_fes_1d>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._calculate_fes_1d
+    :summary:
+    ```
+* - {py:obj}`calculate_fes_from_hills <chemparseplot.parse.plumed.calculate_fes_from_hills>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed.calculate_fes_from_hills
+    :summary:
+    ```
+* - {py:obj}`find_fes_minima <chemparseplot.parse.plumed.find_fes_minima>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed.find_fes_minima
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_MIN_COLS_1D <chemparseplot.parse.plumed._MIN_COLS_1D>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_COLS_1D
+    :summary:
+    ```
+* - {py:obj}`_MIN_COLS_2D <chemparseplot.parse.plumed._MIN_COLS_2D>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_COLS_2D
+    :summary:
+    ```
+* - {py:obj}`_ALPHABET_SIZE <chemparseplot.parse.plumed._ALPHABET_SIZE>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._ALPHABET_SIZE
+    :summary:
+    ```
+* - {py:obj}`_MIN_BIN_SIZE <chemparseplot.parse.plumed._MIN_BIN_SIZE>`
+  - ```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_BIN_SIZE
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} _MIN_COLS_1D
+:canonical: chemparseplot.parse.plumed._MIN_COLS_1D
+:value: >
+   5
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_COLS_1D
+```
+
+````
+
+````{py:data} _MIN_COLS_2D
+:canonical: chemparseplot.parse.plumed._MIN_COLS_2D
+:value: >
+   7
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_COLS_2D
+```
+
+````
+
+````{py:data} _ALPHABET_SIZE
+:canonical: chemparseplot.parse.plumed._ALPHABET_SIZE
+:value: >
+   26
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._ALPHABET_SIZE
+```
+
+````
+
+````{py:data} _MIN_BIN_SIZE
+:canonical: chemparseplot.parse.plumed._MIN_BIN_SIZE
+:value: >
+   2
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._MIN_BIN_SIZE
+```
+
+````
+
+````{py:function} _calculate_fes_2d(hills_data, x, y, per, npoints)
+:canonical: chemparseplot.parse.plumed._calculate_fes_2d
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._calculate_fes_2d
+```
+````
+
+````{py:function} _calculate_fes_1d(hills_data, x, per, npoints)
+:canonical: chemparseplot.parse.plumed._calculate_fes_1d
+
+```{autodoc2-docstring} chemparseplot.parse.plumed._calculate_fes_1d
+```
+````
+
+````{py:function} calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npoints=256)
+:canonical: chemparseplot.parse.plumed.calculate_fes_from_hills
+
+```{autodoc2-docstring} chemparseplot.parse.plumed.calculate_fes_from_hills
+```
+````
+
+````{py:function} find_fes_minima(fes_result, nbins=8)
+:canonical: chemparseplot.parse.plumed.find_fes_minima
+
+```{autodoc2-docstring} chemparseplot.parse.plumed.find_fes_minima
+```
+````

@@ -8,7 +8,7 @@
     <title>Tutorial Introduction &#8212; chemparseplot 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <script src="../_static/documentation_options.js?v=1f29e9d3"></script>
@@ -110,12 +110,10 @@
 <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/index.html">ChemGP Tutorials</a></li>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html">Geometry Scan</a></li>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#analysis-with-chemparseplot">Analysis with <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#available-tutorials">Available Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -124,6 +122,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+
+<h3>Page Contents</h3>
+<ul>
+<li><a class="reference internal" href="#">Tutorial Introduction</a><ul>
+<li><a class="reference internal" href="#available-tutorials">Available Tutorials</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#parsing-orca-output">Parsing ORCA Output</a></li>
+<li><a class="reference internal" href="#parsing-eon-saddle-searches">Parsing eOn Saddle Searches</a></li>
+<li><a class="reference internal" href="#plotting-neb-profiles">Plotting NEB Profiles</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <script>
   function toggleMode(theme) {
@@ -158,41 +170,19 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="tutorial-introduction">
 <h1>Tutorial Introduction<a class="headerlink" href="#tutorial-introduction" title="Link to this heading">¶</a></h1>
-<p>Here we will focus on a few standard workflows where <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code> is meant to
-be used.</p>
+<p>Here we focus on standard workflows for <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>.</p>
+<section id="available-tutorials">
+<h2>Available Tutorials<a class="headerlink" href="#available-tutorials" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Chemistry Engines</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="chemgp/index.html">ChemGP Tutorials</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/convergence.html">ChemGP 1D Plots (Convergence, RFF, Profile, FPS)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#load-sample-data">Load sample data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#convergence-curve">Convergence curve</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="chemgp/convergence.html#per-method-thresholds">Per-method thresholds</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#rff-quality">RFF quality</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#energy-profile">Energy profile</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#fps-projection">FPS projection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/convergence.html#next-steps">Next steps</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="chemgp/surfaces.html">ChemGP 2D Plots (Surfaces, GP Progression, NLL, Variance, Trust, Sensitivity)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#load-sample-data">Load sample data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#pes-contour-with-neb-path">PES contour with NEB path</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#gp-surrogate-progression">GP surrogate progression</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#nll-landscape">NLL landscape</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#variance-overlay">Variance overlay</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#trust-region">Trust region</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#hyperparameter-sensitivity">Hyperparameter sensitivity</a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemgp/surfaces.html#next-steps">Next steps</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="chemgp/convergence.html">ChemGP 1D Plots (Convergence, RFF, Profile, FPS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemgp/surfaces.html">ChemGP 2D Plots (Surfaces, GP Progression, NLL, Variance, Trust, Sensitivity)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="orca/geomscan.html">Geometry Scan</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#system-construction">System construction</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="orca/geomscan.html#orca-input">ORCA Input</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#system-construction">System construction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#execution">Execution</a></li>
 </ul>
 </li>
@@ -200,8 +190,54 @@ be used.</p>
 <li class="toctree-l2"><a class="reference internal" href="orca/geomscan.html#plotting">Plotting</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="eon/saddle.html">eOn Saddle Search Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#parsing-saddle-search-results">Parsing Saddle Search Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#example-usage">Example Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#accessing-saddle-search-data">Accessing Saddle Search Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eon/saddle.html#batch-processing">Batch Processing</a></li>
+</ul>
+</li>
 </ul>
 </div>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<section id="parsing-orca-output">
+<h3>Parsing ORCA Output<a class="headerlink" href="#parsing-orca-output" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.orca</span><span class="w"> </span><span class="kn">import</span> <span class="n">geomscan</span>
+
+<span class="c1"># Extract geometry scan data</span>
+<span class="n">energy_data</span> <span class="o">=</span> <span class="n">geomscan</span><span class="o">.</span><span class="n">extract_energy_data</span><span class="p">(</span><span class="n">orca_output</span><span class="p">,</span> <span class="s2">&quot;Actual&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parsing-eon-saddle-searches">
+<h3>Parsing eOn Saddle Searches<a class="headerlink" href="#parsing-eon-saddle-searches" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.parse.eon.saddle_search</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_eon_saddle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.basetypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpinID</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">parse_eon_saddle</span><span class="p">(</span><span class="n">results_dir</span><span class="p">,</span> <span class="n">SpinID</span><span class="p">(</span><span class="n">mol_id</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">spin</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Barrier: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">barrier</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plotting-neb-profiles">
+<h3>Plotting NEB Profiles<a class="headerlink" href="#plotting-neb-profiles" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">chemparseplot.plot.neb</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_energy_path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">rc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">123.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">123.5</span><span class="p">])</span>
+<span class="n">f_para</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">])</span>
+
+<span class="n">plot_energy_path</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">f_para</span><span class="p">,</span> <span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
 
@@ -232,9 +268,8 @@ be used.</p>
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
         </svg>
-        <span>Analytics by
-          <a href="https://umami.is/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
-        </span>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
       </span>
       <span style="display:inline-flex;align-items:center;gap:0.3em;">
         <span>provided by</span>

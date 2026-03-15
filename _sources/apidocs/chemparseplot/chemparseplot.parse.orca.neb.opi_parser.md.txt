@@ -1,0 +1,111 @@
+# {py:mod}`chemparseplot.parse.orca.neb.opi_parser`
+
+```{py:module} chemparseplot.parse.orca.neb.opi_parser
+```
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_get_opi_output <chemparseplot.parse.orca.neb.opi_parser._get_opi_output>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._get_opi_output
+    :summary:
+    ```
+* - {py:obj}`parse_orca_neb <chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb
+    :summary:
+    ```
+* - {py:obj}`_calculate_rmsd <chemparseplot.parse.orca.neb.opi_parser._calculate_rmsd>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._calculate_rmsd
+    :summary:
+    ```
+* - {py:obj}`_compute_synthetic_gradients <chemparseplot.parse.orca.neb.opi_parser._compute_synthetic_gradients>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._compute_synthetic_gradients
+    :summary:
+    ```
+* - {py:obj}`parse_orca_neb_fallback <chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb_fallback>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb_fallback
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_opi_output <chemparseplot.parse.orca.neb.opi_parser._opi_output>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._opi_output
+    :summary:
+    ```
+* - {py:obj}`HAS_OPI <chemparseplot.parse.orca.neb.opi_parser.HAS_OPI>`
+  - ```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.HAS_OPI
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} _opi_output
+:canonical: chemparseplot.parse.orca.neb.opi_parser._opi_output
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._opi_output
+```
+
+````
+
+````{py:function} _get_opi_output()
+:canonical: chemparseplot.parse.orca.neb.opi_parser._get_opi_output
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._get_opi_output
+```
+````
+
+````{py:data} HAS_OPI
+:canonical: chemparseplot.parse.orca.neb.opi_parser.HAS_OPI
+:value: >
+   True
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.HAS_OPI
+```
+
+````
+
+````{py:function} parse_orca_neb(basename: str, working_dir: pathlib.Path | None = None) -> dict[str, typing.Any]
+:canonical: chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb
+```
+````
+
+````{py:function} _calculate_rmsd(ref: typing.Any, mobile: typing.Any) -> float
+:canonical: chemparseplot.parse.orca.neb.opi_parser._calculate_rmsd
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._calculate_rmsd
+```
+````
+
+````{py:function} _compute_synthetic_gradients(rmsd_r, rmsd_p, forces, atoms_list)
+:canonical: chemparseplot.parse.orca.neb.opi_parser._compute_synthetic_gradients
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser._compute_synthetic_gradients
+```
+````
+
+````{py:function} parse_orca_neb_fallback(basename: str, working_dir: pathlib.Path | None = None) -> dict[str, typing.Any] | None
+:canonical: chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb_fallback
+
+```{autodoc2-docstring} chemparseplot.parse.orca.neb.opi_parser.parse_orca_neb_fallback
+```
+````

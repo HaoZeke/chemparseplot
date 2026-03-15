@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contributing to chemparseplot &#8212; chemparseplot 1.3.0 documentation</title>
+    <title>&lt;no title&gt; &#8212; chemparseplot 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <script src="_static/documentation_options.js?v=1f29e9d3"></script>
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="apidocs/index.html" />
-    <link rel="prev" title="Geometry Scan" href="tutorials/orca/geomscan.html" />
+    <link rel="prev" title="eOn Saddle Search Analysis" href="tutorials/eon/saddle.html" />
 
  
 
@@ -108,15 +108,8 @@
 <li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorial Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-co-authored-by-in-git-commits">Using Co-Authored-By in Git Commits</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
-</ul>
-</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -125,25 +118,6 @@
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
 <li class="toctree-l1"><a class="reference internal" href="worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
-</ul>
-
-<h3>Page Contents</h3>
-<ul>
-<li><a class="reference internal" href="#">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a><ul>
-<li><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
-<li><a class="reference internal" href="#types-of-contributions">Types of Contributions</a></li>
-<li><a class="reference internal" href="#using-co-authored-by-in-git-commits">Using Co-Authored-By in Git Commits</a></li>
-<li><a class="reference internal" href="#development">Development</a><ul>
-<li><a class="reference internal" href="#setup">Setup</a></li>
-<li><a class="reference internal" href="#pre-commit">Pre-commit</a></li>
-<li><a class="reference internal" href="#readme">README</a></li>
-<li><a class="reference internal" href="#versioning">Versioning</a></li>
-<li><a class="reference internal" href="#release-process">Release Process</a></li>
-<li><a class="reference internal" href="#documentation">Documentation</a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 <script>
   function toggleMode(theme) {
@@ -170,125 +144,18 @@
     <nav class="related breadcrumbs" role="navigation">
   <a class="nav-item" href="index.html">Index</a>
   <span class="delim"> &#187;</span>
-  <span class="nav-item">Contributing to chemparseplot</span>
+  <span class="nav-item">&lt;no title&gt;</span>
     </nav>
     
 
     <main class="body" role="main" id="main">
       
-  <section class="tex2jax_ignore mathjax_ignore" id="contributing-to-chemparseplot">
-<h1>Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code><a class="headerlink" href="#contributing-to-chemparseplot" title="Link to this heading">¶</a></h1>
-<p>Thank you for considering contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code>! We appreciate your
-interest in making this project better.</p>
-<section id="code-of-conduct">
-<h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Link to this heading">¶</a></h2>
-<p>Please read and adhere to our <a class="reference external" href="https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a> to maintain
-a safe, welcoming, and inclusive environment.</p>
-</section>
-<section id="types-of-contributions">
-<h2>Types of Contributions<a class="headerlink" href="#types-of-contributions" title="Link to this heading">¶</a></h2>
-<p>We welcome various forms of contributions:</p>
-<ul class="simple">
-<li><p><strong>Bug Reports</strong>: Feel free to report any bugs you encounter.</p></li>
-<li><p><strong>Documentation</strong>: Typos, clarity issues, or missing guides—your help is
-welcome here.</p></li>
-<li><p><strong>Feature Discussions/Requests</strong>: Got an idea? Open an issue to discuss its
-potential.</p></li>
-<li><p><strong>Code Contributions</strong>: All code contributions are welcome.</p></li>
-</ul>
-</section>
-<section id="using-co-authored-by-in-git-commits">
-<h2>Using Co-Authored-By in Git Commits<a class="headerlink" href="#using-co-authored-by-in-git-commits" title="Link to this heading">¶</a></h2>
-<p>We encourage the use of <a class="reference external" href="https://docs.github.com/en/github/committing-changes-to-your-project/creating-a-commit-with-multiple-authors">co-authored
-commits</a>
-for collaborative efforts. This helps in giving credit to all contributors for
-their work.</p>
-<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Co-authored-by: name &lt;name@example.com&gt;
-Co-authored-by: another-name &lt;another-name@example.com&gt;
-</pre></div>
-</div>
-</section>
-<section id="development">
-<h2>Development<a class="headerlink" href="#development" title="Link to this heading">¶</a></h2>
-<p>This project uses <a class="reference external" href="https://docs.astral.sh/uv/"><code class="docutils literal notranslate"><span class="pre">uv</span></code></a> as the primary development
-tool with <a class="reference external" href="https://hatch.pypa.io/"><code class="docutils literal notranslate"><span class="pre">hatchling</span></code></a> +
-<a class="reference external" href="https://github.com/ofek/hatch-vcs"><code class="docutils literal notranslate"><span class="pre">hatch-vcs</span></code></a> for building and versioning.</p>
-<section id="setup">
-<h3>Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install in development mode with test and plotting dependencies</span>
-uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--extra<span class="w"> </span>plot
-
-<span class="c1"># Run tests</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>chemparseplot<span class="w"> </span>tests
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">rgpycrumbs</span></code> dependency is resolved from git via <code class="docutils literal notranslate"><span class="pre">[tool.uv.sources]</span></code> in
-<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, so <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span></code> automatically fetches the latest version from
-the main branch.</p>
-</section>
-<section id="pre-commit">
-<h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Link to this heading">¶</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">pre-commit</span></code> job is set up on CI to enforce consistent styles. It is advisable
-to set it up locally as well using <a class="reference external" href="https://pypa.github.io/pipx/">pipx</a> for
-isolation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run before committing</span>
-pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
-<span class="c1"># Or install the git hook to enforce this</span>
-pipx<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
-</pre></div>
-</div>
-</section>
-<section id="readme">
-<h3>README<a class="headerlink" href="#readme" title="Link to this heading">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">readme</span></code> file is generated from <code class="docutils literal notranslate"><span class="pre">readme_src.org</span></code> via:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./scripts/org_to_md.sh<span class="w"> </span>readme_src.org<span class="w"> </span>readme.md
-</pre></div>
-</div>
-</section>
-<section id="versioning">
-<h3>Versioning<a class="headerlink" href="#versioning" title="Link to this heading">¶</a></h3>
-<p>Versions are derived automatically from <strong>git tags</strong> via <code class="docutils literal notranslate"><span class="pre">hatch-vcs</span></code>
-(setuptools-scm). There is no manual version field; the version is the latest
-tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.0.0</span></code> → <code class="docutils literal notranslate"><span class="pre">1.0.0</span></code>). Between tags, dev versions are generated
-automatically (e.g. <code class="docutils literal notranslate"><span class="pre">1.0.1.dev3+gabcdef</span></code>).</p>
-</section>
-<section id="release-process">
-<h3>Release Process<a class="headerlink" href="#release-process" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Ensure tests pass</span>
-uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>chemparseplot<span class="w"> </span>tests
-
-<span class="c1"># 2. Build changelog (uses towncrier fragments in doc/release/upcoming_changes/)</span>
-uvx<span class="w"> </span>towncrier<span class="w"> </span>build<span class="w"> </span>--version<span class="w"> </span><span class="s2">&quot;v1.0.0&quot;</span>
-
-<span class="c1"># 3. Commit the changelog</span>
-git<span class="w"> </span>add<span class="w"> </span>CHANGELOG.md<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;doc: release notes for v1.0.0&quot;</span>
-
-<span class="c1"># 4. Tag the release (hatch-vcs derives the version from this tag)</span>
-git<span class="w"> </span>tag<span class="w"> </span>-a<span class="w"> </span>v1.0.0<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Version 1.0.0&quot;</span>
-
-<span class="c1"># 5. Build and publish</span>
-uvx<span class="w"> </span>hatch<span class="w"> </span>build
-uvx<span class="w"> </span>hatch<span class="w"> </span>publish
-</pre></div>
-</div>
-</section>
-<section id="documentation">
-<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h3>
-<p>We use <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> with the <code class="docutils literal notranslate"><span class="pre">myst-parser</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>doc
-uv<span class="w"> </span>run<span class="w"> </span>sphinx-build<span class="w"> </span>doc/source<span class="w"> </span>doc/build/html
-python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span>-d<span class="w"> </span>doc/build/html
-</pre></div>
-</div>
-</section>
-</section>
-</section>
-
+  
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="tutorials/orca/geomscan.html" title="Previous">
-    &larr; Geometry Scan
+  <a class="prev" href="tutorials/eon/saddle.html" title="Previous">
+    &larr; eOn Saddle Search Analysis
   </a>
   <a class="next" href="apidocs/index.html" title="Next">
     API Reference &rarr;
@@ -312,9 +179,8 @@ python<span class="w"> </span>-m<span class="w"> </span>http.server<span class="
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
         </svg>
-        <span>Analytics by
-          <a href="https://umami.is/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
-        </span>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
       </span>
       <span style="display:inline-flex;align-items:center;gap:0.3em;">
         <span>provided by</span>

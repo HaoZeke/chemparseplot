@@ -23,7 +23,7 @@
 
 ### API
 
-````{py:function} plot_energy_paths(energy_paths, units, colormap_fraction=1.0, plotter=None)
+````{py:function} plot_energy_paths(energy_paths: list[typing.Any], units: dict[str, typing.Any], colormap_fraction: float = 1.0, plotter: chemparseplot.plot.structs.BasePlotter | None = None) -> chemparseplot.plot.structs.BasePlotter
 :canonical: chemparseplot.plot.geomscan.plot_energy_paths
 
 ```{autodoc2-docstring} chemparseplot.plot.geomscan.plot_energy_paths

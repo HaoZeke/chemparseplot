@@ -97,6 +97,6 @@ print(result.method)     # Dimer, GPRD, or LBFGS
 
 ## Next steps
 
-- Browse the [tutorials](tutorials/index) for full worked examples
-- See the [features](features) page for all supported engines
-- Check the [API reference](apidocs/index) for detailed module documentation
+- Browse the tutorials for full worked examples
+- See the features page for all supported engines
+- Check the API reference for detailed module documentation

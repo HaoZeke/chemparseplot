@@ -8,7 +8,7 @@
     <title>chemparseplot.plot.chemgp &#8212; chemparseplot 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.plot.chemgp.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="chemparseplot.units" href="chemparseplot.units.html" />
+    <link rel="next" title="chemparseplot.plot.plumed" href="chemparseplot.plot.plumed.html" />
     <link rel="prev" title="chemparseplot.plot.theme" href="chemparseplot.plot.theme.html" />
 
  
@@ -110,7 +110,6 @@
 <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorial Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing to <code class="docutils literal notranslate"><span class="pre">chemparseplot</span></code></a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
@@ -147,6 +146,10 @@
 <li><a class="reference internal" href="#chemparseplot.plot.chemgp.plot_gp_progression"><code class="docutils literal notranslate"><span class="pre">plot_gp_progression()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.chemgp.plot_nll_landscape"><code class="docutils literal notranslate"><span class="pre">plot_nll_landscape()</span></code></a></li>
 <li><a class="reference internal" href="#chemparseplot.plot.chemgp.plot_variance_overlay"><code class="docutils literal notranslate"><span class="pre">plot_variance_overlay()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.chemgp.safe_plot"><code class="docutils literal notranslate"><span class="pre">safe_plot()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.chemgp._CLAMP_PRESETS"><code class="docutils literal notranslate"><span class="pre">_CLAMP_PRESETS</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.chemgp.detect_clamp"><code class="docutils literal notranslate"><span class="pre">detect_clamp()</span></code></a></li>
+<li><a class="reference internal" href="#chemparseplot.plot.chemgp.save_plot"><code class="docutils literal notranslate"><span class="pre">save_plot()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -193,16 +196,6 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.plot.chemgp">
 <span id="chemparseplot-plot-chemgp"></span><h1><a class="reference internal" href="#module-chemparseplot.plot.chemgp" title="chemparseplot.plot.chemgp"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.chemgp</span></code></a><a class="headerlink" href="#module-chemparseplot.plot.chemgp" title="Link to this heading">¶</a></h1>
-<p>ChemGP visualization functions.</p>
-<p>Mixed plotnine (for 1D line charts) and matplotlib (for 2D
-contour surfaces) plotting functions for GP-based optimization
-convergence, surfaces, and diagnostics.</p>
-<p>Surface plots use matplotlib contourf with the RUHI colormap,
-matching the Julia CairoMakie originals. Line charts use plotnine
-for ggplot2 grammar.</p>
-<div class="versionadded">
-<p><span class="versionmodified added">Added in version 1.4.0.</span></p>
-</div>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <section id="functions">
@@ -246,6 +239,15 @@ and hypothetical bad step + oracle fallback.</p></td>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp.plot_variance_overlay" title="chemparseplot.plot.chemgp.plot_variance_overlay"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_variance_overlay</span></code></a></p></td>
 <td><p>Energy surface with hatched high-variance regions.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp.safe_plot" title="chemparseplot.plot.chemgp.safe_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">safe_plot</span></code></a></p></td>
+<td><p>Decorator for graceful error handling in plot generation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp.detect_clamp" title="chemparseplot.plot.chemgp.detect_clamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detect_clamp</span></code></a></p></td>
+<td><p>Detect energy clamping preset from filename.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp.save_plot" title="chemparseplot.plot.chemgp.save_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_plot</span></code></a></p></td>
+<td><p>Save a plotnine ggplot or matplotlib Figure to file.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -263,6 +265,9 @@ and hypothetical bad step + oracle fallback.</p></td>
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp._STROKE" title="chemparseplot.plot.chemgp._STROKE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_STROKE</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.chemgp._CLAMP_PRESETS" title="chemparseplot.plot.chemgp._CLAMP_PRESETS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_CLAMP_PRESETS</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -310,7 +315,7 @@ and hypothetical bad step + oracle fallback.</p></td>
 <dt class="sig sig-object py" id="chemparseplot.plot.chemgp.plot_convergence_curve">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">plot_convergence_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'oracle_calls'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'max_fatom'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'method'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conv_tol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">plotnine.ggplot</span></span></span><a class="headerlink" href="#chemparseplot.plot.chemgp.plot_convergence_curve" title="Link to this definition">¶</a></dt>
 <dd><p>Log-scale convergence: oracle calls vs force, colored by method.</p>
-<p class="rubric" id="id28">Parameters</p>
+<p class="rubric" id="id30">Parameters</p>
 <p>df : pandas.DataFrame
 Long-form table with at least columns <em>x</em>, <em>y</em>, and <em>color</em>.
 x : str
@@ -327,10 +332,10 @@ Single float draws one horizontal line. Dict mapping method name
 to threshold draws per-method dashed lines in matching colors.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id29">Returns</p>
+<p class="rubric" id="id31">Returns</p>
 <p>plotnine.ggplot
 A ggplot object.  Call <code class="docutils literal notranslate"><span class="pre">.save()</span></code> or assign to render.</p>
-<p class="rubric" id="id30">Examples</p>
+<p class="rubric" id="id32">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -349,7 +354,7 @@ fig = plot_convergence_curve(df, conv_tol=0.2)</p>
 <dt class="sig sig-object py" id="chemparseplot.plot.chemgp.plot_rff_quality">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">plot_rff_quality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_e_mae</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_g_mae</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">plotnine.ggplot</span></span></span><a class="headerlink" href="#chemparseplot.plot.chemgp.plot_rff_quality" title="Link to this definition">¶</a></dt>
 <dd><p>Two-panel plot of energy and gradient MAE vs RFF dimension.</p>
-<p class="rubric" id="id31">Parameters</p>
+<p class="rubric" id="id33">Parameters</p>
 <p>df : pandas.DataFrame
 Table with columns <code class="docutils literal notranslate"><span class="pre">d_rff</span></code>, <code class="docutils literal notranslate"><span class="pre">energy_mae</span></code>, <code class="docutils literal notranslate"><span class="pre">gradient_mae</span></code>.
 exact_e_mae : float
@@ -358,10 +363,10 @@ exact_g_mae : float
 Exact GP gradient MAE baseline.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id32">Returns</p>
+<p class="rubric" id="id34">Returns</p>
 <p>plotnine.ggplot
 Two-facet plot: Energy MAE and Gradient MAE vs D_rff.</p>
-<p class="rubric" id="id33">Examples</p>
+<p class="rubric" id="id35">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -383,7 +388,7 @@ fig = plot_rff_quality(df, exact_e_mae=0.05, exact_g_mae=0.1)</p>
 <p>Columns correspond to lengthscale values, rows to signal variance.
 Each panel shows the true surface (dashed), GP mean (teal), and a
 +/- 2 sigma confidence band (sky).</p>
-<p class="rubric" id="id34">Parameters</p>
+<p class="rubric" id="id36">Parameters</p>
 <p>x_slice : numpy.ndarray
 Shared x coordinates for all panels.
 y_true : numpy.ndarray
@@ -394,10 +399,10 @@ for each of the 9 panels.  Keys follow the pattern
 <code class="docutils literal notranslate"><span class="pre">gp_ls{col}_sv{row}</span></code> with col, row in 1..3.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id35">Returns</p>
+<p class="rubric" id="id37">Returns</p>
 <p>matplotlib.figure.Figure
 The 3x3 figure with a shared legend below the grid.</p>
-<p class="rubric" id="id36">Examples</p>
+<p class="rubric" id="id38">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -419,7 +424,7 @@ and hypothetical bad step + oracle fallback.</p>
 <p>Shows the GP mean, +/- 2 sigma band, true surface, trust boundary
 (magenta dotted), a bad GP step (coral X) outside the trust region,
 and the oracle fallback (teal star) at the true energy.</p>
-<p class="rubric" id="id37">Parameters</p>
+<p class="rubric" id="id39">Parameters</p>
 <p>x_slice : numpy.ndarray
 X coordinates along the 1D slice.
 e_true : numpy.ndarray
@@ -434,10 +439,10 @@ train_x : numpy.ndarray or None
 X coordinates of training points (projected to true surface).
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id38">Returns</p>
+<p class="rubric" id="id40">Returns</p>
 <p>matplotlib.figure.Figure
 Single-axis figure with trust region annotations.</p>
-<p class="rubric" id="id39">Examples</p>
+<p class="rubric" id="id41">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -455,17 +460,17 @@ fig = plot_trust_region(x, np.sin(x), np.sin(x) * 0.9, np.full(100, 0.1), trust)
 <dt class="sig sig-object py" id="chemparseplot.plot.chemgp.plot_fps_projection">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">plot_fps_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selected_pc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_pc2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pruned_pc1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pruned_pc2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">plotnine.ggplot</span></span></span><a class="headerlink" href="#chemparseplot.plot.chemgp.plot_fps_projection" title="Link to this definition">¶</a></dt>
 <dd><p>PCA scatter of FPS-selected (teal) vs pruned (grey) points.</p>
-<p class="rubric" id="id40">Parameters</p>
+<p class="rubric" id="id42">Parameters</p>
 <p>selected_pc1, selected_pc2 : array-like
 PCA coordinates of the selected (retained) subset.
 pruned_pc1, pruned_pc2 : array-like
 PCA coordinates of the pruned (discarded) points.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id41">Returns</p>
+<p class="rubric" id="id43">Returns</p>
 <p>plotnine.ggplot
 Scatter plot with two groups colored by selection status.</p>
-<p class="rubric" id="id42">Examples</p>
+<p class="rubric" id="id44">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -481,7 +486,7 @@ fig = plot_fps_projection([0, 1, 2], [0, 1, 0], [0.5, 1.5], [0.3, 0.8])</p>
 <dt class="sig sig-object py" id="chemparseplot.plot.chemgp.plot_energy_profile">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">plot_energy_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'image'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'energy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'method'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">plotnine.ggplot</span></span></span><a class="headerlink" href="#chemparseplot.plot.chemgp.plot_energy_profile" title="Link to this definition">¶</a></dt>
 <dd><p>NEB energy profile: image index vs relative energy, colored by method.</p>
-<p class="rubric" id="id43">Parameters</p>
+<p class="rubric" id="id45">Parameters</p>
 <p>df : pandas.DataFrame
 Long-form table with columns <em>x</em>, <em>y</em>, and <em>color</em>.
 x : str
@@ -492,10 +497,10 @@ color : str
 Column used to color lines by method.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id44">Returns</p>
+<p class="rubric" id="id46">Returns</p>
 <p>plotnine.ggplot
 Line + point plot of NEB energy profile.</p>
-<p class="rubric" id="id45">Examples</p>
+<p class="rubric" id="id47">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -516,7 +521,7 @@ fig = plot_energy_profile(df)</p>
 <p>Matches the Julia CairoMakie style: RUHI colormap, black contour
 lines, white NEB path, coral image circles, numbered images,
 sunshine star endpoints (or circle+label for minima/saddles).</p>
-<p class="rubric" id="id46">Parameters</p>
+<p class="rubric" id="id48">Parameters</p>
 <p>grid_x, grid_y, grid_z : array-like
 2D meshgrid arrays for the surface.
 paths : dict or None
@@ -535,10 +540,10 @@ point_style : str
 Default point style: “star” or “labeled”.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id47">Returns</p>
+<p class="rubric" id="id49">Returns</p>
 <p>matplotlib.figure.Figure
 Contour figure with optional overlays.</p>
-<p class="rubric" id="id48">Examples</p>
+<p class="rubric" id="id50">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -559,7 +564,7 @@ fig = plot_surface_contour(X, Y, Z, clamp_lo=-1, clamp_hi=1)</p>
 <dd><p>Faceted contour panels showing GP mean at different training sizes.</p>
 <p>Matches Julia: clamped energy, RUHI colormap, black contour lines,
 training points as black dots.</p>
-<p class="rubric" id="id49">Parameters</p>
+<p class="rubric" id="id51">Parameters</p>
 <p>grids : dict
 <code class="docutils literal notranslate"><span class="pre">{n_train:</span> <span class="pre">{&quot;gp_mean&quot;:</span> <span class="pre">2d_array,</span> <span class="pre">&quot;train_x&quot;:</span> <span class="pre">array,</span> <span class="pre">&quot;train_y&quot;:</span> <span class="pre">array}}</span></code>.
 true_energy : array-like
@@ -572,10 +577,10 @@ n_cols : int
 Number of columns in the panel layout.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id50">Returns</p>
+<p class="rubric" id="id52">Returns</p>
 <p>matplotlib.figure.Figure
 Multi-panel contour figure with shared colorbar.</p>
-<p class="rubric" id="id51">Examples</p>
+<p class="rubric" id="id53">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -597,7 +602,7 @@ fig = plot_gp_progression(grids, gp_mean, x, x)</p>
 <dd><p>NLL contour in (log sigma^2, log theta) space.</p>
 <p>Matches Julia: reversed RUHI colormap (low NLL = warm),
 quantile-clipped, gradient norm dashed overlay.</p>
-<p class="rubric" id="id52">Parameters</p>
+<p class="rubric" id="id54">Parameters</p>
 <p>grid_x, grid_y : array-like
 2D meshgrid of log sigma^2 and log theta values.
 grid_nll : array-like
@@ -608,10 +613,10 @@ optimum : tuple or None
 (log_sigma2, log_theta) of the MAP optimum to mark.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id53">Returns</p>
+<p class="rubric" id="id55">Returns</p>
 <p>matplotlib.figure.Figure
 NLL contour with optional gradient norm overlay and optimum marker.</p>
-<p class="rubric" id="id54">Examples</p>
+<p class="rubric" id="id56">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -633,7 +638,7 @@ fig = plot_nll_landscape(X, Y, nll, optimum=(0.5, -1.0))</p>
 <p>Matches Julia: clamped energy contourf as base, diagonal hatching
 for high-variance regions, magenta boundary contour, labeled
 stationary points.</p>
-<p class="rubric" id="id55">Parameters</p>
+<p class="rubric" id="id57">Parameters</p>
 <p>grid_x, grid_y : array-like
 2D meshgrid arrays.
 grid_energy : array-like
@@ -649,10 +654,10 @@ clamp_lo, clamp_hi : float
 Energy clamping range for display.
 width, height : float
 Figure size in inches.</p>
-<p class="rubric" id="id56">Returns</p>
+<p class="rubric" id="id58">Returns</p>
 <p>matplotlib.figure.Figure
 Energy contour with hatched high-variance overlay and legend.</p>
-<p class="rubric" id="id57">Examples</p>
+<p class="rubric" id="id59">Examples</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -668,6 +673,41 @@ fig = plot_variance_overlay(X, Y, E, V, clamp_lo=-100, clamp_hi=50)</p>
 <p>.. versionadded:: 1.4.0</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.chemgp.safe_plot">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">safe_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.chemgp.safe_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Decorator for graceful error handling in plot generation.</p>
+<p>Catches common errors and logs helpful messages.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="chemparseplot.plot.chemgp._CLAMP_PRESETS">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">_CLAMP_PRESETS</span></span><a class="headerlink" href="#chemparseplot.plot.chemgp._CLAMP_PRESETS" title="Link to this definition">¶</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.chemgp.detect_clamp">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">detect_clamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.chemgp.detect_clamp" title="Link to this definition">¶</a></dt>
+<dd><p>Detect energy clamping preset from filename.</p>
+<p class="rubric" id="id60">Returns</p>
+<p>tuple
+(clamp_lo, clamp_hi, contour_step) or (None, None, None)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="chemparseplot.plot.chemgp.save_plot">
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.chemgp.</span></span><span class="sig-name descname"><span class="pre">save_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.chemgp.save_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Save a plotnine ggplot or matplotlib Figure to file.</p>
+<p class="rubric" id="id61">Parameters</p>
+<p>fig
+A matplotlib Figure or plotnine ggplot object.
+output : pathlib.Path
+Output file path.
+dpi : int
+Resolution in dots per inch.</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -678,8 +718,8 @@ fig = plot_variance_overlay(X, Y, E, V, clamp_lo=-100, clamp_hi=50)</p>
   <a class="prev" href="chemparseplot.plot.theme.html" title="Previous">
     &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code>
   </a>
-  <a class="next" href="chemparseplot.units.html" title="Next">
-    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code> &rarr;
+  <a class="next" href="chemparseplot.plot.plumed.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.plumed</span></code> &rarr;
   </a>
   <div class="clear"></div>
     </nav>
@@ -700,9 +740,8 @@ fig = plot_variance_overlay(X, Y, E, V, clamp_lo=-100, clamp_hi=50)</p>
         <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
         </svg>
-        <span>Analytics by
-          <a href="https://umami.is/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
-        </span>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
       </span>
       <span style="display:inline-flex;align-items:center;gap:0.3em;">
         <span>provided by</span>

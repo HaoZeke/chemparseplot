@@ -63,6 +63,18 @@
   - ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_variance_overlay
     :summary:
     ```
+* - {py:obj}`safe_plot <chemparseplot.plot.chemgp.safe_plot>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.safe_plot
+    :summary:
+    ```
+* - {py:obj}`detect_clamp <chemparseplot.plot.chemgp.detect_clamp>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.detect_clamp
+    :summary:
+    ```
+* - {py:obj}`save_plot <chemparseplot.plot.chemgp.save_plot>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp.save_plot
+    :summary:
+    ```
 ````
 
 ### Data
@@ -85,6 +97,10 @@
     ```
 * - {py:obj}`_STROKE <chemparseplot.plot.chemgp._STROKE>`
   - ```{autodoc2-docstring} chemparseplot.plot.chemgp._STROKE
+    :summary:
+    ```
+* - {py:obj}`_CLAMP_PRESETS <chemparseplot.plot.chemgp._CLAMP_PRESETS>`
+  - ```{autodoc2-docstring} chemparseplot.plot.chemgp._CLAMP_PRESETS
     :summary:
     ```
 ````
@@ -212,5 +228,36 @@
 :canonical: chemparseplot.plot.chemgp.plot_variance_overlay
 
 ```{autodoc2-docstring} chemparseplot.plot.chemgp.plot_variance_overlay
+```
+````
+
+````{py:function} safe_plot(func)
+:canonical: chemparseplot.plot.chemgp.safe_plot
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.safe_plot
+```
+````
+
+````{py:data} _CLAMP_PRESETS
+:canonical: chemparseplot.plot.chemgp._CLAMP_PRESETS
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp._CLAMP_PRESETS
+```
+
+````
+
+````{py:function} detect_clamp(filename: str)
+:canonical: chemparseplot.plot.chemgp.detect_clamp
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.detect_clamp
+```
+````
+
+````{py:function} save_plot(fig, output, dpi=300)
+:canonical: chemparseplot.plot.chemgp.save_plot
+
+```{autodoc2-docstring} chemparseplot.plot.chemgp.save_plot
 ```
 ````
