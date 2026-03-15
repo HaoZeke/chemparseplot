@@ -181,18 +181,24 @@
       
   <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.scripts.plt_neb">
 <span id="chemparseplot-scripts-plt-neb"></span><h1><a class="reference internal" href="#module-chemparseplot.scripts.plt_neb" title="chemparseplot.scripts.plt_neb"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.scripts.plt_neb</span></code></a><a class="headerlink" href="#module-chemparseplot.scripts.plt_neb" title="Link to this heading">¶</a></h1>
-<p>EON CLI - NEB plotting from .dat/.con files or HDF5 trajectories.</p>
-<p>Thin CLI wrapper that delegates to chemparseplot for parsing and plotting.
-All heavy lifting done by chemparseplot modules.</p>
-<p>The default <code class="docutils literal notranslate"><span class="pre">grad_imq</span></code> surface method uses gradient-enhanced Inverse Multiquadric
-interpolation on 2D RMSD projections. This approach is described in:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>R. Goswami, &quot;Two-dimensional RMSD projections for reaction path visualization
-and validation,&quot; MethodsX, p. 103851, Mar. 2026,
-doi: 10.1016/j.mex.2026.103851.
-</pre></div>
-</div>
-<p>.. versionadded:: 1.7.0
-Refactored from monolithic plt_neb.py to thin CLI wrapper.</p>
+<p>Plots Nudged Elastic Band (NEB) reaction paths and landscapes.</p>
+<p>.. versionadded:: 0.0.2</p>
+<p>This script provides a command-line interface (CLI) to visualize data
+generated from NEB calculations. It can plot:</p>
+<ol class="arabic simple">
+<li><p><strong>Energy/Eigenvalue Profiles:</strong> Shows the evolution of the energy or
+lowest eigenvalue along the reaction coordinate. It can overlay multiple
+paths (e.g., from different optimization steps) and use a
+physically-motivated Hermite spline interpolation using force data.</p></li>
+<li><p><strong>2D Reaction Landscapes:</strong> Plots the path on a 2D coordinate system
+defined by the Root Mean Square Deviation (RMSD) from the reactant
+and product structures. This requires the ‘ira_mod’ library.
+It can also interpolate and display the 2D energy/eigenvalue surface.</p></li>
+</ol>
+<p>The script can also render atomic structures from a .con file as insets
+on the plots for key points (reactant, saddle, product).</p>
+<p>This script follows the guidelines laid out here:
+https://realpython.com/python-script-structure/</p>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <section id="functions">
@@ -200,7 +206,7 @@ Refactored from monolithic plt_neb.py to thin CLI wrapper.</p>
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.scripts.plt_neb.main" title="chemparseplot.scripts.plt_neb.main"><code class="xref py py-obj docutils literal notranslate"><span class="pre">main</span></code></a></p></td>
-<td><p>NEB reaction path and landscape plotting.</p></td>
+<td><p>Main entry point for NEB plot script.</p></td>
 </tr>
 </tbody>
 </table>
@@ -252,9 +258,8 @@ Refactored from monolithic plt_neb.py to thin CLI wrapper.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.scripts.plt_neb.main">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.scripts.plt_neb.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dat_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_h5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landscape_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_recompute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landscape_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.scripts.plt_neb.main" title="Link to this definition">¶</a></dt>
-<dd><p>NEB reaction path and landscape plotting.</p>
-<p>Delegates to chemparseplot for parsing and plotting.</p>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.scripts.plt_neb.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dat_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_path_pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_con</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_traj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_h5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landscape_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">landscape_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbf_smoothing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_inducing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_rc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">highlight_last</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_landscape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize_base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom_ratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ase_rotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_head_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_head_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_tail_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_reactant</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_saddle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_product</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_legend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_recompute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sp_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment_dat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment_con</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.scripts.plt_neb.main" title="Link to this definition">¶</a></dt>
+<dd><p>Main entry point for NEB plot script.</p>
 </dd></dl>
 
 </section>
