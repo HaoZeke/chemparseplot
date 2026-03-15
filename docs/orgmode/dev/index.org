@@ -1,0 +1,62 @@
+#+TITLE: Developer Documentation
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Developer Documentation
+
+Technical documentation for developers working on chemparseplot.
+
+** Architecture
+
+| Document | Description |
+|----------+-------------|
+| [[file:parsing_architecture.org][Parsing Architecture]] | How parsers extract data from quantum chemistry output |
+| [[file:plotting_architecture.org][Plotting Architecture]] | Separation of data parsing and visualization |
+| [[file:opi_integration.org][OPI Integration]] | ORCA Python Interface integration design |
+
+** Patterns
+
+| Pattern | Description |
+|---------+-------------|
+| [[file:lazy_imports.org][Lazy Imports]] | Defer optional dependency loading |
+| [[file:unified_data_format.org][Unified Data Format]] | Compatible data format across different codes |
+| [[file:diataxis_docs.org][Diataxis Documentation]] | Documentation structure and organization |
+
+** Contributing
+
+- [[file:../contributing.org][Contributing Guidelines]]
+- [[file:../release.org][Release Process]]
+- [[file:../testing.org][Testing Guidelines]]
+
+* Quick Start for Developers
+
+** Setup**
+
+#+begin_src bash
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+uv sync --all-extras
+#+end_src
+
+** Run Tests**
+
+#+begin_src bash
+uv run pytest -m pure  # Pure Python tests
+uv run pytest -m neb   # NEB-related tests
+#+end_src
+
+** Add New Parser**
+
+1. Create =chemparseplot/parse/<code>/<method>.py=
+2. Return data compatible with existing format
+3. Add tests in =tests/parse/<code>/=
+4. Update documentation
+
+See [[file:parsing_architecture.org][Parsing Architecture]] for details.
+
+* Related
+
+- [[file:../index.org][Main Documentation]]
+- [[file:../tutorials/index.org][Tutorials]]
+- [[https://github.com/HaoZeke/chemparseplot][GitHub Repository]]

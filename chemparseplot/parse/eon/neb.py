@@ -282,7 +282,7 @@ def load_augmenting_neb_data(
     ```{versionadded} 0.1.0
     ```
     """
-    from chemparseplot.parse.file_ import find_file_paths  # noqa: PLC0415
+    from chemparseplot.parse.file_ import find_file_paths
 
     dat_paths = find_file_paths(dat_pattern)
     con_paths = find_file_paths(con_pattern)

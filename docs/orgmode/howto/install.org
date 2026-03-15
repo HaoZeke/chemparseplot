@@ -1,0 +1,208 @@
+#+TITLE: Installation Guide
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Installation Guide
+
+Install chemparseplot using your preferred package manager.
+
+** Requirements
+
+- Python 3.10, 3.11, or 3.12
+- pip, uv, pixi, or conda
+
+** Quick Install
+
+*** Using pip
+
+#+begin_src bash
+# Basic installation
+pip install chemparseplot
+
+# With plotting support
+pip install "chemparseplot[plot]"
+
+# With all optional dependencies
+pip install "chemparseplot[all]"
+#+end_src
+
+*** Using uv
+
+#+begin_src bash
+uv add chemparseplot
+#+end_src
+
+*** Using pixi
+
+#+begin_src bash
+pixi add chemparseplot
+#+end_src
+
+*** Using conda
+
+#+begin_src bash
+conda install -c conda-forge chemparseplot
+#+end_src
+
+** Platform-Specific Instructions
+
+*** Linux
+
+No special requirements. All features work on Linux.
+
+#+begin_src bash
+# Recommended: use uv for fastest installation
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv add chemparseplot
+#+end_src
+
+*** macOS
+
+No special requirements. All features work on macOS.
+
+#+begin_src bash
+# Using Homebrew Python
+brew install python
+pip install chemparseplot
+#+end_src
+
+*** Windows
+
+Most features work on Windows. Note:
+- OPI requires ORCA 6.1+ for Windows
+- Some parallel features work best with WSL2
+
+#+begin_src bash
+# Using pip
+pip install chemparseplot
+
+# Or using conda
+conda install -c conda-forge chemparseplot
+#+end_src
+
+** Optional Dependencies
+
+*** Plotting (Recommended)
+
+#+begin_src bash
+pip install "chemparseplot[plot]"
+#+end_src
+
+Includes:
+- matplotlib
+- cmcrameri (scientific colormaps)
+
+*** NEB Processing
+
+#+begin_src bash
+pip install "chemparseplot[neb]"
+#+end_src
+
+Includes:
+- ase (Atomic Simulation Environment)
+- h5py (HDF5 support)
+- polars (fast dataframes)
+
+*** ORCA 6.1+ Support
+
+#+begin_src bash
+pip install orca-pi
+#+end_src
+
+Official ORCA Python Interface for parsing ORCA 6.1+ JSON output.
+
+*** All Dependencies
+
+#+begin_src bash
+pip install "chemparseplot[all]"
+#+end_src
+
+** Verification
+
+Test your installation:
+
+#+begin_src bash
+python -c "import chemparseplot; print(chemparseplot.__version__)"
+#+end_src
+
+Expected output: version number (e.g., "0.2.0")
+
+** Troubleshooting
+
+*** "ModuleNotFoundError: No module named 'chemparseplot'"
+
+Ensure you installed in the correct Python environment:
+
+#+begin_src bash
+# Check which Python is being used
+which python
+python --version
+
+# Install in correct environment
+/path/to/python -m pip install chemparseplot
+#+end_src
+
+*** "ImportError: No module named 'matplotlib'"
+
+Install plotting dependencies:
+
+#+begin_src bash
+pip install "chemparseplot[plot]"
+#+end_src
+
+*** "ImportError: No module named 'opi'"
+
+Install OPI for ORCA 6.1+ support:
+
+#+begin_src bash
+pip install orca-pi
+#+end_src
+
+Or use legacy parser for ORCA < 6.1.
+
+*** Installation fails with permission error
+
+Use user installation:
+
+#+begin_src bash
+pip install --user chemparseplot
+#+end_src
+
+Or use virtual environment:
+
+#+begin_src bash
+python -m venv .venv
+source .venv/bin/activate
+pip install chemparseplot
+#+end_src
+
+** Development Installation
+
+For contributing to chemparseplot:
+
+#+begin_src bash
+# Clone repository
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+
+# Install in editable mode with all dependencies
+uv sync --all-extras
+
+# Run tests
+uv run pytest
+#+end_src
+
+See: [[file:../dev/contributing.org][Contributing Guidelines]]
+
+** Next Steps
+
+- [[file:../tutorials/index.org][Tutorials]] - Learn how to use chemparseplot
+- [[file:faq.org][FAQ]] - Common questions
+- [[file:../reference/index.org][Reference]] - API documentation
+
+** See Also
+
+- [[https://chemparseplot.rgoswami.me][Official Documentation]]
+- [[https://github.com/HaoZeke/chemparseplot][GitHub Repository]]
+- [[file:../reference/glossary.org][Glossary]] - Terms and definitions

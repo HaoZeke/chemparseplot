@@ -1,0 +1,30 @@
+#+TITLE: Reference
+#+OPTIONS: toc:nil num:nil
+
+* API Reference
+
+Reference documentation is information-oriented. Use it to find technical details.
+
+** Available Reference
+
+| Reference | Description |
+|-----------+-------------|
+| [[file:orca_neb_api.org][ORCA NEB API]] | =parse_orca_neb()=, plotting functions |
+| [[file:eon_neb_api.org][eOn NEB API]] | eOn NEB parsing and plotting |
+| [[file:plotting_api.org][Plotting API]] | All plotting functions |
+
+** Structure
+
+Each reference page includes:
+- Function signatures
+- Parameter tables
+- Return values
+- Exceptions
+- Examples
+- Notes
+
+** Getting Help
+
+- [[file:../tutorials/index.org][Tutorials]] - Learn from scratch
+- [[file:../howto/index.org][How-to Guides]] - Solve problems
+- [[file:../explanation/index.org][Explanation]] - Understand concepts

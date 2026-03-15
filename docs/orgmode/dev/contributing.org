@@ -1,0 +1,259 @@
+#+TITLE: Contributing Guidelines
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Contributing to chemparseplot
+
+Thank you for contributing to chemparseplot!
+
+** Getting Started
+
+*** 1. Fork and Clone
+
+#+begin_src bash
+git clone https://github.com/your-username/chemparseplot
+cd chemparseplot
+#+end_src
+
+*** 2. Set Up Development Environment
+
+#+begin_src bash
+# Using uv (recommended)
+uv sync --all-extras
+
+# Or using pip
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[all,test]"
+#+end_src
+
+*** 3. Run Tests
+
+#+begin_src bash
+# Run all tests
+uv run pytest
+
+# Run specific test categories
+uv run pytest -m pure
+uv run pytest -m neb
+#+end_src
+
+** Code Style
+
+*** Formatting
+
+Code is formatted with ruff:
+
+#+begin_src bash
+uv run ruff format .
+uv run ruff check .
+#+end_src
+
+*** Type Hints
+
+All public functions must have type hints:
+
+#+begin_src python
+def parse_orca_neb(
+    basename: str,
+    working_dir: Path | None = None,
+) -> dict[str, Any]:
+    """Parse ORCA NEB calculation."""
+    ...
+#+end_src
+
+Target: 90%+ type hint coverage.
+
+*** Documentation
+
+All public functions must have docstrings:
+
+#+begin_src python
+def plot_energy_profile(
+    data: dict[str, Any],
+    output: Path,
+    width: float = 5.37,
+) -> None:
+    """Plot NEB energy profile.
+
+    Parameters
+    ----------
+    data
+        Parsed NEB data from parse_orca_neb()
+    output
+        Output file path
+    width
+        Figure width in inches
+
+    Example
+    -------
+    >>> data = parse_orca_neb("job")
+    >>> plot_energy_profile(data, "profile.pdf")
+    """
+    ...
+#+end_src
+
+** Pull Request Process
+
+*** 1. Create Branch
+
+#+begin_src bash
+git checkout -b feature/your-feature-name
+#+end_src
+
+*** 2. Make Changes
+
+- Write tests for new features
+- Update documentation
+- Follow code style guidelines
+
+*** 3. Run CI Checks Locally
+
+#+begin_src bash
+# Run tests
+uv run pytest
+
+# Check formatting
+uv run ruff format --check .
+uv run ruff check .
+
+# Test tutorials
+uv run python3 /tmp/test_tutorial.py
+#+end_src
+
+*** 4. Submit PR
+
+1. Push to your fork
+2. Create PR on GitHub
+3. Fill out PR template
+4. Wait for CI checks
+5. Address reviewer comments
+
+** Adding New Parsers
+
+*** Directory Structure
+
+#+begin_src text
+chemparseplot/parse/<code>/
+|-- __init__.py
+|-- <method>.py      # Main parser
+`-- test_<method>.py # Tests
+#+end_src
+
+*** Parser Requirements
+
+1. Return compatible data format:
+#+begin_src python
+{
+    "energies": np.array([...]),
+    "rmsd_r": np.array([...]),
+    "rmsd_p": np.array([...]),
+    "converged": bool,
+    "n_images": int,
+}
+#+end_src
+
+2. Use lazy imports for optional dependencies:
+#+begin_src python
+from rgpycrumbs._aux import ensure_import
+
+def _get_optional_dep():
+    global _dep
+    if _dep is None:
+        _dep = ensure_import("optional_package")
+    return _dep
+#+end_src
+
+3. Add tests with mock data
+
+4. Update documentation
+
+** Adding New Plot Types
+
+*** Directory Structure
+
+#+begin_src text
+chemparseplot/plot/
+|-- <plot_type>.py      # Plotting function
+`-- test_<plot_type>.py # Tests
+#+end_src
+
+*** Plot Requirements
+
+1. Accept standard data format
+2. Use theme system:
+#+begin_src python
+from chemparseplot.plot.theme import get_theme
+theme = get_theme("ruhi")
+#+end_src
+
+3. Support customization (width, height, dpi)
+4. Add to documentation
+
+** Testing Requirements
+
+*** Test Categories
+
+- =@pytest.mark pure= - Pure Python tests (no optional deps)
+- =@pytest.mark neb= - NEB-related tests
+- =@pytest.mark plot= - Plotting tests
+
+*** Test Coverage
+
+Target: 80%+ coverage for new code
+
+#+begin_src bash
+uv run pytest --cov=chemparseplot
+#+end_src
+
+** Documentation Requirements
+
+*** New Features Must Have
+
+1. Tutorial (if user-facing)
+2. API reference
+3. How-to guide (if applicable)
+4. FAQ entry (if addresses common issue)
+
+*** Documentation Style
+
+- Org-mode format
+- ASCII-only (no Unicode)
+- Working code examples
+- Cross-references with =[[file:...][...]]=
+
+** Reporting Bugs
+
+Create issue on GitHub with:
+- chemparseplot version
+- Python version
+- ORCA/eOn version
+- Minimal reproducible example
+- Full error message
+- Expected vs actual behavior
+
+** Requesting Features
+
+Create issue on GitHub with:
+- Feature description
+- Use case
+- Example input/output
+- Priority (nice-to-have vs critical)
+
+** Code of Conduct
+
+Please be respectful and inclusive in all interactions.
+See [[file:../code_of_conduct.org][Code of Conduct]].
+
+** Questions?
+
+- [[file:../howto/faq.org][FAQ]] - Common questions
+- [[file:../howto/troubleshooting.org][Troubleshooting]] - Common problems
+- [[https://github.com/HaoZeke/chemparseplot/discussions][GitHub Discussions]] - General questions
+
+** See Also
+
+- [[file:best_practices.org][Best Practices]]
+- [[file:../howto/index.org][How-to Guides]]
+- [[file:../reference/index.org][Reference]]

@@ -1,0 +1,262 @@
+#+TITLE: Best Practices
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Best Practices for Using chemparseplot
+
+** Parsing
+
+*** Always Check Convergence
+
+#+begin_src python
+data = parse_orca_neb("job")
+if not data["converged"]:
+    print("Warning: Calculation did not converge!")
+#+end_src
+
+*** Use Context Managers for Files
+
+#+begin_src python
+from pathlib import Path
+
+work_dir = Path("calculation")
+data = parse_orca_neb("job", working_dir=work_dir)
+#+end_src
+
+*** Handle Missing Data Gracefully
+
+#+begin_src python
+energies = data.get("energies")
+if energies is None or len(energies) == 0:
+    print("No energy data available")
+    return
+#+end_src
+
+** Plotting
+
+*** Use Consistent Figure Sizes
+
+#+begin_src python
+# Standard single plot
+width, height = 5.37, 5.37  # inches
+
+# Wide plot for comparisons
+width, height = 7.0, 5.0
+
+# Tall plot for profiles
+width, height = 5.0, 7.0
+#+end_src
+
+*** Use Scientific Colormaps
+
+#+begin_src python
+# Good choices
+cmap = "cmc.batlow"      # Perceptually uniform
+cmap = "cmc.berlin"      # Diverging
+cmap = "cmc.oslo"        # Sequential
+
+# Avoid
+cmap = "jet"             # Not perceptually uniform
+cmap = "rainbow"         # Misleading
+#+end_src
+
+*** Set Appropriate DPI
+
+#+begin_src python
+# For presentations
+dpi = 150
+
+# For publications
+dpi = 300
+
+# For web
+dpi = 72
+#+end_src
+
+** Performance
+
+*** Use Parallel Processing for Batches
+
+#+begin_src bash
+# Sequential (slow for many files)
+rgpycrumbs chemgp batch -c config.toml
+
+# Parallel (4 workers)
+rgpycrumbs chemgp batch -c config.toml -j 4
+
+# Parallel (8 workers, fast)
+rgpycrumbs chemgp batch -c config.toml -j 8
+#+end_src
+
+*** Cache Parsed Data
+
+#+begin_src python
+import pickle
+from pathlib import Path
+
+cache_file = Path("data_cache.pkl")
+
+if cache_file.exists():
+    with open(cache_file, "rb") as f:
+        data = pickle.load(f)
+else:
+    data = parse_orca_neb("job")
+    with open(cache_file, "wb") as f:
+        pickle.dump(data, f)
+#+end_src
+
+*** Downsample Large Datasets
+
+#+begin_src python
+import numpy as np
+
+# Original data with 1000 points
+energies = data["energies"]
+
+# Downsample to 100 points
+indices = np.linspace(0, len(energies)-1, 100, dtype=int)
+energies_ds = energies[indices]
+#+end_src
+
+** Error Handling
+
+*** Catch Specific Exceptions
+
+#+begin_src python
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+try:
+    data = parse_orca_neb("job")
+except ImportError as e:
+    print(f"Missing dependency: {e}")
+    print("Install with: pip install orca-pi")
+except FileNotFoundError as e:
+    print(f"File not found: {e.filename}")
+except ValueError as e:
+    print(f"Invalid data: {e}")
+#+end_src
+
+*** Validate Input Data
+
+#+begin_src python
+def validate_neb_data(data: dict) -> bool:
+    """Validate NEB data structure."""
+    required_keys = ["energies", "n_images", "converged"]
+    for key in required_keys:
+        if key not in data:
+            return False
+
+    if len(data["energies"]) != data["n_images"]:
+        return False
+
+    return True
+#+end_src
+
+** Documentation
+
+*** Include Examples in Docstrings
+
+#+begin_src python
+def plot_profile(data, output):
+    """Plot energy profile.
+
+    Parameters
+    ----------
+    data : dict
+        Parsed NEB data
+    output : Path
+        Output file path
+
+    Example
+    -------
+    >>> data = parse_orca_neb("job")
+    >>> plot_profile(data, "profile.pdf")
+    """
+    ...
+#+end_src
+
+*** Use Cross-References
+
+#+begin_src org
+See [[file:../howto/parse_orca_neb.org][Parse ORCA NEB Calculations]] for details.
+#+end_src
+
+** Testing
+
+*** Test with Mock Data
+
+#+begin_src python
+import numpy as np
+
+mock_data = {
+    "energies": np.array([0.0, 0.5, 1.0, 0.5, 0.0]),
+    "n_images": 5,
+    "converged": True,
+}
+
+plot_profile(mock_data, "test_profile.pdf")
+#+end_src
+
+*** Test Edge Cases
+
+#+begin_src python
+# Empty data
+plot_profile({"energies": [], "n_images": 0}, "empty.pdf")
+
+# Single image
+plot_profile({"energies": [0.0], "n_images": 1}, "single.pdf")
+
+# Very large barrier
+plot_profile({"energies": [0.0, 100.0, 0.0], "n_images": 3}, "large.pdf")
+#+end_src
+
+** Version Control
+
+*** Pin Dependencies in Production
+
+#+begin_src toml
+# pyproject.toml
+[project]
+dependencies = [
+    "chemparseplot>=0.2.0,<0.3.0",
+]
+#+end_src
+
+*** Use Semantic Versioning
+
+- MAJOR.MINOR.PATCH
+- MAJOR: Breaking changes
+- MINOR: New features (backward compatible)
+- PATCH: Bug fixes
+
+** Security
+
+*** Validate File Paths
+
+#+begin_src python
+from pathlib import Path
+
+# Good: Validate path
+output = Path(user_input).resolve()
+if not output.is_relative_to(working_dir):
+    raise ValueError("Path outside working directory")
+#+end_src
+
+*** Don't Execute Untrusted Code
+
+#+begin_src python
+# BAD: Never do this
+exec(user_input)
+
+# GOOD: Use safe parsing
+import tomllib
+with open(config_file, "rb") as f:
+    config = tomllib.load(f)
+#+end_src
+
+** See Also
+
+- [[file:contributing.org][Contributing Guidelines]]
+- [[file:../howto/index.org][How-to Guides]]
+- [[file:../reference/index.org][Reference]]

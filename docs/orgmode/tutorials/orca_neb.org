@@ -1,0 +1,292 @@
+#+TITLE: Tutorial: ORCA NEB Parsing and Plotting
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil author:t title:t
+
+#+begin_export rst
+.. versionadded:: 0.2.0
+   OPI-based ORCA NEB parsing and plotting.
+#+end_export
+
+* Prerequisites
+
+- ORCA 6.1+ installed and on PATH
+- Python 3.10+
+- chemparseplot installed: =pip install chemparseplot=
+- OPI (ORCA Python Interface): =pip install orca-pi=
+
+* Learning Objectives
+
+By the end of this tutorial you will be able to:
+
+1. Parse ORCA NEB calculation output using OPI
+2. Create publication-quality energy profile plots
+3. Create 2D reaction landscape plots
+4. Understand the data format for custom plotting
+
+* Step 1: Run ORCA NEB Calculation
+
+First, run an ORCA NEB calculation. Example input file (=job.inp=):
+
+#+begin_src text
+! B3LYP def2-SVP NEB-CI
+%neb
+  nimages = 7
+  Product "prod.xyz"
+end
+*xyzfile 0 1 react.xyz
+#+end_src
+
+Run ORCA:
+
+#+begin_src bash
+orca job.inp > job.out
+#+end_src
+
+This creates output files:
+- =job.json= - Main output data (ORCA 6.1+)
+- =job.property.json= - Properties and energies
+- =job.gbw= - Wavefunction file
+- =job.001.gbw=, =job.002.gbw=, ... - NEB image wavefunctions
+
+* Step 2: Parse ORCA NEB Output
+
+Create a Python script (=plot_neb.py=):
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+# Parse the ORCA NEB calculation
+data = parse_orca_neb("job", working_dir=Path("."))
+
+# Inspect the parsed data
+print(f"Number of images: {data['n_images']}")
+print(f"Converged: {data['converged']}")
+print(f"Energies (eV): {data['energies']}")
+print(f"Barrier (forward): {data['barrier_forward']:.2f} eV")
+print(f"Barrier (reverse): {data['barrier_reverse']:.2f} eV")
+#+end_src
+
+Run the script:
+
+#+begin_src bash
+python plot_neb.py
+#+end_src
+
+Expected output:
+
+#+begin_example
+Number of images: 8
+Converged: True
+Energies (eV): [0.0, 0.52, 0.89, 1.15, 0.98, 0.67, 0.34, 0.0]
+Barrier (forward): 1.15 eV
+Barrier (reverse): 1.15 eV
+#+end_example
+
+* Step 3: Create Energy Profile Plot
+
+Add plotting code to your script:
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+# Create energy profile plot
+plot_orca_neb_energy_profile(
+    data,
+    output=Path("neb_profile.pdf"),
+    width=5.37,      # inches
+    height=5.37,     # inches
+    dpi=200,         # resolution
+    method="hermite" # interpolation: 'hermite' or 'spline'
+)
+
+print("Created neb_profile.pdf")
+#+end_src
+
+Run the script again:
+
+#+begin_src bash
+python plot_neb.py
+#+end_src
+
+This creates =neb_profile.pdf= with:
+- Energy profile with Hermite spline interpolation
+- Reactant (green), Product (red), and Saddle (yellow) labeled
+- Barrier height annotated
+- Professional styling with ruhi theme
+
+* Step 4: Create 2D Landscape Plot (Optional)
+
+If your ORCA calculation includes geometry output, you can create a 2D landscape:
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.plot.neb import plot_orca_neb_landscape
+
+# Create 2D landscape plot
+plot_orca_neb_landscape(
+    data,
+    output=Path("neb_landscape.pdf"),
+    width=5.37,
+    height=5.37,
+    dpi=200,
+    method="grad_matern",  # Surface interpolation
+    project_path=True,      # Project to reaction valley coordinates
+)
+
+print("Created neb_landscape.pdf")
+#+end_src
+
+The landscape plot shows:
+- 2D surface in RMSD coordinates (or reaction valley)
+- NEB path overlaid with energy coloring
+- Saddle point marked
+
+* Step 5: Customize the Plot
+
+You can customize plots using matplotlib after creation:
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+import matplotlib.pyplot as plt
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+# Create figure and axis
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+# Plot using our function
+plot_orca_neb_energy_profile(data, output=Path("tmp.pdf"), width=5.37, height=5.37)
+
+# Now customize with matplotlib
+ax.set_title("My Custom NEB Profile", fontsize=14, fontweight='bold')
+ax.set_xlabel("Reaction Coordinate", fontsize=12)
+ax.set_ylabel("Relative Energy (eV)", fontsize=12)
+
+# Save
+fig.savefig("custom_neb_profile.pdf", dpi=300, bbox_inches="tight")
+plt.close(fig)
+#+end_src
+
+* Complete Example Script
+
+Here's a complete script you can use as a template:
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+#!/usr/bin/env python3
+"""Plot ORCA NEB calculation results."""
+
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+from chemparseplot.plot.neb import (
+    plot_orca_neb_energy_profile,
+    plot_orca_neb_landscape,
+)
+
+def main():
+    # Configuration
+    basename = "job"
+    work_dir = Path(".")
+    output_dir = Path("figures")
+    output_dir.mkdir(exist_ok=True)
+
+    # Parse ORCA output
+    print(f"Parsing {basename}...")
+    data = parse_orca_neb(basename, working_dir=work_dir)
+
+    # Print summary
+    print(f"\nNEB Calculation Summary:")
+    print(f"  Images: {data['n_images']}")
+    print(f"  Converged: {data['converged']}")
+    print(f"  Barrier (forward): {data['barrier_forward']:.2f} eV")
+    print(f"  Barrier (reverse): {data['barrier_reverse']:.2f} eV")
+
+    # Create energy profile
+    profile_out = output_dir / "neb_profile.pdf"
+    print(f"\nCreating energy profile: {profile_out}")
+    plot_orca_neb_energy_profile(
+        data,
+        output=profile_out,
+        width=5.37,
+        height=5.37,
+        dpi=300,
+    )
+
+    # Create landscape (if RMSD data available)
+    if data['rmsd_r'] is not None:
+        landscape_out = output_dir / "neb_landscape.pdf"
+        print(f"Creating landscape: {landscape_out}")
+        plot_orca_neb_landscape(
+            data,
+            output=landscape_out,
+            width=5.37,
+            height=5.37,
+            dpi=300,
+            project_path=True,
+        )
+    else:
+        print("\nNo RMSD data available - skipping landscape plot")
+        print("Re-run ORCA with geometry output enabled.")
+
+    print("\nDone!")
+
+if __name__ == "__main__":
+    main()
+#+end_src
+
+* Troubleshooting
+
+** ImportError: No module named 'opi'
+
+Install OPI:
+
+#+begin_src bash
+pip install orca-pi
+#+end_src
+
+** ORCA version < 6.1
+
+OPI requires ORCA 6.1+. For older versions, use the legacy parser:
+
+#+begin_src python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("."))
+#+end_src
+
+This parses =.interp= files instead of JSON.
+
+** No RMSD data for landscape plot
+
+RMSD coordinates require geometry output. Ensure your ORCA calculation includes:
+
+#+begin_src text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+#+end_src
+
+** Calculation did not converge
+
+Check =data['converged']=. If False, the NEB optimization may not have finished. Check the ORCA output file for errors.
+
+* Next Steps
+
+- [[file:../howto/parse_eon_neb.org][Parse eOn NEB calculations]] - Similar workflow for eOn
+- [[file:../howto/create_neb_figures.org][Create publication-quality NEB figures]] - Advanced plotting tips
+- [[file:../reference/orca_neb_api.org][ORCA NEB API Reference]] - Complete API documentation
+
+* Summary
+
+You learned to:
+1. ✓ Parse ORCA NEB output using OPI
+2. ✓ Create energy profile plots
+3. ✓ Create 2D landscape plots
+4. ✓ Customize plots with matplotlib
+
+The parsed data format is compatible with eOn NEB plotting, allowing consistent visualization across different quantum chemistry codes.

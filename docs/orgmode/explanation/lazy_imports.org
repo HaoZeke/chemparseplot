@@ -1,0 +1,117 @@
+#+TITLE: Lazy Import Pattern
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Overview
+
+chemparseplot uses lazy imports to keep its installation footprint small while supporting optional features. This document explains how the pattern works and why it exists.
+
+* The =ensure_import= Pattern
+
+=ensure_import()= from =rgpycrumbs._aux= handles optional dependency loading:
+
+#+begin_src python
+from rgpycrumbs._aux import ensure_import
+
+_opi_output = None
+
+def _get_opi_output():
+    global _opi_output
+    if _opi_output is None:
+        _opi_output = ensure_import("opi.output.core").Output
+    return _opi_output
+#+end_src
+
+On first call:
+1. Attempts =importlib.import_module("opi.output.core")=
+2. If the module is missing and =RGPYCRUMBS_AUTO_DEPS=1= is set, runs =pip install orca-pi= in a subprocess
+3. Retries the import
+4. Raises =ImportError= with a clear message if both attempts fail
+
+The module-level global (=_opi_output=) ensures the import and any auto-install happen exactly once.
+
+* The =_import_from_parent_env= Pattern
+
+For compiled extensions that cannot be pip-installed (e.g., =ira_mod=), a different function handles environment discovery:
+
+#+begin_src python
+from rgpycrumbs._aux import _import_from_parent_env
+
+ira_mod = _import_from_parent_env("ira_mod")
+#+end_src
+
+This searches parent conda/pixi environments for the module. If not found, =ira_mod= is =None= and callers fall back to alternative implementations.
+
+* Why Lazy Loading
+
+** Installation Size
+
+chemparseplot's core requirement is numpy and pint. Making all optional dependencies hard requirements would pull in:
+- =orca-pi=: ORCA 6.1+ only, useless without ORCA installed
+- =ase=: large package, only needed for structure handling
+- =matplotlib=: only needed for plotting (some users only parse)
+- =polars=: only needed for landscape DataFrames
+- =jax=: large GPU-capable package, only needed for GP surface fitting (via rgpycrumbs)
+
+** Graceful Degradation
+
+Users who only parse eOn output never need OPI. Users who only make 1D profiles never need polars or jax. Lazy loading means each feature activates only the dependencies it requires.
+
+** Auto-Install Mechanism
+
+Setting =RGPYCRUMBS_AUTO_DEPS=1= enables automatic installation of missing Python packages. This is useful in notebook environments where users want to run examples without manual pip commands.
+
+The mechanism only triggers for packages that can be pip-installed. Compiled extensions like =ira_mod= (which requires a Fortran compiler and specific build setup) are never auto-installed.
+
+* Fallback Strategies
+
+** OPI to Legacy Parsing
+
+=parse/orca/neb/opi_parser.py= uses =ensure_import= for OPI. If OPI is unavailable, =parse_orca_neb_fallback()= parses =.interp= text files instead:
+
+#+begin_src python
+from chemparseplot.parse.orca.neb import parse_orca_neb, parse_orca_neb_fallback, HAS_OPI
+
+if HAS_OPI:
+    data = parse_orca_neb("job", Path("calc"))
+else:
+    data = parse_orca_neb_fallback("job", Path("calc"))
+#+end_src
+
+The fallback produces the same dict format, with =source="legacy_interp"= instead of =source="opi"=. RMSD fields are =None= because =.interp= files do not contain geometry data.
+
+** IRA to Simple RMSD
+
+=parse/eon/neb.py= tries to import =ira_mod= at module level:
+
+#+begin_src python
+try:
+    from rgpycrumbs._aux import _import_from_parent_env
+    from rgpycrumbs.geom.api.alignment import calculate_rmsd_from_ref
+    ira_mod = _import_from_parent_env("ira_mod")
+except ImportError:
+    ira_mod = None
+#+end_src
+
+When =ira_mod= is =None=, functions that create an IRA instance get =None= and fall through to simpler RMSD calculations. The =opi_parser.py= fallback uses a direct coordinate-difference RMSD (=_calculate_rmsd()=) that does not require IRA.
+
+** ASE Optional for Some Paths
+
+The ORCA parser converts OPI geometry data to ASE Atoms for RMSD calculation. If ASE is not installed, the parser still returns valid energy data -- the RMSD and gradient fields are =None=. Plotting functions check for =None= and adjust accordingly (using image index as reaction coordinate instead of RMSD).
+
+* Where Lazy Imports Are Used
+
+| Module | Lazy Dependency | Fallback |
+|--------+-----------------+----------|
+| =parse/orca/neb/opi_parser.py= | =opi.output.core= | =parse_orca_neb_fallback()= |
+| =parse/eon/neb.py= | =ira_mod= | =ira_instance = None= |
+| =parse/trajectory/neb.py= | =ira_mod= | =ira_instance = None= |
+| =parse/trajectory/hdf5.py= | =ira_mod= | =ira_instance = None= |
+| =plot/neb.py= | =rgpycrumbs.surfaces= | hard import (required for surface fitting) |
+
+* Related
+
+- [[file:orca_neb_design.org][ORCA NEB Integration Design]]
+- [[file:neb_parsing_design.org][NEB Parsing Design]]
+- [[file:architecture.org][Architecture Overview]]

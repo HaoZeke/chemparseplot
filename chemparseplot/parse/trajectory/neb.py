@@ -180,7 +180,7 @@ def trajectory_to_landscape_df(
     the parallel force component.
     """
     try:
-        from rgpycrumbs._aux import _import_from_parent_env  # noqa: PLC0415
+        from rgpycrumbs._aux import _import_from_parent_env
 
         ira_mod = _import_from_parent_env("ira_mod")
         ira_instance = ira_mod.IRA()

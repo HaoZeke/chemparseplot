@@ -14,9 +14,9 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
-import h5py  # noqa: E402
+import h5py
 
-from chemparseplot.parse.trajectory.hdf5 import (  # noqa: E402
+from chemparseplot.parse.trajectory.hdf5 import (
     _read_path_group,
     _reconstruct_atoms,
     history_to_profile_dats,

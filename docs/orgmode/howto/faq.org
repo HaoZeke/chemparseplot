@@ -1,0 +1,189 @@
+#+TITLE: Frequently Asked Questions
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Frequently Asked Questions
+
+Common questions about chemparseplot with answers and solutions.
+
+** Installation
+
+*** How do I install chemparseplot?
+
+#+begin_src bash
+# Basic installation
+pip install chemparseplot
+
+# With plotting dependencies
+pip install "chemparseplot[plot]"
+
+# With all optional dependencies
+pip install "chemparseplot[all]"
+#+end_src
+
+See: [[file:install.org][Installation Guide]]
+
+*** How do I install with conda/pixi?
+
+#+begin_src bash
+# Using pixi
+pixi add chemparseplot
+
+# Using conda (via conda-forge)
+conda install -c conda-forge chemparseplot
+#+end_src
+
+*** I get "ModuleNotFoundError: No module named 'chemparseplot'"
+
+Ensure you installed in the correct Python environment:
+
+#+begin_src bash
+# Check Python path
+python -c "import sys; print(sys.executable)"
+
+# Install in correct environment
+/path/to/python -m pip install chemparseplot
+#+end_src
+
+** Usage
+
+*** How do I parse ORCA NEB output?
+
+#+begin_src python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+data = parse_orca_neb("job", working_dir=Path("calculation"))
+print(f"Energies: {data['energies']}")
+print(f"Barrier: {data['barrier_forward']:.2f} eV")
+#+end_src
+
+See: [[file:../tutorials/orca_neb.org][ORCA NEB Tutorial]]
+
+*** How do I create an energy profile plot?
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+plot_orca_neb_energy_profile(data, "profile.pdf")
+#+end_src
+
+See: [[file:../tutorials/orca_neb.org][ORCA NEB Tutorial]]
+
+*** How do I parse eOn NEB output?
+
+#+begin_src python
+from chemparseplot.parse.eon.neb import aggregate_neb_landscape_data
+
+data = aggregate_neb_landscape_data(dat_paths, con_paths, y_col=2)
+#+end_src
+
+See: [[file:parse_eon_neb.org][Parse eOn NEB Calculations]]
+
+** Errors
+
+*** "ImportError: No module named 'opi'"
+
+OPI (ORCA Python Interface) is required for ORCA 6.1+ parsing:
+
+#+begin_src bash
+pip install orca-pi
+#+end_src
+
+Or use legacy parser for ORCA < 6.1:
+
+#+begin_src python
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("calc"))
+#+end_src
+
+*** "RMSD coordinates required for landscape plot"
+
+Landscape plots require geometry output. Ensure your calculation includes:
+
+#+begin_src text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+#+end_src
+
+*** "Contour levels must be increasing"
+
+Energy data may have numerical issues. Check for:
+- Duplicate energy values
+- NaN or Inf values
+- Very small energy differences
+
+Fix by filtering or smoothing data.
+
+** Performance
+
+*** How can I speed up batch plotting?
+
+Use parallel processing:
+
+#+begin_src bash
+rgpycrumbs chemgp batch -c config.toml -j 4
+#+end_src
+
+The =-j 4= flag uses 4 parallel workers.
+
+*** Why is landscape plotting slow?
+
+Surface fitting is computationally expensive. Options:
+- Use fewer points (downsample)
+- Use simpler interpolation method (RBF instead of GP)
+- Use Nystrom approximation for large datasets
+
+** Compatibility
+
+*** Which ORCA versions are supported?
+
+- ORCA 6.1+: Full support via OPI
+- ORCA < 6.1: Limited support via .interp file parsing
+
+*** Which Python versions are supported?
+
+Python 3.10, 3.11, 3.12
+
+*** Does chemparseplot work on Windows?
+
+Yes, but some features may have limited support:
+- Plotting works on all platforms
+- OPI requires ORCA 6.1+ (Windows available)
+- Some parallel features work best on Linux/macOS
+
+** Development
+
+*** How do I contribute?
+
+See: [[file:../dev/contributing.org][Contributing Guidelines]]
+
+*** How do I report a bug?
+
+Create an issue on GitHub: [[https://github.com/HaoZeke/chemparseplot/issues][GitHub Issues]]
+
+Include:
+- chemparseplot version
+- Python version
+- ORCA/eOn version
+- Minimal reproducible example
+- Error message
+
+*** How do I request a feature?
+
+Create an issue on GitHub with:
+- Feature description
+- Use case
+- Example input/output
+- Priority (nice-to-have vs critical)
+
+** See Also
+
+- [[file:../reference/glossary.org][Glossary]] - Definitions of terms
+- [[file:install.org][Installation Guide]] - Detailed installation
+- [[file:troubleshooting.org][Troubleshooting]] - Common problems and solutions
+- [[file:../tutorials/index.org][Tutorials]] - Learn how to use chemparseplot
