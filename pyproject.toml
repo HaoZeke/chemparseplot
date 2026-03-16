@@ -148,15 +148,6 @@ ban-relative-imports = "all"
 "chemparseplot/parse/**/*" = [
   "PLC0415",
 ] # deferred imports for optional deps (h5py, pandas, polars)
-"chemparseplot/scripts/**/*" = [
-  "ARG001",
-  "E501",
-  "ICN001",
-  "PLC0415",
-  "PLR2004",
-  "S603",
-  "T201",
-] # PEP 723 CLI scripts with optional deps
 "tests/**/*" = [
   "E402",
   "F401",
