@@ -28,6 +28,12 @@ from scipy.interpolate import (
 )
 from scipy.signal import savgol_filter
 
+from chemparseplot.parse.projection import (
+    compute_projection_basis,
+    inverse_sd_to_ab,
+    project_to_sd,
+)
+
 log = logging.getLogger(__name__)
 
 # --- Data Structures ---
@@ -478,28 +484,18 @@ def plot_landscape_surface(
     """
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
-    r_start, p_start = rmsd_r[0], rmsd_p[0]
-    r_end, p_end = rmsd_r[-1], rmsd_p[-1]
-
-    vec_r, vec_p = r_end - r_start, p_end - p_start
-    path_norm = np.hypot(vec_r, vec_p)
-    u_r, u_p = vec_r / path_norm, vec_p / path_norm
-    v_r, v_p = -u_p, u_r
+    basis = compute_projection_basis(rmsd_r, rmsd_p) if project_path else None
 
     # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
-        s_data = (rmsd_r - r_start) * u_r + (rmsd_p - p_start) * u_p
-        d_data = (rmsd_r - r_start) * v_r + (rmsd_p - p_start) * v_p
+        s_data, d_data = project_to_sd(rmsd_r, rmsd_p, basis)
         s_min, s_max = s_data.min(), s_data.max()
         d_min, d_max = d_data.min(), d_data.max()
 
         if extra_points is not None and len(extra_points) > 0:
-            extra_s = (extra_points[:, 0] - r_start) * u_r + (
-                extra_points[:, 1] - p_start
-            ) * u_p
-            extra_d = (extra_points[:, 0] - r_start) * v_r + (
-                extra_points[:, 1] - p_start
-            ) * v_p
+            extra_s, extra_d = project_to_sd(
+                extra_points[:, 0], extra_points[:, 1], basis
+            )
             s_min, s_max = min(s_min, extra_s.min()), max(s_max, extra_s.max())
             d_min, d_max = min(d_min, extra_d.min()), max(d_max, extra_d.max())
 
@@ -591,12 +587,8 @@ def plot_landscape_surface(
 
     # --- 3. Prediction and Variance ---
     if project_path:
-        grid_pts_eval = np.column_stack(
-            [
-                r_start + xg.ravel() * u_r + yg.ravel() * v_r,
-                p_start + xg.ravel() * u_p + yg.ravel() * v_p,
-            ]
-        )
+        eval_a, eval_b = inverse_sd_to_ab(xg.ravel(), yg.ravel(), basis)
+        grid_pts_eval = np.column_stack([eval_a, eval_b])
     else:
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
@@ -718,20 +710,8 @@ def plot_landscape_path_overlay(
     ```
     """
     if project_path:
-        r_start, p_start = r[0], p[0]
-        r_end, p_end = r[-1], p[-1]
-
-        vec_r = r_end - r_start
-        vec_p = p_end - p_start
-        path_norm = np.hypot(vec_r, vec_p)
-
-        u_r = vec_r / path_norm
-        u_p = vec_p / path_norm
-        v_r = -u_p
-        v_p = u_r
-
-        plot_x = (r - r_start) * u_r + (p - p_start) * u_p
-        plot_y = (r - r_start) * v_r + (p - p_start) * v_p
+        basis = compute_projection_basis(r, p)
+        plot_x, plot_y = project_to_sd(r, p, basis)
     else:
         plot_x = r
         plot_y = p
