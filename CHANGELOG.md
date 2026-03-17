@@ -2,6 +2,26 @@
 
 <!-- towncrier release notes start -->
 
+## [Unreleased]
+
+### Added
+
+- Generalized (s, d) reaction valley projection for single-ended methods (dimer,
+  minimization). New `chemparseplot.parse.projection` module extracts the shared
+  projection math (`ProjectionBasis`, `compute_projection_basis`, `project_to_sd`,
+  `inverse_sd_to_ab`).
+- Dimer/saddle search trajectory parser (`chemparseplot.parse.eon.dimer_trajectory`)
+  reading eOn `climb.dat` TSV and `climb` movie files.
+- Minimization trajectory parser (`chemparseplot.parse.eon.min_trajectory`) reading
+  eOn minimization `.dat` and movie files.
+- Single-ended visualization module (`chemparseplot.plot.optimization`) with
+  `plot_optimization_landscape`, `plot_optimization_profile`,
+  `plot_convergence_panel`, and `plot_dimer_mode_evolution`.
+- OCI-NEB/RONEB overlay functions: `plot_mmf_peaks_overlay` for MMF peak markers,
+  `plot_neb_evolution` for band evolution across iterations.
+- `calculate_landscape_coords()` in `neb_utils` now accepts explicit `ref_a`/`ref_b`
+  reference structures (defaults to first/last for backward compatibility).
+
 ## [1.4.0](https://github.com/HaoZeke/chemparseplot/tree/1.4.0) - 2026-03-15
 
 ### Added

@@ -207,6 +207,41 @@ Plots a single structure as an annotation inset with an arrow.
 - Default arrow style: Fancy with =head_length=0.4=, =head_width=0.4=, =tail_width=0.1=
 - Image zorder set to 80 (above most plot elements)
 
+** OCI-NEB/RONEB Functions
+
+*** =plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True)=
+
+Overlays MMF (mode-following) refinement peak positions on the landscape. Used for OCI-NEB/RONEB to show where dimer refinement was applied.
+
+**** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =ax= | =matplotlib.axes.Axes= | - | Target axes (same as landscape) |
+| =peak_rmsd_r= | =np.ndarray= | - | RMSD-R coordinates of peak structures |
+| =peak_rmsd_p= | =np.ndarray= | - | RMSD-P coordinates of peak structures |
+| =peak_energies= | =np.ndarray= | - | Energy at each peak |
+| =project_path= | =bool= | =True= | Apply reaction valley projection |
+
+**** Notes
+
+- Draws star markers (=*=, size=200) with black edge at zorder=50
+- Colors peaks by energy using =coolwarm= colormap
+
+*** =plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap="Blues")=
+
+Shows NEB band evolution across optimization iterations with fading older bands.
+
+**** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =ax= | =matplotlib.axes.Axes= | - | Target axes |
+| =step_rmsd_r_list= | =list[np.ndarray]= | - | RMSD-R arrays per NEB iteration |
+| =step_rmsd_p_list= | =list[np.ndarray]= | - | RMSD-P arrays per NEB iteration |
+| =project_path= | =bool= | =True= | Apply reaction valley projection |
+| =cmap= | =str= | ="Blues"= | Colormap for band fading |
+
 ** High-Level ORCA Functions
 
 *** =plot_orca_neb_profile(neb_data, output, *, width=7.0, height=5.0, dpi=200)=
@@ -313,8 +348,63 @@ Applies theme properties to a specific axes instance (facecolor, spine colors, t
 
 Builds and registers a =LinearSegmentedColormap= from hex color strings.
 
+* Module: =chemparseplot.plot.optimization=
+
+Functions for single-ended method (dimer, minimization) visualization.
+
+** =plot_optimization_landscape(ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode="optimization", project_path=True, method="grad_matern", cmap="viridis", z_label="Energy (eV)", **surface_kwargs)=
+
+Wraps =plot_landscape_surface()= and =plot_landscape_path_overlay()= with semantically correct axis labels for single-ended methods.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =label_mode= | =str= | ="optimization"= | ="optimization"= or ="reaction"= for axis labels |
+
+All other parameters are passed through to the underlying NEB plot functions.
+
+** =plot_optimization_profile(ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color="#004D40", eigen_color="#FF655D")=
+
+Plots energy (and optionally eigenvalue) vs iteration.
+
+** =plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col="convergence", step_col="step_size", iter_col="iteration", color="#004D40")=
+
+Plots convergence metrics (force norm and step size) from a trajectory DataFrame.
+
+** =plot_dimer_mode_evolution(ax, mode_vectors, *, color="#004D40")=
+
+Plots alignment of per-iteration dimer mode with the final converged mode (|cos(mode, final)|).
+
+* Module: =chemparseplot.parse.projection=
+
+Shared (s, d) reaction valley projection utilities.
+
+** =ProjectionBasis=
+
+Frozen dataclass storing the orthonormal basis vectors for the projection.
+
+| Field | Type | Description |
+|-------+------+-------------|
+| =a_start=, =b_start= | =float= | RMSD origin (first point) |
+| =u_a=, =u_b= | =float= | Unit vector along path direction |
+| =v_a=, =v_b= | =float= | Unit vector perpendicular to path |
+| =path_norm= | =float= | Path length in RMSD space |
+
+** =compute_projection_basis(rmsd_a, rmsd_b) -> ProjectionBasis=
+
+Computes basis from first/last points of the arrays.
+
+** =project_to_sd(rmsd_a, rmsd_b, basis) -> (s, d)=
+
+Forward projection from RMSD space to reaction valley coordinates.
+
+** =inverse_sd_to_ab(s, d, basis) -> (rmsd_a, rmsd_b)=
+
+Inverse transform for grid evaluation on projected surfaces.
+
 * See Also
 
-- [[file:../howto/create_neb_figures.org][How-to: Create Publication NEB Figures]]
+- [[file:../howto/create_neb_figures.org][How-to: Create Publication Figures]]
 - [[file:orca_neb_api.org][ORCA NEB API Reference]]
 - [[file:eon_neb_api.org][eOn NEB API Reference]]

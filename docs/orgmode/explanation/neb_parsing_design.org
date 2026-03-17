@@ -77,6 +77,22 @@ If validation fails, the cache is discarded and data is recomputed.
 
 =load_or_compute_data()= provides the caching pattern used by all eOn NEB functions. It takes a =validation_check= callable and a =computation_callback= callable, so each caller defines its own schema requirements.
 
+* Generalization to Single-Ended Methods
+
+The parsing and projection code was originally NEB-specific: RMSD references were always =atoms_list[0]= (reactant) and =atoms_list[-1]= (product). This was generalized to support arbitrary reference structures.
+
+** Explicit References in =calculate_landscape_coords()=
+
+The =ref_a= and =ref_b= parameters allow callers to specify any two reference structures. For NEB, these default to first/last atoms. For dimer searches, pass the initial structure and saddle point. For minimization, pass the initial and final minimum.
+
+** Extracted Projection Module
+
+The (s, d) rotation math was duplicated in =plot/neb.py= (surface and overlay functions). It now lives in =parse/projection.py= as =compute_projection_basis()=, =project_to_sd()=, and =inverse_sd_to_ab()=. The projection is a pure coordinate transform independent of the physical interpretation -- the calling code decides whether s means "reaction progress" or "optimization progress".
+
+** New Parsers
+
+=parse/eon/dimer_trajectory.py= and =parse/eon/min_trajectory.py= read eOn's structured trajectory output (=climb.dat=, =min.dat= TSV files alongside movie .con files). These produce dataclasses (=DimerTrajectoryData=, =MinTrajectoryData=) holding atoms lists, metric DataFrames, and reference structures -- everything needed to call =calculate_landscape_coords()= with explicit refs.
+
 * Related
 
 - [[file:orca_neb_design.org][ORCA NEB Integration Design]]
