@@ -20,10 +20,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 
-from chemparseplot.parse.projection import (
-    compute_projection_basis,
-    project_to_sd,
-)
 from chemparseplot.plot.neb import (
     plot_landscape_path_overlay,
     plot_landscape_surface,

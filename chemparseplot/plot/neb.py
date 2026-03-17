@@ -755,6 +755,8 @@ def plot_mmf_peaks_overlay(
     peak_rmsd_p,
     peak_energies,
     project_path=True,  # noqa: FBT002
+    path_rmsd_r=None,
+    path_rmsd_p=None,
 ) -> None:
     """Overlay MMF (mode-following) refinement peak positions on the landscape.
 
@@ -771,6 +773,10 @@ def plot_mmf_peaks_overlay(
         Energy values at the peak positions.
     project_path
         Whether to project into (s, d) coordinates.
+    path_rmsd_r, path_rmsd_p
+        RMSD arrays of the main NEB path, used to define the projection
+        basis. Required when ``project_path=True``. If None, falls back
+        to computing basis from the peaks themselves (less accurate).
 
     ```{versionadded} 1.3.0
     ```
@@ -783,7 +789,12 @@ def plot_mmf_peaks_overlay(
     peak_e = np.asarray(peak_energies)
 
     if project_path:
-        basis = compute_projection_basis(peak_r, peak_p)
+        if path_rmsd_r is not None and path_rmsd_p is not None:
+            basis = compute_projection_basis(
+                np.asarray(path_rmsd_r), np.asarray(path_rmsd_p)
+            )
+        else:
+            basis = compute_projection_basis(peak_r, peak_p)
         plot_x, plot_y = project_to_sd(peak_r, peak_p, basis)
     else:
         plot_x, plot_y = peak_r, peak_p
@@ -812,6 +823,8 @@ def plot_neb_evolution(
     """Show NEB band evolution across optimization iterations.
 
     Older bands are drawn with lower opacity; the final band is most visible.
+    All bands are projected using the *final* band's basis so they share
+    one consistent coordinate frame.
 
     Parameters
     ----------
@@ -835,13 +848,19 @@ def plot_neb_evolution(
 
     colormap = plt.get_cmap(cmap)
 
+    # Use the final band to define the projection basis for all bands
+    final_basis = None
+    if project_path:
+        final_r = np.asarray(step_rmsd_r_list[-1])
+        final_p = np.asarray(step_rmsd_p_list[-1])
+        final_basis = compute_projection_basis(final_r, final_p)
+
     for i, (rr, rp) in enumerate(zip(step_rmsd_r_list, step_rmsd_p_list)):
         rr = np.asarray(rr)
         rp = np.asarray(rp)
 
         if project_path:
-            basis = compute_projection_basis(rr, rp)
-            px, py = project_to_sd(rr, rp, basis)
+            px, py = project_to_sd(rr, rp, final_basis)
         else:
             px, py = rr, rp
 
