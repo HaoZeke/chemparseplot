@@ -31,7 +31,7 @@ def calculate_landscape_coords(
     ```{versionadded} 1.2.0
     ```
 
-    ```{versionchanged} 1.3.0
+    ```{versionchanged} 1.5.0
     Added *ref_a* and *ref_b* parameters for explicit reference structures.
     ```
 

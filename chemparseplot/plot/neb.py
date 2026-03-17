@@ -778,7 +778,7 @@ def plot_mmf_peaks_overlay(
         basis. Required when ``project_path=True``. If None, falls back
         to computing basis from the peaks themselves (less accurate).
 
-    ```{versionadded} 1.3.0
+    ```{versionadded} 1.5.0
     ```
     """
     if len(peak_rmsd_r) == 0:
@@ -839,7 +839,7 @@ def plot_neb_evolution(
     cmap
         Colormap for fading bands (older = lighter).
 
-    ```{versionadded} 1.3.0
+    ```{versionadded} 1.5.0
     ```
     """
     n_steps = len(step_rmsd_r_list)

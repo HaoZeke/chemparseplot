@@ -8,7 +8,7 @@ The key semantic difference from NEB plots:
 - s = optimization progress (toward saddle or minimum)
 - d = lateral deviation (wasted sideways motion)
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.5.0
 """
 
 from __future__ import annotations

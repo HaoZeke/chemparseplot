@@ -4,7 +4,7 @@ Reads structured per-iteration data from the minimization ``.dat`` file
 and concatenated trajectory from the movie ``.con`` file, as produced
 by eOn with ``write_movies=true``.
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.5.0
 """
 
 from __future__ import annotations

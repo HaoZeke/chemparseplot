@@ -4,7 +4,7 @@ Reads structured per-iteration data from ``climb.dat`` (TSV) and
 concatenated trajectory from ``climb.con`` (movie file), as produced
 by eOn with ``write_movies=true``.
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.5.0
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ final (saddle or minimum).
 
 Implements the method from :cite:`goswami2026valley`.
 
-.. versionadded:: 1.3.0
+.. versionadded:: 1.5.0
 """
 
 from __future__ import annotations
