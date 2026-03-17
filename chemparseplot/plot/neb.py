@@ -749,6 +749,107 @@ def plot_landscape_path_overlay(
     return cb
 
 
+def plot_mmf_peaks_overlay(
+    ax,
+    peak_rmsd_r,
+    peak_rmsd_p,
+    peak_energies,
+    project_path=True,  # noqa: FBT002
+) -> None:
+    """Overlay MMF (mode-following) refinement peak positions on the landscape.
+
+    Used for OCI-NEB/RONEB visualization to show where dimer refinement
+    was applied along the band.
+
+    Parameters
+    ----------
+    ax
+        Matplotlib axes (same as the landscape plot).
+    peak_rmsd_r, peak_rmsd_p
+        RMSD coordinates of MMF peak structures.
+    peak_energies
+        Energy values at the peak positions.
+    project_path
+        Whether to project into (s, d) coordinates.
+
+    ```{versionadded} 1.3.0
+    ```
+    """
+    if len(peak_rmsd_r) == 0:
+        return
+
+    peak_r = np.asarray(peak_rmsd_r)
+    peak_p = np.asarray(peak_rmsd_p)
+    peak_e = np.asarray(peak_energies)
+
+    if project_path:
+        basis = compute_projection_basis(peak_r, peak_p)
+        plot_x, plot_y = project_to_sd(peak_r, peak_p, basis)
+    else:
+        plot_x, plot_y = peak_r, peak_p
+
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c=peak_e,
+        cmap="coolwarm",
+        marker="*",
+        s=200,
+        edgecolors="black",
+        linewidths=1.0,
+        zorder=50,
+        label="MMF peaks",
+    )
+
+
+def plot_neb_evolution(
+    ax,
+    step_rmsd_r_list: list[np.ndarray],
+    step_rmsd_p_list: list[np.ndarray],
+    project_path=True,  # noqa: FBT002
+    cmap="Blues",
+) -> None:
+    """Show NEB band evolution across optimization iterations.
+
+    Older bands are drawn with lower opacity; the final band is most visible.
+
+    Parameters
+    ----------
+    ax
+        Matplotlib axes.
+    step_rmsd_r_list
+        List of RMSD-R arrays, one per NEB iteration.
+    step_rmsd_p_list
+        List of RMSD-P arrays, one per NEB iteration.
+    project_path
+        Whether to project into (s, d) coordinates.
+    cmap
+        Colormap for fading bands (older = lighter).
+
+    ```{versionadded} 1.3.0
+    ```
+    """
+    n_steps = len(step_rmsd_r_list)
+    if n_steps == 0:
+        return
+
+    colormap = plt.get_cmap(cmap)
+
+    for i, (rr, rp) in enumerate(zip(step_rmsd_r_list, step_rmsd_p_list)):
+        rr = np.asarray(rr)
+        rp = np.asarray(rp)
+
+        if project_path:
+            basis = compute_projection_basis(rr, rp)
+            px, py = project_to_sd(rr, rp, basis)
+        else:
+            px, py = rr, rp
+
+        alpha = 0.15 + 0.85 * (i / max(n_steps - 1, 1))
+        color = colormap(0.3 + 0.7 * (i / max(n_steps - 1, 1)))
+        ax.plot(px, py, "o-", color=color, alpha=alpha, markersize=2, linewidth=1)
+
+
 def plot_orca_neb_profile(
     neb_data: dict[str, Any],
     output: Path,
