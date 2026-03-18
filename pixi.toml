@@ -53,20 +53,24 @@ plumed = { features = ["test", "plumed"], solve-group = "default" }
 # --- Tasks ---
 
 [feature.test.tasks.test-base]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q"
+cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.test"
 
 [feature.plot.tasks.test-plot]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q"
+cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.plot"
 
 [feature.chemgp.tasks.test-chemgp]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q"
+cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.chemgp"
 
 [feature.plumed.tasks.test-plumed]
-cmd = "python -m pytest tests/parse/test_plumed.py --cov -q"
+cmd = "python -m pytest tests/parse/test_plumed.py --cov -q && mv .coverage .coverage.plumed"
+
+[tasks.cov-clean]
+cmd = "rm -f .coverage .coverage.*"
 
 [tasks.cov]
 cmd = "coverage combine && coverage report --fail-under=90"
 depends-on = [
+  "cov-clean",
   { task = "test-base", environment = "test" },
   { task = "test-plot", environment = "plot" },
   { task = "test-chemgp", environment = "chemgp" },
