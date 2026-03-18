@@ -38,9 +38,11 @@ jax = ">=0.4"
 [feature.chemgp.pypi-dependencies]
 pandas = ">=2.0"
 plotnine = ">=0.13"
+cmcrameri = ">=1.7"
 
 [feature.plumed.pypi-dependencies]
 pandas = ">=2.0"
+cmcrameri = ">=1.7"
 
 # --- Environments ---
 

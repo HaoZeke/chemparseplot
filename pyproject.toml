@@ -187,7 +187,7 @@ ban-relative-imports = "all"
 source_pkgs = ["chemparseplot"]
 branch = true
 parallel = false
-omit = ["_version.py"]
+omit = ["_version.py", "chemparseplot/util.py"]
 
 [tool.coverage.paths]
 chemparseplot = ["chemparseplot", "*/chemparseplot/chemparseplot"]

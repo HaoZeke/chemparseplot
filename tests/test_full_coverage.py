@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Full coverage tests for all under-covered modules."""
 
+import importlib.util
 import json
 import tempfile
 from pathlib import Path
@@ -640,6 +641,9 @@ class TestChemGPPlot:
         save_plot(fig, output)
         assert output.exists()
 
+    @pytest.mark.skipif(
+        not importlib.util.find_spec("plotnine"), reason="plotnine required"
+    )
     def test_save_plot_plotnine(self, tmp_path):
         from chemparseplot.plot.chemgp import save_plot
 
@@ -803,21 +807,24 @@ class TestGeomscanPlot:
 # ============================================================
 @pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestPlotInitLazy:
-    def test_lazy_geomscan_getattr(self):
-        import chemparseplot.plot as plot_mod
+    def test_lazy_geomscan(self):
+        from chemparseplot.plot import geomscan
 
-        assert "geomscan" in plot_mod.__getattr__.__code__.co_consts or True
+        assert hasattr(geomscan, "plot_energy_paths")
 
-    def test_lazy_structs_getattr(self):
-        import chemparseplot.plot as plot_mod
+    def test_lazy_structs(self):
+        from chemparseplot.plot import structs
 
-        assert "structs" in plot_mod.__getattr__.__code__.co_consts or True
+        assert hasattr(structs, "BasePlotter")
 
-    def test_lazy_chemgp_getattr(self):
-        """Test __getattr__ knows about chemgp (actual import may recurse in some envs)."""
-        import chemparseplot.plot as plot_mod
+    @pytest.mark.skipif(
+        not _HAS_PANDAS or not importlib.util.find_spec("plotnine"),
+        reason="chemgp needs pandas + plotnine",
+    )
+    def test_lazy_chemgp(self):
+        from chemparseplot.plot import chemgp
 
-        assert "chemgp" in plot_mod.__getattr__.__code__.co_consts or True
+        assert hasattr(chemgp, "plot_convergence_curve")
 
     def test_lazy_ureg(self):
         from chemparseplot.plot import ureg
