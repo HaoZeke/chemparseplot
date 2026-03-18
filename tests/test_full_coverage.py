@@ -14,13 +14,26 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import pytest
+
+try:
+    import pandas as pd
+    _HAS_PANDAS = True
+except ImportError:
+    pd = None
+    _HAS_PANDAS = False
+
+try:
+    import cmcrameri
+    _HAS_CMCRAMERI = True
+except ImportError:
+    _HAS_CMCRAMERI = False
 
 
 # ============================================================
 # chemparseplot.parse.chemgp_hdf5
 # ============================================================
+@pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestChemGPHdf5:
     """Tests for HDF5 reader functions using mock h5py-like objects."""
 
@@ -196,6 +209,7 @@ class TestChemGPHdf5:
 # ============================================================
 # chemparseplot.parse.chemgp_jsonl
 # ============================================================
+@pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestChemGPJsonl:
     def test_parse_comparison_jsonl(self, tmp_path):
         from chemparseplot.parse.chemgp_jsonl import parse_comparison_jsonl
@@ -390,6 +404,7 @@ class TestChemGPJsonl:
 # ============================================================
 # chemparseplot.plot.chemgp
 # ============================================================
+@pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestChemGPPlot:
     """Smoke tests for ChemGP plot functions."""
 
@@ -640,6 +655,7 @@ class TestChemGPPlot:
 # ============================================================
 # chemparseplot.plot.plumed
 # ============================================================
+@pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestPlumedPlot:
     def test_plot_fes_2d(self):
         from chemparseplot.plot.plumed import plot_fes_2d
@@ -703,6 +719,7 @@ class TestPlumedPlot:
 # ============================================================
 # chemparseplot.plot.structs
 # ============================================================
+@pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestPlotStructs:
     def test_energy_path_namedtuple(self):
         from chemparseplot.plot.structs import EnergyPath
@@ -747,6 +764,7 @@ class TestPlotStructs:
 # ============================================================
 # chemparseplot.plot.geomscan
 # ============================================================
+@pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestGeomscanPlot:
     def test_plot_energy_paths(self):
         """Test that plot_energy_paths creates a figure (mocking rgpycrumbs)."""
@@ -779,6 +797,7 @@ class TestGeomscanPlot:
 # ============================================================
 # chemparseplot.plot.__init__ (lazy imports coverage)
 # ============================================================
+@pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestPlotInitLazy:
     def test_lazy_geomscan(self):
         from chemparseplot.plot import geomscan
@@ -918,6 +937,7 @@ class TestOpiParserFull:
 # ============================================================
 # chemparseplot.parse.plumed
 # ============================================================
+@pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestPlumedParse:
     def test_calculate_fes_2d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
