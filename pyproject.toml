@@ -186,7 +186,7 @@ ban-relative-imports = "all"
 [tool.coverage.run]
 source_pkgs = ["chemparseplot"]
 branch = true
-parallel = true
+parallel = false
 omit = ["_version.py"]
 
 [tool.coverage.paths]

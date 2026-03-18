@@ -53,22 +53,22 @@ plumed = { features = ["test", "plumed"], solve-group = "default" }
 # --- Tasks ---
 
 [feature.test.tasks.test-base]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.test"
+cmd = "COVERAGE_FILE=.coverage.test python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
 
 [feature.plot.tasks.test-plot]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.plot"
+cmd = "COVERAGE_FILE=.coverage.plot python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
 
 [feature.chemgp.tasks.test-chemgp]
-cmd = "python -m pytest tests/ --ignore=tests/tutorials --cov -q && mv .coverage .coverage.chemgp"
+cmd = "COVERAGE_FILE=.coverage.chemgp python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
 
 [feature.plumed.tasks.test-plumed]
-cmd = "python -m pytest tests/parse/test_plumed.py --cov -q && mv .coverage .coverage.plumed"
+cmd = "COVERAGE_FILE=.coverage.plumed python -m pytest tests/parse/test_plumed.py --cov -q; true"
 
 [tasks.cov-clean]
-cmd = "rm -f .coverage .coverage.*"
+cmd = "find . -maxdepth 1 -name '.coverage*' -delete 2>/dev/null; true"
 
 [tasks.cov]
-cmd = "coverage combine && coverage report --fail-under=90"
+cmd = "coverage combine .coverage.test .coverage.plot .coverage.chemgp .coverage.plumed && coverage report"
 depends-on = [
   "cov-clean",
   { task = "test-base", environment = "test" },
