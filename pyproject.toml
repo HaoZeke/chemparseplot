@@ -190,7 +190,7 @@ parallel = true
 omit = ["_version.py"]
 
 [tool.coverage.paths]
-chemparseplot = ["src/chemparseplot", "*/chemparseplot/src/chemparseplot"]
+chemparseplot = ["chemparseplot", "*/chemparseplot/chemparseplot"]
 tests = ["tests"]
 
 [tool.coverage.report]
