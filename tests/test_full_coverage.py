@@ -1606,3 +1606,103 @@ class TestTrajectoryNeb:
         assert "r" in df.columns
         assert "p" in df.columns
         assert len(df) == 5
+
+
+# ============================================================
+# Additional coverage: structs.py TwoDimPlot methods
+# ============================================================
+@pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
+class TestTwoDimPlotMethods:
+    def test_set_labels(self):
+        from chemparseplot.plot.structs import TwoDimPlot
+
+        p = TwoDimPlot()
+        p.set_labels("Distance", "Energy")
+        assert p.x_label == "Distance"
+        assert p.y_label == "Energy"
+        plt.close(p.fig)
+
+    def test_set_units(self):
+        from unittest.mock import MagicMock
+        from chemparseplot.plot.structs import TwoDimPlot
+
+        p = TwoDimPlot()
+        # Monkey-patch redraw to avoid pint
+        p.redraw_plot = MagicMock()
+        p.set_units("eV", "Angstrom")
+        assert p.x_unit == "eV"
+        p.redraw_plot.assert_called_once()
+        plt.close(p.fig)
+
+    def test_repr(self):
+        from chemparseplot.plot.structs import TwoDimPlot
+
+        p = TwoDimPlot()
+        assert "0 datasets" in repr(p)
+        plt.close(p.fig)
+
+    def test_add_data_and_rmdat(self):
+        from unittest.mock import MagicMock
+        from chemparseplot.plot.structs import TwoDimPlot, XYData
+
+        p = TwoDimPlot()
+        p.redraw_plot = MagicMock()
+        mock_x = MagicMock()
+        mock_y = MagicMock()
+        data = XYData(label="test", x=mock_x, y=mock_y)
+        p.add_data(data)
+        assert len(p.data) == 1
+        p.rmdat(["test"])
+        assert len(p.data) == 0
+        plt.close(p.fig)
+
+
+# ============================================================
+# Additional coverage: neb.py ORCA landscape + profile helpers
+# ============================================================
+class TestOrcaNebHighLevel:
+    def test_plot_orca_neb_profile(self, tmp_path):
+        from chemparseplot.plot.neb import plot_orca_neb_profile
+
+        data = {
+            "energies": [0.0, 0.5, 1.0, 0.8, 0.2],
+            "n_images": 5,
+            "barrier_forward": 1.0,
+            "barrier_reverse": 0.8,
+        }
+        output = tmp_path / "profile.png"
+        plot_orca_neb_profile(data, output)
+        assert output.exists()
+
+    def test_plot_orca_neb_profile_no_barrier(self, tmp_path):
+        from chemparseplot.plot.neb import plot_orca_neb_profile
+
+        data = {"energies": [0.0, 0.5], "n_images": 2}
+        output = tmp_path / "profile2.png"
+        plot_orca_neb_profile(data, output)
+        assert output.exists()
+
+    def test_plot_orca_neb_energy_profile(self, tmp_path):
+        from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+        data = {
+            "energies": np.array([0.0, 0.3, 1.0, 0.7, 0.1]),
+            "n_images": 5,
+            "rmsd_r": np.linspace(0, 3, 5),
+            "rmsd_p": np.linspace(3, 0, 5),
+            "grad_r": np.zeros(5),
+            "grad_p": np.zeros(5),
+            "barrier_forward": 1.0,
+            "barrier_reverse": 0.9,
+        }
+        output = tmp_path / "eprofile.png"
+        plot_orca_neb_energy_profile(data, output)
+        assert output.exists()
+
+    def test_plot_orca_neb_energy_profile_no_rmsd(self, tmp_path):
+        from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+        data = {"energies": np.array([0.0, 0.5, 0.1]), "n_images": 3}
+        output = tmp_path / "eprofile2.png"
+        plot_orca_neb_energy_profile(data, output)
+        assert output.exists()
