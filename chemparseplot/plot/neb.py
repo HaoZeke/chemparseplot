@@ -150,6 +150,136 @@ def _render_xyzrender(atoms, canvas_size=400):
     return img_data
 
 
+def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
+    """Dispatch rendering to the selected backend.
+
+    All backends return a numpy RGBA image array.
+    """
+    if renderer == "xyzrender":
+        _check_xyzrender()
+        return _render_xyzrender(atoms, canvas_size=canvas_size)
+    elif renderer == "solvis":
+        return _render_solvis(atoms, canvas_size=canvas_size)
+    elif renderer == "ovito":
+        return _render_ovito(atoms, canvas_size=canvas_size)
+    else:
+        return render_structure_to_image(atoms, zoom, rotation)
+
+
+def _render_solvis(atoms, canvas_size=400):
+    """Render via solvis (ball-and-stick with PyVista).
+
+    Requires: ``uvx --from solvis-tools python -c "import solvis"``
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array.
+    """
+    try:
+        from solvis.visualization import AtomicPlotter
+    except ImportError as exc:
+        msg = "solvis not installed. Install with: pip install solvis-tools"
+        raise RuntimeError(msg) from exc
+
+    from ase.io import write as _ase_write
+    from ase.neighborlist import natural_cutoffs, neighbor_list
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as png_fh:
+        png_path = png_fh.name
+
+    try:
+        plotter = AtomicPlotter(
+            interactive_mode=False,
+            window_size=[canvas_size, canvas_size],
+            depth_peeling=True,
+            shadows=False,
+        )
+
+        positions = atoms.get_positions()
+        numbers = atoms.get_atomic_numbers()
+
+        # CPK colors from ASE
+        from ase.data.colors import jmol_colors
+
+        colors = [jmol_colors[z].tolist() for z in numbers]
+
+        # Ball-and-stick radii (smaller than vdW)
+        radii = [0.3] * len(atoms)
+
+        plotter.add_atoms_as_spheres(positions, colors, radius=0.3)
+
+        # Bonds via ASE neighbor list
+        cutoffs = natural_cutoffs(atoms, mult=1.1)
+        i_idx, j_idx = neighbor_list("ij", atoms, cutoffs)
+        for i, j in zip(i_idx, j_idx):
+            if i < j:
+                plotter.add_bond(
+                    positions[i], positions[j],
+                    colors[i], colors[j],
+                    radius=0.08,
+                )
+
+        plotter.render_image(png_path)
+        plotter.close()
+        img_data = plt.imread(png_path)
+    finally:
+        import os
+
+        try:
+            os.unlink(png_path)
+        except OSError:
+            pass
+    return img_data
+
+
+def _render_ovito(atoms, canvas_size=400):
+    """Render via OVITO Python (high-quality off-screen rendering).
+
+    Requires: ``pip install ovito``
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array.
+    """
+    try:
+        from ovito.io.ase import ase_to_ovito
+        from ovito.pipeline import Pipeline, StaticSource
+        from ovito.vis import OpenGLRenderer, Viewport
+    except ImportError as exc:
+        msg = "ovito not installed. Install with: pip install ovito"
+        raise RuntimeError(msg) from exc
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as png_fh:
+        png_path = png_fh.name
+
+    try:
+        data = ase_to_ovito(atoms)
+        pipeline = Pipeline(source=StaticSource(data_collection=data))
+        pipeline.add_to_scene()
+
+        vp = Viewport(type=Viewport.Type.Ortho)
+        vp.zoom_all()
+
+        vp.render_image(
+            size=(canvas_size, canvas_size),
+            filename=png_path,
+            background=(1.0, 1.0, 1.0),
+            renderer=OpenGLRenderer(),
+        )
+        pipeline.remove_from_scene()
+        img_data = plt.imread(png_path)
+    finally:
+        import os
+
+        try:
+            os.unlink(png_path)
+        except OSError:
+            pass
+    return img_data
+
+
 def plot_structure_strip(
     ax,
     atoms_list,
@@ -159,19 +289,37 @@ def plot_structure_strip(
     theme_color="black",
     max_cols=6,
     renderer="ase",
+    col_spacing=1.5,
+    show_dividers=False,  # noqa: FBT002
+    divider_color="gray",
+    divider_style="--",
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
     Parameters
     ----------
     renderer : str
-        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+        Rendering backend: ``"ase"``, ``"xyzrender"``, ``"solvis"``,
+        or ``"ovito"``.
+    col_spacing : float
+        Horizontal spacing between structure images in data units.
+    show_dividers : bool
+        Draw vertical divider lines between structures.
+    divider_color : str
+        Color for divider lines.
+    divider_style : str
+        Linestyle for divider lines (e.g. ``"--"``, ``"-"``, ``":"``).
 
     ```{versionadded} 0.1.0
     ```
 
     ```{versionchanged} 1.2.0
     Added the *renderer* parameter.
+    ```
+
+    ```{versionchanged} 1.5.0
+    Added *col_spacing*, *show_dividers*, *divider_color*, *divider_style*
+    parameters. Added ``"solvis"`` and ``"ovito"`` renderer backends.
     ```
     """
     ax.axis("off")
@@ -180,10 +328,8 @@ def plot_structure_strip(
     n_rows = (n_plot + max_cols - 1) // max_cols
     row_step = 8.5
 
-    # Widen spacing for many items to prevent label overlap
-    col_step = max(1.0, 1.2 if n_cols > 4 else 1.0)
+    col_step = col_spacing
     ax.set_xlim(-0.5, (n_cols - 1) * col_step + 0.5)
-    # Heuristic layout from plt_neb.py
     y_min = -((n_rows - 1) * row_step) - 0.8
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
@@ -191,20 +337,13 @@ def plot_structure_strip(
     # Adaptive font size: shrink for many items
     label_fontsize = min(11, max(7, 14 - n_plot))
 
-    if renderer == "xyzrender":
-        _check_xyzrender()
-
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
         x_pos, y_pos = col * col_step, -row * row_step
 
-        if renderer == "xyzrender":
-            img_data = _render_xyzrender(atoms, canvas_size=400)
-        else:
-            img_data = render_structure_to_image(atoms, zoom, rotation)
+        img_data = _render_atoms(atoms, renderer, zoom, rotation)
 
-        # Adjust zoom for strip
         effective_zoom = zoom * 0.45
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
@@ -228,6 +367,18 @@ def plot_structure_strip(
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
+            )
+
+    # Divider lines between structures
+    if show_dividers:
+        for col in range(1, n_cols):
+            x_div = (col - 0.5) * col_step
+            ax.axvline(
+                x_div,
+                color=divider_color,
+                linestyle=divider_style,
+                linewidth=0.8,
+                alpha=0.5,
             )
 
 
@@ -257,11 +408,7 @@ def plot_structure_inset(
     Added the *renderer* parameter.
     ```
     """
-    if renderer == "xyzrender":
-        _check_xyzrender()
-        img_data = _render_xyzrender(atoms, canvas_size=400)
-    else:
-        img_data = render_structure_to_image(atoms, zoom, rotation)
+    img_data = _render_atoms(atoms, renderer, zoom, rotation)
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
