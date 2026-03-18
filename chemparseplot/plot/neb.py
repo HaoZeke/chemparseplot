@@ -774,31 +774,35 @@ def plot_landscape_surface(
         v_min, v_max = var_grid.min(), var_grid.max()
         v_range = v_max - v_min
 
-        # Calculate levels as 5%, 95%, and the user requested threshold of the
-        # visual range with an epsilon to avoid errors for flat variances
-        v_levs = [
-            v_min + 0.05 * v_range + 1e-6,
-            v_min + variance_threshold * v_range + 1e-6,
-            v_min + 0.95 * v_range + 1e-6,
-        ]
+        # Calculate levels as 5%, threshold%, and 95% of the variance range.
+        # Skip contours entirely if variance is flat (avoids matplotlib error
+        # "Contour levels must be increasing").
+        if v_range < 1e-10:
+            v_con = None
+        else:
+            v_levs = sorted(set([
+                v_min + 0.05 * v_range,
+                v_min + variance_threshold * v_range,
+                v_min + 0.95 * v_range,
+            ]))
 
-        v_con = ax.contour(
-            xg,
-            yg,
-            var_grid,
-            levels=v_levs,
-            colors="black",
-            linestyles="dashed",
-            alpha=0.8,
-            zorder=12,
-        )
-        ax.clabel(
-            v_con,
-            inline=True,
-            fontsize=8,
-            inline_spacing=50,
-            fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
-        )
+            v_con = ax.contour(
+                xg,
+                yg,
+                var_grid,
+                levels=v_levs,
+                colors="black",
+                linestyles="dashed",
+                alpha=0.8,
+                zorder=12,
+            )
+            ax.clabel(
+                v_con,
+                inline=True,
+                fontsize=8,
+                inline_spacing=50,
+                fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
+            )
 
     if show_pts:
         plot_x = s_data if project_path else rmsd_r

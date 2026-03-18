@@ -22,10 +22,11 @@ from chemparseplot.plot.optimization import (
 @pytest.fixture
 def synth_landscape_data():
     """Synthetic RMSD + energy data for landscape tests."""
-    n = 15
-    rmsd_a = np.linspace(0.1, 3.0, n)
-    rmsd_b = np.linspace(3.0, 0.1, n)
-    energies = -np.cos(np.linspace(0, np.pi, n))
+    rng = np.random.default_rng(42)
+    n = 25
+    rmsd_a = np.linspace(0.1, 3.0, n) + rng.normal(0, 0.05, n)
+    rmsd_b = np.linspace(3.0, 0.1, n) + rng.normal(0, 0.05, n)
+    energies = -np.cos(np.linspace(0, np.pi, n)) + rng.normal(0, 0.1, n)
     grad_a = np.gradient(energies) * 0.5
     grad_b = -np.gradient(energies) * 0.5
     return rmsd_a, rmsd_b, grad_a, grad_b, energies
