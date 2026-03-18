@@ -109,6 +109,9 @@ def _check_xyzrender():
 def _render_xyzrender(atoms, canvas_size=400):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
+    Uses the ``paton`` preset with hydrogens visible for ball-and-stick
+    style rendering.
+
     Parameters
     ----------
     atoms : ase.Atoms
@@ -136,6 +139,10 @@ def _render_xyzrender(atoms, canvas_size=400):
             png_path,
             "-S",
             str(canvas_size),
+            "--config",
+            "paton",
+            "--hy",
+            "-t",
         ]
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
