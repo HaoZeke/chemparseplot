@@ -70,3 +70,94 @@ class TestDimerTrajectoryData:
             "saddle_atoms",
             "mode_vector",
         }
+
+
+class TestLoadDimerTrajectory:
+    """Tests for load_dimer_trajectory with synthetic eOn output."""
+
+    def _write_con(self, path, atoms):
+        """Write a .con file via ASE."""
+        from ase.io import write
+
+        write(str(path), atoms, format="eon")
+
+    def _make_job_dir(self, tmp_path):
+        """Create a synthetic saddle search job directory."""
+        from ase.build import molecule
+
+        h2o = molecule("H2O")
+
+        # reactant.con
+        self._write_con(tmp_path / "reactant.con", h2o)
+
+        # saddle.con (slightly perturbed)
+        saddle = h2o.copy()
+        saddle.positions[0, 0] += 0.3
+        self._write_con(tmp_path / "saddle.con", saddle)
+
+        # climb movie (3 frames: initial + 2 iterations)
+        from ase.io import write
+
+        frames = [h2o.copy() for _ in range(3)]
+        for i, f in enumerate(frames):
+            f.positions[0, 0] += 0.1 * i
+        write(str(tmp_path / "climb"), frames, format="eon")
+
+        # climb.dat
+        dat = tmp_path / "climb.dat"
+        lines = [
+            "iteration\tstep_size\tdelta_e\tconvergence\teigenvalue\ttorque\tangle\trotations",
+            "1\t1.0e-01\t0.01\t5.0e-02\t-0.12\t0.05\t12.3\t5",
+            "2\t8.5e-02\t0.02\t3.2e-02\t-0.23\t0.03\t8.1\t3",
+        ]
+        dat.write_text("\n".join(lines) + "\n")
+
+        # mode.dat
+        mode = tmp_path / "mode.dat"
+        mode.write_text("1.0 0.0 0.0\n0.0 1.0 0.0\n0.0 0.0 1.0\n")
+
+        return tmp_path
+
+    def test_load_full(self, tmp_path):
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        job = self._make_job_dir(tmp_path)
+        traj = load_dimer_trajectory(job)
+        assert len(traj.atoms_list) == 3
+        assert traj.dat_df.height == 2
+        assert traj.initial_atoms is not None
+        assert traj.saddle_atoms is not None
+        assert traj.mode_vector is not None
+        assert traj.mode_vector.shape == (3, 3)
+
+    def test_missing_climb_raises(self, tmp_path):
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        (tmp_path / "climb.dat").write_text("iteration\tstep_size\n")
+        with pytest.raises(FileNotFoundError, match="climb movie"):
+            load_dimer_trajectory(tmp_path)
+
+    def test_missing_dat_raises(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        write(str(tmp_path / "climb"), molecule("H2O"), format="eon")
+        with pytest.raises(FileNotFoundError, match="climb.dat"):
+            load_dimer_trajectory(tmp_path)
+
+    def test_no_reactant_uses_first_frame(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        h2o = molecule("H2O")
+        write(str(tmp_path / "climb"), [h2o, h2o], format="eon")
+        (tmp_path / "climb.dat").write_text(
+            "iteration\tstep_size\tdelta_e\tconvergence\teigenvalue\ttorque\tangle\trotations\n"
+            "1\t0.1\t0.01\t0.05\t-0.1\t0.05\t10\t3\n"
+        )
+        traj = load_dimer_trajectory(tmp_path)
+        assert traj.initial_atoms is not None  # fell back to first frame
+        assert traj.saddle_atoms is None
+        assert traj.mode_vector is None
