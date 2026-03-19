@@ -1,0 +1,39 @@
+name: Coverage
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+on: [push, pull_request]
+jobs:
+  coverage:
+    runs-on: ubuntu-22.04
+    name: Combined coverage (pixi multi-env)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@v0.8.10
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          activate-environment: false
+      - name: Run test env
+        shell: bash -el {0}
+        run: |
+          pixi r -e test -- python -m coverage run --data-file=.coverage.test --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+      - name: Run plot env
+        shell: bash -el {0}
+        run: |
+          pixi r -e plot -- python -m coverage run --data-file=.coverage.plot --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+      - name: Run chemgp env
+        shell: bash -el {0}
+        run: |
+          pixi r -e chemgp -- python -m coverage run --data-file=.coverage.chemgp --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+      - name: Run plumed env
+        shell: bash -el {0}
+        run: |
+          pixi r -e plumed -- python -m coverage run --data-file=.coverage.plumed --source=chemparseplot -m pytest tests/parse/test_plumed.py -q || true
+      - name: Combine and report
+        shell: bash -el {0}
+        run: |
+          pixi r -e test -- python -m coverage combine .coverage.test .coverage.plot .coverage.chemgp .coverage.plumed || true
+          pixi r -e test -- python -m coverage report --fail-under=90
