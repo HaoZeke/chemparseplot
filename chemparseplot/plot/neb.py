@@ -776,10 +776,11 @@ def plot_landscape_surface(
         xg_1d = np.linspace(
             s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
         )
-        # Compute symmetric Y-grid based on X-span to fill the 1:1 plot
-        x_span = xg_1d.max() - xg_1d.min()
-        y_half = x_span / 2
-        yg_1d = np.linspace(-y_half, y_half, 150)
+        # Y-grid: use data range with 15% padding, ensuring coverage
+        d_span = d_max - d_min
+        d_center = (d_max + d_min) / 2
+        d_half = max(d_span / 2, (xg_1d.max() - xg_1d.min()) * 0.3) * 1.15
+        yg_1d = np.linspace(d_center - d_half, d_center + d_half, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
