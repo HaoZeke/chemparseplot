@@ -207,6 +207,8 @@ def _render_solvis(atoms, canvas_size=400):
             depth_peeling=True,
             shadows=False,
         )
+        # Transparent background
+        plotter.plotter.set_background([1.0, 1.0, 1.0, 0.0])
 
         positions = atoms.get_positions()
         numbers = atoms.get_atomic_numbers()
@@ -234,9 +236,14 @@ def _render_solvis(atoms, canvas_size=400):
                     radius=0.08,
                 )
 
-        plotter.render_image(png_path)
+        # Render with transparency
+        img_data = plotter.plotter.screenshot(
+            png_path, transparent_background=True, return_img=True
+        )
         plotter.close()
-        img_data = plt.imread(png_path)
+        # Normalize to float [0,1] if needed
+        if img_data.dtype == np.uint8:
+            img_data = img_data.astype(np.float32) / 255.0
     finally:
         import os
 
