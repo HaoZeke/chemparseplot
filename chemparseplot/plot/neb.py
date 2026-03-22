@@ -106,6 +106,35 @@ def _check_xyzrender():
         raise RuntimeError(msg)
 
 
+def _apply_perspective_tilt(atoms, tilt_deg=8.0):
+    """Apply a small off-axis rotation to reveal hidden atoms.
+
+    Uses Rodrigues formula to rotate around an axis perpendicular to
+    the viewing direction. This prevents atoms from occluding each
+    other in orthographic projection without significantly distorting
+    the view.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to tilt (modified in place).
+    tilt_deg : float
+        Tilt angle in degrees. 5-10 is usually enough.
+    """
+    theta = np.radians(tilt_deg)
+    # Tilt axis: diagonal in the xy-plane (not aligned with any principal axis)
+    k = np.array([1.0, 0.7, 0.0])
+    k = k / np.linalg.norm(k)
+
+    # Rodrigues rotation matrix: R = I cos(t) + (1-cos(t)) k*kT + sin(t) K
+    cos_t, sin_t = np.cos(theta), np.sin(theta)
+    K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+    R = cos_t * np.eye(3) + (1 - cos_t) * np.outer(k, k) + sin_t * K
+
+    center = atoms.positions.mean(axis=0)
+    atoms.positions = (R @ (atoms.positions - center).T).T + center
+
+
 def _parse_rotation_angles(rotation_str):
     """Parse ASE-style rotation string into (rx, ry, rz) degrees.
 
@@ -190,7 +219,9 @@ def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
     return img_data
 
 
-def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
+def _render_atoms(
+    atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0
+):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
@@ -200,7 +231,13 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
     rotation : str
         ASE-style rotation string (e.g. ``"0x,90y,0z"``). Applied
         uniformly across all backends.
+    perspective_tilt : float
+        Small off-axis tilt in degrees to reveal occluded atoms.
+        0 disables. 5-10 is usually enough.
     """
+    if perspective_tilt > 0:
+        atoms = atoms.copy()
+        _apply_perspective_tilt(atoms, perspective_tilt)
     if renderer == "xyzrender":
         _check_xyzrender()
         return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
@@ -368,6 +405,7 @@ def plot_structure_strip(
     show_dividers=False,  # noqa: FBT002
     divider_color="gray",
     divider_style="--",
+    perspective_tilt=0.0,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -417,7 +455,9 @@ def plot_structure_strip(
         row = i // max_cols
         x_pos, y_pos = col * col_step, -row * row_step
 
-        img_data = _render_atoms(atoms, renderer, zoom, rotation)
+        img_data = _render_atoms(
+            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+        )
 
         effective_zoom = zoom * 0.45
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
@@ -468,6 +508,7 @@ def plot_structure_inset(
     rotation="0x,90y,0z",
     arrow_props=None,
     renderer="xyzrender",
+    perspective_tilt=0.0,
 ) -> Any:
     """Plots a single structure as an annotation inset.
 
@@ -483,7 +524,9 @@ def plot_structure_inset(
     Added the *renderer* parameter.
     ```
     """
-    img_data = _render_atoms(atoms, renderer, zoom, rotation)
+    img_data = _render_atoms(
+        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+    )
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
