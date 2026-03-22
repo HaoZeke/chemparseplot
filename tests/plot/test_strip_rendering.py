@@ -53,14 +53,14 @@ class TestRenderAtoms:
         img = _render_atoms(h2o, "unknown_renderer", 0.3, "0x,90y,0z")
         assert img.ndim == 3
 
-    def test_xyzrender_not_installed(self, h2o):
-        """xyzrender raises RuntimeError if binary not on PATH."""
+    def test_xyzrender_fallback_to_ase(self, h2o):
+        """xyzrender falls back to ASE if not installed."""
         import shutil
 
         if shutil.which("xyzrender") is not None:
             pytest.skip("xyzrender is installed")
-        with pytest.raises(RuntimeError, match="xyzrender"):
-            _render_atoms(h2o, "xyzrender", 0.3, "0x,90y,0z")
+        img = _render_atoms(h2o, "xyzrender", 0.3, "0x,90y,0z")
+        assert img.ndim == 3  # Falls back to ASE, returns valid image
 
     def test_solvis_not_installed(self, h2o):
         """solvis raises RuntimeError if not importable."""

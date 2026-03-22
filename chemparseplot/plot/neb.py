@@ -161,10 +161,15 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
+    Falls back to ASE if the requested backend is not installed.
     """
     if renderer == "xyzrender":
-        _check_xyzrender()
-        return _render_xyzrender(atoms, canvas_size=canvas_size)
+        try:
+            _check_xyzrender()
+            return _render_xyzrender(atoms, canvas_size=canvas_size)
+        except RuntimeError:
+            log.warning("xyzrender not installed, falling back to ASE renderer")
+            return render_structure_to_image(atoms, zoom, rotation)
     elif renderer == "solvis":
         return _render_solvis(atoms, canvas_size=canvas_size)
     elif renderer == "ovito":
@@ -295,7 +300,7 @@ def plot_structure_strip(
     rotation="0x,90y,0z",
     theme_color="black",
     max_cols=6,
-    renderer="ase",
+    renderer="xyzrender",
     col_spacing=1.5,
     show_dividers=False,  # noqa: FBT002
     divider_color="gray",
@@ -399,7 +404,7 @@ def plot_structure_inset(
     zoom=0.4,
     rotation="0x,90y,0z",
     arrow_props=None,
-    renderer="ase",
+    renderer="xyzrender",
 ) -> Any:
     """Plots a single structure as an annotation inset.
 
