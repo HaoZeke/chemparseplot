@@ -1267,17 +1267,16 @@ class TestNebPlotSurface:
         img = _render_atoms(atoms, "ase", 0.3, "0x,0y,0z")
         assert img.ndim >= 2
 
-    def test_render_atoms_xyzrender_fallback(self):
-        """xyzrender falls back to ASE when not installed."""
+    def test_render_atoms_xyzrender_not_installed(self):
+        """xyzrender raises RuntimeError if binary not on PATH."""
         from chemparseplot.plot.neb import _render_atoms
 
         from ase.build import molecule
 
         atoms = molecule("H2O")
         with patch("shutil.which", return_value=None):
-            # Should fall back to ASE, not raise
-            img = _render_atoms(atoms, "xyzrender", 0.3, "0x,0y,0z")
-            assert img.ndim == 3
+            with pytest.raises(RuntimeError, match="xyzrender"):
+                _render_atoms(atoms, "xyzrender", 0.3, "0x,0y,0z")
 
 
 # ============================================================

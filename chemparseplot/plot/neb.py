@@ -164,12 +164,8 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
     Falls back to ASE if the requested backend is not installed.
     """
     if renderer == "xyzrender":
-        try:
-            _check_xyzrender()
-            return _render_xyzrender(atoms, canvas_size=canvas_size)
-        except RuntimeError:
-            log.warning("xyzrender not installed, falling back to ASE renderer")
-            return render_structure_to_image(atoms, zoom, rotation)
+        _check_xyzrender()
+        return _render_xyzrender(atoms, canvas_size=canvas_size)
     elif renderer == "solvis":
         return _render_solvis(atoms, canvas_size=canvas_size)
     elif renderer == "ovito":
