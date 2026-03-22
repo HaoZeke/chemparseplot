@@ -19,8 +19,31 @@
   `plot_convergence_panel`, and `plot_dimer_mode_evolution`.
 - OCI-NEB/RONEB overlay functions: `plot_mmf_peaks_overlay` for MMF peak markers,
   `plot_neb_evolution` for band evolution across iterations.
+- Four rendering backends for `plot_structure_strip` and `plot_structure_inset`:
+  `xyzrender` (default, ball-and-stick with paton preset), `solvis` (PyVista,
+  transparent background), `ovito` (OVITO off-screen), and `ase` (space-filling).
+  Unified dispatch via `_render_atoms()`.
+- `perspective_tilt` parameter for Rodrigues off-axis rotation to reveal atoms
+  hidden by orthographic projection overlap.
+- Unified `rotation` parameter across all backends (xyzrender uses `--no-orient`
+  + pre-rotated atoms, solvis/ovito pre-rotate positions).
+- `col_spacing`, `show_dividers`, `divider_color`, `divider_style` parameters
+  for `plot_structure_strip`.
 - `calculate_landscape_coords()` in `neb_utils` now accepts explicit `ref_a`/`ref_b`
   reference structures (defaults to first/last for backward compatibility).
+
+### Changed
+
+- Default rendering backend changed from `ase` to `xyzrender` for ball-and-stick
+  visualization with bonds visible.
+
+### Fixed
+
+- Fixed infinite recursion in `plot/__init__.py` lazy imports (replaced
+  `from chemparseplot.plot import X` with `importlib.import_module`).
+- Fixed `plot/structs.py` isinstance typo (`|` vs `,` operator).
+- Fixed flat variance contour crash (`v_range < 1e-10` now skips contours).
+- Fixed solvis renderer API (hex colors, actor_name, transparent background).
 
 ## [1.4.0](https://github.com/HaoZeke/chemparseplot/tree/1.4.0) - 2026-03-15
 
