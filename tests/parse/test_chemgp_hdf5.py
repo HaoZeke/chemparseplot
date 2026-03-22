@@ -37,12 +37,14 @@ class TestHDF5IO:
             energy_ds.attrs["y_length"] = 10
 
             path_grp = f.create_group("paths")
-            path_grp.create_dataset("path1_x", data=np.array([0.1, 0.2, 0.3]))
-            path_grp.create_dataset("path1_y", data=np.array([0.4, 0.5, 0.6]))
+            path1_grp = path_grp.create_group("path1")
+            path1_grp.create_dataset("path1_x", data=np.array([0.1, 0.2, 0.3]))
+            path1_grp.create_dataset("path1_y", data=np.array([0.4, 0.5, 0.6]))
 
             points_grp = f.create_group("points")
-            points_grp.create_dataset("train_x", data=np.array([0.2, 0.4, 0.6]))
-            points_grp.create_dataset("train_y", data=np.array([0.3, 0.5, 0.7]))
+            train_grp = points_grp.create_group("train")
+            train_grp.create_dataset("train_x", data=np.array([0.2, 0.4, 0.6]))
+            train_grp.create_dataset("train_y", data=np.array([0.3, 0.5, 0.7]))
 
             f.attrs["conv_tol"] = 0.01
             f.attrs["n_steps"] = 100
