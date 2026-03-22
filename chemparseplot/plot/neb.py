@@ -106,7 +106,28 @@ def _check_xyzrender():
         raise RuntimeError(msg)
 
 
-def _render_xyzrender(atoms, canvas_size=400):
+def _parse_rotation_angles(rotation_str):
+    """Parse ASE-style rotation string into (rx, ry, rz) degrees.
+
+    E.g. ``"0x,90y,0z"`` -> ``(0, 90, 0)``.
+    """
+    import re
+
+    rx, ry, rz = 0.0, 0.0, 0.0
+    for part in rotation_str.replace(" ", "").split(","):
+        m = re.match(r"(-?[\d.]+)([xyz])", part.strip())
+        if m:
+            val, axis = float(m.group(1)), m.group(2)
+            if axis == "x":
+                rx = val
+            elif axis == "y":
+                ry = val
+            else:
+                rz = val
+    return rx, ry, rz
+
+
+def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
     Uses the ``paton`` preset with hydrogens visible for ball-and-stick
@@ -116,6 +137,9 @@ def _render_xyzrender(atoms, canvas_size=400):
     ----------
     atoms : ase.Atoms
         Structure to render.
+    rotation : str
+        Rotation string (ASE-style). When provided, disables xyzrender
+        auto-orientation.
     canvas_size : int
         Output image width/height in pixels (passed as ``-S``).
 
@@ -131,6 +155,14 @@ def _render_xyzrender(atoms, canvas_size=400):
     png_path = xyz_path.rsplit(".", 1)[0] + ".png"
 
     try:
+        # Apply rotation via ASE before writing
+        atoms = atoms.copy()
+        rx, ry, rz = _parse_rotation_angles(rotation)
+        if rx != 0 or ry != 0 or rz != 0:
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
+
         _ase_write(xyz_path, atoms, format="xyz")
         cmd = [
             "xyzrender",
@@ -143,6 +175,7 @@ def _render_xyzrender(atoms, canvas_size=400):
             "paton",
             "--hy",
             "-t",
+            "--no-orient",
         ]
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
@@ -161,20 +194,25 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
-    Falls back to ASE if the requested backend is not installed.
+
+    Parameters
+    ----------
+    rotation : str
+        ASE-style rotation string (e.g. ``"0x,90y,0z"``). Applied
+        uniformly across all backends.
     """
     if renderer == "xyzrender":
         _check_xyzrender()
-        return _render_xyzrender(atoms, canvas_size=canvas_size)
+        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
     elif renderer == "solvis":
-        return _render_solvis(atoms, canvas_size=canvas_size)
+        return _render_solvis(atoms, rotation=rotation, canvas_size=canvas_size)
     elif renderer == "ovito":
-        return _render_ovito(atoms, canvas_size=canvas_size)
+        return _render_ovito(atoms, rotation=rotation, canvas_size=canvas_size)
     else:
         return render_structure_to_image(atoms, zoom, rotation)
 
 
-def _render_solvis(atoms, canvas_size=400):
+def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
     """Render via solvis (ball-and-stick with PyVista).
 
     Requires: ``uvx --from solvis-tools python -c "import solvis"``
@@ -209,6 +247,14 @@ def _render_solvis(atoms, canvas_size=400):
         )
         # Transparent background
         plotter.plotter.set_background([1.0, 1.0, 1.0, 0.0])
+
+        # Apply rotation
+        atoms = atoms.copy()
+        rx, ry, rz = _parse_rotation_angles(rotation)
+        if rx != 0 or ry != 0 or rz != 0:
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
 
         positions = atoms.get_positions()
         numbers = atoms.get_atomic_numbers()
@@ -254,7 +300,7 @@ def _render_solvis(atoms, canvas_size=400):
     return img_data
 
 
-def _render_ovito(atoms, canvas_size=400):
+def _render_ovito(atoms, rotation="0x,90y,0z", canvas_size=400):
     """Render via OVITO Python (high-quality off-screen rendering).
 
     Requires: ``pip install ovito``
@@ -276,6 +322,14 @@ def _render_ovito(atoms, canvas_size=400):
         png_path = png_fh.name
 
     try:
+        # Apply rotation before converting to OVITO
+        atoms = atoms.copy()
+        rx, ry, rz = _parse_rotation_angles(rotation)
+        if rx != 0 or ry != 0 or rz != 0:
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
+
         data = ase_to_ovito(atoms)
         pipeline = Pipeline(source=StaticSource(data_collection=data))
         pipeline.add_to_scene()
