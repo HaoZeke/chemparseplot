@@ -376,7 +376,9 @@ def _render_ovito(atoms, rotation="0x,90y,0z", canvas_size=400):
             atoms.rotate(rz, "z", center="COP")
 
         data = ase_to_ovito(atoms)
-        pipeline = Pipeline(source=StaticSource(data_collection=data))
+        src = StaticSource()
+        src.data = data
+        pipeline = Pipeline(source=src)
         pipeline.add_to_scene()
 
         vp = Viewport(type=Viewport.Type.Ortho)
