@@ -156,7 +156,7 @@ def _parse_rotation_angles(rotation_str):
     return rx, ry, rz
 
 
-def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
+def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
     Uses the ``paton`` preset with hydrogens visible for ball-and-stick
@@ -167,8 +167,9 @@ def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
     atoms : ase.Atoms
         Structure to render.
     rotation : str
-        Rotation string (ASE-style). When provided, disables xyzrender
-        auto-orientation.
+        ``"auto"`` (default) uses xyzrender's auto-orientation.
+        Any ASE-style string (e.g. ``"0x,90y,0z"``) disables auto-orient
+        and pre-rotates the atoms.
     canvas_size : int
         Output image width/height in pixels (passed as ``-S``).
 
@@ -184,10 +185,12 @@ def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
     png_path = xyz_path.rsplit(".", 1)[0] + ".png"
 
     try:
-        # Apply rotation via ASE before writing
         atoms = atoms.copy()
-        rx, ry, rz = _parse_rotation_angles(rotation)
-        if rx != 0 or ry != 0 or rz != 0:
+        has_custom_rotation = rotation != "auto"
+
+        if has_custom_rotation:
+            rx, ry, rz = _parse_rotation_angles(rotation)
+            # Pre-rotate and disable auto-orient
             atoms.rotate(rx, "x", center="COP")
             atoms.rotate(ry, "y", center="COP")
             atoms.rotate(rz, "z", center="COP")
@@ -204,8 +207,9 @@ def _render_xyzrender(atoms, rotation="0x,90y,0z", canvas_size=400):
             "paton",
             "--hy",
             "-t",
-            "--no-orient",
         ]
+        if has_custom_rotation:
+            cmd.append("--no-orient")
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
     finally:
@@ -238,15 +242,18 @@ def _render_atoms(
     if perspective_tilt > 0:
         atoms = atoms.copy()
         _apply_perspective_tilt(atoms, perspective_tilt)
+    # "auto" means: xyzrender auto-orients, other backends use default side view
+    effective_rotation = rotation if rotation != "auto" else "0x,90y,0z"
+
     if renderer == "xyzrender":
         _check_xyzrender()
         return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
     elif renderer == "solvis":
-        return _render_solvis(atoms, rotation=rotation, canvas_size=canvas_size)
+        return _render_solvis(atoms, rotation=effective_rotation, canvas_size=canvas_size)
     elif renderer == "ovito":
-        return _render_ovito(atoms, rotation=rotation, canvas_size=canvas_size)
+        return _render_ovito(atoms, rotation=effective_rotation, canvas_size=canvas_size)
     else:
-        return render_structure_to_image(atoms, zoom, rotation)
+        return render_structure_to_image(atoms, zoom, effective_rotation)
 
 
 def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
