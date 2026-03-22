@@ -197,6 +197,10 @@ def _render_solvis(atoms, canvas_size=400):
         png_path = png_fh.name
 
     try:
+        import pyvista as pv
+
+        pv.start_xvfb()  # headless rendering without DISPLAY
+
         plotter = AtomicPlotter(
             interactive_mode=False,
             window_size=[canvas_size, canvas_size],
@@ -207,24 +211,26 @@ def _render_solvis(atoms, canvas_size=400):
         positions = atoms.get_positions()
         numbers = atoms.get_atomic_numbers()
 
-        # CPK colors from ASE
+        # CPK hex colors from ASE jmol palette
         from ase.data.colors import jmol_colors
 
-        colors = [jmol_colors[z].tolist() for z in numbers]
+        def _rgb_to_hex(rgb):
+            r, g, b = int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
+            return f"#{r:02x}{g:02x}{b:02x}"
 
-        # Ball-and-stick radii (smaller than vdW)
-        radii = [0.3] * len(atoms)
+        colors = [_rgb_to_hex(jmol_colors[z]) for z in numbers]
 
         plotter.add_atoms_as_spheres(positions, colors, radius=0.3)
 
         # Bonds via ASE neighbor list
         cutoffs = natural_cutoffs(atoms, mult=1.1)
         i_idx, j_idx = neighbor_list("ij", atoms, cutoffs)
-        for i, j in zip(i_idx, j_idx):
+        for bond_idx, (i, j) in enumerate(zip(i_idx, j_idx)):
             if i < j:
                 plotter.add_bond(
                     positions[i], positions[j],
                     colors[i], colors[j],
+                    f"bond_{bond_idx}",
                     radius=0.08,
                 )
 
