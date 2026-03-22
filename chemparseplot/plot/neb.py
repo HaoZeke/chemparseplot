@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
+import matplotlib.tri as tri
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib.collections import LineCollection
@@ -568,7 +569,8 @@ def plot_structure_inset(
 
 
 def plot_energy_path(
-    ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None
+    ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None,
+    label=None,
 ) -> Any:
     """Plots 1D energy profile with optional Hermite spline interpolation.
 
@@ -613,7 +615,7 @@ def plot_energy_path(
 
         x_fine = rc_fine_norm * path_length + rc_min
 
-        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder)
+        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder, label=label)
         ax.plot(
             rc,
             energy,
@@ -629,7 +631,7 @@ def plot_energy_path(
 
     except Exception as e:
         log.warning(f"Spline failed ({e}), plotting raw lines.")
-        ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder)
+        ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder, label=label)
 
 
 def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white"):
@@ -973,16 +975,25 @@ def plot_landscape_path_overlay(
     cmap,
     z_label,
     project_path=True,  # noqa: FBT002
+    all_r=None,
+    all_p=None,
+    all_z=None,
 ) -> Any:
     """Overlay the colored path line on the landscape.
 
-    Mapped to the chosen coordinate basis.
+    Mapped to the chosen coordinate basis. When ``all_r/all_p/all_z`` arrays
+    are provided (all NEB iterations), a triangulated filled contour is drawn
+    as the background so the landscape is never empty.
 
     ```{versionadded} 0.1.0
     ```
 
     ```{versionchanged} 1.1.0
     Added the *project_path* parameter for reaction-valley coordinate projection.
+    ```
+
+    ```{versionchanged} 1.6.0
+    Added *all_r*, *all_p*, *all_z* for triangulated background contours.
     ```
     """
     if project_path:
@@ -992,15 +1003,36 @@ def plot_landscape_path_overlay(
         plot_x = r
         plot_y = p
 
-    points = np.array([plot_x, plot_y]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-
     try:
         colormap = plt.get_cmap(cmap)
     except ValueError:
         colormap = plt.get_cmap("viridis")
 
     norm = plt.Normalize(z.min(), z.max())
+
+    # --- Triangulated background contours from all iterations ---
+    if all_r is not None and all_p is not None and all_z is not None:
+        if project_path:
+            bg_x, bg_y = project_to_sd(all_r, all_p, basis)
+        else:
+            bg_x, bg_y = all_r, all_p
+        try:
+            triang = tri.Triangulation(bg_x, bg_y)
+            bg_norm = plt.Normalize(all_z.min(), all_z.max())
+            ax.tricontourf(
+                triang, all_z, levels=20, cmap=colormap, alpha=0.6,
+                norm=bg_norm, zorder=5,
+            )
+            ax.tricontour(
+                triang, all_z, levels=10, colors="k", alpha=0.15,
+                linewidths=0.4, zorder=6,
+            )
+        except Exception:
+            log.debug("Triangulation failed, skipping background contours.")
+
+    points = np.array([plot_x, plot_y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
     lc = LineCollection(segments, cmap=colormap, norm=norm, zorder=30)
 
     # Color segments by average Z of endpoints
