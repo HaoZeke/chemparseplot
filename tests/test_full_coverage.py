@@ -19,6 +19,7 @@ import pytest
 
 try:
     import pandas as pd
+
     _HAS_PANDAS = True
 except ImportError:
     pd = None
@@ -26,6 +27,7 @@ except ImportError:
 
 try:
     import cmcrameri
+
     _HAS_CMCRAMERI = True
 except ImportError:
     _HAS_CMCRAMERI = False
@@ -254,9 +256,7 @@ class TestChemGPJsonl:
         from chemparseplot.parse.chemgp_jsonl import parse_rff_quality_jsonl
 
         lines = [
-            json.dumps(
-                {"type": "exact_gp", "energy_mae": 0.01, "gradient_mae": 0.02}
-            ),
+            json.dumps({"type": "exact_gp", "energy_mae": 0.01, "gradient_mae": 0.02}),
             json.dumps(
                 {
                     "type": "rff",
@@ -305,9 +305,7 @@ class TestChemGPJsonl:
             json.dumps(
                 {"type": "minimum", "id": 0, "x": -0.5, "y": 1.0, "energy": -150.0}
             ),
-            json.dumps(
-                {"type": "saddle", "id": 0, "x": 0.0, "y": 0.5, "energy": -10.0}
-            ),
+            json.dumps({"type": "saddle", "id": 0, "x": 0.0, "y": 0.5, "energy": -10.0}),
             json.dumps(
                 {
                     "type": "train_point",
@@ -592,7 +590,7 @@ class TestChemGPPlot:
         x = np.linspace(-2, 2, 20)
         X, Y = np.meshgrid(x, x)
         E = np.sin(X) * np.cos(Y) * 100
-        V = np.exp(-X**2 - Y**2) + 0.01
+        V = np.exp(-(X**2) - Y**2) + 0.01
 
         stationary = {"min0": (0.0, 0.0), "saddle0": (1.0, 1.0)}
         train_pts = ([0.0, 1.0, -1.0], [0.0, 1.0, -1.0])
@@ -774,7 +772,9 @@ import sys
 _PY310 = sys.version_info < (3, 11)
 
 
-@pytest.mark.skipif(not _HAS_CMCRAMERI or _PY310, reason="cmcrameri required, py3.10 has recursion issue")
+@pytest.mark.skipif(
+    not _HAS_CMCRAMERI or _PY310, reason="cmcrameri required, py3.10 has recursion issue"
+)
 class TestGeomscanPlot:
     def test_plot_energy_paths(self):
         """Test that plot_energy_paths creates a figure (mocking rgpycrumbs)."""
@@ -873,9 +873,7 @@ class TestOpiParserFull:
         mock_output_inst.num_results_gbw = 3
 
         # Energies in Hartree
-        mock_output_inst.get_final_energy.side_effect = [
-            -100.0, -99.9, -100.0
-        ]
+        mock_output_inst.get_final_energy.side_effect = [-100.0, -99.9, -100.0]
 
         # Geometry mock
         mock_geom = MagicMock()
@@ -1018,9 +1016,7 @@ class TestPlumedParse:
     def test_calculate_fes_imax_warning(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
 
-        hills_data = np.array(
-            [[0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 0.0]]
-        )
+        hills_data = np.array([[0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 0.0]])
         hills = {"hillsfile": hills_data, "per": [False, False]}
         with pytest.warns(UserWarning, match="only 1 hills are available"):
             calculate_fes_from_hills(hills, imax=100, npoints=16)
@@ -1028,9 +1024,7 @@ class TestPlumedParse:
     def test_calculate_fes_imin_gt_imax(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
 
-        hills_data = np.array(
-            [[0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 0.0]] * 5
-        )
+        hills_data = np.array([[0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 0.0]] * 5)
         hills = {"hillsfile": hills_data, "per": [False, False]}
         with pytest.raises(ValueError, match="imax cannot be lower than imin"):
             calculate_fes_from_hills(hills, imin=5, imax=2, npoints=16)
@@ -1062,9 +1056,7 @@ class TestPlumedParse:
     def test_calculate_fes_1d_imax_zero(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
 
-        hills_data = np.array(
-            [[0.0, 0.0, 0.5, 1.0, 0.0]]
-        )
+        hills_data = np.array([[0.0, 0.0, 0.5, 1.0, 0.0]])
         hills = {"hillsfile": hills_data, "per": [False]}
         result = calculate_fes_from_hills(hills, imax=0, npoints=16)
         assert np.all(result["fes"] == 0)
@@ -1078,9 +1070,7 @@ class TestPlumedParse:
             ]
         )
         hills = {"hillsfile": hills_data, "per": [False, False]}
-        result = calculate_fes_from_hills(
-            hills, xlim=[-5, 5], ylim=[-5, 5], npoints=16
-        )
+        result = calculate_fes_from_hills(hills, xlim=[-5, 5], ylim=[-5, 5], npoints=16)
         assert result["x"][0] == pytest.approx(-5.0)
         assert result["y"][0] == pytest.approx(-5.0)
 
@@ -1121,9 +1111,7 @@ class TestPlumedParse:
     def test_find_fes_minima_bad_nbins(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
 
-        hills_data = np.array(
-            [[0.0, 0.0, 0.5, 1.0, 0.0]]
-        )
+        hills_data = np.array([[0.0, 0.0, 0.5, 1.0, 0.0]])
         hills = {"hillsfile": hills_data, "per": [False]}
         fes_result = calculate_fes_from_hills(hills, npoints=16)
         with pytest.raises(ValueError, match="integer multiple"):
@@ -1132,9 +1120,7 @@ class TestPlumedParse:
     def test_find_fes_minima_too_many_bins(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
 
-        hills_data = np.array(
-            [[0.0, 0.0, 0.5, 1.0, 0.0]]
-        )
+        hills_data = np.array([[0.0, 0.0, 0.5, 1.0, 0.0]])
         hills = {"hillsfile": hills_data, "per": [False]}
         fes_result = calculate_fes_from_hills(hills, npoints=16)
         with pytest.raises(ValueError, match="nbins is too high"):
@@ -1152,7 +1138,9 @@ class TestNebPlotSurface:
         r = np.linspace(0, 3, 11)
         p = np.linspace(3, 0, 11)
         z = np.sin(np.linspace(0, np.pi, 11))
-        cb = plot_landscape_path_overlay(ax, r, p, z, "viridis", "E (eV)", project_path=True)
+        cb = plot_landscape_path_overlay(
+            ax, r, p, z, "viridis", "E (eV)", project_path=True
+        )
         assert cb is not None
         plt.close(fig)
 
@@ -1163,7 +1151,9 @@ class TestNebPlotSurface:
         r = np.linspace(0, 3, 11)
         p = np.linspace(3, 0, 11)
         z = np.sin(np.linspace(0, np.pi, 11))
-        cb = plot_landscape_path_overlay(ax, r, p, z, "invalid_cmap", "E", project_path=False)
+        cb = plot_landscape_path_overlay(
+            ax, r, p, z, "invalid_cmap", "E", project_path=False
+        )
         assert cb is not None
         plt.close(fig)
 
@@ -1293,27 +1283,17 @@ class TestTrajectoryHdf5:
         h5_path = str(tmp_path / "neb_result.h5")
         with h5py.File(h5_path, "w") as f:
             path_grp = f.create_group("path")
-            path_grp.create_dataset(
-                "images", data=np.random.randn(n_images, ndof)
-            )
-            path_grp.create_dataset(
-                "energies", data=np.linspace(0, 1, n_images)
-            )
+            path_grp.create_dataset("images", data=np.random.randn(n_images, ndof))
+            path_grp.create_dataset("energies", data=np.linspace(0, 1, n_images))
             path_grp.create_dataset(
                 "gradients", data=np.random.randn(n_images, ndof) * 0.01
             )
-            path_grp.create_dataset(
-                "f_para", data=np.random.randn(n_images) * 0.1
-            )
-            path_grp.create_dataset(
-                "rxn_coord", data=np.linspace(0, 3, n_images)
-            )
+            path_grp.create_dataset("f_para", data=np.random.randn(n_images) * 0.1)
+            path_grp.create_dataset("rxn_coord", data=np.linspace(0, 3, n_images))
             conv_grp = f.create_group("convergence")
             conv_grp.create_dataset("max_force", data=np.array([0.1, 0.05]))
             meta_grp = f.create_group("metadata")
-            meta_grp.create_dataset(
-                "atomic_numbers", data=np.ones(n_atoms, dtype=int)
-            )
+            meta_grp.create_dataset("atomic_numbers", data=np.ones(n_atoms, dtype=int))
             meta_grp.create_dataset("n_atoms", data=n_atoms)
         return h5_path
 
@@ -1326,26 +1306,16 @@ class TestTrajectoryHdf5:
         with h5py.File(h5_path, "w") as f:
             steps_grp = f.create_group("steps")
             meta_grp = f.create_group("metadata")
-            meta_grp.create_dataset(
-                "atomic_numbers", data=np.ones(n_atoms, dtype=int)
-            )
+            meta_grp.create_dataset("atomic_numbers", data=np.ones(n_atoms, dtype=int))
             for s in range(n_steps):
                 sg = steps_grp.create_group(str(s))
-                sg.create_dataset(
-                    "images", data=np.random.randn(n_images, ndof)
-                )
-                sg.create_dataset(
-                    "energies", data=np.linspace(0, 1, n_images) + 0.01 * s
-                )
+                sg.create_dataset("images", data=np.random.randn(n_images, ndof))
+                sg.create_dataset("energies", data=np.linspace(0, 1, n_images) + 0.01 * s)
                 sg.create_dataset(
                     "gradients", data=np.random.randn(n_images, ndof) * 0.01
                 )
-                sg.create_dataset(
-                    "f_para", data=np.random.randn(n_images) * 0.1
-                )
-                sg.create_dataset(
-                    "rxn_coord", data=np.linspace(0, 3, n_images)
-                )
+                sg.create_dataset("f_para", data=np.random.randn(n_images) * 0.1)
+                sg.create_dataset("rxn_coord", data=np.linspace(0, 3, n_images))
         return h5_path
 
     def test_load_neb_result(self, tmp_path):
@@ -1409,9 +1379,7 @@ class TestTrajectoryHdf5:
         atomic_numbers = np.array([8, 1, 1])
         cell = np.eye(3).ravel() * 10.0
 
-        atoms_list = _reconstruct_atoms(
-            images, atomic_numbers, cell, gradients, energies
-        )
+        atoms_list = _reconstruct_atoms(images, atomic_numbers, cell, gradients, energies)
         assert len(atoms_list) == 2
         assert atoms_list[0].pbc.all()
         assert atoms_list[0].get_chemical_symbols() == ["O", "H", "H"]
@@ -1570,7 +1538,9 @@ class TestTrajectoryNeb:
 
         from chemparseplot.parse.trajectory.neb import load_trajectory
 
-        atoms_list = [Atoms("H2", positions=[[0, 0, 0], [0, 0, 0.74 + 0.01 * i]]) for i in range(3)]
+        atoms_list = [
+            Atoms("H2", positions=[[0, 0, 0], [0, 0, 0.74 + 0.01 * i]]) for i in range(3)
+        ]
         traj_file = str(tmp_path / "test.extxyz")
         ase_write(traj_file, atoms_list, format="extxyz")
 

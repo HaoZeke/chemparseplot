@@ -6,6 +6,7 @@
 Compares the old inline implementation (copied here as reference) against
 the new ``chemparseplot.parse.projection`` module.
 """
+
 import numpy as np
 
 from chemparseplot.parse.projection import (
@@ -94,9 +95,7 @@ class TestProjectionRefactorRegression:
     def test_extra_points_projection_matches(self):
         """Simulate the extra_points projection path."""
         rmsd_r, rmsd_p = self._make_neb_data()
-        _, _, r_start, p_start, u_r, u_p, v_r, v_p = _old_inline_project(
-            rmsd_r, rmsd_p
-        )
+        _, _, r_start, p_start, u_r, u_p, v_r, v_p = _old_inline_project(rmsd_r, rmsd_p)
         # Extra points
         rng = np.random.default_rng(99)
         extra = rng.uniform(0, 4, (5, 2))

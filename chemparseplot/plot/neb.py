@@ -224,9 +224,7 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
     return img_data
 
 
-def _render_atoms(
-    atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0
-):
+def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
@@ -330,8 +328,10 @@ def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
         for bond_idx, (i, j) in enumerate(zip(i_idx, j_idx, strict=False)):
             if i < j:
                 plotter.add_bond(
-                    positions[i], positions[j],
-                    colors[i], colors[j],
+                    positions[i],
+                    positions[j],
+                    colors[i],
+                    colors[j],
                     f"bond_{bond_idx}",
                     radius=0.08,
                 )
@@ -580,7 +580,15 @@ def plot_structure_inset(
 
 
 def plot_energy_path(
-    ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None,
+    ax,
+    rc,
+    energy,
+    f_para,
+    color,
+    alpha,
+    zorder,
+    method="hermite",
+    smoothing=None,
     label=None,
 ) -> Any:
     """Plots 1D energy profile with optional Hermite spline interpolation.
@@ -912,11 +920,13 @@ def plot_landscape_surface(
         if v_range < 1e-10:
             v_con = None
         else:
-            v_levs = sorted({
-                v_min + 0.05 * v_range,
-                v_min + variance_threshold * v_range,
-                v_min + 0.95 * v_range,
-            })
+            v_levs = sorted(
+                {
+                    v_min + 0.05 * v_range,
+                    v_min + variance_threshold * v_range,
+                    v_min + 0.95 * v_range,
+                }
+            )
 
             v_con = ax.contour(
                 xg,
@@ -1032,12 +1042,22 @@ def plot_landscape_path_overlay(
             triang = tri.Triangulation(bg_x, bg_y)
             bg_norm = plt.Normalize(all_z.min(), all_z.max())
             ax.tricontourf(
-                triang, all_z, levels=20, cmap=colormap, alpha=0.6,
-                norm=bg_norm, zorder=5,
+                triang,
+                all_z,
+                levels=20,
+                cmap=colormap,
+                alpha=0.6,
+                norm=bg_norm,
+                zorder=5,
             )
             ax.tricontour(
-                triang, all_z, levels=10, colors="k", alpha=0.15,
-                linewidths=0.4, zorder=6,
+                triang,
+                all_z,
+                levels=10,
+                colors="k",
+                alpha=0.15,
+                linewidths=0.4,
+                zorder=6,
             )
         except Exception:
             log.debug("Triangulation failed, skipping background contours.")

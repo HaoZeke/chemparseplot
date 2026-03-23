@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Tests for structure strip rendering, spacing, and dividers."""
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -113,12 +114,19 @@ class TestPlotStructureStrip:
     def test_dividers(self, small_molecules):
         fig, ax = plt.subplots(figsize=(8, 2))
         plot_structure_strip(
-            ax, small_molecules, ["A", "B", "C"],
-            show_dividers=True, divider_color="red", divider_style="-",
+            ax,
+            small_molecules,
+            ["A", "B", "C"],
+            show_dividers=True,
+            divider_color="red",
+            divider_style="-",
         )
         # Should have 2 divider lines (between 3 items)
-        [ln for ln in ax.lines if len(ln.get_xdata()) == 2
-                    and ln.get_xdata()[0] == ln.get_xdata()[1]]
+        [
+            ln
+            for ln in ax.lines
+            if len(ln.get_xdata()) == 2 and ln.get_xdata()[0] == ln.get_xdata()[1]
+        ]
         # axvline creates Line2D objects
         assert len(ax.lines) >= 2
         plt.close(fig)
@@ -159,7 +167,12 @@ class TestPlotStructureInset:
         fig, ax = plt.subplots()
         ax.plot([0, 1], [0, 1])
         plot_structure_inset(
-            ax, h2o, x=0.5, y=0.5, xybox=(30, 30), rad=0.2,
+            ax,
+            h2o,
+            x=0.5,
+            y=0.5,
+            xybox=(30, 30),
+            rad=0.2,
             arrow_props={"color": "red", "alpha": 0.5},
         )
         plt.close(fig)

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Batch coverage tests for under-covered modules."""
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -204,10 +205,12 @@ class TestCalculateLandscapeCoords:
         mock_ira = MagicMock()
 
         def fake_rmsd(atoms, ira, ref_atom, ira_kmax):
-            return np.array([
-                float(np.sqrt(((a.positions - ref_atom.positions) ** 2).mean()))
-                for a in atoms
-            ])
+            return np.array(
+                [
+                    float(np.sqrt(((a.positions - ref_atom.positions) ** 2).mean()))
+                    for a in atoms
+                ]
+            )
 
         with patch(
             "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
@@ -243,9 +246,7 @@ class TestCalculateLandscapeCoords:
         ):
             from chemparseplot.parse.neb_utils import calculate_landscape_coords
 
-            calculate_landscape_coords(
-                atoms_list, None, 1.8, ref_a=ref_a, ref_b=ref_b
-            )
+            calculate_landscape_coords(atoms_list, None, 1.8, ref_a=ref_a, ref_b=ref_b)
             assert len(captured_refs) == 2
             assert captured_refs[0] is ref_a
             assert captured_refs[1] is ref_b
@@ -356,9 +357,13 @@ class TestNebPlotFunctions:
         peak_p = np.array([1.5])
         peak_e = np.array([0.5])
         plot_mmf_peaks_overlay(
-            ax, peak_r, peak_p, peak_e,
+            ax,
+            peak_r,
+            peak_p,
+            peak_e,
             project_path=True,
-            path_rmsd_r=path_r, path_rmsd_p=path_p,
+            path_rmsd_r=path_r,
+            path_rmsd_p=path_p,
         )
         plt.close(fig)
 
@@ -367,7 +372,10 @@ class TestNebPlotFunctions:
 
         fig, ax = plt.subplots()
         plot_mmf_peaks_overlay(
-            ax, np.array([1.0]), np.array([2.0]), np.array([0.1]),
+            ax,
+            np.array([1.0]),
+            np.array([2.0]),
+            np.array([0.1]),
             project_path=False,
         )
         plt.close(fig)
@@ -430,6 +438,7 @@ class TestOpiParser:
         rmsd_p = np.array([3.0, 2.0, 1.0, 0.0])
         forces = [np.ones((3, 3)) for _ in range(4)]
         from ase.build import molecule
+
         atoms_list = [molecule("H2O") for _ in range(4)]
         gr, gp = _compute_synthetic_gradients(rmsd_r, rmsd_p, forces, atoms_list)
         assert len(gr) == 4
@@ -442,6 +451,7 @@ class TestOpiParser:
         rmsd_p = np.array([1.0, 0.0])
         forces = [None, None]
         from ase.build import molecule
+
         atoms_list = [molecule("H2O"), molecule("H2O")]
         gr, gp = _compute_synthetic_gradients(rmsd_r, rmsd_p, forces, atoms_list)
         np.testing.assert_array_equal(gr, np.zeros(2))

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Unit tests for the (s, d) projection module."""
+
 import numpy as np
 import pytest
 

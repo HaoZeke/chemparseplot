@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Tests for dimer trajectory parser."""
+
 import numpy as np
 import polars as pl
 import pytest

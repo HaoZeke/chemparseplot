@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Tests for minimization trajectory parser."""
+
 import numpy as np
 import polars as pl
 import pytest

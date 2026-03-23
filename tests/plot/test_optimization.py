@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 """Smoke tests for optimization plot functions."""
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -36,12 +37,14 @@ def synth_landscape_data():
 @pytest.fixture
 def synth_convergence_df():
     """Synthetic iteration DataFrame."""
-    return pl.DataFrame({
-        "iteration": list(range(10)),
-        "step_size": [0.1 * (0.9 ** i) for i in range(10)],
-        "convergence": [1.0 * (0.7 ** i) for i in range(10)],
-        "energy": [-10.0 - 0.5 * i for i in range(10)],
-    })
+    return pl.DataFrame(
+        {
+            "iteration": list(range(10)),
+            "step_size": [0.1 * (0.9**i) for i in range(10)],
+            "convergence": [1.0 * (0.7**i) for i in range(10)],
+            "energy": [-10.0 - 0.5 * i for i in range(10)],
+        }
+    )
 
 
 class TestPlotOptimizationProfile:
@@ -80,15 +83,20 @@ class TestPlotOptimizationProfile:
         fig, (ax, ax_ev) = plt.subplots(1, 2)
         iters = np.arange(5)
         plot_optimization_profile(
-            ax, iters, np.zeros(5),
-            eigenvalues=np.zeros(5), ax_eigen=ax_ev,
-            color="red", eigen_color="blue",
+            ax,
+            iters,
+            np.zeros(5),
+            eigenvalues=np.zeros(5),
+            ax_eigen=ax_ev,
+            color="red",
+            eigen_color="blue",
         )
         plt.close(fig)
 
 
 try:
     import jax
+
     _HAS_JAX = True
 except ImportError:
     _HAS_JAX = False
@@ -100,8 +108,14 @@ class TestPlotOptimizationLandscape:
         fig, ax = plt.subplots()
         rmsd_a, rmsd_b, grad_a, grad_b, z = synth_landscape_data
         plot_optimization_landscape(
-            ax, rmsd_a, rmsd_b, grad_a, grad_b, z,
-            project_path=True, label_mode="optimization",
+            ax,
+            rmsd_a,
+            rmsd_b,
+            grad_a,
+            grad_b,
+            z,
+            project_path=True,
+            label_mode="optimization",
         )
         assert "Optimization" in ax.get_xlabel()
         assert "Lateral" in ax.get_ylabel()
@@ -111,7 +125,12 @@ class TestPlotOptimizationLandscape:
         fig, ax = plt.subplots()
         rmsd_a, rmsd_b, grad_a, grad_b, z = synth_landscape_data
         plot_optimization_landscape(
-            ax, rmsd_a, rmsd_b, grad_a, grad_b, z,
+            ax,
+            rmsd_a,
+            rmsd_b,
+            grad_a,
+            grad_b,
+            z,
             project_path=False,
         )
         assert "ref A" in ax.get_xlabel()
@@ -121,7 +140,12 @@ class TestPlotOptimizationLandscape:
         fig, ax = plt.subplots()
         rmsd_a, rmsd_b, grad_a, grad_b, z = synth_landscape_data
         plot_optimization_landscape(
-            ax, rmsd_a, rmsd_b, grad_a, grad_b, z,
+            ax,
+            rmsd_a,
+            rmsd_b,
+            grad_a,
+            grad_b,
+            z,
             label_mode="reaction",
         )
         assert "Reaction" in ax.get_xlabel()
@@ -137,15 +161,21 @@ class TestPlotConvergencePanel:
         plt.close(fig)
 
     def test_custom_columns(self):
-        df = pl.DataFrame({
-            "it": [0, 1, 2],
-            "frc": [1.0, 0.5, 0.1],
-            "stp": [0.1, 0.08, 0.05],
-        })
+        df = pl.DataFrame(
+            {
+                "it": [0, 1, 2],
+                "frc": [1.0, 0.5, 0.1],
+                "stp": [0.1, 0.08, 0.05],
+            }
+        )
         fig, (ax_f, ax_s) = plt.subplots(1, 2)
         plot_convergence_panel(
-            ax_f, ax_s, df,
-            force_col="frc", step_col="stp", iter_col="it",
+            ax_f,
+            ax_s,
+            df,
+            force_col="frc",
+            step_col="stp",
+            iter_col="it",
         )
         plt.close(fig)
 
