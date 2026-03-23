@@ -795,10 +795,15 @@ def plot_landscape_surface(
         xg_1d = np.linspace(
             s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
         )
-        # Y-grid: same span as X (preserves aspect=equal), centered at 0
+        # Y-grid: match X span (preserves aspect=equal) with padding.
+        # The caller may expand axes via set_ylim after path overlay,
+        # so add 20% padding beyond x_span/2 to avoid contourf gaps.
         x_span = xg_1d.max() - xg_1d.min()
-        y_half = x_span / 2
-        yg_1d = np.linspace(-y_half, y_half, 150)
+        y_half = x_span / 2 * 1.2
+        d_center = (d_max + d_min) / 2
+        y_lo = min(-y_half, d_center - y_half)
+        y_hi = max(y_half, d_center + y_half)
+        yg_1d = np.linspace(y_lo, y_hi, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
