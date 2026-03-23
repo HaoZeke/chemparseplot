@@ -1,0 +1,100 @@
+# {py:mod}`chemparseplot.plot.optimization`
+
+```{py:module} chemparseplot.plot.optimization
+```
+
+```{autodoc2-docstring} chemparseplot.plot.optimization
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`plot_optimization_landscape <chemparseplot.plot.optimization.plot_optimization_landscape>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization.plot_optimization_landscape
+    :summary:
+    ```
+* - {py:obj}`plot_optimization_profile <chemparseplot.plot.optimization.plot_optimization_profile>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization.plot_optimization_profile
+    :summary:
+    ```
+* - {py:obj}`plot_convergence_panel <chemparseplot.plot.optimization.plot_convergence_panel>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization.plot_convergence_panel
+    :summary:
+    ```
+* - {py:obj}`plot_dimer_mode_evolution <chemparseplot.plot.optimization.plot_dimer_mode_evolution>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization.plot_dimer_mode_evolution
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.plot.optimization.log>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization.log
+    :summary:
+    ```
+* - {py:obj}`_LABELS <chemparseplot.plot.optimization._LABELS>`
+  - ```{autodoc2-docstring} chemparseplot.plot.optimization._LABELS
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.plot.optimization.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.plot.optimization.log
+```
+
+````
+
+````{py:data} _LABELS
+:canonical: chemparseplot.plot.optimization._LABELS
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.plot.optimization._LABELS
+```
+
+````
+
+````{py:function} plot_optimization_landscape(ax, rmsd_a: numpy.ndarray, rmsd_b: numpy.ndarray, grad_a: numpy.ndarray, grad_b: numpy.ndarray, z_data: numpy.ndarray, *, label_mode: str = 'optimization', project_path: bool = True, method: str = 'grad_matern', cmap: str = 'viridis', z_label: str = 'Energy (eV)', **surface_kwargs) -> typing.Any
+:canonical: chemparseplot.plot.optimization.plot_optimization_landscape
+
+```{autodoc2-docstring} chemparseplot.plot.optimization.plot_optimization_landscape
+```
+````
+
+````{py:function} plot_optimization_profile(ax, iterations: numpy.ndarray, energies: numpy.ndarray, *, eigenvalues: numpy.ndarray | None = None, ax_eigen: typing.Any = None, color: str = '#004D40', eigen_color: str = '#FF655D') -> None
+:canonical: chemparseplot.plot.optimization.plot_optimization_profile
+
+```{autodoc2-docstring} chemparseplot.plot.optimization.plot_optimization_profile
+```
+````
+
+````{py:function} plot_convergence_panel(ax_force, ax_step, dat_df: polars.DataFrame, *, force_col: str = 'convergence', step_col: str = 'step_size', iter_col: str = 'iteration', color: str = '#004D40') -> None
+:canonical: chemparseplot.plot.optimization.plot_convergence_panel
+
+```{autodoc2-docstring} chemparseplot.plot.optimization.plot_convergence_panel
+```
+````
+
+````{py:function} plot_dimer_mode_evolution(ax, mode_vectors: list[numpy.ndarray], *, color: str = '#004D40') -> None
+:canonical: chemparseplot.plot.optimization.plot_dimer_mode_evolution
+
+```{autodoc2-docstring} chemparseplot.plot.optimization.plot_dimer_mode_evolution
+```
+````

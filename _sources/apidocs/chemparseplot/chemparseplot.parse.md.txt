@@ -13,6 +13,7 @@
 :titlesonly:
 :maxdepth: 3
 
+chemparseplot.parse.eon
 chemparseplot.parse.orca
 chemparseplot.parse.trajectory
 ```
@@ -23,6 +24,7 @@ chemparseplot.parse.trajectory
 :titlesonly:
 :maxdepth: 1
 
+chemparseplot.parse.projection
 chemparseplot.parse.chemgp_hdf5
 chemparseplot.parse.patterns
 chemparseplot.parse.converter

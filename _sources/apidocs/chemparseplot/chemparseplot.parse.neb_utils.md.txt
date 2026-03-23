@@ -53,7 +53,7 @@
 
 ````
 
-````{py:function} calculate_landscape_coords(atoms_list: list[ase.Atoms], ira_instance, ira_kmax: float) -> tuple[numpy.ndarray, numpy.ndarray]
+````{py:function} calculate_landscape_coords(atoms_list: list[ase.Atoms], ira_instance, ira_kmax: float, ref_a: ase.Atoms | None = None, ref_b: ase.Atoms | None = None) -> tuple[numpy.ndarray, numpy.ndarray]
 :canonical: chemparseplot.parse.neb_utils.calculate_landscape_coords
 
 ```{autodoc2-docstring} chemparseplot.parse.neb_utils.calculate_landscape_coords

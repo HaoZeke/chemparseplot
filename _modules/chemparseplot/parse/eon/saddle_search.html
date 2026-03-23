@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>chemparseplot.parse.eon.saddle_search &#8212; chemparseplot 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=c03c27c6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/library/library.css?v=fa49c7df" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <script src="../../../../_static/documentation_options.js?v=1f29e9d3"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=1ae7504c"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/_modules/chemparseplot/parse/eon/saddle_search.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+
+ 
+
+<link rel="stylesheet" id="sphinx-library-type" href="../../../../_static/library/type-book.css" type="text/css" />
+<link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+<meta name="viewport" content="width=device-width, initial-scale=0.9" />
+<script>
+  mobile_menu_content = "";
+  function toggleMenu() {
+    var div = document.getElementsByClassName("document").item(0);
+    var btn = document.getElementById("menu-toggler");
+    if(div.classList.contains("mobile-show")) {
+      div.classList.remove("mobile-show");
+      btn.innerHTML = mobile_menu_content;
+    }
+    else {
+      div.classList.add("mobile-show");
+      mobile_menu_content = btn.innerHTML;
+      btn.innerHTML = btn.getAttribute("data-open");
+    }
+  }
+</script>
+<script defer src="https://analytics.turtletech.us/script.js" data-website-id="95def988-c3e6-4297-9d39-cc3b3032703e"></script>
+<script>window.umami=window.umami||{track:function(){}};document.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname)umami.track('Outbound Link',{url:a.href})});</script>
+
+  </head>
+<body class="sepia">
+<div class="document">
+
+  
+  <nav class="mobile-menu" role="navigation">
+    
+  <button type="button" id="menu-toggler" onclick="toggleMenu();"
+    data-open="× Close">≡ Menu</button>
+  <a href="../../../../index.html">chemparseplot</a>
+  <noscript>
+    <div>
+      JavaScript is required to open/close mobile menu.
+    </div>
+  </noscript>
+  </nav>
+  
+
+  
+  <nav class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    
+
+
+<h1 class="logo ">
+  <a href="../../../../index.html">chemparseplot</a>
+</h1>
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+<h3>Links</h3>
+<ul>
+  
+  <li class="toctree-l1"><a href="https://github.com/HaoZeke/chemparseplot">Github</a></li>
+  
+  <li class="toctree-l1"><a href="https://rgoswami.me">Personal</a></li>
+  
+</ul>
+<h3>Contents</h3>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../features.html">Features</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/index.html">Tutorial Introduction</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidocs/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../used_by.html">Used By</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../worklog/graphTrials.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../worklog/graphTrials.html#one-shot-multi-plot">One-shot multi-plot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../worklog/graphTrials.html#interactive-plots">Interactive plots</a></li>
+</ul>
+<script>
+  function toggleMode(theme) {
+    document.body.className = theme;
+    localStorage.setItem("sphinx-library-mode", theme);
+  }
+  var theme = localStorage.getItem("sphinx-library-mode");
+  if(theme !== null)
+    toggleMode(theme);
+</script>
+<h3>Reading Mode</h3>
+
+<button type="button" onclick="toggleMode('light');">Light</button>
+<button type="button" onclick="toggleMode('sepia');">Sepia</button>
+<button type="button" onclick="toggleMode('dark');">Dark</button>
+
+<noscript>
+  <div>
+    JavaScript is required to toggle reading modes.
+  </div>
+</noscript>
+  </nav>
+  <div class="documentwrapper">
+    <nav class="related breadcrumbs" role="navigation">
+  <a class="nav-item" href="../../../../index.html">Index</a>
+  <span class="delim"> &#187;</span>
+  <a class="nav-item" href="../../../index.html">Module code</a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.eon.saddle_search</span>
+    </nav>
+    
+
+    <main class="body" role="main" id="main">
+      
+  <h1>Source code for chemparseplot.parse.eon.saddle_search</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.basetypes</span><span class="w"> </span><span class="kn">import</span> <span class="n">DimerOpt</span><span class="p">,</span> <span class="n">MolGeom</span><span class="p">,</span> <span class="n">SaddleMeasure</span><span class="p">,</span> <span class="n">SpinID</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.parsers.bless</span><span class="w"> </span><span class="kn">import</span> <span class="n">BLESS_LOG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.parsers.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">_NUM</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rgpycrumbs.search.helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">tail</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EONSaddleStatus">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search.EONSaddleStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EONSaddleStatus</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Status codes returned by eOn saddle point searches.</span>
+
+<span class="sd">    ```{versionadded} 0.0.3</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># See SaddleSearchJob.cpp for the ordering</span>
+    <span class="c1"># (numerical_status, descriptive_string)</span>
+    <span class="n">GOOD</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Success&quot;</span>
+    <span class="n">INIT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Initial&quot;</span>  <span class="c1"># Should never show up, before run</span>
+    <span class="n">BAD_NO_CONVEX</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Initial displacement unable to reach convex region&quot;</span>
+    <span class="n">BAD_HIGH_ENERGY</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Barrier too high&quot;</span>
+    <span class="n">BAD_MAX_CONCAVE_ITERATIONS</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Too many iterations in concave region&quot;</span>
+    <span class="n">BAD_MAX_ITERATIONS</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;Too many iterations&quot;</span>
+    <span class="n">BAD_NOT_CONNECTED</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;Saddle is not connected to initial state&quot;</span>
+    <span class="n">BAD_PREFACTOR</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;Prefactors not within window&quot;</span>
+    <span class="n">BAD_HIGH_BARRIER</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;Energy barrier not within window&quot;</span>
+    <span class="n">BAD_MINIMA</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span> <span class="s2">&quot;Minimizations from saddle did not converge&quot;</span>
+    <span class="n">FAILED_PREFACTOR</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;Hessian calculation failed&quot;</span>
+    <span class="n">POTENTIAL_FAILED</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;Potential failed&quot;</span>
+    <span class="n">NONNEGATIVE_ABORT</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="s2">&quot;Nonnegative initial mode, aborting&quot;</span>
+    <span class="n">NONLOCAL_ABORT</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span> <span class="s2">&quot;Nonlocal abort&quot;</span>
+    <span class="n">NEGATIVE_BARRIER</span> <span class="o">=</span> <span class="mi">14</span><span class="p">,</span> <span class="s2">&quot;Negative barrier detected&quot;</span>
+    <span class="n">BAD_MD_TRAJECTORY_TOO_SHORT</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;No reaction found during MD trajectory&quot;</span>
+    <span class="n">BAD_NO_NEGATIVE_MODE_AT_SADDLE</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">16</span><span class="p">,</span>
+        <span class="s2">&quot;Converged to stationary point with zero negative modes&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">BAD_NO_BARRIER</span> <span class="o">=</span> <span class="mi">17</span><span class="p">,</span> <span class="s2">&quot;No forward barrier was found along minimized band&quot;</span>
+    <span class="n">ZEROMODE_ABORT</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span> <span class="s2">&quot;Zero mode abort.&quot;</span>
+    <span class="n">OPTIMIZER_ERROR</span> <span class="o">=</span> <span class="mi">19</span><span class="p">,</span> <span class="s2">&quot;Optimizer error.&quot;</span>
+    <span class="n">UNKNOWN</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Unknown status&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+<div class="viewcode-block" id="EONSaddleStatus.from_value">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search.EONSaddleStatus.from_value">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">cls</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">member</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">UNKNOWN</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="extract_saddle_gprd">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search.extract_saddle_gprd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_saddle_gprd</span><span class="p">(</span><span class="n">log</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract saddle point geometry from GPRD log lines.</span>
+
+<span class="sd">    ```{versionadded} 0.0.3</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logdata</span> <span class="o">=</span> <span class="p">[</span><span class="n">BLESS_LOG</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;logdata&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">log</span><span class="p">]</span>
+    <span class="n">numdat</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">logdata</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()):</span>
+            <span class="n">numdat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">_NUM</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="n">numdat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_NUM</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+    <span class="c1"># TODO(rg): There&#39;s got to be a cleaner way..</span>
+    <span class="c1"># assert len(numdat) == 3, f&quot;numdat: {numdat} for log:\n{log}&quot;</span>
+    <span class="k">return</span> <span class="n">MolGeom</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">numdat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">energy</span><span class="o">=</span><span class="n">numdat</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">forces</span><span class="o">=</span><span class="n">numdat</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="_read_results_dat">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._read_results_dat">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_results_dat</span><span class="p">(</span><span class="n">eresp</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads and parses the results.dat file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        eresp: Path to the eOn results directory.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary containing the parsed data from results.dat, or None if the file</span>
+<span class="sd">        does not exist or the termination reason is not 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">respth</span> <span class="o">=</span> <span class="n">eresp</span> <span class="o">/</span> <span class="s2">&quot;results.dat&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">respth</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">rdat</span> <span class="o">=</span> <span class="n">respth</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+    <span class="n">termination_int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+) termination_reason&quot;</span><span class="p">,</span> <span class="n">rdat</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">termination_reason</span> <span class="o">=</span> <span class="n">EONSaddleStatus</span><span class="o">.</span><span class="n">from_value</span><span class="p">(</span><span class="n">termination_int</span><span class="p">)</span>
+    <span class="n">term_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;termination_status&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">termination_reason</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">termination_reason</span> <span class="o">!=</span> <span class="n">EONSaddleStatus</span><span class="o">.</span><span class="n">GOOD</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">term_dict</span>
+
+    <span class="n">results_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;pes_calls&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+) total_force_calls&quot;</span><span class="p">,</span> <span class="n">rdat</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;iter_steps&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+) iterations&quot;</span><span class="p">,</span> <span class="n">rdat</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="s2">&quot;saddle_energy&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(-?\d+\.\d+) potential_energy_saddle&quot;</span><span class="p">,</span> <span class="n">rdat</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">results_data</span> <span class="o">|=</span> <span class="n">term_dict</span>
+    <span class="k">return</span> <span class="n">results_data</span></div>
+
+
+
+<div class="viewcode-block" id="_find_log_file">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._find_log_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_log_file</span><span class="p">(</span><span class="n">eresp</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Finds the most recent, valid log file within the eOn results directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        eresp: Path to the eOn results directory.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Path to the chosen log file, or None if no suitable log file is found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">eresp</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.log.gz&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">log_files</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;*.log.gz not found for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">eresp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># Sort log files by modification time (most recent first)</span>
+    <span class="n">log_files</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">log_files</span><span class="p">:</span>
+        <span class="n">last_lines</span> <span class="o">=</span> <span class="n">tail</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># Get the last 5 lines</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">last_lines</span><span class="p">:</span>  <span class="c1"># if tail fails, move onto next file.</span>
+            <span class="k">continue</span>
+        <span class="n">fcheck</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">last_lines</span> <span class="k">if</span> <span class="s2">&quot;Fail&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fcheck</span><span class="p">:</span>  <span class="c1"># If &quot;Fail&quot; is NOT in any of the last 5 lines</span>
+            <span class="k">return</span> <span class="n">f</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No valid log files found in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">eresp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="_extract_total_time">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._extract_total_time">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_total_time</span><span class="p">(</span><span class="n">log_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts the total run time from the log data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        log_data: A list of strings representing the lines of the log file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The total run time in seconds as a float, or 0.0 if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tot_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;INFO] real\s*(?P&lt;realtime&gt;\d*\.+\d*)&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_data</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:]),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;realtime&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="n">tot_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="n">tot_time</span></div>
+
+
+
+<div class="viewcode-block" id="_extract_initial_energy">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._extract_initial_energy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_initial_energy</span><span class="p">(</span><span class="n">log_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts the initial energy from the log data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        log_data: A list of strings representing the lines of the log file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The initial energy as a float, or None if not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start_saddle_line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">log_data</span> <span class="k">if</span> <span class="s2">&quot;Saddle point search started from&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">),</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">start_saddle_line</span><span class="p">:</span>
+        <span class="n">init_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;Saddle point search started from reactant with energy (-?\d+\.\d+) eV.&quot;</span><span class="p">,</span>
+                <span class="n">start_saddle_line</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">init_energy</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="_extract_saddle_info">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._extract_saddle_info">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_saddle_info</span><span class="p">(</span>
+    <span class="n">log_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">eresp</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">is_gprd</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts saddle point information (saddle_fmax and method) from the log data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        log_data: A list of strings representing the lines of the log file.</span>
+<span class="sd">        eresp: Path to the eOn results directory.</span>
+<span class="sd">        is_gprd: Boolean flag indicating whether the GPRD method was used.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple containing:</span>
+<span class="sd">        - saddle_fmax: The maximum force at the saddle point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start_line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;Elapsed time&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">),</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">end_line</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;timing information&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_gprd</span> <span class="ow">and</span> <span class="n">start_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">saddle</span> <span class="o">=</span> <span class="n">extract_saddle_gprd</span><span class="p">(</span><span class="n">log_data</span><span class="p">[</span><span class="n">start_line</span><span class="p">:</span><span class="n">end_line</span><span class="p">])</span>
+        <span class="n">saddle_fmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">saddle</span><span class="o">.</span><span class="n">forces</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">is_gprd</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Expected header: Step, Step Size, Delta E, ||Force||</span>
+            <span class="c1"># ||Force|| is the 5th element (index 4)</span>
+            <span class="n">saddle_fmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">eresp</span> <span class="o">/</span> <span class="s2">&quot;client_spdlog.log&quot;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">5</span><span class="p">:][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+            <span class="n">saddle_fmax</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">saddle_fmax</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">saddle_fmax</span></div>
+
+
+
+<div class="viewcode-block" id="_get_methods">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search._get_methods">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_methods</span><span class="p">(</span><span class="n">eresp</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DimerOpt</span><span class="p">:</span>
+    <span class="n">_conf</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">_conf</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">eresp</span> <span class="o">/</span> <span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;Saddle Search&quot;</span><span class="p">][</span><span class="s2">&quot;min_mode_method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;gprdimer&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DimerOpt</span><span class="p">(</span>
+            <span class="n">saddle</span><span class="o">=</span><span class="s2">&quot;GPRD&quot;</span><span class="p">,</span>
+            <span class="n">rot</span><span class="o">=</span><span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;GPR Dimer&quot;</span><span class="p">][</span><span class="s2">&quot;rotation_opt_method&quot;</span><span class="p">],</span>
+            <span class="n">trans</span><span class="o">=</span><span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;GPR Dimer&quot;</span><span class="p">][</span><span class="s2">&quot;translation_opt_method&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;Saddle Search&quot;</span><span class="p">][</span><span class="s2">&quot;min_mode_method&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;dimer&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DimerOpt</span><span class="p">(</span>
+            <span class="n">saddle</span><span class="o">=</span><span class="s2">&quot;IDimer&quot;</span><span class="p">,</span>
+            <span class="c1"># XXX: This is basically the default</span>
+            <span class="n">rot</span><span class="o">=</span><span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;Dimer&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;opt_method&quot;</span><span class="p">,</span> <span class="s2">&quot;cg&quot;</span><span class="p">),</span>
+            <span class="n">trans</span><span class="o">=</span><span class="n">_conf</span><span class="p">[</span><span class="s2">&quot;Optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;opt_method&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">errmsg</span> <span class="o">=</span> <span class="s2">&quot;Clearly wrong..&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">errmsg</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_eon_saddle">
+<a class="viewcode-back" href="../../../../apidocs/chemparseplot/chemparseplot.parse.eon.saddle_search.html#chemparseplot.parse.eon.saddle_search.parse_eon_saddle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_eon_saddle</span><span class="p">(</span><span class="n">eresp</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">rloc</span><span class="p">:</span> <span class="s2">&quot;SpinID&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SaddleMeasure&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses eOn saddle point search results from a directory.</span>
+
+<span class="sd">    ```{versionadded} 0.0.3</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        eresp: Path to the directory containing eOn results.</span>
+<span class="sd">        rloc: A SpinID object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A SaddleMeasure object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">meth</span> <span class="o">=</span> <span class="n">_get_methods</span><span class="p">(</span><span class="n">eresp</span><span class="p">)</span>
+    <span class="n">is_gprd</span> <span class="o">=</span> <span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;gprd&quot;</span>
+    <span class="c1"># 1. Read results.dat</span>
+    <span class="n">results_data</span> <span class="o">=</span> <span class="n">_read_results_dat</span><span class="p">(</span><span class="n">eresp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">results_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SaddleMeasure</span><span class="p">(</span>
+            <span class="n">mol_id</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;mol_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">spin</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="p">,</span>
+            <span class="n">dimer_rot</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
+            <span class="n">dimer_trans</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">results_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="p">[</span><span class="s2">&quot;termination_status&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">SaddleMeasure</span><span class="p">(</span>
+            <span class="n">mol_id</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;mol_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">spin</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="p">,</span>
+            <span class="n">dimer_rot</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
+            <span class="n">dimer_trans</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span>
+            <span class="n">termination_status</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;termination_status&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="c1"># 2. Find the log file</span>
+    <span class="n">log_file</span> <span class="o">=</span> <span class="n">_find_log_file</span><span class="p">(</span><span class="n">eresp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">log_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SaddleMeasure</span><span class="p">(</span>
+            <span class="n">pes_calls</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;pes_calls&quot;</span><span class="p">],</span>
+            <span class="n">iter_steps</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;iter_steps&quot;</span><span class="p">],</span>
+            <span class="n">saddle_energy</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;saddle_energy&quot;</span><span class="p">],</span>
+            <span class="n">tot_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">saddle_fmax</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="p">,</span>
+            <span class="n">dimer_rot</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
+            <span class="n">dimer_trans</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span>
+            <span class="n">mol_id</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;mol_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">spin</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">termination_status</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;termination_status&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="c1"># 3. Parse the log file</span>
+    <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">log_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1"># 4. Extract data from the log file</span>
+    <span class="n">tot_time</span> <span class="o">=</span> <span class="n">_extract_total_time</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span>
+    <span class="n">init_energy</span> <span class="o">=</span> <span class="n">_extract_initial_energy</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span>
+    <span class="n">saddle_fmax</span> <span class="o">=</span> <span class="n">_extract_saddle_info</span><span class="p">(</span><span class="n">log_data</span><span class="p">,</span> <span class="n">eresp</span><span class="p">,</span> <span class="n">is_gprd</span><span class="o">=</span><span class="n">is_gprd</span><span class="p">)</span>
+
+    <span class="c1"># 5. Construct and return SaddleMeasure</span>
+    <span class="k">if</span> <span class="n">tot_time</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">meth</span><span class="o">.</span><span class="n">saddle</span> <span class="o">==</span> <span class="s2">&quot;IDimer&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">SaddleMeasure</span><span class="p">(</span>
+            <span class="n">mol_id</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;mol_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">spin</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="p">,</span>
+            <span class="n">dimer_rot</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
+            <span class="n">dimer_trans</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span>
+            <span class="n">pes_calls</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;pes_calls&quot;</span><span class="p">],</span>
+            <span class="n">iter_steps</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;iter_steps&quot;</span><span class="p">],</span>
+            <span class="n">saddle_energy</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;saddle_energy&quot;</span><span class="p">],</span>
+            <span class="n">termination_status</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;termination_status&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">SaddleMeasure</span><span class="p">(</span>
+        <span class="n">pes_calls</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;pes_calls&quot;</span><span class="p">],</span>
+        <span class="n">iter_steps</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;iter_steps&quot;</span><span class="p">],</span>
+        <span class="n">tot_time</span><span class="o">=</span><span class="n">tot_time</span><span class="p">,</span>
+        <span class="n">saddle_energy</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;saddle_energy&quot;</span><span class="p">],</span>
+        <span class="n">saddle_fmax</span><span class="o">=</span><span class="n">saddle_fmax</span><span class="p">,</span>
+        <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">saddle</span><span class="p">,</span>
+        <span class="n">dimer_rot</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">rot</span><span class="p">,</span>
+        <span class="n">dimer_trans</span><span class="o">=</span><span class="n">meth</span><span class="o">.</span><span class="n">trans</span><span class="p">,</span>
+        <span class="n">init_energy</span><span class="o">=</span><span class="n">init_energy</span><span class="p">,</span>
+        <span class="n">barrier</span><span class="o">=</span><span class="p">(</span>
+            <span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;saddle_energy&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">init_energy</span>
+            <span class="k">if</span> <span class="n">init_energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">),</span>
+        <span class="n">mol_id</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;mol_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">spin</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">rloc</span><span class="p">,</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">termination_status</span><span class="o">=</span><span class="n">results_data</span><span class="p">[</span><span class="s2">&quot;termination_status&quot;</span><span class="p">],</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+    </main>
+    <nav class="related bottom" role="navigation">
+  <div class="clear"></div>
+    </nav>
+    
+
+  </div>
+
+  <div class="clear"></div>
+</div>
+<footer class="footer" role="contentinfo">
+  &copy; Copyright 2023-2026, <a href="https://rgoswami.me" style="color:inherit;text-decoration:underline;">Rohit Goswami</a>.
+  Created using <a href="http://sphinx-doc.org/">Sphinx</a> with
+  <a href="https://github.com/vsalvino/sphinx-library">Library</a> theme.
+
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5rem;margin:1.5rem 0;color:#666;font-size:0.9em;">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;align-items:center;">
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M7,20H4V4h3V20z M14,20h-3V12h3V20z M21,20h-3V8h3V20z"/>
+        </svg>
+<span>Analytics by
+          <a href="https://analytics.turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">Umami</a>
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:0.3em;">
+        <span>provided by</span>
+        <span style="display:inline-flex;align-items:center;gap:0.3em;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.2em" height="1.2em" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill-rule="evenodd">
+              <ellipse cx="32" cy="11" fill="#80D25B" rx="7" ry="9"/>
+              <path fill="#80D25B" d="M20.302104,46 C20.302104,46 17.1330329,55.8812548 20.6828149,59.7817355 C24.232597,63.6822162 26.8008673,63.215359 26.8008673,53.7414927 C26.8008673,44.2676263 20.302104,46 20.302104,46 Z"/>
+              <path fill="#80D25B" d="M38.302104,46 C38.302104,46 35.1330329,55.8812548 38.6828149,59.7817355 C42.232597,63.6822162 44.8008673,63.215359 44.8008673,53.7414927 C44.8008673,44.2676263 38.302104,46 38.302104,46 Z" transform="matrix(-1 0 0 1 81.8 0)"/>
+              <path fill="#80D25B" d="M20.6227767,21.2218684 C20.6227767,21.2218684 13.956214,15.3844007 10.091955,16.0534044 C6.22769598,16.722408 6,22.2124633 6,23.9992899 C6,25.7861165 7.78917398,37.3159836 9.78726488,36.4967476 C11.7853558,35.6775115 13.7411938,27.959322 13.7411938,27.959322 15.6510232,30.2287702 18.609193,30.4630388"/>
+              <path fill="#80D25B" d="M57.6227767,21.2218684 C57.6227767,21.2218684 50.956214,15.3844007 47.091955,16.0534044 C43.227696,16.722408 43,22.2124633 43,23.9992899 C43,25.7861165 44.789174,37.3159836 46.7872649,36.4967476 C48.7853558,35.6775115 50.7411938,27.959322 50.7411938,27.959322 52.6510232,30.2287702 55.609193,30.4630388" transform="matrix(-1 0 0 1 100.623 0)"/>
+              <path fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32,53 C40.836556,53 48,44.4934102 48,34 C48,23.5065898 46.6814044,17 32,17 C17.3185956,17 16,23.5065898 16,34 C16,44.4934102 23.163444,53 32,53 Z"/>
+              <polygon fill="#BD7575" stroke="#595959" stroke-linecap="round" stroke-width="2" points="32 22 38.928 26 38.928 34 32 38 25.072 34 25.072 26"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M30,8 C28.8954305,8 28,8.8954305 28,10"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M36,8 C34.8954305,8 34,8.8954305 34,10" transform="matrix(-1 0 0 1 70 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M32.1194396 38.1881507L32.1194396 52.4125899M32.0164956 21.7467197L32.0164956 17M25.2141026 26.0041506L17.737148 23.0721126M25.1254173 34.1534318L16.7659494 38.8876521"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M46.2141026,26.0041506 L38.737148,23.0721126" transform="matrix(-1 0 0 1 84.951 0)"/>
+              <path stroke="#595959" stroke-linecap="round" stroke-width="2" d="M47.1254173,34.1534318 L38.7659494,38.8876521" transform="matrix(-1 0 0 1 85.891 0)"/>
+            </g>
+          </svg>
+          <a href="https://turtletech.us/" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:underline;">TurtleTech ehf</a>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+  </body>
+</html>

@@ -35,8 +35,28 @@
   - ```{autodoc2-docstring} chemparseplot.plot.neb._check_xyzrender
     :summary:
     ```
+* - {py:obj}`_apply_perspective_tilt <chemparseplot.plot.neb._apply_perspective_tilt>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._apply_perspective_tilt
+    :summary:
+    ```
+* - {py:obj}`_parse_rotation_angles <chemparseplot.plot.neb._parse_rotation_angles>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._parse_rotation_angles
+    :summary:
+    ```
 * - {py:obj}`_render_xyzrender <chemparseplot.plot.neb._render_xyzrender>`
   - ```{autodoc2-docstring} chemparseplot.plot.neb._render_xyzrender
+    :summary:
+    ```
+* - {py:obj}`_render_atoms <chemparseplot.plot.neb._render_atoms>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._render_atoms
+    :summary:
+    ```
+* - {py:obj}`_render_solvis <chemparseplot.plot.neb._render_solvis>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._render_solvis
+    :summary:
+    ```
+* - {py:obj}`_render_ovito <chemparseplot.plot.neb._render_ovito>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb._render_ovito
     :summary:
     ```
 * - {py:obj}`plot_structure_strip <chemparseplot.plot.neb.plot_structure_strip>`
@@ -69,6 +89,14 @@
     ```
 * - {py:obj}`plot_landscape_path_overlay <chemparseplot.plot.neb.plot_landscape_path_overlay>`
   - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
+    :summary:
+    ```
+* - {py:obj}`plot_mmf_peaks_overlay <chemparseplot.plot.neb.plot_mmf_peaks_overlay>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_mmf_peaks_overlay
+    :summary:
+    ```
+* - {py:obj}`plot_neb_evolution <chemparseplot.plot.neb.plot_neb_evolution>`
+  - ```{autodoc2-docstring} chemparseplot.plot.neb.plot_neb_evolution
     :summary:
     ```
 * - {py:obj}`plot_orca_neb_profile <chemparseplot.plot.neb.plot_orca_neb_profile>`
@@ -181,28 +209,63 @@
 ```
 ````
 
-````{py:function} _render_xyzrender(atoms, canvas_size=400)
+````{py:function} _apply_perspective_tilt(atoms, tilt_deg=8.0)
+:canonical: chemparseplot.plot.neb._apply_perspective_tilt
+
+```{autodoc2-docstring} chemparseplot.plot.neb._apply_perspective_tilt
+```
+````
+
+````{py:function} _parse_rotation_angles(rotation_str)
+:canonical: chemparseplot.plot.neb._parse_rotation_angles
+
+```{autodoc2-docstring} chemparseplot.plot.neb._parse_rotation_angles
+```
+````
+
+````{py:function} _render_xyzrender(atoms, rotation='auto', canvas_size=400)
 :canonical: chemparseplot.plot.neb._render_xyzrender
 
 ```{autodoc2-docstring} chemparseplot.plot.neb._render_xyzrender
 ```
 ````
 
-````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='ase') -> typing.Any
+````{py:function} _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0)
+:canonical: chemparseplot.plot.neb._render_atoms
+
+```{autodoc2-docstring} chemparseplot.plot.neb._render_atoms
+```
+````
+
+````{py:function} _render_solvis(atoms, rotation='0x,90y,0z', canvas_size=400)
+:canonical: chemparseplot.plot.neb._render_solvis
+
+```{autodoc2-docstring} chemparseplot.plot.neb._render_solvis
+```
+````
+
+````{py:function} _render_ovito(atoms, rotation='0x,90y,0z', canvas_size=400)
+:canonical: chemparseplot.plot.neb._render_ovito
+
+```{autodoc2-docstring} chemparseplot.plot.neb._render_ovito
+```
+````
+
+````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='xyzrender', col_spacing=1.5, show_dividers=False, divider_color='gray', divider_style='--', perspective_tilt=0.0) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_strip
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
 ```
 ````
 
-````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='ase') -> typing.Any
+````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='xyzrender', perspective_tilt=0.0) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_inset
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
 ```
 ````
 
-````{py:function} plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method='hermite', smoothing=None) -> typing.Any
+````{py:function} plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method='hermite', smoothing=None, label=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_energy_path
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_energy_path
@@ -237,10 +300,24 @@
 ```
 ````
 
-````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True) -> typing.Any
+````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True, all_r=None, all_p=None, all_z=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_landscape_path_overlay
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
+```
+````
+
+````{py:function} plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True, path_rmsd_r=None, path_rmsd_p=None) -> None
+:canonical: chemparseplot.plot.neb.plot_mmf_peaks_overlay
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_mmf_peaks_overlay
+```
+````
+
+````{py:function} plot_neb_evolution(ax, step_rmsd_r_list: list[numpy.ndarray], step_rmsd_p_list: list[numpy.ndarray], project_path=True, cmap='Blues') -> None
+:canonical: chemparseplot.plot.neb.plot_neb_evolution
+
+```{autodoc2-docstring} chemparseplot.plot.neb.plot_neb_evolution
 ```
 ````
 

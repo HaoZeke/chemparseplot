@@ -1,0 +1,150 @@
+# {py:mod}`chemparseplot.parse.projection`
+
+```{py:module} chemparseplot.parse.projection
+```
+
+```{autodoc2-docstring} chemparseplot.parse.projection
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ProjectionBasis <chemparseplot.parse.projection.ProjectionBasis>`
+  - ```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`compute_projection_basis <chemparseplot.parse.projection.compute_projection_basis>`
+  - ```{autodoc2-docstring} chemparseplot.parse.projection.compute_projection_basis
+    :summary:
+    ```
+* - {py:obj}`project_to_sd <chemparseplot.parse.projection.project_to_sd>`
+  - ```{autodoc2-docstring} chemparseplot.parse.projection.project_to_sd
+    :summary:
+    ```
+* - {py:obj}`inverse_sd_to_ab <chemparseplot.parse.projection.inverse_sd_to_ab>`
+  - ```{autodoc2-docstring} chemparseplot.parse.projection.inverse_sd_to_ab
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} ProjectionBasis
+:canonical: chemparseplot.parse.projection.ProjectionBasis
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis
+```
+
+````{py:attribute} a_start
+:canonical: chemparseplot.parse.projection.ProjectionBasis.a_start
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.a_start
+```
+
+````
+
+````{py:attribute} b_start
+:canonical: chemparseplot.parse.projection.ProjectionBasis.b_start
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.b_start
+```
+
+````
+
+````{py:attribute} u_a
+:canonical: chemparseplot.parse.projection.ProjectionBasis.u_a
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.u_a
+```
+
+````
+
+````{py:attribute} u_b
+:canonical: chemparseplot.parse.projection.ProjectionBasis.u_b
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.u_b
+```
+
+````
+
+````{py:attribute} v_a
+:canonical: chemparseplot.parse.projection.ProjectionBasis.v_a
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.v_a
+```
+
+````
+
+````{py:attribute} v_b
+:canonical: chemparseplot.parse.projection.ProjectionBasis.v_b
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.v_b
+```
+
+````
+
+````{py:attribute} path_norm
+:canonical: chemparseplot.parse.projection.ProjectionBasis.path_norm
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.projection.ProjectionBasis.path_norm
+```
+
+````
+
+`````
+
+````{py:function} compute_projection_basis(rmsd_a: numpy.ndarray, rmsd_b: numpy.ndarray) -> chemparseplot.parse.projection.ProjectionBasis
+:canonical: chemparseplot.parse.projection.compute_projection_basis
+
+```{autodoc2-docstring} chemparseplot.parse.projection.compute_projection_basis
+```
+````
+
+````{py:function} project_to_sd(rmsd_a: numpy.ndarray, rmsd_b: numpy.ndarray, basis: chemparseplot.parse.projection.ProjectionBasis) -> tuple[numpy.ndarray, numpy.ndarray]
+:canonical: chemparseplot.parse.projection.project_to_sd
+
+```{autodoc2-docstring} chemparseplot.parse.projection.project_to_sd
+```
+````
+
+````{py:function} inverse_sd_to_ab(s: numpy.ndarray, d: numpy.ndarray, basis: chemparseplot.parse.projection.ProjectionBasis) -> tuple[numpy.ndarray, numpy.ndarray]
+:canonical: chemparseplot.parse.projection.inverse_sd_to_ab
+
+```{autodoc2-docstring} chemparseplot.parse.projection.inverse_sd_to_ab
+```
+````

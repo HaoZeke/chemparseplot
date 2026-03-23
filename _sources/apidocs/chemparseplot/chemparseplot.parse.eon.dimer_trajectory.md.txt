@@ -1,0 +1,172 @@
+# {py:mod}`chemparseplot.parse.eon.dimer_trajectory`
+
+```{py:module} chemparseplot.parse.eon.dimer_trajectory
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DimerTrajectoryData <chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`parse_climb_dat <chemparseplot.parse.eon.dimer_trajectory.parse_climb_dat>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.parse_climb_dat
+    :summary:
+    ```
+* - {py:obj}`parse_climb_con <chemparseplot.parse.eon.dimer_trajectory.parse_climb_con>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.parse_climb_con
+    :summary:
+    ```
+* - {py:obj}`_find_initial_structure <chemparseplot.parse.eon.dimer_trajectory._find_initial_structure>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory._find_initial_structure
+    :summary:
+    ```
+* - {py:obj}`_load_mode_dat <chemparseplot.parse.eon.dimer_trajectory._load_mode_dat>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory._load_mode_dat
+    :summary:
+    ```
+* - {py:obj}`load_dimer_trajectory <chemparseplot.parse.eon.dimer_trajectory.load_dimer_trajectory>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.load_dimer_trajectory
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.eon.dimer_trajectory.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.log
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.eon.dimer_trajectory.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.log
+```
+
+````
+
+`````{py:class} DimerTrajectoryData
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData
+```
+
+````{py:attribute} atoms_list
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.atoms_list
+:type: list[ase.Atoms]
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.atoms_list
+```
+
+````
+
+````{py:attribute} dat_df
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.dat_df
+:type: polars.DataFrame
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.dat_df
+```
+
+````
+
+````{py:attribute} initial_atoms
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.initial_atoms
+:type: ase.Atoms
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.initial_atoms
+```
+
+````
+
+````{py:attribute} saddle_atoms
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.saddle_atoms
+:type: ase.Atoms | None
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.saddle_atoms
+```
+
+````
+
+````{py:attribute} mode_vector
+:canonical: chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.mode_vector
+:type: numpy.ndarray | None
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData.mode_vector
+```
+
+````
+
+`````
+
+````{py:function} parse_climb_dat(path: pathlib.Path) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.dimer_trajectory.parse_climb_dat
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.parse_climb_dat
+```
+````
+
+````{py:function} parse_climb_con(path: pathlib.Path) -> list[ase.Atoms]
+:canonical: chemparseplot.parse.eon.dimer_trajectory.parse_climb_con
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.parse_climb_con
+```
+````
+
+````{py:function} _find_initial_structure(job_dir: pathlib.Path) -> ase.Atoms | None
+:canonical: chemparseplot.parse.eon.dimer_trajectory._find_initial_structure
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory._find_initial_structure
+```
+````
+
+````{py:function} _load_mode_dat(path: pathlib.Path) -> numpy.ndarray | None
+:canonical: chemparseplot.parse.eon.dimer_trajectory._load_mode_dat
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory._load_mode_dat
+```
+````
+
+````{py:function} load_dimer_trajectory(job_dir: pathlib.Path) -> chemparseplot.parse.eon.dimer_trajectory.DimerTrajectoryData
+:canonical: chemparseplot.parse.eon.dimer_trajectory.load_dimer_trajectory
+
+```{autodoc2-docstring} chemparseplot.parse.eon.dimer_trajectory.load_dimer_trajectory
+```
+````

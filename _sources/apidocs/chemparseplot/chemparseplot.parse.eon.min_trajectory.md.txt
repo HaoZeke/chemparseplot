@@ -1,0 +1,139 @@
+# {py:mod}`chemparseplot.parse.eon.min_trajectory`
+
+```{py:module} chemparseplot.parse.eon.min_trajectory
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`MinTrajectoryData <chemparseplot.parse.eon.min_trajectory.MinTrajectoryData>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`parse_min_dat <chemparseplot.parse.eon.min_trajectory.parse_min_dat>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.parse_min_dat
+    :summary:
+    ```
+* - {py:obj}`parse_min_con <chemparseplot.parse.eon.min_trajectory.parse_min_con>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.parse_min_con
+    :summary:
+    ```
+* - {py:obj}`load_min_trajectory <chemparseplot.parse.eon.min_trajectory.load_min_trajectory>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.load_min_trajectory
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.eon.min_trajectory.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.log
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.eon.min_trajectory.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.log
+```
+
+````
+
+`````{py:class} MinTrajectoryData
+:canonical: chemparseplot.parse.eon.min_trajectory.MinTrajectoryData
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData
+```
+
+````{py:attribute} atoms_list
+:canonical: chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.atoms_list
+:type: list[ase.Atoms]
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.atoms_list
+```
+
+````
+
+````{py:attribute} dat_df
+:canonical: chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.dat_df
+:type: polars.DataFrame
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.dat_df
+```
+
+````
+
+````{py:attribute} initial_atoms
+:canonical: chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.initial_atoms
+:type: ase.Atoms
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.initial_atoms
+```
+
+````
+
+````{py:attribute} final_atoms
+:canonical: chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.final_atoms
+:type: ase.Atoms
+:value: >
+   None
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.MinTrajectoryData.final_atoms
+```
+
+````
+
+`````
+
+````{py:function} parse_min_dat(path: pathlib.Path) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.min_trajectory.parse_min_dat
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.parse_min_dat
+```
+````
+
+````{py:function} parse_min_con(path: pathlib.Path) -> list[ase.Atoms]
+:canonical: chemparseplot.parse.eon.min_trajectory.parse_min_con
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.parse_min_con
+```
+````
+
+````{py:function} load_min_trajectory(job_dir: pathlib.Path, prefix: str = 'min') -> chemparseplot.parse.eon.min_trajectory.MinTrajectoryData
+:canonical: chemparseplot.parse.eon.min_trajectory.load_min_trajectory
+
+```{autodoc2-docstring} chemparseplot.parse.eon.min_trajectory.load_min_trajectory
+```
+````

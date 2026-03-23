@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>chemparseplot.plot &#8212; chemparseplot 1.3.0 documentation</title>
+    <title>chemparseplot.parse.eon &#8212; chemparseplot 1.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=c03c27c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/library/library.css?v=fa49c7df" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -21,11 +21,11 @@
     <script>let toggleOpenOnPrint = 'true';</script>
     <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.plot.html" />
+    <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.parse.eon.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="chemparseplot.plot.geomscan" href="chemparseplot.plot.geomscan.html" />
-    <link rel="prev" title="chemparseplot.parse.plumed" href="chemparseplot.parse.plumed.html" />
+    <link rel="next" title="chemparseplot.parse.eon.minimization" href="chemparseplot.parse.eon.minimization.html" />
+    <link rel="prev" title="chemparseplot.parse" href="chemparseplot.parse.html" />
 
  
 
@@ -125,16 +125,8 @@
 
 <h3>Page Contents</h3>
 <ul>
-<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a><ul>
+<li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon</span></code></a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
-<li><a class="reference internal" href="#functions">Functions</a></li>
-<li><a class="reference internal" href="#api">API</a><ul>
-<li><a class="reference internal" href="#chemparseplot.plot.__getattr__"><code class="docutils literal notranslate"><span class="pre">__getattr__()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -167,59 +159,40 @@
   <span class="delim"> &#187;</span>
   <a class="nav-item" href="chemparseplot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot</span></code></a>
   <span class="delim"> &#187;</span>
-  <span class="nav-item">chemparseplot.plot</span>
+  <a class="nav-item" href="chemparseplot.parse.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code></a>
+  <span class="delim"> &#187;</span>
+  <span class="nav-item">chemparseplot.parse.eon</span>
     </nav>
     
 
     <main class="body" role="main" id="main">
       
-  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.plot">
-<span id="chemparseplot-plot"></span><h1><a class="reference internal" href="#module-chemparseplot.plot" title="chemparseplot.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a><a class="headerlink" href="#module-chemparseplot.plot" title="Link to this heading">¶</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="module-chemparseplot.parse.eon">
+<span id="chemparseplot-parse-eon"></span><h1><a class="reference internal" href="#module-chemparseplot.parse.eon" title="chemparseplot.parse.eon"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon</span></code></a><a class="headerlink" href="#module-chemparseplot.parse.eon" title="Link to this heading">¶</a></h1>
+<p>eOn trajectory parsers.</p>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.geomscan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.geomscan</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.neb</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.optimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.optimization</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.structs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.structs</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.chemgp.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.chemgp</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.plumed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.plumed</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.minimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.minimization</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.dimer_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.dimer_trajectory</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.neb</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.min_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.min_trajectory</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.saddle_search.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.saddle_search</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.eon.gprd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.gprd</span></code></a></li>
 </ul>
 </div>
-</section>
-<section id="package-contents">
-<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
-<section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h3>
-<table class="autosummary longtable docutils align-left">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.plot.__getattr__" title="chemparseplot.plot.__getattr__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__getattr__</span></code></a></p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="api">
-<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
-<dl class="py function">
-<dt class="sig sig-object py" id="chemparseplot.plot.__getattr__">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.</span></span><span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.__getattr__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</section>
 </section>
 </section>
 
 
     </main>
     <nav class="related bottom" role="navigation">
-  <a class="prev" href="chemparseplot.parse.plumed.html" title="Previous">
-    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.plumed</span></code>
+  <a class="prev" href="chemparseplot.parse.html" title="Previous">
+    &larr; <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code>
   </a>
-  <a class="next" href="chemparseplot.plot.geomscan.html" title="Next">
-    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.geomscan</span></code> &rarr;
+  <a class="next" href="chemparseplot.parse.eon.minimization.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.minimization</span></code> &rarr;
   </a>
   <div class="clear"></div>
     </nav>

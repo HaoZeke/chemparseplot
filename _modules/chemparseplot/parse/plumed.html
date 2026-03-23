@@ -356,6 +356,12 @@
 
             <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
             <span class="n">dy</span> <span class="o">=</span> <span class="n">max_cv2</span> <span class="o">-</span> <span class="n">min_cv2</span>
+            <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sigma_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">])</span>
+                <span class="n">dx</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">sigma_x</span>
+            <span class="k">if</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sigma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">])</span>
+                <span class="n">dy</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">sigma_y</span>
             <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
             <span class="n">ylims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv2</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">max_cv2</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dy</span><span class="p">]</span>
 
@@ -407,6 +413,10 @@
             <span class="c1"># Determine grid boundaries</span>
             <span class="n">min_cv1</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
             <span class="n">dx</span> <span class="o">=</span> <span class="n">max_cv1</span> <span class="o">-</span> <span class="n">min_cv1</span>
+            <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Single-point CV range: use 3*sigma as padding</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">hills_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])</span>
+                <span class="n">dx</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">sigma</span>
             <span class="n">xlims</span> <span class="o">=</span> <span class="p">[</span><span class="n">min_cv1</span> <span class="o">-</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">,</span> <span class="n">max_cv1</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">dx</span><span class="p">]</span>
 
             <span class="c1"># Override with user-defined or periodic limits</span>

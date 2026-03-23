@@ -194,7 +194,7 @@ and landscape DataFrame construction.</p>
 <table class="autosummary longtable docutils align-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords" title="chemparseplot.parse.neb_utils.calculate_landscape_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_landscape_coords</span></code></a></p></td>
-<td><p>Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.</p></td>
+<td><p>Calculate 2D landscape coordinates (RMSD-A, RMSD-B) for a path.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#chemparseplot.parse.neb_utils.compute_synthetic_gradients" title="chemparseplot.parse.neb_utils.compute_synthetic_gradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_synthetic_gradients</span></code></a></p></td>
 <td><p>Project parallel force onto the 2D RMSD coordinate system.</p></td>
@@ -225,22 +225,26 @@ and landscape DataFrame construction.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.parse.neb_utils.calculate_landscape_coords">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">calculate_landscape_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.</p>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.parse.neb_utils.</span></span><span class="sig-name descname"><span class="pre">calculate_landscape_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">ase.Atoms</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ira_kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ase.Atoms</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ase.Atoms</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#chemparseplot.parse.neb_utils.calculate_landscape_coords" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate 2D landscape coordinates (RMSD-A, RMSD-B) for a path.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 1.2.0.</span></p>
 </div>
-<p>Uses the first frame as reactant reference and the last as product.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 1.5.0: </span>Added <em>ref_a</em> and <em>ref_b</em> parameters for explicit reference structures.</p>
+</div>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms_list</strong> – List of ASE Atoms objects representing the path.</p></li>
 <li><p><strong>ira_instance</strong> – An instantiated IRA object (or None).</p></li>
 <li><p><strong>ira_kmax</strong> – kmax factor for IRA.</p></li>
+<li><p><strong>ref_a</strong> – Reference structure A. Defaults to <code class="docutils literal notranslate"><span class="pre">atoms_list[0]</span></code>.</p></li>
+<li><p><strong>ref_b</strong> – Reference structure B. Defaults to <code class="docutils literal notranslate"><span class="pre">atoms_list[-1]</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple of (rmsd_r, rmsd_p) arrays.</p>
+<dd class="field-even"><p>A tuple of (rmsd_a, rmsd_b) arrays.</p>
 </dd>
 </dl>
 </dd></dl>

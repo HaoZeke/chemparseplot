@@ -1,0 +1,186 @@
+# {py:mod}`chemparseplot.parse.eon.gprd`
+
+```{py:module} chemparseplot.parse.eon.gprd
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`HDF5CalculatorDimerMidpoint <chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint
+    :summary:
+    ```
+* - {py:obj}`HDF5Calculator <chemparseplot.parse.eon.gprd.HDF5Calculator>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5Calculator
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`get_atoms_from_hdf5 <chemparseplot.parse.eon.gprd.get_atoms_from_hdf5>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.get_atoms_from_hdf5
+    :summary:
+    ```
+* - {py:obj}`create_geom_traj_from_hdf5 <chemparseplot.parse.eon.gprd.create_geom_traj_from_hdf5>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_geom_traj_from_hdf5
+    :summary:
+    ```
+* - {py:obj}`create_nwchem_trajectory <chemparseplot.parse.eon.gprd.create_nwchem_trajectory>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_nwchem_trajectory
+    :summary:
+    ```
+* - {py:obj}`create_full_traj_from_hdf5 <chemparseplot.parse.eon.gprd.create_full_traj_from_hdf5>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_full_traj_from_hdf5
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.eon.gprd.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd.log
+    :summary:
+    ```
+* - {py:obj}`_DOUBLET_MULT <chemparseplot.parse.eon.gprd._DOUBLET_MULT>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.gprd._DOUBLET_MULT
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.eon.gprd.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.log
+```
+
+````
+
+````{py:data} _DOUBLET_MULT
+:canonical: chemparseplot.parse.eon.gprd._DOUBLET_MULT
+:value: >
+   2
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd._DOUBLET_MULT
+```
+
+````
+
+`````{py:class} HDF5CalculatorDimerMidpoint(from_hdf5, natms, **kwargs)
+:canonical: chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint
+
+Bases: {py:obj}`ase.calculators.calculator.Calculator`
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint.__init__
+```
+
+````{py:attribute} implemented_properties
+:canonical: chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint.implemented_properties
+:type: typing.ClassVar[list[str]]
+:value: >
+   ['energy', 'forces']
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint.implemented_properties
+```
+
+````
+
+````{py:method} calculate(atoms=None, properties=None, system_changes=all_changes)
+:canonical: chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint.calculate
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5CalculatorDimerMidpoint.calculate
+```
+
+````
+
+`````
+
+`````{py:class} HDF5Calculator(from_hdf5, **kwargs)
+:canonical: chemparseplot.parse.eon.gprd.HDF5Calculator
+
+Bases: {py:obj}`ase.calculators.calculator.Calculator`
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5Calculator
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5Calculator.__init__
+```
+
+````{py:attribute} implemented_properties
+:canonical: chemparseplot.parse.eon.gprd.HDF5Calculator.implemented_properties
+:type: typing.ClassVar[list[str]]
+:value: >
+   ['energy', 'forces']
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5Calculator.implemented_properties
+```
+
+````
+
+````{py:method} calculate(atoms=None, properties=None, system_changes=all_changes)
+:canonical: chemparseplot.parse.eon.gprd.HDF5Calculator.calculate
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.HDF5Calculator.calculate
+```
+
+````
+
+`````
+
+````{py:function} get_atoms_from_hdf5(template_atoms: ase.Atoms, hdf5_group: h5py.Group) -> ase.Atoms
+:canonical: chemparseplot.parse.eon.gprd.get_atoms_from_hdf5
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.get_atoms_from_hdf5
+```
+````
+
+````{py:function} create_geom_traj_from_hdf5(hdf5_file: str, output_traj_file: str, initial_structure_file: str, outer_loop_group_name: str = 'outer_loop')
+:canonical: chemparseplot.parse.eon.gprd.create_geom_traj_from_hdf5
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_geom_traj_from_hdf5
+```
+````
+
+````{py:function} create_nwchem_trajectory(template_atoms: ase.Atoms, hdf5_file: str, output_traj_file: str, mult=1, outer_loop_group_name: str = 'outer_loop')
+:canonical: chemparseplot.parse.eon.gprd.create_nwchem_trajectory
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_nwchem_trajectory
+```
+````
+
+````{py:function} create_full_traj_from_hdf5(hdf5_file: str, output_traj_file: str, initial_structure_file: str, outer_loop_group_name: str = 'outer_loop', inner_loop_group_name: str = 'initial_rotations')
+:canonical: chemparseplot.parse.eon.gprd.create_full_traj_from_hdf5
+
+```{autodoc2-docstring} chemparseplot.parse.eon.gprd.create_full_traj_from_hdf5
+```
+````

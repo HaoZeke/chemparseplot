@@ -1,0 +1,130 @@
+# {py:mod}`chemparseplot.parse.eon.neb`
+
+```{py:module} chemparseplot.parse.eon.neb
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`_validate_data_atoms_match <chemparseplot.parse.eon.neb._validate_data_atoms_match>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb._validate_data_atoms_match
+    :summary:
+    ```
+* - {py:obj}`load_or_compute_data <chemparseplot.parse.eon.neb.load_or_compute_data>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_or_compute_data
+    :summary:
+    ```
+* - {py:obj}`load_structures_and_calculate_additional_rmsd <chemparseplot.parse.eon.neb.load_structures_and_calculate_additional_rmsd>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_structures_and_calculate_additional_rmsd
+    :summary:
+    ```
+* - {py:obj}`_process_single_path_step <chemparseplot.parse.eon.neb._process_single_path_step>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb._process_single_path_step
+    :summary:
+    ```
+* - {py:obj}`aggregate_neb_landscape_data <chemparseplot.parse.eon.neb.aggregate_neb_landscape_data>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.aggregate_neb_landscape_data
+    :summary:
+    ```
+* - {py:obj}`load_augmenting_neb_data <chemparseplot.parse.eon.neb.load_augmenting_neb_data>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_augmenting_neb_data
+    :summary:
+    ```
+* - {py:obj}`compute_profile_rmsd <chemparseplot.parse.eon.neb.compute_profile_rmsd>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.compute_profile_rmsd
+    :summary:
+    ```
+* - {py:obj}`estimate_rbf_smoothing <chemparseplot.parse.eon.neb.estimate_rbf_smoothing>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.estimate_rbf_smoothing
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.eon.neb.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.neb.log
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.eon.neb.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.log
+```
+
+````
+
+````{py:function} _validate_data_atoms_match(z_data, atoms, dat_file_name)
+:canonical: chemparseplot.parse.eon.neb._validate_data_atoms_match
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb._validate_data_atoms_match
+```
+````
+
+````{py:function} load_or_compute_data(cache_file: pathlib.Path | None, *, force_recompute: bool, validation_check: collections.abc.Callable[[polars.DataFrame], None], computation_callback: collections.abc.Callable[[], polars.DataFrame], context_name: str) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.neb.load_or_compute_data
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_or_compute_data
+```
+````
+
+````{py:function} load_structures_and_calculate_additional_rmsd(con_file: pathlib.Path, additional_con: list[tuple[pathlib.Path, str]], ira_kmax: float, sp_file: pathlib.Path | None = None)
+:canonical: chemparseplot.parse.eon.neb.load_structures_and_calculate_additional_rmsd
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_structures_and_calculate_additional_rmsd
+```
+````
+
+````{py:function} _process_single_path_step(dat_file, con_file, y_data_column, ira_instance, ira_kmax, step_idx, ref_atoms=None, prod_atoms=None)
+:canonical: chemparseplot.parse.eon.neb._process_single_path_step
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb._process_single_path_step
+```
+````
+
+````{py:function} aggregate_neb_landscape_data(all_dat_paths: list[pathlib.Path], all_con_paths: list[pathlib.Path], y_data_column: int, ira_instance, *, cache_file: pathlib.Path | None = None, force_recompute: bool = False, ira_kmax: float = 1.8, augment_dat: str | None = None, augment_con: str | None = None, ref_atoms: ase.Atoms | None = None, prod_atoms: ase.Atoms | None = None) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.neb.aggregate_neb_landscape_data
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.aggregate_neb_landscape_data
+```
+````
+
+````{py:function} load_augmenting_neb_data(dat_pattern: str, con_pattern: str, ref_atoms: ase.Atoms, prod_atoms: ase.Atoms, y_data_column: int, ira_kmax: float) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.neb.load_augmenting_neb_data
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.load_augmenting_neb_data
+```
+````
+
+````{py:function} compute_profile_rmsd(atoms_list: list[ase.Atoms], *, cache_file: pathlib.Path | None, force_recompute: bool, ira_kmax: float) -> polars.DataFrame
+:canonical: chemparseplot.parse.eon.neb.compute_profile_rmsd
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.compute_profile_rmsd
+```
+````
+
+````{py:function} estimate_rbf_smoothing(df: polars.DataFrame) -> float
+:canonical: chemparseplot.parse.eon.neb.estimate_rbf_smoothing
+
+```{autodoc2-docstring} chemparseplot.parse.eon.neb.estimate_rbf_smoothing
+```
+````

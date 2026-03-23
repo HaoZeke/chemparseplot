@@ -1,0 +1,385 @@
+# {py:mod}`chemparseplot.parse.eon.saddle_search`
+
+```{py:module} chemparseplot.parse.eon.saddle_search
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`EONSaddleStatus <chemparseplot.parse.eon.saddle_search.EONSaddleStatus>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`extract_saddle_gprd <chemparseplot.parse.eon.saddle_search.extract_saddle_gprd>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.extract_saddle_gprd
+    :summary:
+    ```
+* - {py:obj}`_read_results_dat <chemparseplot.parse.eon.saddle_search._read_results_dat>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._read_results_dat
+    :summary:
+    ```
+* - {py:obj}`_find_log_file <chemparseplot.parse.eon.saddle_search._find_log_file>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._find_log_file
+    :summary:
+    ```
+* - {py:obj}`_extract_total_time <chemparseplot.parse.eon.saddle_search._extract_total_time>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_total_time
+    :summary:
+    ```
+* - {py:obj}`_extract_initial_energy <chemparseplot.parse.eon.saddle_search._extract_initial_energy>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_initial_energy
+    :summary:
+    ```
+* - {py:obj}`_extract_saddle_info <chemparseplot.parse.eon.saddle_search._extract_saddle_info>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_saddle_info
+    :summary:
+    ```
+* - {py:obj}`_get_methods <chemparseplot.parse.eon.saddle_search._get_methods>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._get_methods
+    :summary:
+    ```
+* - {py:obj}`parse_eon_saddle <chemparseplot.parse.eon.saddle_search.parse_eon_saddle>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.parse_eon_saddle
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`log <chemparseplot.parse.eon.saddle_search.log>`
+  - ```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.log
+    :summary:
+    ```
+````
+
+### API
+
+````{py:data} log
+:canonical: chemparseplot.parse.eon.saddle_search.log
+:value: >
+   'getLogger(...)'
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.log
+```
+
+````
+
+`````{py:class} EONSaddleStatus(*args, **kwds)
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus
+
+Bases: {py:obj}`enum.Enum`
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus
+```
+
+```{rubric} Initialization
+```
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.__init__
+```
+
+````{py:attribute} GOOD
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.GOOD
+:value: >
+   (0, 'Success')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.GOOD
+```
+
+````
+
+````{py:attribute} INIT
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.INIT
+:value: >
+   (1, 'Initial')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.INIT
+```
+
+````
+
+````{py:attribute} BAD_NO_CONVEX
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_CONVEX
+:value: >
+   (2, 'Initial displacement unable to reach convex region')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_CONVEX
+```
+
+````
+
+````{py:attribute} BAD_HIGH_ENERGY
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_HIGH_ENERGY
+:value: >
+   (3, 'Barrier too high')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_HIGH_ENERGY
+```
+
+````
+
+````{py:attribute} BAD_MAX_CONCAVE_ITERATIONS
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MAX_CONCAVE_ITERATIONS
+:value: >
+   (4, 'Too many iterations in concave region')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MAX_CONCAVE_ITERATIONS
+```
+
+````
+
+````{py:attribute} BAD_MAX_ITERATIONS
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MAX_ITERATIONS
+:value: >
+   (5, 'Too many iterations')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MAX_ITERATIONS
+```
+
+````
+
+````{py:attribute} BAD_NOT_CONNECTED
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NOT_CONNECTED
+:value: >
+   (6, 'Saddle is not connected to initial state')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NOT_CONNECTED
+```
+
+````
+
+````{py:attribute} BAD_PREFACTOR
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_PREFACTOR
+:value: >
+   (7, 'Prefactors not within window')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_PREFACTOR
+```
+
+````
+
+````{py:attribute} BAD_HIGH_BARRIER
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_HIGH_BARRIER
+:value: >
+   (8, 'Energy barrier not within window')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_HIGH_BARRIER
+```
+
+````
+
+````{py:attribute} BAD_MINIMA
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MINIMA
+:value: >
+   (9, 'Minimizations from saddle did not converge')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MINIMA
+```
+
+````
+
+````{py:attribute} FAILED_PREFACTOR
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.FAILED_PREFACTOR
+:value: >
+   (10, 'Hessian calculation failed')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.FAILED_PREFACTOR
+```
+
+````
+
+````{py:attribute} POTENTIAL_FAILED
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.POTENTIAL_FAILED
+:value: >
+   (11, 'Potential failed')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.POTENTIAL_FAILED
+```
+
+````
+
+````{py:attribute} NONNEGATIVE_ABORT
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NONNEGATIVE_ABORT
+:value: >
+   (12, 'Nonnegative initial mode, aborting')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NONNEGATIVE_ABORT
+```
+
+````
+
+````{py:attribute} NONLOCAL_ABORT
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NONLOCAL_ABORT
+:value: >
+   (13, 'Nonlocal abort')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NONLOCAL_ABORT
+```
+
+````
+
+````{py:attribute} NEGATIVE_BARRIER
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NEGATIVE_BARRIER
+:value: >
+   (14, 'Negative barrier detected')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.NEGATIVE_BARRIER
+```
+
+````
+
+````{py:attribute} BAD_MD_TRAJECTORY_TOO_SHORT
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MD_TRAJECTORY_TOO_SHORT
+:value: >
+   (15, 'No reaction found during MD trajectory')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_MD_TRAJECTORY_TOO_SHORT
+```
+
+````
+
+````{py:attribute} BAD_NO_NEGATIVE_MODE_AT_SADDLE
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_NEGATIVE_MODE_AT_SADDLE
+:value: >
+   (16, 'Converged to stationary point with zero negative modes')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_NEGATIVE_MODE_AT_SADDLE
+```
+
+````
+
+````{py:attribute} BAD_NO_BARRIER
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_BARRIER
+:value: >
+   (17, 'No forward barrier was found along minimized band')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.BAD_NO_BARRIER
+```
+
+````
+
+````{py:attribute} ZEROMODE_ABORT
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.ZEROMODE_ABORT
+:value: >
+   (18, 'Zero mode abort.')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.ZEROMODE_ABORT
+```
+
+````
+
+````{py:attribute} OPTIMIZER_ERROR
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.OPTIMIZER_ERROR
+:value: >
+   (19, 'Optimizer error.')
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.OPTIMIZER_ERROR
+```
+
+````
+
+````{py:attribute} UNKNOWN
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.UNKNOWN
+:value: >
+   ()
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.UNKNOWN
+```
+
+````
+
+````{py:method} __new__(value, description)
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.__new__
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.__new__
+```
+
+````
+
+````{py:method} from_value(value)
+:canonical: chemparseplot.parse.eon.saddle_search.EONSaddleStatus.from_value
+:classmethod:
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.EONSaddleStatus.from_value
+```
+
+````
+
+`````
+
+````{py:function} extract_saddle_gprd(log: list[str])
+:canonical: chemparseplot.parse.eon.saddle_search.extract_saddle_gprd
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.extract_saddle_gprd
+```
+````
+
+````{py:function} _read_results_dat(eresp: pathlib.Path) -> dict
+:canonical: chemparseplot.parse.eon.saddle_search._read_results_dat
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._read_results_dat
+```
+````
+
+````{py:function} _find_log_file(eresp: pathlib.Path) -> pathlib.Path | None
+:canonical: chemparseplot.parse.eon.saddle_search._find_log_file
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._find_log_file
+```
+````
+
+````{py:function} _extract_total_time(log_data: list[str]) -> float
+:canonical: chemparseplot.parse.eon.saddle_search._extract_total_time
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_total_time
+```
+````
+
+````{py:function} _extract_initial_energy(log_data: list[str]) -> float
+:canonical: chemparseplot.parse.eon.saddle_search._extract_initial_energy
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_initial_energy
+```
+````
+
+````{py:function} _extract_saddle_info(log_data: list[str], eresp: pathlib.Path, *, is_gprd: bool) -> tuple[float, str]
+:canonical: chemparseplot.parse.eon.saddle_search._extract_saddle_info
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._extract_saddle_info
+```
+````
+
+````{py:function} _get_methods(eresp: pathlib.Path) -> rgpycrumbs.basetypes.DimerOpt
+:canonical: chemparseplot.parse.eon.saddle_search._get_methods
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search._get_methods
+```
+````
+
+````{py:function} parse_eon_saddle(eresp: pathlib.Path, rloc: rgpycrumbs.basetypes.SpinID) -> rgpycrumbs.basetypes.SaddleMeasure
+:canonical: chemparseplot.parse.eon.saddle_search.parse_eon_saddle
+
+```{autodoc2-docstring} chemparseplot.parse.eon.saddle_search.parse_eon_saddle
+```
+````
