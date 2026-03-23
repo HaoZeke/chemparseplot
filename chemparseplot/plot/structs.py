@@ -100,7 +100,7 @@ class TwoDimPlot(BasePlotter):
         self.redraw_plot()
 
     def rmdat(self, labels_to_remove):
-        if not isinstance(labels_to_remove, (list, set)):
+        if not isinstance(labels_to_remove, list | set):
             labels_to_remove = [labels_to_remove]
         self.data = [
             xy_data for xy_data in self.data if xy_data.label not in labels_to_remove

@@ -75,7 +75,7 @@ def compute_projection_basis(
     vec_a, vec_b = a_end - a_start, b_end - b_start
     path_norm = np.hypot(vec_a, vec_b)
 
-    if path_norm < 1e-12:
+    if path_norm < 1e-12:  # noqa: PLR2004
         msg = (
             "Path has zero length in RMSD space "
             f"(start=({a_start:.6f}, {b_start:.6f}), "

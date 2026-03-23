@@ -53,7 +53,7 @@ class TestParseClimbDat:
         np.testing.assert_allclose(df["convergence"][2], 0.011, atol=1e-4)
 
     def test_missing_file_raises(self, tmp_path):
-        with pytest.raises(Exception):
+        with pytest.raises((FileNotFoundError, OSError)):
             parse_climb_dat(tmp_path / "nonexistent.dat")
 
 
@@ -140,15 +140,17 @@ class TestLoadDimerTrajectory:
     def test_missing_dat_raises(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
+
         from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
 
         write(str(tmp_path / "climb"), molecule("H2O"), format="eon")
-        with pytest.raises(FileNotFoundError, match="climb.dat"):
+        with pytest.raises(FileNotFoundError, match=r"climb\.dat"):
             load_dimer_trajectory(tmp_path)
 
     def test_no_reactant_uses_first_frame(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
+
         from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
 
         h2o = molecule("H2O")

@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: MIT
 """Batch coverage tests for under-covered modules."""
 import matplotlib
+
 matplotlib.use("Agg")
 
 import importlib
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -402,18 +404,18 @@ class TestNebPlotFunctions:
 # ============================================================
 class TestOpiParser:
     def test_calculate_rmsd(self):
-        from chemparseplot.parse.orca.neb.opi_parser import _calculate_rmsd
-
         from ase.build import molecule
+
+        from chemparseplot.parse.orca.neb.opi_parser import _calculate_rmsd
 
         h2o = molecule("H2O")
         rmsd = _calculate_rmsd(h2o, h2o)
         assert rmsd == pytest.approx(0.0)
 
     def test_calculate_rmsd_different(self):
-        from chemparseplot.parse.orca.neb.opi_parser import _calculate_rmsd
-
         from ase.build import molecule
+
+        from chemparseplot.parse.orca.neb.opi_parser import _calculate_rmsd
 
         h2o1 = molecule("H2O")
         h2o2 = molecule("H2O")

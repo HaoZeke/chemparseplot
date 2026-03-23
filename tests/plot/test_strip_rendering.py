@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Tests for structure strip rendering, spacing, and dividers."""
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -33,7 +34,7 @@ class TestRenderStructureToImage:
         img = render_structure_to_image(h2o, zoom=0.3, rotation="0x,90y,0z")
         assert img.ndim == 3
         assert img.shape[2] in (3, 4)  # RGB or RGBA
-        assert img.dtype == np.float32 or img.dtype == np.float64
+        assert img.dtype in (np.float32, np.float64)
 
     def test_different_rotations(self, h2o):
         img1 = render_structure_to_image(h2o, 0.3, "0x,0y,0z")
@@ -65,7 +66,7 @@ class TestRenderAtoms:
     def test_solvis_not_installed(self, h2o):
         """solvis raises RuntimeError if not importable."""
         try:
-            import solvis  # noqa: F401
+            import solvis
 
             pytest.skip("solvis is installed")
         except ImportError:
@@ -76,7 +77,7 @@ class TestRenderAtoms:
     def test_ovito_not_installed(self, h2o):
         """ovito raises RuntimeError if not importable."""
         try:
-            import ovito  # noqa: F401
+            import ovito
 
             pytest.skip("ovito is installed")
         except ImportError:
@@ -116,8 +117,8 @@ class TestPlotStructureStrip:
             show_dividers=True, divider_color="red", divider_style="-",
         )
         # Should have 2 divider lines (between 3 items)
-        vlines = [l for l in ax.lines if len(l.get_xdata()) == 2
-                   and l.get_xdata()[0] == l.get_xdata()[1]]
+        [ln for ln in ax.lines if len(ln.get_xdata()) == 2
+                    and ln.get_xdata()[0] == ln.get_xdata()[1]]
         # axvline creates Line2D objects
         assert len(ax.lines) >= 2
         plt.close(fig)

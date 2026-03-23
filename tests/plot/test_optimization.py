@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 """Smoke tests for optimization plot functions."""
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -87,7 +88,7 @@ class TestPlotOptimizationProfile:
 
 
 try:
-    import jax  # noqa: F401
+    import jax
     _HAS_JAX = True
 except ImportError:
     _HAS_JAX = False
@@ -98,7 +99,7 @@ class TestPlotOptimizationLandscape:
     def test_projected(self, synth_landscape_data):
         fig, ax = plt.subplots()
         rmsd_a, rmsd_b, grad_a, grad_b, z = synth_landscape_data
-        cb = plot_optimization_landscape(
+        plot_optimization_landscape(
             ax, rmsd_a, rmsd_b, grad_a, grad_b, z,
             project_path=True, label_mode="optimization",
         )
@@ -109,7 +110,7 @@ class TestPlotOptimizationLandscape:
     def test_unprojected(self, synth_landscape_data):
         fig, ax = plt.subplots()
         rmsd_a, rmsd_b, grad_a, grad_b, z = synth_landscape_data
-        cb = plot_optimization_landscape(
+        plot_optimization_landscape(
             ax, rmsd_a, rmsd_b, grad_a, grad_b, z,
             project_path=False,
         )

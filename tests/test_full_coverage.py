@@ -627,7 +627,8 @@ class TestChemGPPlot:
 
         @safe_plot
         def bad_func():
-            raise KeyError("missing_key")
+            msg = "missing_key"
+            raise KeyError(msg)
 
         with pytest.raises(KeyError):
             bad_func()
@@ -769,6 +770,7 @@ class TestPlotStructs:
 # chemparseplot.plot.geomscan
 # ============================================================
 import sys
+
 _PY310 = sys.version_info < (3, 11)
 
 
@@ -1021,7 +1023,7 @@ class TestPlumedParse:
         )
         hills = {"hillsfile": hills_data, "per": [False, False]}
         with pytest.warns(UserWarning, match="only 1 hills are available"):
-            result = calculate_fes_from_hills(hills, imax=100, npoints=16)
+            calculate_fes_from_hills(hills, imax=100, npoints=16)
 
     def test_calculate_fes_imin_gt_imax(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
@@ -1243,9 +1245,9 @@ class TestNebPlotSurface:
             )
 
     def test_render_structure_to_image(self):
-        from chemparseplot.plot.neb import render_structure_to_image
-
         from ase.build import molecule
+
+        from chemparseplot.plot.neb import render_structure_to_image
 
         atoms = molecule("H2O")
         img = render_structure_to_image(atoms, zoom=0.3, rotation="0x,0y,0z")
@@ -1259,9 +1261,9 @@ class TestNebPlotSurface:
                 _check_xyzrender()
 
     def test_render_atoms_ase(self):
-        from chemparseplot.plot.neb import _render_atoms
-
         from ase.build import molecule
+
+        from chemparseplot.plot.neb import _render_atoms
 
         atoms = molecule("H2O")
         img = _render_atoms(atoms, "ase", 0.3, "0x,0y,0z")
@@ -1269,9 +1271,9 @@ class TestNebPlotSurface:
 
     def test_render_atoms_xyzrender_not_installed(self):
         """xyzrender raises RuntimeError if binary not on PATH."""
-        from chemparseplot.plot.neb import _render_atoms
-
         from ase.build import molecule
+
+        from chemparseplot.plot.neb import _render_atoms
 
         atoms = molecule("H2O")
         with patch("shutil.which", return_value=None):
@@ -1446,10 +1448,10 @@ class TestTrajectoryHdf5:
 # ============================================================
 class TestTrajectoryNeb:
     def test_get_energy_from_calc(self):
-        from chemparseplot.parse.trajectory.neb import _get_energy
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import _get_energy
 
         atoms = Atoms("H2", positions=[[0, 0, 0], [0, 0, 0.74]])
         calc = SinglePointCalculator(atoms, energy=-1.5)
@@ -1457,26 +1459,26 @@ class TestTrajectoryNeb:
         assert _get_energy(atoms) == pytest.approx(-1.5)
 
     def test_get_energy_from_info(self):
-        from chemparseplot.parse.trajectory.neb import _get_energy
-
         from ase import Atoms
+
+        from chemparseplot.parse.trajectory.neb import _get_energy
 
         atoms = Atoms("H2", positions=[[0, 0, 0], [0, 0, 0.74]])
         atoms.info["energy"] = -2.0
         assert _get_energy(atoms) == pytest.approx(-2.0)
 
     def test_get_energy_default(self):
-        from chemparseplot.parse.trajectory.neb import _get_energy
-
         from ase import Atoms
+
+        from chemparseplot.parse.trajectory.neb import _get_energy
 
         atoms = Atoms("H")
         assert _get_energy(atoms) == pytest.approx(0.0)
 
     def test_compute_cumulative_distance(self):
-        from chemparseplot.parse.trajectory.neb import compute_cumulative_distance
-
         from ase import Atoms
+
+        from chemparseplot.parse.trajectory.neb import compute_cumulative_distance
 
         atoms_list = []
         for i in range(4):
@@ -1487,10 +1489,10 @@ class TestTrajectoryNeb:
         np.testing.assert_allclose(dists, [0.0, 1.0, 2.0, 3.0])
 
     def test_compute_tangent_force(self):
-        from chemparseplot.parse.trajectory.neb import compute_tangent_force
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import compute_tangent_force
 
         atoms_list = []
         energies = np.array([0.0, 0.5, 1.0, 0.5, 0.0])
@@ -1508,10 +1510,10 @@ class TestTrajectoryNeb:
 
     def test_compute_tangent_force_extremum(self):
         """Test the extremum bisection branch."""
-        from chemparseplot.parse.trajectory.neb import compute_tangent_force
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import compute_tangent_force
 
         # Energy pattern: 0, 1, 0.5, 1, 0 (extremum at index 2)
         energies = np.array([0.0, 1.0, 0.5, 1.0, 0.0])
@@ -1527,10 +1529,10 @@ class TestTrajectoryNeb:
         assert len(f_para) == 5
 
     def test_extract_profile_data(self):
-        from chemparseplot.parse.trajectory.neb import extract_profile_data
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import extract_profile_data
 
         atoms_list = []
         for i in range(3):
@@ -1546,10 +1548,10 @@ class TestTrajectoryNeb:
         assert len(energy) == 3
 
     def test_trajectory_to_profile_dat(self):
-        from chemparseplot.parse.trajectory.neb import trajectory_to_profile_dat
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import trajectory_to_profile_dat
 
         atoms_list = []
         for i in range(3):
@@ -1563,10 +1565,10 @@ class TestTrajectoryNeb:
         assert dat.shape == (5, 3)
 
     def test_load_trajectory(self, tmp_path):
-        from chemparseplot.parse.trajectory.neb import load_trajectory
-
         from ase import Atoms
         from ase.io import write as ase_write
+
+        from chemparseplot.parse.trajectory.neb import load_trajectory
 
         atoms_list = [Atoms("H2", positions=[[0, 0, 0], [0, 0, 0.74 + 0.01 * i]]) for i in range(3)]
         traj_file = str(tmp_path / "test.extxyz")
@@ -1577,10 +1579,10 @@ class TestTrajectoryNeb:
 
     def test_trajectory_to_landscape_df(self):
         """Test trajectory_to_landscape_df with mocked IRA."""
-        from chemparseplot.parse.trajectory.neb import trajectory_to_landscape_df
-
         from ase import Atoms
         from ase.calculators.singlepoint import SinglePointCalculator
+
+        from chemparseplot.parse.trajectory.neb import trajectory_to_landscape_df
 
         atoms_list = []
         for i in range(5):
@@ -1625,6 +1627,7 @@ class TestTwoDimPlotMethods:
 
     def test_set_units(self):
         from unittest.mock import MagicMock
+
         from chemparseplot.plot.structs import TwoDimPlot
 
         p = TwoDimPlot()
@@ -1644,6 +1647,7 @@ class TestTwoDimPlotMethods:
 
     def test_add_data_and_rmdat(self):
         from unittest.mock import MagicMock
+
         from chemparseplot.plot.structs import TwoDimPlot, XYData
 
         p = TwoDimPlot()

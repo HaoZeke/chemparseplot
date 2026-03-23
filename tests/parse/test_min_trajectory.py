@@ -50,7 +50,7 @@ class TestParseMinDat:
         assert np.all(np.diff(energies) <= 0)
 
     def test_missing_file_raises(self, tmp_path):
-        with pytest.raises(Exception):
+        with pytest.raises((FileNotFoundError, OSError)):
             parse_min_dat(tmp_path / "nonexistent.dat")
 
 
@@ -114,10 +114,11 @@ class TestLoadMinTrajectory:
     def test_missing_dat_raises(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
+
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
         write(str(tmp_path / "min"), molecule("H2O"), format="eon")
-        with pytest.raises(FileNotFoundError, match=".dat"):
+        with pytest.raises(FileNotFoundError, match=r"\.dat"):
             load_min_trajectory(tmp_path)
 
     def test_custom_prefix(self, tmp_path):
@@ -130,6 +131,7 @@ class TestLoadMinTrajectory:
     def test_no_min_con_uses_last_frame(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
+
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
         h2o = molecule("H2O")

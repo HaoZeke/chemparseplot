@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
-import matplotlib.tri as tri
 import numpy as np
 from ase.io import write as ase_write
+from matplotlib import tri
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
@@ -129,11 +129,11 @@ def _apply_perspective_tilt(atoms, tilt_deg=8.0):
 
     # Rodrigues rotation matrix: R = I cos(t) + (1-cos(t)) k*kT + sin(t) K
     cos_t, sin_t = np.cos(theta), np.sin(theta)
-    K = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
-    R = cos_t * np.eye(3) + (1 - cos_t) * np.outer(k, k) + sin_t * K
+    skew = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+    rot = cos_t * np.eye(3) + (1 - cos_t) * np.outer(k, k) + sin_t * skew
 
     center = atoms.positions.mean(axis=0)
-    atoms.positions = (R @ (atoms.positions - center).T).T + center
+    atoms.positions = (rot @ (atoms.positions - center).T).T + center
 
 
 def _parse_rotation_angles(rotation_str):
@@ -283,7 +283,6 @@ def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
         msg = "solvis not installed. Install with: pip install solvis-tools"
         raise RuntimeError(msg) from exc
 
-    from ase.io import write as _ase_write
     from ase.neighborlist import natural_cutoffs, neighbor_list
 
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as png_fh:
@@ -328,7 +327,7 @@ def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
         # Bonds via ASE neighbor list
         cutoffs = natural_cutoffs(atoms, mult=1.1)
         i_idx, j_idx = neighbor_list("ij", atoms, cutoffs)
-        for bond_idx, (i, j) in enumerate(zip(i_idx, j_idx)):
+        for bond_idx, (i, j) in enumerate(zip(i_idx, j_idx, strict=False)):
             if i < j:
                 plotter.add_bond(
                     positions[i], positions[j],
@@ -913,11 +912,11 @@ def plot_landscape_surface(
         if v_range < 1e-10:
             v_con = None
         else:
-            v_levs = sorted(set([
+            v_levs = sorted({
                 v_min + 0.05 * v_range,
                 v_min + variance_threshold * v_range,
                 v_min + 0.95 * v_range,
-            ]))
+            })
 
             v_con = ax.contour(
                 xg,
@@ -1176,9 +1175,10 @@ def plot_neb_evolution(
         final_p = np.asarray(step_rmsd_p_list[-1])
         final_basis = compute_projection_basis(final_r, final_p)
 
-    for i, (rr, rp) in enumerate(zip(step_rmsd_r_list, step_rmsd_p_list)):
-        rr = np.asarray(rr)
-        rp = np.asarray(rp)
+    pairs = zip(step_rmsd_r_list, step_rmsd_p_list, strict=False)
+    for i, (rr_raw, rp_raw) in enumerate(pairs):
+        rr = np.asarray(rr_raw)
+        rp = np.asarray(rp_raw)
 
         if project_path:
             px, py = project_to_sd(rr, rp, final_basis)

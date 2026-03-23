@@ -16,7 +16,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 
@@ -226,12 +225,12 @@ def plot_dimer_mode_evolution(
     color
         Line color.
     """
-    if len(mode_vectors) < 2:
+    if len(mode_vectors) < 2:  # noqa: PLR2004
         return
 
     ref = mode_vectors[-1].ravel()
     ref_norm = np.linalg.norm(ref)
-    if ref_norm < 1e-12:
+    if ref_norm < 1e-12:  # noqa: PLR2004
         return
 
     ref = ref / ref_norm
@@ -239,7 +238,7 @@ def plot_dimer_mode_evolution(
     for mv in mode_vectors:
         v = mv.ravel()
         vnorm = np.linalg.norm(v)
-        if vnorm > 1e-12:
+        if vnorm > 1e-12:  # noqa: PLR2004
             dots.append(abs(np.dot(v / vnorm, ref)))
         else:
             dots.append(0.0)
