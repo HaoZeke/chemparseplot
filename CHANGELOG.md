@@ -2,7 +2,7 @@
 
 <!-- towncrier release notes start -->
 
-## [Unreleased]
+## [1.5.0](https://github.com/HaoZeke/chemparseplot/tree/1.5.0) - 2026-03-23
 
 ### Added
 
