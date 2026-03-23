@@ -926,42 +926,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: chemparseplot
-  version: 1.4.3.dev19+g14576ae86.d20260318
-  sha256: 32877cd334581e79d2e7caf11cfe6b42cad8542ba577735cd371d1c305727cfe
-  requires_dist:
-  - numpy>=1.26.2
-  - pint>=0.22
-  - rgpycrumbs>=1.3.0
-  - ase>=3.22 ; extra == 'all'
-  - cmcrameri>=1.7 ; extra == 'all'
-  - h5py>=3.0 ; extra == 'all'
-  - matplotlib>=3.8.2 ; extra == 'all'
-  - polars>=0.20 ; extra == 'all'
-  - xyzrender>=0.1.2 ; extra == 'all'
-  - mdit-py-plugins>=0.3.4 ; extra == 'doc'
-  - myst-nb>=1 ; extra == 'doc'
-  - myst-parser>=2 ; extra == 'doc'
-  - sphinx-autodoc2>=0.5 ; extra == 'doc'
-  - sphinx-copybutton>=0.5.2 ; extra == 'doc'
-  - sphinx-library>=1.1.2 ; extra == 'doc'
-  - sphinx-sitemap>=2.5.1 ; extra == 'doc'
-  - sphinx-togglebutton>=0.3.2 ; extra == 'doc'
-  - sphinx>=7.2.6 ; extra == 'doc'
-  - sphinxcontrib-apidoc>=0.4 ; extra == 'doc'
-  - ruff>=0.1.6 ; extra == 'lint'
-  - ase>=3.22 ; extra == 'neb'
-  - h5py>=3.0 ; extra == 'neb'
-  - polars>=0.20 ; extra == 'neb'
-  - cmcrameri>=1.7 ; extra == 'plot'
-  - matplotlib>=3.8.2 ; extra == 'plot'
-  - pytest-cov>=4.1.0 ; extra == 'test'
-  - pytest>=7.4.3 ; extra == 'test'
-  - xyzrender>=0.1.2 ; extra == 'xyzrender'
-  requires_python: '>=3.10'
-- pypi: ./
-  name: chemparseplot
-  version: 1.4.3.dev31+gc44f23ad1.d20260322
-  sha256: 32877cd334581e79d2e7caf11cfe6b42cad8542ba577735cd371d1c305727cfe
+  version: 1.4.3.dev40+gd1a42dc14.d20260323
+  sha256: 3ba84d6a95eb0c0eb3de5d7ffee6ffd48de5b1dd51b9a0dbfa2a862e67af9906
   requires_dist:
   - numpy>=1.26.2
   - pint>=0.22
