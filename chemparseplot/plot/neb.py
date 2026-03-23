@@ -795,11 +795,10 @@ def plot_landscape_surface(
         xg_1d = np.linspace(
             s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
         )
-        # Y-grid: same span as X (preserves aspect=equal), centered on data
+        # Y-grid: same span as X (preserves aspect=equal), centered at 0
         x_span = xg_1d.max() - xg_1d.min()
         y_half = x_span / 2
-        d_center = (d_max + d_min) / 2
-        yg_1d = np.linspace(d_center - y_half, d_center + y_half, 150)
+        yg_1d = np.linspace(-y_half, y_half, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
