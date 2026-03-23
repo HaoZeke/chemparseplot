@@ -757,6 +757,8 @@ def plot_landscape_surface(
     project_path=True,  # noqa: FBT002
     extra_points=None,
     n_inducing=None,
+    xlim=None,
+    ylim=None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -782,28 +784,30 @@ def plot_landscape_surface(
     # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
         s_data, d_data = project_to_sd(rmsd_r, rmsd_p, basis)
-        s_min, s_max = s_data.min(), s_data.max()
-        d_min, d_max = d_data.min(), d_data.max()
 
-        if extra_points is not None and len(extra_points) > 0:
-            extra_s, extra_d = project_to_sd(
-                extra_points[:, 0], extra_points[:, 1], basis
+        if xlim is not None and ylim is not None:
+            # Caller pre-computed the viewport -- build grid to match exactly
+            xg_1d = np.linspace(xlim[0], xlim[1], 150)
+            yg_1d = np.linspace(ylim[0], ylim[1], 150)
+        else:
+            s_min, s_max = s_data.min(), s_data.max()
+            d_min, d_max = d_data.min(), d_data.max()
+
+            if extra_points is not None and len(extra_points) > 0:
+                extra_s, extra_d = project_to_sd(
+                    extra_points[:, 0], extra_points[:, 1], basis
+                )
+                s_min, s_max = min(s_min, extra_s.min()), max(s_max, extra_s.max())
+                d_min, d_max = min(d_min, extra_d.min()), max(d_max, extra_d.max())
+
+            xg_1d = np.linspace(
+                s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
             )
-            s_min, s_max = min(s_min, extra_s.min()), max(s_max, extra_s.max())
-            d_min, d_max = min(d_min, extra_d.min()), max(d_max, extra_d.max())
+            # Y-grid: same span as X (preserves aspect=equal), centered on 0
+            x_span = xg_1d.max() - xg_1d.min()
+            y_half = x_span / 2
+            yg_1d = np.linspace(-y_half, y_half, 150)
 
-        xg_1d = np.linspace(
-            s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
-        )
-        # Y-grid: match X span (preserves aspect=equal) with padding.
-        # The caller may expand axes via set_ylim after path overlay,
-        # so add 20% padding beyond x_span/2 to avoid contourf gaps.
-        x_span = xg_1d.max() - xg_1d.min()
-        y_half = x_span / 2 * 1.2
-        d_center = (d_max + d_min) / 2
-        y_lo = min(-y_half, d_center - y_half)
-        y_hi = max(y_half, d_center + y_half)
-        yg_1d = np.linspace(y_lo, y_hi, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
