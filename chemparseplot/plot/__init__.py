@@ -16,7 +16,7 @@ from chemparseplot.plot.theme import (
 def __getattr__(name):
     import importlib
 
-    _LAZY_SUBMODULES = {"geomscan", "structs", "chemgp"}
+    _LAZY_SUBMODULES = {"geomscan", "structs", "chemgp", "optimization"}
     if name in _LAZY_SUBMODULES:
         return importlib.import_module(f".{name}", __name__)
     if name == "ureg":

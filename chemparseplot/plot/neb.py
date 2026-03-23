@@ -258,9 +258,19 @@ def _render_atoms(
 
 
 def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
-    """Render via solvis (ball-and-stick with PyVista).
+    """Render an atomic structure via solvis (ball-and-stick with PyVista).
 
-    Requires: ``uvx --from solvis-tools python -c "import solvis"``
+    Requires the ``solvis-tools`` package (``pip install solvis-tools``).
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Atomic structure to render.
+    rotation : str, optional
+        Rotation string in the format ``"RXx,RYy,RZz"`` (degrees).
+        Default is ``"0x,90y,0z"``.
+    canvas_size : int, optional
+        Width and height of the rendered image in pixels. Default is 400.
 
     Returns
     -------
