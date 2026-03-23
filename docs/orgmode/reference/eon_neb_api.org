@@ -164,6 +164,63 @@ All landscape DataFrames follow this schema:
 | =z= | =Float64= | eV or unitless | Energy or eigenvalue |
 | =step= | =Int64= | - | Optimization step index (-1 = augmented) |
 
+* Module: =chemparseplot.parse.eon.dimer_trajectory=
+
+Parses dimer/saddle search trajectory output from eOn (=write_movies=true=).
+
+** =DimerTrajectoryData=
+
+Dataclass containing the full trajectory:
+
+| Field | Type | Description |
+|-------+------+-------------|
+| =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
+| =dat_df= | =pl.DataFrame= | Metrics from =climb.dat= (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
+| =initial_atoms= | =Atoms= | Starting structure (=reactant.con= or =pos.con=) |
+| =saddle_atoms= | =Atoms= or =None= | Saddle point (=saddle.con=) |
+| =mode_vector= | =np.ndarray= or =None= | Eigenvector (=mode.dat=) |
+
+** =load_dimer_trajectory(job_dir) -> DimerTrajectoryData=
+
+Loads the complete trajectory from an eOn saddle search job directory. Expects =climb= movie file and =climb.dat= to exist.
+
+** =parse_climb_dat(path) -> pl.DataFrame=
+
+Reads the =climb.dat= TSV file into a DataFrame.
+
+** =parse_climb_con(path) -> list[Atoms]=
+
+Reads the concatenated =climb= movie file via ASE.
+
+* Module: =chemparseplot.parse.eon.min_trajectory=
+
+Parses minimization trajectory output from eOn (=write_movies=true=).
+
+** =MinTrajectoryData=
+
+Dataclass containing the full trajectory:
+
+| Field | Type | Description |
+|-------+------+-------------|
+| =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
+| =dat_df= | =pl.DataFrame= | Metrics from =min.dat= (iteration, step_size, convergence, energy) |
+| =initial_atoms= | =Atoms= | Starting structure (first frame) |
+| =final_atoms= | =Atoms= | Final minimized structure (=min.con= or last frame) |
+
+** =load_min_trajectory(job_dir, prefix="min") -> MinTrajectoryData=
+
+Loads the complete trajectory from an eOn minimization job directory.
+
+** =parse_min_dat(path) -> pl.DataFrame=
+
+Reads the minimization TSV data file.
+
+* Module: =chemparseplot.parse.neb_utils= (updated)
+
+** =calculate_landscape_coords(atoms_list, ira_instance, ira_kmax, ref_a=None, ref_b=None)=
+
+Now accepts explicit =ref_a= and =ref_b= reference structures. Defaults to first/last atoms for backward compatibility. For single-ended methods, pass the initial and final structures explicitly.
+
 * See Also
 
 - [[file:../howto/parse_eon_neb.org][How-to: Parse eOn NEB Calculations]]

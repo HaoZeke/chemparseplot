@@ -11,6 +11,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
+from matplotlib import tri
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
@@ -27,6 +28,12 @@ from scipy.interpolate import (
     splrep,
 )
 from scipy.signal import savgol_filter
+
+from chemparseplot.parse.projection import (
+    compute_projection_basis,
+    inverse_sd_to_ab,
+    project_to_sd,
+)
 
 log = logging.getLogger(__name__)
 
@@ -100,13 +107,70 @@ def _check_xyzrender():
         raise RuntimeError(msg)
 
 
-def _render_xyzrender(atoms, canvas_size=400):
+def _apply_perspective_tilt(atoms, tilt_deg=8.0):
+    """Apply a small off-axis rotation to reveal hidden atoms.
+
+    Uses Rodrigues formula to rotate around an axis perpendicular to
+    the viewing direction. This prevents atoms from occluding each
+    other in orthographic projection without significantly distorting
+    the view.
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Structure to tilt (modified in place).
+    tilt_deg : float
+        Tilt angle in degrees. 5-10 is usually enough.
+    """
+    theta = np.radians(tilt_deg)
+    # Tilt axis: diagonal in the xy-plane (not aligned with any principal axis)
+    k = np.array([1.0, 0.7, 0.0])
+    k = k / np.linalg.norm(k)
+
+    # Rodrigues rotation matrix: R = I cos(t) + (1-cos(t)) k*kT + sin(t) K
+    cos_t, sin_t = np.cos(theta), np.sin(theta)
+    skew = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+    rot = cos_t * np.eye(3) + (1 - cos_t) * np.outer(k, k) + sin_t * skew
+
+    center = atoms.positions.mean(axis=0)
+    atoms.positions = (rot @ (atoms.positions - center).T).T + center
+
+
+def _parse_rotation_angles(rotation_str):
+    """Parse ASE-style rotation string into (rx, ry, rz) degrees.
+
+    E.g. ``"0x,90y,0z"`` -> ``(0, 90, 0)``.
+    """
+    import re
+
+    rx, ry, rz = 0.0, 0.0, 0.0
+    for part in rotation_str.replace(" ", "").split(","):
+        m = re.match(r"(-?[\d.]+)([xyz])", part.strip())
+        if m:
+            val, axis = float(m.group(1)), m.group(2)
+            if axis == "x":
+                rx = val
+            elif axis == "y":
+                ry = val
+            else:
+                rz = val
+    return rx, ry, rz
+
+
+def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
+
+    Uses the ``paton`` preset with hydrogens visible for ball-and-stick
+    style rendering.
 
     Parameters
     ----------
     atoms : ase.Atoms
         Structure to render.
+    rotation : str
+        ``"auto"`` (default) uses xyzrender's auto-orientation.
+        Any ASE-style string (e.g. ``"0x,90y,0z"``) disables auto-orient
+        and pre-rotates the atoms.
     canvas_size : int
         Output image width/height in pixels (passed as ``-S``).
 
@@ -122,6 +186,16 @@ def _render_xyzrender(atoms, canvas_size=400):
     png_path = xyz_path.rsplit(".", 1)[0] + ".png"
 
     try:
+        atoms = atoms.copy()
+        has_custom_rotation = rotation != "auto"
+
+        if has_custom_rotation:
+            rx, ry, rz = _parse_rotation_angles(rotation)
+            # Pre-rotate and disable auto-orient
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
+
         _ase_write(xyz_path, atoms, format="xyz")
         cmd = [
             "xyzrender",
@@ -130,7 +204,13 @@ def _render_xyzrender(atoms, canvas_size=400):
             png_path,
             "-S",
             str(canvas_size),
+            "--config",
+            "paton",
+            "--hy",
+            "-t",
         ]
+        if has_custom_rotation:
+            cmd.append("--no-orient")
         subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
         img_data = plt.imread(png_path)
     finally:
@@ -144,6 +224,193 @@ def _render_xyzrender(atoms, canvas_size=400):
     return img_data
 
 
+def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0):
+    """Dispatch rendering to the selected backend.
+
+    All backends return a numpy RGBA image array.
+
+    Parameters
+    ----------
+    rotation : str
+        ASE-style rotation string (e.g. ``"0x,90y,0z"``). Applied
+        uniformly across all backends.
+    perspective_tilt : float
+        Small off-axis tilt in degrees to reveal occluded atoms.
+        0 disables. 5-10 is usually enough.
+    """
+    if perspective_tilt > 0:
+        atoms = atoms.copy()
+        _apply_perspective_tilt(atoms, perspective_tilt)
+    # "auto" means: xyzrender auto-orients, other backends use default side view
+    effective_rotation = rotation if rotation != "auto" else "0x,90y,0z"
+
+    if renderer == "xyzrender":
+        _check_xyzrender()
+        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
+    elif renderer == "solvis":
+        return _render_solvis(atoms, rotation=effective_rotation, canvas_size=canvas_size)
+    elif renderer == "ovito":
+        return _render_ovito(atoms, rotation=effective_rotation, canvas_size=canvas_size)
+    else:
+        return render_structure_to_image(atoms, zoom, effective_rotation)
+
+
+def _render_solvis(atoms, rotation="0x,90y,0z", canvas_size=400):
+    """Render an atomic structure via solvis (ball-and-stick with PyVista).
+
+    Requires the ``solvis-tools`` package (``pip install solvis-tools``).
+
+    Parameters
+    ----------
+    atoms : ase.Atoms
+        Atomic structure to render.
+    rotation : str, optional
+        Rotation string in the format ``"RXx,RYy,RZz"`` (degrees).
+        Default is ``"0x,90y,0z"``.
+    canvas_size : int, optional
+        Width and height of the rendered image in pixels. Default is 400.
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array.
+    """
+    try:
+        from solvis.visualization import AtomicPlotter
+    except ImportError as exc:
+        msg = "solvis not installed. Install with: pip install solvis-tools"
+        raise RuntimeError(msg) from exc
+
+    from ase.neighborlist import natural_cutoffs, neighbor_list
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as png_fh:
+        png_path = png_fh.name
+
+    try:
+        import pyvista as pv
+
+        pv.start_xvfb()  # headless rendering without DISPLAY
+
+        plotter = AtomicPlotter(
+            interactive_mode=False,
+            window_size=[canvas_size, canvas_size],
+            depth_peeling=True,
+            shadows=False,
+        )
+        # Transparent background
+        plotter.plotter.set_background([1.0, 1.0, 1.0, 0.0])
+
+        # Apply rotation
+        atoms = atoms.copy()
+        rx, ry, rz = _parse_rotation_angles(rotation)
+        if rx != 0 or ry != 0 or rz != 0:
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
+
+        positions = atoms.get_positions()
+        numbers = atoms.get_atomic_numbers()
+
+        # CPK hex colors from ASE jmol palette
+        from ase.data.colors import jmol_colors
+
+        def _rgb_to_hex(rgb):
+            r, g, b = int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)
+            return f"#{r:02x}{g:02x}{b:02x}"
+
+        colors = [_rgb_to_hex(jmol_colors[z]) for z in numbers]
+
+        plotter.add_atoms_as_spheres(positions, colors, radius=0.3)
+
+        # Bonds via ASE neighbor list
+        cutoffs = natural_cutoffs(atoms, mult=1.1)
+        i_idx, j_idx = neighbor_list("ij", atoms, cutoffs)
+        for bond_idx, (i, j) in enumerate(zip(i_idx, j_idx, strict=False)):
+            if i < j:
+                plotter.add_bond(
+                    positions[i],
+                    positions[j],
+                    colors[i],
+                    colors[j],
+                    f"bond_{bond_idx}",
+                    radius=0.08,
+                )
+
+        # Render with transparency
+        img_data = plotter.plotter.screenshot(
+            png_path, transparent_background=True, return_img=True
+        )
+        plotter.close()
+        # Normalize to float [0,1] if needed
+        if img_data.dtype == np.uint8:
+            img_data = img_data.astype(np.float32) / 255.0
+    finally:
+        import os
+
+        try:
+            os.unlink(png_path)
+        except OSError:
+            pass
+    return img_data
+
+
+def _render_ovito(atoms, rotation="0x,90y,0z", canvas_size=400):
+    """Render via OVITO Python (high-quality off-screen rendering).
+
+    Requires: ``pip install ovito``
+
+    Returns
+    -------
+    numpy.ndarray
+        RGBA image array.
+    """
+    try:
+        from ovito.io.ase import ase_to_ovito
+        from ovito.pipeline import Pipeline, StaticSource
+        from ovito.vis import OpenGLRenderer, Viewport
+    except ImportError as exc:
+        msg = "ovito not installed. Install with: pip install ovito"
+        raise RuntimeError(msg) from exc
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as png_fh:
+        png_path = png_fh.name
+
+    try:
+        # Apply rotation before converting to OVITO
+        atoms = atoms.copy()
+        rx, ry, rz = _parse_rotation_angles(rotation)
+        if rx != 0 or ry != 0 or rz != 0:
+            atoms.rotate(rx, "x", center="COP")
+            atoms.rotate(ry, "y", center="COP")
+            atoms.rotate(rz, "z", center="COP")
+
+        data = ase_to_ovito(atoms)
+        src = StaticSource()
+        src.data = data
+        pipeline = Pipeline(source=src)
+        pipeline.add_to_scene()
+
+        vp = Viewport(type=Viewport.Type.Ortho)
+        vp.zoom_all()
+
+        vp.render_image(
+            size=(canvas_size, canvas_size),
+            filename=png_path,
+            background=(1.0, 1.0, 1.0),
+            renderer=OpenGLRenderer(),
+        )
+        pipeline.remove_from_scene()
+        img_data = plt.imread(png_path)
+    finally:
+        import os
+
+        try:
+            os.unlink(png_path)
+        except OSError:
+            pass
+    return img_data
+
+
 def plot_structure_strip(
     ax,
     atoms_list,
@@ -152,20 +419,39 @@ def plot_structure_strip(
     rotation="0x,90y,0z",
     theme_color="black",
     max_cols=6,
-    renderer="ase",
+    renderer="xyzrender",
+    col_spacing=1.5,
+    show_dividers=False,  # noqa: FBT002
+    divider_color="gray",
+    divider_style="--",
+    perspective_tilt=0.0,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
     Parameters
     ----------
     renderer : str
-        Rendering backend: ``"ase"`` (default) or ``"xyzrender"``.
+        Rendering backend: ``"ase"``, ``"xyzrender"``, ``"solvis"``,
+        or ``"ovito"``.
+    col_spacing : float
+        Horizontal spacing between structure images in data units.
+    show_dividers : bool
+        Draw vertical divider lines between structures.
+    divider_color : str
+        Color for divider lines.
+    divider_style : str
+        Linestyle for divider lines (e.g. ``"--"``, ``"-"``, ``":"``).
 
     ```{versionadded} 0.1.0
     ```
 
     ```{versionchanged} 1.2.0
     Added the *renderer* parameter.
+    ```
+
+    ```{versionchanged} 1.5.0
+    Added *col_spacing*, *show_dividers*, *divider_color*, *divider_style*
+    parameters. Added ``"solvis"`` and ``"ovito"`` renderer backends.
     ```
     """
     ax.axis("off")
@@ -174,10 +460,8 @@ def plot_structure_strip(
     n_rows = (n_plot + max_cols - 1) // max_cols
     row_step = 8.5
 
-    # Widen spacing for many items to prevent label overlap
-    col_step = max(1.0, 1.2 if n_cols > 4 else 1.0)
+    col_step = col_spacing
     ax.set_xlim(-0.5, (n_cols - 1) * col_step + 0.5)
-    # Heuristic layout from plt_neb.py
     y_min = -((n_rows - 1) * row_step) - 0.8
     y_max = 0.6
     ax.set_ylim(y_min, y_max)
@@ -185,20 +469,15 @@ def plot_structure_strip(
     # Adaptive font size: shrink for many items
     label_fontsize = min(11, max(7, 14 - n_plot))
 
-    if renderer == "xyzrender":
-        _check_xyzrender()
-
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
         x_pos, y_pos = col * col_step, -row * row_step
 
-        if renderer == "xyzrender":
-            img_data = _render_xyzrender(atoms, canvas_size=400)
-        else:
-            img_data = render_structure_to_image(atoms, zoom, rotation)
+        img_data = _render_atoms(
+            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+        )
 
-        # Adjust zoom for strip
         effective_zoom = zoom * 0.45
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
@@ -224,6 +503,18 @@ def plot_structure_strip(
                 fontweight="bold",
             )
 
+    # Divider lines between structures
+    if show_dividers:
+        for col in range(1, n_cols):
+            x_div = (col - 0.5) * col_step
+            ax.axvline(
+                x_div,
+                color=divider_color,
+                linestyle=divider_style,
+                linewidth=0.8,
+                alpha=0.5,
+            )
+
 
 def plot_structure_inset(
     ax,
@@ -235,7 +526,8 @@ def plot_structure_inset(
     zoom=0.4,
     rotation="0x,90y,0z",
     arrow_props=None,
-    renderer="ase",
+    renderer="xyzrender",
+    perspective_tilt=0.0,
 ) -> Any:
     """Plots a single structure as an annotation inset.
 
@@ -251,11 +543,9 @@ def plot_structure_inset(
     Added the *renderer* parameter.
     ```
     """
-    if renderer == "xyzrender":
-        _check_xyzrender()
-        img_data = _render_xyzrender(atoms, canvas_size=400)
-    else:
-        img_data = render_structure_to_image(atoms, zoom, rotation)
+    img_data = _render_atoms(
+        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+    )
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
@@ -290,7 +580,16 @@ def plot_structure_inset(
 
 
 def plot_energy_path(
-    ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None
+    ax,
+    rc,
+    energy,
+    f_para,
+    color,
+    alpha,
+    zorder,
+    method="hermite",
+    smoothing=None,
+    label=None,
 ) -> Any:
     """Plots 1D energy profile with optional Hermite spline interpolation.
 
@@ -335,7 +634,7 @@ def plot_energy_path(
 
         x_fine = rc_fine_norm * path_length + rc_min
 
-        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder)
+        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder, label=label)
         ax.plot(
             rc,
             energy,
@@ -351,7 +650,7 @@ def plot_energy_path(
 
     except Exception as e:
         log.warning(f"Spline failed ({e}), plotting raw lines.")
-        ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder)
+        ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder, label=label)
 
 
 def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white"):
@@ -478,38 +777,29 @@ def plot_landscape_surface(
     """
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
-    r_start, p_start = rmsd_r[0], rmsd_p[0]
-    r_end, p_end = rmsd_r[-1], rmsd_p[-1]
-
-    vec_r, vec_p = r_end - r_start, p_end - p_start
-    path_norm = np.hypot(vec_r, vec_p)
-    u_r, u_p = vec_r / path_norm, vec_p / path_norm
-    v_r, v_p = -u_p, u_r
+    basis = compute_projection_basis(rmsd_r, rmsd_p) if project_path else None
 
     # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
-        s_data = (rmsd_r - r_start) * u_r + (rmsd_p - p_start) * u_p
-        d_data = (rmsd_r - r_start) * v_r + (rmsd_p - p_start) * v_p
+        s_data, d_data = project_to_sd(rmsd_r, rmsd_p, basis)
         s_min, s_max = s_data.min(), s_data.max()
         d_min, d_max = d_data.min(), d_data.max()
 
         if extra_points is not None and len(extra_points) > 0:
-            extra_s = (extra_points[:, 0] - r_start) * u_r + (
-                extra_points[:, 1] - p_start
-            ) * u_p
-            extra_d = (extra_points[:, 0] - r_start) * v_r + (
-                extra_points[:, 1] - p_start
-            ) * v_p
+            extra_s, extra_d = project_to_sd(
+                extra_points[:, 0], extra_points[:, 1], basis
+            )
             s_min, s_max = min(s_min, extra_s.min()), max(s_max, extra_s.max())
             d_min, d_max = min(d_min, extra_d.min()), max(d_max, extra_d.max())
 
         xg_1d = np.linspace(
             s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
         )
-        # Compute symmetric Y-grid based on X-span to fill the 1:1 plot
+        # Y-grid: same span as X (preserves aspect=equal), centered on data
         x_span = xg_1d.max() - xg_1d.min()
         y_half = x_span / 2
-        yg_1d = np.linspace(-y_half, y_half, 150)
+        d_center = (d_max + d_min) / 2
+        yg_1d = np.linspace(d_center - y_half, d_center + y_half, 150)
         xg, yg = np.meshgrid(xg_1d, yg_1d)
     else:
         r_min, r_max = rmsd_r.min(), rmsd_r.max()
@@ -591,12 +881,8 @@ def plot_landscape_surface(
 
     # --- 3. Prediction and Variance ---
     if project_path:
-        grid_pts_eval = np.column_stack(
-            [
-                r_start + xg.ravel() * u_r + yg.ravel() * v_r,
-                p_start + xg.ravel() * u_p + yg.ravel() * v_p,
-            ]
-        )
+        eval_a, eval_b = inverse_sd_to_ab(xg.ravel(), yg.ravel(), basis)
+        grid_pts_eval = np.column_stack([eval_a, eval_b])
     else:
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
@@ -628,31 +914,37 @@ def plot_landscape_surface(
         v_min, v_max = var_grid.min(), var_grid.max()
         v_range = v_max - v_min
 
-        # Calculate levels as 5%, 95%, and the user requested threshold of the
-        # visual range with an epsilon to avoid errors for flat variances
-        v_levs = [
-            v_min + 0.05 * v_range + 1e-6,
-            v_min + variance_threshold * v_range + 1e-6,
-            v_min + 0.95 * v_range + 1e-6,
-        ]
+        # Calculate levels as 5%, threshold%, and 95% of the variance range.
+        # Skip contours entirely if variance is flat (avoids matplotlib error
+        # "Contour levels must be increasing").
+        if v_range < 1e-10:
+            v_con = None
+        else:
+            v_levs = sorted(
+                {
+                    v_min + 0.05 * v_range,
+                    v_min + variance_threshold * v_range,
+                    v_min + 0.95 * v_range,
+                }
+            )
 
-        v_con = ax.contour(
-            xg,
-            yg,
-            var_grid,
-            levels=v_levs,
-            colors="black",
-            linestyles="dashed",
-            alpha=0.8,
-            zorder=12,
-        )
-        ax.clabel(
-            v_con,
-            inline=True,
-            fontsize=8,
-            inline_spacing=50,
-            fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
-        )
+            v_con = ax.contour(
+                xg,
+                yg,
+                var_grid,
+                levels=v_levs,
+                colors="black",
+                linestyles="dashed",
+                alpha=0.8,
+                zorder=12,
+            )
+            ax.clabel(
+                v_con,
+                inline=True,
+                fontsize=8,
+                inline_spacing=50,
+                fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
+            )
 
     if show_pts:
         plot_x = s_data if project_path else rmsd_r
@@ -705,10 +997,15 @@ def plot_landscape_path_overlay(
     cmap,
     z_label,
     project_path=True,  # noqa: FBT002
+    all_r=None,
+    all_p=None,
+    all_z=None,
 ) -> Any:
     """Overlay the colored path line on the landscape.
 
-    Mapped to the chosen coordinate basis.
+    Mapped to the chosen coordinate basis. When ``all_r/all_p/all_z`` arrays
+    are provided (all NEB iterations), a triangulated filled contour is drawn
+    as the background so the landscape is never empty.
 
     ```{versionadded} 0.1.0
     ```
@@ -716,28 +1013,17 @@ def plot_landscape_path_overlay(
     ```{versionchanged} 1.1.0
     Added the *project_path* parameter for reaction-valley coordinate projection.
     ```
+
+    ```{versionchanged} 1.6.0
+    Added *all_r*, *all_p*, *all_z* for triangulated background contours.
+    ```
     """
     if project_path:
-        r_start, p_start = r[0], p[0]
-        r_end, p_end = r[-1], p[-1]
-
-        vec_r = r_end - r_start
-        vec_p = p_end - p_start
-        path_norm = np.hypot(vec_r, vec_p)
-
-        u_r = vec_r / path_norm
-        u_p = vec_p / path_norm
-        v_r = -u_p
-        v_p = u_r
-
-        plot_x = (r - r_start) * u_r + (p - p_start) * u_p
-        plot_y = (r - r_start) * v_r + (p - p_start) * v_p
+        basis = compute_projection_basis(r, p)
+        plot_x, plot_y = project_to_sd(r, p, basis)
     else:
         plot_x = r
         plot_y = p
-
-    points = np.array([plot_x, plot_y]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
     try:
         colormap = plt.get_cmap(cmap)
@@ -745,6 +1031,40 @@ def plot_landscape_path_overlay(
         colormap = plt.get_cmap("viridis")
 
     norm = plt.Normalize(z.min(), z.max())
+
+    # --- Triangulated background contours from all iterations ---
+    if all_r is not None and all_p is not None and all_z is not None:
+        if project_path:
+            bg_x, bg_y = project_to_sd(all_r, all_p, basis)
+        else:
+            bg_x, bg_y = all_r, all_p
+        try:
+            triang = tri.Triangulation(bg_x, bg_y)
+            bg_norm = plt.Normalize(all_z.min(), all_z.max())
+            ax.tricontourf(
+                triang,
+                all_z,
+                levels=20,
+                cmap=colormap,
+                alpha=0.6,
+                norm=bg_norm,
+                zorder=5,
+            )
+            ax.tricontour(
+                triang,
+                all_z,
+                levels=10,
+                colors="k",
+                alpha=0.15,
+                linewidths=0.4,
+                zorder=6,
+            )
+        except Exception:
+            log.debug("Triangulation failed, skipping background contours.")
+
+    points = np.array([plot_x, plot_y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
     lc = LineCollection(segments, cmap=colormap, norm=norm, zorder=30)
 
     # Color segments by average Z of endpoints
@@ -767,6 +1087,127 @@ def plot_landscape_path_overlay(
         plt.cm.ScalarMappable(norm=norm, cmap=colormap), ax=ax, label=z_label
     )
     return cb
+
+
+def plot_mmf_peaks_overlay(
+    ax,
+    peak_rmsd_r,
+    peak_rmsd_p,
+    peak_energies,
+    project_path=True,  # noqa: FBT002
+    path_rmsd_r=None,
+    path_rmsd_p=None,
+) -> None:
+    """Overlay MMF (mode-following) refinement peak positions on the landscape.
+
+    Used for OCI-NEB/RONEB visualization to show where dimer refinement
+    was applied along the band.
+
+    Parameters
+    ----------
+    ax
+        Matplotlib axes (same as the landscape plot).
+    peak_rmsd_r, peak_rmsd_p
+        RMSD coordinates of MMF peak structures.
+    peak_energies
+        Energy values at the peak positions.
+    project_path
+        Whether to project into (s, d) coordinates.
+    path_rmsd_r, path_rmsd_p
+        RMSD arrays of the main NEB path, used to define the projection
+        basis. Required when ``project_path=True``. If None, falls back
+        to computing basis from the peaks themselves (less accurate).
+
+    ```{versionadded} 1.5.0
+    ```
+    """
+    if len(peak_rmsd_r) == 0:
+        return
+
+    peak_r = np.asarray(peak_rmsd_r)
+    peak_p = np.asarray(peak_rmsd_p)
+    peak_e = np.asarray(peak_energies)
+
+    if project_path:
+        if path_rmsd_r is not None and path_rmsd_p is not None:
+            basis = compute_projection_basis(
+                np.asarray(path_rmsd_r), np.asarray(path_rmsd_p)
+            )
+        else:
+            basis = compute_projection_basis(peak_r, peak_p)
+        plot_x, plot_y = project_to_sd(peak_r, peak_p, basis)
+    else:
+        plot_x, plot_y = peak_r, peak_p
+
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c=peak_e,
+        cmap="coolwarm",
+        marker="*",
+        s=200,
+        edgecolors="black",
+        linewidths=1.0,
+        zorder=50,
+        label="MMF peaks",
+    )
+
+
+def plot_neb_evolution(
+    ax,
+    step_rmsd_r_list: list[np.ndarray],
+    step_rmsd_p_list: list[np.ndarray],
+    project_path=True,  # noqa: FBT002
+    cmap="Blues",
+) -> None:
+    """Show NEB band evolution across optimization iterations.
+
+    Older bands are drawn with lower opacity; the final band is most visible.
+    All bands are projected using the *final* band's basis so they share
+    one consistent coordinate frame.
+
+    Parameters
+    ----------
+    ax
+        Matplotlib axes.
+    step_rmsd_r_list
+        List of RMSD-R arrays, one per NEB iteration.
+    step_rmsd_p_list
+        List of RMSD-P arrays, one per NEB iteration.
+    project_path
+        Whether to project into (s, d) coordinates.
+    cmap
+        Colormap for fading bands (older = lighter).
+
+    ```{versionadded} 1.5.0
+    ```
+    """
+    n_steps = len(step_rmsd_r_list)
+    if n_steps == 0:
+        return
+
+    colormap = plt.get_cmap(cmap)
+
+    # Use the final band to define the projection basis for all bands
+    final_basis = None
+    if project_path:
+        final_r = np.asarray(step_rmsd_r_list[-1])
+        final_p = np.asarray(step_rmsd_p_list[-1])
+        final_basis = compute_projection_basis(final_r, final_p)
+
+    pairs = zip(step_rmsd_r_list, step_rmsd_p_list, strict=False)
+    for i, (rr_raw, rp_raw) in enumerate(pairs):
+        rr = np.asarray(rr_raw)
+        rp = np.asarray(rp_raw)
+
+        if project_path:
+            px, py = project_to_sd(rr, rp, final_basis)
+        else:
+            px, py = rr, rp
+
+        alpha = 0.15 + 0.85 * (i / max(n_steps - 1, 1))
+        color = colormap(0.3 + 0.7 * (i / max(n_steps - 1, 1)))
+        ax.plot(px, py, "o-", color=color, alpha=alpha, markersize=2, linewidth=1)
 
 
 def plot_orca_neb_profile(

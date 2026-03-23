@@ -1,0 +1,114 @@
+#+TITLE: How-to: Run Tests and Check Coverage
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You want to run tests and check coverage across all optional dependency sets.
+
+* Quick Start
+
+** Single Environment (uv)
+
+For basic development without conda-gated deps:
+
+#+BEGIN_SRC shell
+cd chemparseplot
+uv sync --extra test
+uv run pytest tests/ --ignore=tests/tutorials
+#+END_SRC
+
+This covers ~86% of the codebase. The remaining 14% requires jax, pandas, or plotnine.
+
+** Full Coverage (pixi)
+
+pixi manages multiple environments with different optional deps. Each env runs its test subset, then results combine:
+
+#+BEGIN_SRC shell
+pixi run cov
+#+END_SRC
+
+This runs:
+
+| Environment | Deps | What it tests |
+|-------------+------+---------------|
+| test | ase, polars, scipy, matplotlib | Core parsers, projection, NEB, trajectory |
+| plot | + jax, cmcrameri | Surface fitting, landscape rendering |
+| chemgp | + pandas, plotnine | ChemGP HDF5/JSONL parsers, plotnine plots |
+| plumed | + pandas | PLUMED FES parsing and reconstruction |
+
+The ~cov~ task cleans stale files, runs all four env tasks, then calls ~coverage combine~ and ~coverage report --fail-under=90~.
+
+** Individual Environments
+
+#+BEGIN_SRC shell
+pixi run -e test test-base     # base tests only
+pixi run -e plot test-plot     # with jax + cmcrameri
+pixi run -e chemgp test-chemgp # with pandas + plotnine
+pixi run -e plumed test-plumed # plumed tests only
+#+END_SRC
+
+** Coverage Report
+
+After any test run:
+
+#+BEGIN_SRC shell
+uv run coverage report --show-missing
+#+END_SRC
+
+Or for HTML:
+
+#+BEGIN_SRC shell
+uv run coverage html
+# open htmlcov/index.html
+#+END_SRC
+
+* How Coverage Combine Works
+
+1. Each pixi env task runs ~pytest --cov~ which writes ~.coverage~
+2. The task renames it to ~.coverage.<env>~ (e.g. ~.coverage.test~)
+3. ~coverage combine~ merges all ~.coverage.*~ into one ~.coverage~
+4. ~coverage report~ reads the combined file
+
+The ~[tool.coverage.run]~ in ~pyproject.toml~ has ~parallel = true~ and ~source_pkgs = ["chemparseplot"]~. The ~[tool.coverage.paths]~ maps different install prefixes back to the source tree.
+
+* Writing Tests
+
+** Test Markers
+
+#+BEGIN_SRC python
+import pytest
+
+@pytest.mark.neb       # needs ase, polars, h5py
+@pytest.mark.pure      # needs only numpy
+#+END_SRC
+
+** Smoke Tests for Plot Functions
+
+Plot functions are tested by creating a figure, calling the function, and checking axes properties:
+
+#+BEGIN_SRC python
+import matplotlib
+matplotlib.use("Agg")  # headless
+import matplotlib.pyplot as plt
+
+def test_some_plot():
+    fig, ax = plt.subplots()
+    some_plot_function(ax, data)
+    assert len(ax.lines) > 0
+    plt.close(fig)
+#+END_SRC
+
+* Quality Guidelines
+
+- New modules must have tests in the same PR
+- Coverage threshold: 90% (enforced by ~pixi run cov~)
+- Plot functions: at least smoke tests (figure creation + basic assertions)
+- Parsers: synthetic input data + output schema validation
+- Mock conda-only deps (IRA, jax, tblite) for the base test env
+
+* See Also
+
+- [[file:../reference/plotting_api.org][Plotting API Reference]]
+- [[file:../../CONTRIBUTING.md][Contributing Guide]]

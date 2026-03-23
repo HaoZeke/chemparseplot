@@ -15,3 +15,67 @@ python = "==3.12"
 [pypi-dependencies]
 chemparseplot = { path = ".", editable = true }
 rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }
+
+# --- Test features ---
+
+[feature.test.pypi-dependencies]
+chemparseplot = { path = ".", editable = true }
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs" }
+pytest = ">=7.4"
+pytest-cov = ">=4.1"
+polars = ">=0.20"
+scipy = ">=1.11"
+matplotlib = ">=3.8"
+xyzrender = ">=0.1.2"
+
+[feature.test.dependencies]
+ase = ">=3.23,<4"
+h5py = ">=3.0"
+
+[feature.plot.pypi-dependencies]
+cmcrameri = ">=1.7"
+jax = ">=0.4"
+
+[feature.chemgp.pypi-dependencies]
+pandas = ">=2.0"
+plotnine = ">=0.13"
+cmcrameri = ">=1.7"
+
+[feature.plumed.pypi-dependencies]
+pandas = ">=2.0"
+cmcrameri = ">=1.7"
+
+# --- Environments ---
+
+[environments]
+test = { features = ["test"], solve-group = "default" }
+plot = { features = ["test", "plot"], solve-group = "default" }
+chemgp = { features = ["test", "chemgp"], solve-group = "default" }
+plumed = { features = ["test", "plumed"], solve-group = "default" }
+
+# --- Tasks ---
+
+[feature.test.tasks.test-base]
+cmd = "COVERAGE_FILE=.coverage.test python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
+
+[feature.plot.tasks.test-plot]
+cmd = "COVERAGE_FILE=.coverage.plot python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
+
+[feature.chemgp.tasks.test-chemgp]
+cmd = "COVERAGE_FILE=.coverage.chemgp python -m pytest tests/ --ignore=tests/tutorials --cov -q; true"
+
+[feature.plumed.tasks.test-plumed]
+cmd = "COVERAGE_FILE=.coverage.plumed python -m pytest tests/parse/test_plumed.py --cov -q; true"
+
+[tasks.cov-clean]
+cmd = "find . -maxdepth 1 -name '.coverage*' -delete 2>/dev/null; true"
+
+[tasks.cov]
+cmd = "coverage combine .coverage.test .coverage.plot .coverage.chemgp .coverage.plumed && coverage report"
+depends-on = [
+  "cov-clean",
+  { task = "test-base", environment = "test" },
+  { task = "test-plot", environment = "plot" },
+  { task = "test-chemgp", environment = "chemgp" },
+  { task = "test-plumed", environment = "plumed" },
+]

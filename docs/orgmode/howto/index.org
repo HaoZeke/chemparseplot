@@ -11,7 +11,7 @@ How-to guides are goal-oriented. Use them to solve specific problems.
 |-------+-------------|
 | [[file:parse_orca_neb.org][Parse ORCA NEB Calculations]] | Extract energies and barriers from ORCA NEB |
 | [[file:parse_eon_neb.org][Parse eOn NEB Calculations]] | Extract data from eOn NEB calculations |
-| [[file:create_neb_figures.org][Create Publication-quality NEB Figures]] | Advanced plotting tips |
+| [[file:create_neb_figures.org][Create Publication-quality Figures]] | NEB, dimer, and minimization plotting tips |
 
 ** Structure
 

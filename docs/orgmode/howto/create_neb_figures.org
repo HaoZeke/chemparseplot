@@ -265,6 +265,106 @@ fig.savefig("figure.png", dpi=600, bbox_inches="tight")
 fig.savefig("figure.tiff", dpi=600, bbox_inches="tight")
 #+end_src
 
+* Single-Ended Method Visualization
+
+The same 2D reaction valley projection works for dimer/saddle search and minimization trajectories. The interpretation changes: =s= becomes optimization progress and =d= becomes lateral deviation.
+
+** Dimer/Saddle Search Landscape
+
+Requires eOn output with =write_movies=true= (produces =climb.dat= and =climb= movie file).
+
+#+begin_src python
+from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+from chemparseplot.parse.neb_utils import calculate_landscape_coords, compute_synthetic_gradients
+from chemparseplot.plot.optimization import plot_optimization_landscape
+import numpy as np
+import matplotlib.pyplot as plt
+
+traj = load_dimer_trajectory(Path("saddle_job/"))
+
+# Use IRA for RMSD (if available)
+try:
+    from rgpycrumbs._aux import _import_from_parent_env
+    ira_mod = _import_from_parent_env("ira_mod")
+    ira_instance = ira_mod.IRA()
+except ImportError:
+    ira_instance = None
+
+rmsd_a, rmsd_b = calculate_landscape_coords(
+    traj.atoms_list, ira_instance, ira_kmax=1.8,
+    ref_a=traj.initial_atoms,     # initial structure
+    ref_b=traj.saddle_atoms,      # saddle point
+)
+
+energies = traj.dat_df["delta_e"].to_numpy()
+f_para = -np.gradient(energies)
+grad_a, grad_b = compute_synthetic_gradients(rmsd_a, rmsd_b, f_para)
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+plot_optimization_landscape(
+    ax, rmsd_a, rmsd_b, grad_a, grad_b, energies,
+    project_path=True,
+    label_mode="optimization",
+)
+fig.savefig("saddle_landscape.pdf", dpi=300, bbox_inches="tight")
+#+end_src
+
+** Minimization Landscape
+
+#+begin_src python
+from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+traj = load_min_trajectory(Path("min_job/"))
+rmsd_a, rmsd_b = calculate_landscape_coords(
+    traj.atoms_list, ira_instance, ira_kmax=1.8,
+    ref_a=traj.initial_atoms,
+    ref_b=traj.final_atoms,
+)
+# ... same pattern as above with plot_optimization_landscape
+#+end_src
+
+** Energy/Convergence Profiles
+
+#+begin_src python
+from chemparseplot.plot.optimization import plot_optimization_profile, plot_convergence_panel
+
+fig, (ax_e, ax_ev) = plt.subplots(1, 2, figsize=(10, 4))
+dat = traj.dat_df
+plot_optimization_profile(
+    ax_e,
+    dat["iteration"].to_numpy(),
+    dat["delta_e"].to_numpy(),
+    eigenvalues=dat["eigenvalue"].to_numpy(),
+    ax_eigen=ax_ev,
+)
+#+end_src
+
+** OCI-NEB/RONEB: MMF Peak Overlay
+
+When OCI-NEB produces =peak{NN}_pos.con= files, overlay them on the landscape:
+
+#+begin_src python
+from chemparseplot.plot.neb import plot_mmf_peaks_overlay
+
+plot_mmf_peaks_overlay(
+    ax, peak_rmsd_r, peak_rmsd_p, peak_energies,
+    project_path=True,
+)
+#+end_src
+
+** CLI Shortcuts
+
+#+begin_src shell
+# Saddle search landscape
+rgpycrumbs eon plt-saddle --job-dir saddle_job/ --plot-type landscape
+
+# Minimization profile
+rgpycrumbs eon plt-min --job-dir min_job/ --plot-type profile
+
+# NEB with MMF peaks
+rgpycrumbs eon plt-neb --mmf-peaks --peak-dir . --plot-type landscape
+#+end_src
+
 * See Also
 
 - [[file:parse_eon_neb.org][How-to: Parse eOn NEB Calculations]]

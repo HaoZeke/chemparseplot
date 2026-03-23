@@ -8,6 +8,8 @@ RMSD landscape coordinate calculation, synthetic 2D gradient projection,
 and landscape DataFrame construction.
 """
 
+from __future__ import annotations
+
 import logging
 
 import numpy as np
@@ -18,43 +20,56 @@ log = logging.getLogger(__name__)
 
 
 def calculate_landscape_coords(
-    atoms_list: list[Atoms], ira_instance, ira_kmax: float
+    atoms_list: list[Atoms],
+    ira_instance,
+    ira_kmax: float,
+    ref_a: Atoms | None = None,
+    ref_b: Atoms | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Calculate 2D landscape coordinates (RMSD-R, RMSD-P) for a path.
+    """Calculate 2D landscape coordinates (RMSD-A, RMSD-B) for a path.
 
     ```{versionadded} 1.2.0
     ```
 
-    Uses the first frame as reactant reference and the last as product.
+    ```{versionchanged} 1.5.0
+    Added *ref_a* and *ref_b* parameters for explicit reference structures.
+    ```
 
     :param atoms_list: List of ASE Atoms objects representing the path.
     :param ira_instance: An instantiated IRA object (or None).
     :param ira_kmax: kmax factor for IRA.
-    :return: A tuple of (rmsd_r, rmsd_p) arrays.
+    :param ref_a: Reference structure A. Defaults to ``atoms_list[0]``.
+    :param ref_b: Reference structure B. Defaults to ``atoms_list[-1]``.
+    :return: A tuple of (rmsd_a, rmsd_b) arrays.
     """
     from concurrent.futures import ThreadPoolExecutor
 
     from rgpycrumbs.geom.api.alignment import calculate_rmsd_from_ref
 
-    log.info("Calculating landscape coordinates (RMSD-R, RMSD-P)...")
+    if ref_a is None:
+        ref_a = atoms_list[0]
+    if ref_b is None:
+        ref_b = atoms_list[-1]
+
+    log.info("Calculating landscape coordinates (RMSD-A, RMSD-B)...")
     with ThreadPoolExecutor(max_workers=2) as pool:
-        fut_r = pool.submit(
+        fut_a = pool.submit(
             calculate_rmsd_from_ref,
             atoms_list,
             ira_instance,
-            ref_atom=atoms_list[0],
+            ref_atom=ref_a,
             ira_kmax=ira_kmax,
         )
-        fut_p = pool.submit(
+        fut_b = pool.submit(
             calculate_rmsd_from_ref,
             atoms_list,
             ira_instance,
-            ref_atom=atoms_list[-1],
+            ref_atom=ref_b,
             ira_kmax=ira_kmax,
         )
-        rmsd_r = fut_r.result()
-        rmsd_p = fut_p.result()
-    return rmsd_r, rmsd_p
+        rmsd_a = fut_a.result()
+        rmsd_b = fut_b.result()
+    return rmsd_a, rmsd_b
 
 
 def compute_synthetic_gradients(

@@ -196,6 +196,12 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
 
             dx = max_cv1 - min_cv1
             dy = max_cv2 - min_cv2
+            if dx == 0:
+                sigma_x = np.max(hills_data[:, 3])
+                dx = 6 * sigma_x
+            if dy == 0:
+                sigma_y = np.max(hills_data[:, 4])
+                dy = 6 * sigma_y
             xlims = [min_cv1 - 0.05 * dx, max_cv1 + 0.05 * dx]
             ylims = [min_cv2 - 0.05 * dy, max_cv2 + 0.05 * dy]
 
@@ -247,6 +253,10 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
             # Determine grid boundaries
             min_cv1, max_cv1 = np.min(hills_data[:, 1]), np.max(hills_data[:, 1])
             dx = max_cv1 - min_cv1
+            if dx == 0:
+                # Single-point CV range: use 3*sigma as padding
+                sigma = np.max(hills_data[:, 2])
+                dx = 6 * sigma
             xlims = [min_cv1 - 0.05 * dx, max_cv1 + 0.05 * dx]
 
             # Override with user-defined or periodic limits
