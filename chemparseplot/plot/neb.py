@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
@@ -478,7 +479,7 @@ def plot_structure_strip(
             atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
         )
 
-        effective_zoom = zoom * 0.45
+        effective_zoom = zoom * 0.15
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
         ab = AnnotationBbox(
@@ -489,6 +490,7 @@ def plot_structure_strip(
             boxcoords="offset points",
             pad=0.0,
         )
+        ab.set_clip_on(True)
         ax.add_artist(ab)
 
         if labels and i < len(labels):
@@ -759,6 +761,7 @@ def plot_landscape_surface(
     n_inducing=None,
     xlim=None,
     ylim=None,
+    basis=None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -770,6 +773,14 @@ def plot_landscape_surface(
     The method rotates the RMSD plane into reaction progress and orthogonal
     deviation coordinates.
 
+    Parameters
+    ----------
+    basis : ProjectionBasis or None
+        Pre-computed projection basis. When provided, this basis is used
+        instead of computing one from ``rmsd_r``/``rmsd_p``. Pass this
+        when the surface data is a subset (e.g. last step only) but the
+        basis should come from the full path.
+
     ```{versionadded} 0.1.0
     ```
 
@@ -779,7 +790,8 @@ def plot_landscape_surface(
     """
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
-    basis = compute_projection_basis(rmsd_r, rmsd_p) if project_path else None
+    if basis is None and project_path:
+        basis = compute_projection_basis(rmsd_r, rmsd_p)
 
     # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
@@ -1008,6 +1020,7 @@ def plot_landscape_path_overlay(
     all_r=None,
     all_p=None,
     all_z=None,
+    basis=None,
 ) -> Any:
     """Overlay the colored path line on the landscape.
 
@@ -1027,7 +1040,8 @@ def plot_landscape_path_overlay(
     ```
     """
     if project_path:
-        basis = compute_projection_basis(r, p)
+        if basis is None:
+            basis = compute_projection_basis(r, p)
         plot_x, plot_y = project_to_sd(r, p, basis)
     else:
         plot_x = r
