@@ -907,6 +907,28 @@ def plot_landscape_surface(
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
     _grad_stack = np.column_stack([grad_r, grad_p]) if grad_r is not None else None
+
+    # Convergence-based heteroscedastic noise: early (unconverged) NEB steps
+    # get higher noise so the GP trusts the converged data more. This allows
+    # using all optimization steps for off-path coverage without corrupting
+    # the surface fit near the converged path.
+    noise_per_obs = None
+    if step_data is not None:
+        max_s = int(step_data.max())
+        if max_s > 0:
+            last_mask = step_data == max_s
+            last_z = z_data[last_mask]
+            n_imgs = int(last_mask.sum())
+            noise_per_obs = np.full(len(z_data), best_noise)
+            for s in range(max_s + 1):
+                s_mask = step_data == s
+                s_z = z_data[s_mask]
+                if len(s_z) == n_imgs:
+                    dev = np.mean(np.abs(s_z - last_z))
+                else:
+                    dev = 10.0
+                noise_per_obs[s_mask] = best_noise + dev
+
     rbf = model_class(
         x=np.column_stack([rmsd_r, rmsd_p]),
         y=z_data,
@@ -915,6 +937,7 @@ def plot_landscape_surface(
         smoothing=best_noise,
         optimize=False,
         nimags=actual_nimags,
+        noise_per_obs=noise_per_obs,
         **_approx_kwargs,
     )
 
