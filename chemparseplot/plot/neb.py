@@ -226,8 +226,15 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
     return img_data
 
 
-def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400,
-                  perspective_tilt=0.0, xyzrender_config="paton"):
+def _render_atoms(
+    atoms,
+    renderer,
+    zoom,
+    rotation,
+    canvas_size=400,
+    perspective_tilt=0.0,
+    xyzrender_config="paton",
+):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
@@ -251,8 +258,9 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400,
 
     if renderer == "xyzrender":
         _check_xyzrender()
-        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size,
-                                 config=xyzrender_config)
+        return _render_xyzrender(
+            atoms, rotation=rotation, canvas_size=canvas_size, config=xyzrender_config
+        )
     elif renderer == "solvis":
         return _render_solvis(atoms, rotation=effective_rotation, canvas_size=canvas_size)
     elif renderer == "ovito":
@@ -482,7 +490,11 @@ def plot_structure_strip(
         x_pos, y_pos = col * col_step, -row * row_step
 
         img_data = _render_atoms(
-            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt,
+            atoms,
+            renderer,
+            zoom,
+            rotation,
+            perspective_tilt=perspective_tilt,
             xyzrender_config=xyzrender_config,
         )
 
@@ -554,7 +566,11 @@ def plot_structure_inset(
     ```
     """
     img_data = _render_atoms(
-        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt,
+        atoms,
+        renderer,
+        zoom,
+        rotation,
+        perspective_tilt=perspective_tilt,
         xyzrender_config=xyzrender_config,
     )
     # Apply the same unified scaling as the strip
