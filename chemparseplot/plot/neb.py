@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
@@ -157,11 +158,12 @@ def _parse_rotation_angles(rotation_str):
     return rx, ry, rz
 
 
-def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
+def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
-    Uses the ``paton`` preset with hydrogens visible for ball-and-stick
-    style rendering.
+    Uses the specified config preset (default: ``paton`` for ball-and-stick).
+    Other useful presets: ``bubble`` (space-filling, good for surfaces),
+    ``flat``, ``tube``, ``wire``, ``skeletal``.
 
     Parameters
     ----------
@@ -205,7 +207,7 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
             "-S",
             str(canvas_size),
             "--config",
-            "paton",
+            config,
             "--hy",
             "-t",
         ]
@@ -224,7 +226,15 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
     return img_data
 
 
-def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0):
+def _render_atoms(
+    atoms,
+    renderer,
+    zoom,
+    rotation,
+    canvas_size=400,
+    perspective_tilt=0.0,
+    xyzrender_config="paton",
+):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
@@ -237,6 +247,8 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_
     perspective_tilt : float
         Small off-axis tilt in degrees to reveal occluded atoms.
         0 disables. 5-10 is usually enough.
+    xyzrender_config : str
+        xyzrender preset name (paton, bubble, flat, tube, wire, skeletal).
     """
     if perspective_tilt > 0:
         atoms = atoms.copy()
@@ -246,7 +258,9 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_
 
     if renderer == "xyzrender":
         _check_xyzrender()
-        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
+        return _render_xyzrender(
+            atoms, rotation=rotation, canvas_size=canvas_size, config=xyzrender_config
+        )
     elif renderer == "solvis":
         return _render_solvis(atoms, rotation=effective_rotation, canvas_size=canvas_size)
     elif renderer == "ovito":
@@ -422,6 +436,7 @@ def plot_structure_strip(
     renderer="xyzrender",
     col_spacing=1.5,
     show_dividers=False,  # noqa: FBT002
+    xyzrender_config="paton",
     divider_color="gray",
     divider_style="--",
     perspective_tilt=0.0,
@@ -475,10 +490,15 @@ def plot_structure_strip(
         x_pos, y_pos = col * col_step, -row * row_step
 
         img_data = _render_atoms(
-            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+            atoms,
+            renderer,
+            zoom,
+            rotation,
+            perspective_tilt=perspective_tilt,
+            xyzrender_config=xyzrender_config,
         )
 
-        effective_zoom = zoom * 0.45
+        effective_zoom = zoom * 0.15
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
         ab = AnnotationBbox(
@@ -489,6 +509,7 @@ def plot_structure_strip(
             boxcoords="offset points",
             pad=0.0,
         )
+        ab.set_clip_on(True)
         ax.add_artist(ab)
 
         if labels and i < len(labels):
@@ -528,6 +549,7 @@ def plot_structure_inset(
     arrow_props=None,
     renderer="xyzrender",
     perspective_tilt=0.0,
+    xyzrender_config="paton",
 ) -> Any:
     """Plots a single structure as an annotation inset.
 
@@ -544,7 +566,12 @@ def plot_structure_inset(
     ```
     """
     img_data = _render_atoms(
-        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+        atoms,
+        renderer,
+        zoom,
+        rotation,
+        perspective_tilt=perspective_tilt,
+        xyzrender_config=xyzrender_config,
     )
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
@@ -759,6 +786,7 @@ def plot_landscape_surface(
     n_inducing=None,
     xlim=None,
     ylim=None,
+    basis=None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -770,6 +798,14 @@ def plot_landscape_surface(
     The method rotates the RMSD plane into reaction progress and orthogonal
     deviation coordinates.
 
+    Parameters
+    ----------
+    basis : ProjectionBasis or None
+        Pre-computed projection basis. When provided, this basis is used
+        instead of computing one from ``rmsd_r``/``rmsd_p``. Pass this
+        when the surface data is a subset (e.g. last step only) but the
+        basis should come from the full path.
+
     ```{versionadded} 0.1.0
     ```
 
@@ -779,7 +815,8 @@ def plot_landscape_surface(
     """
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
-    basis = compute_projection_basis(rmsd_r, rmsd_p) if project_path else None
+    if basis is None and project_path:
+        basis = compute_projection_basis(rmsd_r, rmsd_p)
 
     # --- 1. Grid Setup (Handles both Projection and Standard RMSD) ---
     if project_path:
@@ -803,9 +840,9 @@ def plot_landscape_surface(
             xg_1d = np.linspace(
                 s_min - (s_max - s_min) * 0.1, s_max + (s_max - s_min) * 0.1, 150
             )
-            # Y-grid: same span as X (preserves aspect=equal), centered on 0
+            # Y-grid centered on 0, covering at least the data range
             x_span = xg_1d.max() - xg_1d.min()
-            y_half = x_span / 2
+            y_half = max(x_span / 2, abs(d_data.max()), abs(d_data.min())) * 1.1
             yg_1d = np.linspace(-y_half, y_half, 150)
 
         xg, yg = np.meshgrid(xg_1d, yg_1d)
@@ -895,6 +932,28 @@ def plot_landscape_surface(
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
     _grad_stack = np.column_stack([grad_r, grad_p]) if grad_r is not None else None
+
+    # Convergence-based heteroscedastic noise: early (unconverged) NEB steps
+    # get higher noise so the GP trusts the converged data more. This allows
+    # using all optimization steps for off-path coverage without corrupting
+    # the surface fit near the converged path.
+    noise_per_obs = None
+    if step_data is not None:
+        max_s = int(step_data.max())
+        if max_s > 0:
+            last_mask = step_data == max_s
+            last_z = z_data[last_mask]
+            n_imgs = int(last_mask.sum())
+            noise_per_obs = np.full(len(z_data), best_noise)
+            for s in range(max_s + 1):
+                s_mask = step_data == s
+                s_z = z_data[s_mask]
+                if len(s_z) == n_imgs:
+                    dev = np.mean(np.abs(s_z - last_z))
+                else:
+                    dev = 10.0
+                noise_per_obs[s_mask] = best_noise + dev
+
     rbf = model_class(
         x=np.column_stack([rmsd_r, rmsd_p]),
         y=z_data,
@@ -903,6 +962,7 @@ def plot_landscape_surface(
         smoothing=best_noise,
         optimize=False,
         nimags=actual_nimags,
+        noise_per_obs=noise_per_obs,
         **_approx_kwargs,
     )
 
@@ -1008,6 +1068,7 @@ def plot_landscape_path_overlay(
     all_r=None,
     all_p=None,
     all_z=None,
+    basis=None,
 ) -> Any:
     """Overlay the colored path line on the landscape.
 
@@ -1027,7 +1088,8 @@ def plot_landscape_path_overlay(
     ```
     """
     if project_path:
-        basis = compute_projection_basis(r, p)
+        if basis is None:
+            basis = compute_projection_basis(r, p)
         plot_x, plot_y = project_to_sd(r, p, basis)
     else:
         plot_x = r
