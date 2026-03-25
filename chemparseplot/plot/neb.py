@@ -158,11 +158,12 @@ def _parse_rotation_angles(rotation_str):
     return rx, ry, rz
 
 
-def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
+def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
-    Uses the ``paton`` preset with hydrogens visible for ball-and-stick
-    style rendering.
+    Uses the specified config preset (default: ``paton`` for ball-and-stick).
+    Other useful presets: ``bubble`` (space-filling, good for surfaces),
+    ``flat``, ``tube``, ``wire``, ``skeletal``.
 
     Parameters
     ----------
@@ -206,7 +207,7 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
             "-S",
             str(canvas_size),
             "--config",
-            "paton",
+            config,
             "--hy",
             "-t",
         ]
@@ -225,7 +226,8 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400):
     return img_data
 
 
-def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0):
+def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400,
+                  perspective_tilt=0.0, xyzrender_config="paton"):
     """Dispatch rendering to the selected backend.
 
     All backends return a numpy RGBA image array.
@@ -238,6 +240,8 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_
     perspective_tilt : float
         Small off-axis tilt in degrees to reveal occluded atoms.
         0 disables. 5-10 is usually enough.
+    xyzrender_config : str
+        xyzrender preset name (paton, bubble, flat, tube, wire, skeletal).
     """
     if perspective_tilt > 0:
         atoms = atoms.copy()
@@ -247,7 +251,8 @@ def _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_
 
     if renderer == "xyzrender":
         _check_xyzrender()
-        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size)
+        return _render_xyzrender(atoms, rotation=rotation, canvas_size=canvas_size,
+                                 config=xyzrender_config)
     elif renderer == "solvis":
         return _render_solvis(atoms, rotation=effective_rotation, canvas_size=canvas_size)
     elif renderer == "ovito":
@@ -423,6 +428,7 @@ def plot_structure_strip(
     renderer="xyzrender",
     col_spacing=1.5,
     show_dividers=False,  # noqa: FBT002
+    xyzrender_config="paton",
     divider_color="gray",
     divider_style="--",
     perspective_tilt=0.0,
@@ -476,7 +482,8 @@ def plot_structure_strip(
         x_pos, y_pos = col * col_step, -row * row_step
 
         img_data = _render_atoms(
-            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+            atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt,
+            xyzrender_config=xyzrender_config,
         )
 
         effective_zoom = zoom * 0.15
