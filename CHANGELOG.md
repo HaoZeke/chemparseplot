@@ -2,6 +2,34 @@
 
 <!-- towncrier release notes start -->
 
+## [1.5.3](https://github.com/HaoZeke/chemparseplot/tree/1.5.3) - 2026-03-26
+
+### Fixed
+
+- `plot_landscape_surface`: accept external `basis` parameter so callers can
+  pass a global projection basis from the full dataset, preventing coordinate
+  mismatches when surface data is filtered to a subset (e.g. last NEB step).
+- `plot_landscape_path_overlay`: same `basis` parameter for consistent
+  projection across surface, path overlay, and additional-con markers.
+- Y-grid for optimization landscapes now covers the full data d-range
+  (`max(x_span/2, |d_max|, |d_min|) * 1.1`) instead of forcing symmetric
+  `x_span/2`, which truncated contours for trajectories with large lateral
+  deviation.
+- Cap GP noise at user-provided smoothing value in `GradientIMQ._fit()`.
+  The gradient-enhanced IMQ MLL systematically overestimates noise, destroying
+  basin accuracy in NEB landscapes.
+
+### Added
+
+- Heteroscedastic noise support in `_grad_imq_solve` via `noise_per_obs`
+  parameter. Enables convergence-based step reweighting where early
+  (unconverged) NEB steps get higher noise than the converged path.
+- Configurable xyzrender preset via `config` parameter in `_render_xyzrender`,
+  `_render_atoms`, `plot_structure_strip`, and `plot_structure_inset`. Presets:
+  `paton` (ball-and-stick, default), `bubble` (space-filling, good for
+  surfaces), `flat`, `tube`, `wire`, `skeletal`.
+- `BaseGradientSurface` accepts `noise_per_obs` kwarg for heteroscedastic GP.
+
 ## [1.5.0](https://github.com/HaoZeke/chemparseplot/tree/1.5.0) - 2026-03-23
 
 ### Added
