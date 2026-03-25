@@ -537,6 +537,7 @@ def plot_structure_inset(
     arrow_props=None,
     renderer="xyzrender",
     perspective_tilt=0.0,
+    xyzrender_config="paton",
 ) -> Any:
     """Plots a single structure as an annotation inset.
 
@@ -553,7 +554,8 @@ def plot_structure_inset(
     ```
     """
     img_data = _render_atoms(
-        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt
+        atoms, renderer, zoom, rotation, perspective_tilt=perspective_tilt,
+        xyzrender_config=xyzrender_config,
     )
     # Apply the same unified scaling as the strip
     effective_zoom = zoom * 0.45
