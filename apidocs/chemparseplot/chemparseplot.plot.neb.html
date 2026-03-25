@@ -359,14 +359,14 @@ This effectively tells the RBF interpolator the local slope.</p></td>
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.render_structure_to_image">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">render_structure_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb.render_structure_to_image" title="Link to this definition">¶</a></dt>
 <dd><p>Renders an ASE Atoms object to a numpy RGBA image array.</p>
-<p class="rubric" id="id17">Parameters</p>
+<p class="rubric" id="id18">Parameters</p>
 <p>atoms : ase.Atoms
 Structure to render.
 zoom : float
 Zoom level (used by callers for OffsetImage scaling, not by ASE).
 rotation : str
 ASE rotation string, e.g. <code class="docutils literal notranslate"><span class="pre">&quot;0x,90y,0z&quot;</span></code>.</p>
-<p class="rubric" id="id18">Returns</p>
+<p class="rubric" id="id19">Returns</p>
 <p>numpy.ndarray
 RGBA image array with shape <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">4)</span></code> and float dtype.</p>
 <div class="versionadded">
@@ -378,7 +378,7 @@ RGBA image array with shape <code class="docutils literal notranslate"><span cla
 <dt class="sig sig-object py" id="chemparseplot.plot.neb._check_xyzrender">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_check_xyzrender</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._check_xyzrender" title="Link to this definition">¶</a></dt>
 <dd><p>Verify that the <code class="docutils literal notranslate"><span class="pre">xyzrender</span></code> binary is on PATH.</p>
-<p class="rubric" id="id19">Raises</p>
+<p class="rubric" id="id20">Raises</p>
 <p>RuntimeError
 If xyzrender is not found, with install instructions.</p>
 </dd></dl>
@@ -391,7 +391,7 @@ If xyzrender is not found, with install instructions.</p>
 the viewing direction. This prevents atoms from occluding each
 other in orthographic projection without significantly distorting
 the view.</p>
-<p class="rubric" id="id20">Parameters</p>
+<p class="rubric" id="id21">Parameters</p>
 <p>atoms : ase.Atoms
 Structure to tilt (modified in place).
 tilt_deg : float
@@ -407,11 +407,12 @@ Tilt angle in degrees. 5-10 is usually enough.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb._render_xyzrender">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_xyzrender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_xyzrender" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_xyzrender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'paton'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_xyzrender" title="Link to this definition">¶</a></dt>
 <dd><p>Render an ASE Atoms object to a numpy RGBA array via xyzrender.</p>
-<p>Uses the <code class="docutils literal notranslate"><span class="pre">paton</span></code> preset with hydrogens visible for ball-and-stick
-style rendering.</p>
-<p class="rubric" id="id21">Parameters</p>
+<p>Uses the specified config preset (default: <code class="docutils literal notranslate"><span class="pre">paton</span></code> for ball-and-stick).
+Other useful presets: <code class="docutils literal notranslate"><span class="pre">bubble</span></code> (space-filling, good for surfaces),
+<code class="docutils literal notranslate"><span class="pre">flat</span></code>, <code class="docutils literal notranslate"><span class="pre">tube</span></code>, <code class="docutils literal notranslate"><span class="pre">wire</span></code>, <code class="docutils literal notranslate"><span class="pre">skeletal</span></code>.</p>
+<p class="rubric" id="id22">Parameters</p>
 <p>atoms : ase.Atoms
 Structure to render.
 rotation : str
@@ -420,23 +421,25 @@ Any ASE-style string (e.g. <code class="docutils literal notranslate"><span clas
 and pre-rotates the atoms.
 canvas_size : int
 Output image width/height in pixels (passed as <code class="docutils literal notranslate"><span class="pre">-S</span></code>).</p>
-<p class="rubric" id="id22">Returns</p>
+<p class="rubric" id="id23">Returns</p>
 <p>numpy.ndarray
 RGBA image array with shape <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">4)</span></code> and float dtype.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb._render_atoms">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_atoms" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyzrender_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'paton'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_atoms" title="Link to this definition">¶</a></dt>
 <dd><p>Dispatch rendering to the selected backend.</p>
 <p>All backends return a numpy RGBA image array.</p>
-<p class="rubric" id="id23">Parameters</p>
+<p class="rubric" id="id24">Parameters</p>
 <p>rotation : str
 ASE-style rotation string (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;0x,90y,0z&quot;</span></code>). Applied
 uniformly across all backends.
 perspective_tilt : float
 Small off-axis tilt in degrees to reveal occluded atoms.
-0 disables. 5-10 is usually enough.</p>
+0 disables. 5-10 is usually enough.
+xyzrender_config : str
+xyzrender preset name (paton, bubble, flat, tube, wire, skeletal).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -444,7 +447,7 @@ Small off-axis tilt in degrees to reveal occluded atoms.
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_solvis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_solvis" title="Link to this definition">¶</a></dt>
 <dd><p>Render an atomic structure via solvis (ball-and-stick with PyVista).</p>
 <p>Requires the <code class="docutils literal notranslate"><span class="pre">solvis-tools</span></code> package (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">solvis-tools</span></code>).</p>
-<p class="rubric" id="id24">Parameters</p>
+<p class="rubric" id="id25">Parameters</p>
 <p>atoms : ase.Atoms
 Atomic structure to render.
 rotation : str, optional
@@ -452,7 +455,7 @@ Rotation string in the format <code class="docutils literal notranslate"><span c
 Default is <code class="docutils literal notranslate"><span class="pre">&quot;0x,90y,0z&quot;</span></code>.
 canvas_size : int, optional
 Width and height of the rendered image in pixels. Default is 400.</p>
-<p class="rubric" id="id25">Returns</p>
+<p class="rubric" id="id26">Returns</p>
 <p>numpy.ndarray
 RGBA image array.</p>
 </dd></dl>
@@ -462,16 +465,16 @@ RGBA image array.</p>
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">_render_ovito</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvas_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#chemparseplot.plot.neb._render_ovito" title="Link to this definition">¶</a></dt>
 <dd><p>Render via OVITO Python (high-quality off-screen rendering).</p>
 <p>Requires: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ovito</span></code></p>
-<p class="rubric" id="id26">Returns</p>
+<p class="rubric" id="id27">Returns</p>
 <p>numpy.ndarray
 RGBA image array.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_structure_strip">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xyzrender'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_dividers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divider_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'--'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_strip" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xyzrender'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_dividers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyzrender_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'paton'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divider_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gray'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divider_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'--'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_strip" title="Link to this definition">¶</a></dt>
 <dd><p>Renders a horizontal gallery of atomic structures.</p>
-<p class="rubric" id="id27">Parameters</p>
+<p class="rubric" id="id28">Parameters</p>
 <p>renderer : str
 Rendering backend: <code class="docutils literal notranslate"><span class="pre">&quot;ase&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;xyzrender&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;solvis&quot;</span></code>,
 or <code class="docutils literal notranslate"><span class="pre">&quot;ovito&quot;</span></code>.
@@ -497,9 +500,9 @@ parameters. Added <code class="docutils literal notranslate"><span class="pre">&
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_structure_inset">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_inset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xybox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xyzrender'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_inset" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_structure_inset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xybox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0x,90y,0z'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow_props</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'xyzrender'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perspective_tilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyzrender_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'paton'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_structure_inset" title="Link to this definition">¶</a></dt>
 <dd><p>Plots a single structure as an annotation inset.</p>
-<p class="rubric" id="id28">Parameters</p>
+<p class="rubric" id="id29">Parameters</p>
 <p>renderer : str
 Rendering backend: <code class="docutils literal notranslate"><span class="pre">&quot;ase&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;xyzrender&quot;</span></code>.</p>
 <div class="versionadded">
@@ -547,7 +550,7 @@ This effectively tells the RBF interpolator the local slope.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_landscape_surface">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grad_matern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbf_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_inducing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_surface" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmsd_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'grad_matern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rbf_smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variance_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_inducing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_surface" title="Link to this definition">¶</a></dt>
 <dd><p>Plot the 2D landscape surface using reaction valley projection.</p>
 <p>If project_path evaluates to True, the plot maps into
 reaction valley coordinates
@@ -555,6 +558,12 @@ reaction valley coordinates
 <p>Implements 2D reaction valley projection method from cite:[goswami2026valley].
 The method rotates the RMSD plane into reaction progress and orthogonal
 deviation coordinates.</p>
+<p class="rubric" id="id30">Parameters</p>
+<p>basis : ProjectionBasis or None
+Pre-computed projection basis. When provided, this basis is used
+instead of computing one from <code class="docutils literal notranslate"><span class="pre">rmsd_r</span></code>/<code class="docutils literal notranslate"><span class="pre">rmsd_p</span></code>. Pass this
+when the surface data is a subset (e.g. last step only) but the
+basis should come from the full path.</p>
 <div class="versionadded">
 <p><span class="versionmodified added">Added in version 0.1.0.</span></p>
 </div>
@@ -565,7 +574,7 @@ deviation coordinates.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_landscape_path_overlay">
-<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_path_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_path_overlay" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_landscape_path_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_landscape_path_overlay" title="Link to this definition">¶</a></dt>
 <dd><p>Overlay the colored path line on the landscape.</p>
 <p>Mapped to the chosen coordinate basis. When <code class="docutils literal notranslate"><span class="pre">all_r/all_p/all_z</span></code> arrays
 are provided (all NEB iterations), a triangulated filled contour is drawn
@@ -587,7 +596,7 @@ as the background so the landscape is never empty.</p>
 <dd><p>Overlay MMF (mode-following) refinement peak positions on the landscape.</p>
 <p>Used for OCI-NEB/RONEB visualization to show where dimer refinement
 was applied along the band.</p>
-<p class="rubric" id="id29">Parameters</p>
+<p class="rubric" id="id31">Parameters</p>
 <p>ax
 Matplotlib axes (same as the landscape plot).
 peak_rmsd_r, peak_rmsd_p
@@ -612,7 +621,7 @@ to computing basis from the peaks themselves (less accurate).</p>
 <p>Older bands are drawn with lower opacity; the final band is most visible.
 All bands are projected using the <em>final</em> band’s basis so they share
 one consistent coordinate frame.</p>
-<p class="rubric" id="id30">Parameters</p>
+<p class="rubric" id="id32">Parameters</p>
 <p>ax
 Matplotlib axes.
 step_rmsd_r_list
@@ -632,7 +641,7 @@ Colormap for fading bands (older = lighter).</p>
 <dt class="sig sig-object py" id="chemparseplot.plot.neb.plot_orca_neb_profile">
 <span class="sig-prename descclassname"><span class="pre">chemparseplot.plot.neb.</span></span><span class="sig-name descname"><span class="pre">plot_orca_neb_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">neb_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">pathlib.Path</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#chemparseplot.plot.neb.plot_orca_neb_profile" title="Link to this definition">¶</a></dt>
 <dd><p>Plot ORCA NEB energy profile from OPI-parsed data.</p>
-<p class="rubric" id="id31">Parameters</p>
+<p class="rubric" id="id33">Parameters</p>
 <p>neb_data
 Dictionary from parse_orca_neb() containing:
 - energies: list of energies in eV
@@ -644,7 +653,7 @@ width, height
 Figure dimensions in inches
 dpi
 Output resolution</p>
-<p class="rubric" id="id32">Example</p>
+<p class="rubric" id="id34">Example</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -663,7 +672,7 @@ plot_orca_neb_profile(data, “neb_profile.pdf”)</p>
 <dd><p>Plot ORCA NEB energy profile using existing eOn-style plotting.</p>
 <p>Creates publication-quality energy profile similar to eOn NEB plots.
 Uses the same plotting functions as eOn NEB for consistency.</p>
-<p class="rubric" id="id33">Parameters</p>
+<p class="rubric" id="id35">Parameters</p>
 <p>neb_data
 Dictionary from parse_orca_neb() containing:
 - energies: array of energies in eV
@@ -680,7 +689,7 @@ method
 Interpolation method: ‘hermite’ or ‘spline’
 smoothing
 Smoothing parameters</p>
-<p class="rubric" id="id34">Example</p>
+<p class="rubric" id="id36">Example</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>
@@ -699,7 +708,7 @@ plot_orca_neb_energy_profile(data, “orca_neb_profile.pdf”)</p>
 <dd><p>Plot ORCA NEB 2D landscape using existing eOn-style plotting.</p>
 <p>Creates publication-quality landscape plot similar to eOn NEB plots.
 Uses the same plotting functions as eOn NEB for consistency.</p>
-<p class="rubric" id="id35">Parameters</p>
+<p class="rubric" id="id37">Parameters</p>
 <p>neb_data
 Dictionary from parse_orca_neb() containing:
 - energies: array of energies in eV
@@ -716,7 +725,7 @@ method
 Surface interpolation method
 project_path
 Whether to project into reaction valley coordinates</p>
-<p class="rubric" id="id36">Example</p>
+<p class="rubric" id="id38">Example</p>
 <blockquote>
 <div><blockquote>
 <div><blockquote>

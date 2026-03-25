@@ -223,14 +223,14 @@
 ```
 ````
 
-````{py:function} _render_xyzrender(atoms, rotation='auto', canvas_size=400)
+````{py:function} _render_xyzrender(atoms, rotation='auto', canvas_size=400, config='paton')
 :canonical: chemparseplot.plot.neb._render_xyzrender
 
 ```{autodoc2-docstring} chemparseplot.plot.neb._render_xyzrender
 ```
 ````
 
-````{py:function} _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0)
+````{py:function} _render_atoms(atoms, renderer, zoom, rotation, canvas_size=400, perspective_tilt=0.0, xyzrender_config='paton')
 :canonical: chemparseplot.plot.neb._render_atoms
 
 ```{autodoc2-docstring} chemparseplot.plot.neb._render_atoms
@@ -251,14 +251,14 @@
 ```
 ````
 
-````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='xyzrender', col_spacing=1.5, show_dividers=False, divider_color='gray', divider_style='--', perspective_tilt=0.0) -> typing.Any
+````{py:function} plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation='0x,90y,0z', theme_color='black', max_cols=6, renderer='xyzrender', col_spacing=1.5, show_dividers=False, xyzrender_config='paton', divider_color='gray', divider_style='--', perspective_tilt=0.0) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_strip
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_strip
 ```
 ````
 
-````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='xyzrender', perspective_tilt=0.0) -> typing.Any
+````{py:function} plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation='0x,90y,0z', arrow_props=None, renderer='xyzrender', perspective_tilt=0.0, xyzrender_config='paton') -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_structure_inset
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_structure_inset
@@ -293,14 +293,14 @@
 ```
 ````
 
-````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None, xlim=None, ylim=None) -> typing.Any
+````{py:function} plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method='grad_matern', rbf_smooth=None, cmap='viridis', show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None, xlim=None, ylim=None, basis=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_landscape_surface
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_surface
 ```
 ````
 
-````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True, all_r=None, all_p=None, all_z=None) -> typing.Any
+````{py:function} plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True, all_r=None, all_p=None, all_z=None, basis=None) -> typing.Any
 :canonical: chemparseplot.plot.neb.plot_landscape_path_overlay
 
 ```{autodoc2-docstring} chemparseplot.plot.neb.plot_landscape_path_overlay
