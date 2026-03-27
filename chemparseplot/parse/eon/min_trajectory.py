@@ -14,8 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import polars as pl
+import readcon
 from ase import Atoms
-from ase.io import read as ase_read
 
 log = logging.getLogger(__name__)
 
@@ -71,8 +71,7 @@ def parse_min_con(path: Path) -> list[Atoms]:
     list[Atoms]
         List of ASE Atoms objects, one per iteration.
     """
-    atoms_list = ase_read(str(path), index=":", format="eon")
-    return list(atoms_list)
+    return readcon.read_con_as_ase(str(path))
 
 
 def load_min_trajectory(
@@ -121,7 +120,7 @@ def load_min_trajectory(
     # Final structure: prefer explicit min.con, fall back to last movie frame
     min_con = job_dir / "min.con"
     if min_con.exists():
-        final = ase_read(str(min_con), format="eon")
+        final = readcon.read_con_as_ase(str(min_con))[0]
     else:
         final = atoms_list[-1]
 
