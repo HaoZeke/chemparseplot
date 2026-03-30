@@ -13,10 +13,10 @@
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.parse.eon.minimization
 chemparseplot.parse.eon.dimer_trajectory
-chemparseplot.parse.eon.neb
 chemparseplot.parse.eon.min_trajectory
 chemparseplot.parse.eon.saddle_search
+chemparseplot.parse.eon.neb
+chemparseplot.parse.eon.minimization
 chemparseplot.parse.eon.gprd
 ```

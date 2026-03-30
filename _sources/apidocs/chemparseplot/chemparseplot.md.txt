@@ -13,8 +13,8 @@
 :titlesonly:
 :maxdepth: 3
 
-chemparseplot.parse
 chemparseplot.plot
+chemparseplot.parse
 ```
 
 ## Submodules
@@ -23,6 +23,6 @@ chemparseplot.plot
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.units
 chemparseplot.util
+chemparseplot.units
 ```

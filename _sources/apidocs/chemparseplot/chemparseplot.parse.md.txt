@@ -13,9 +13,9 @@
 :titlesonly:
 :maxdepth: 3
 
-chemparseplot.parse.eon
-chemparseplot.parse.orca
 chemparseplot.parse.trajectory
+chemparseplot.parse.orca
+chemparseplot.parse.eon
 ```
 
 ## Submodules
@@ -24,12 +24,12 @@ chemparseplot.parse.trajectory
 :titlesonly:
 :maxdepth: 1
 
+chemparseplot.parse.plumed
 chemparseplot.parse.projection
-chemparseplot.parse.chemgp_hdf5
-chemparseplot.parse.patterns
-chemparseplot.parse.converter
-chemparseplot.parse.chemgp_jsonl
 chemparseplot.parse.file_
 chemparseplot.parse.neb_utils
-chemparseplot.parse.plumed
+chemparseplot.parse.chemgp_jsonl
+chemparseplot.parse.converter
+chemparseplot.parse.patterns
+chemparseplot.parse.chemgp_hdf5
 ```

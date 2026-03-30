@@ -13,13 +13,13 @@
 :titlesonly:
 :maxdepth: 1
 
-chemparseplot.plot.geomscan
-chemparseplot.plot.neb
-chemparseplot.plot.optimization
-chemparseplot.plot.structs
-chemparseplot.plot.theme
-chemparseplot.plot.chemgp
 chemparseplot.plot.plumed
+chemparseplot.plot.optimization
+chemparseplot.plot.chemgp
+chemparseplot.plot.geomscan
+chemparseplot.plot.theme
+chemparseplot.plot.structs
+chemparseplot.plot.neb
 ```
 
 ## Package Contents

@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://chemparseplot.rgoswami.me/apidocs/chemparseplot/chemparseplot.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="chemparseplot.parse" href="chemparseplot.parse.html" />
+    <link rel="next" title="chemparseplot.plot" href="chemparseplot.plot.html" />
     <link rel="prev" title="API Reference" href="../index.html" />
 
  
@@ -49,6 +49,7 @@
   }
 </script>
 <script defer src="https://analytics.turtletech.us/script.js" data-website-id="95def988-c3e6-4297-9d39-cc3b3032703e"></script>
+<script defer src="https://antics-api.turtletech.us/antics.js"></script>
 <script>window.umami=window.umami||{track:function(){}};document.addEventListener('click',function(e){var a=e.target.closest('a');if(a&&a.hostname!==location.hostname)umami.track('Outbound Link',{url:a.href})});</script>
 
   </head>
@@ -170,14 +171,20 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.plumed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.plumed</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.optimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.optimization</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.chemgp.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.chemgp</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.geomscan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.geomscan</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.structs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.structs</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.neb</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="chemparseplot.parse.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.eon.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.minimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.minimization</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.dimer_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.dimer_trajectory</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.neb</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.min_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.min_trajectory</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.saddle_search.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.saddle_search</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.gprd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.gprd</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.trajectory.hdf5.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.hdf5</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.trajectory.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.neb</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.orca.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.orca</span></code></a><ul>
@@ -185,29 +192,23 @@
 <li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.orca.geomscan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.orca.geomscan</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.trajectory.hdf5.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.hdf5</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.trajectory.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.trajectory.neb</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.eon.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.dimer_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.dimer_trajectory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.min_trajectory.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.min_trajectory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.saddle_search.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.saddle_search</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.neb</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.minimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.minimization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="chemparseplot.parse.eon.gprd.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.eon.gprd</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.plumed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.plumed</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.projection.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.projection</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.chemgp_hdf5.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_hdf5</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.patterns.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.patterns</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.converter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.converter</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.chemgp_jsonl.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_jsonl</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.file_.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.file_</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.neb_utils.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.neb_utils</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.plumed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.plumed</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.plot.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.geomscan.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.geomscan</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.neb.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.neb</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.optimization.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.optimization</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.structs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.structs</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.theme.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.theme</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.chemgp.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.chemgp</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="chemparseplot.plot.plumed.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot.plumed</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.chemgp_jsonl.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_jsonl</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.converter.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.converter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.patterns.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.patterns</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="chemparseplot.parse.chemgp_hdf5.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse.chemgp_hdf5</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -217,8 +218,8 @@
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="chemparseplot.units.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="chemparseplot.util.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.util</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="chemparseplot.units.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.units</span></code></a></li>
 </ul>
 </div>
 </section>
@@ -230,8 +231,8 @@
   <a class="prev" href="../index.html" title="Previous">
     &larr; API Reference
   </a>
-  <a class="next" href="chemparseplot.parse.html" title="Next">
-    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.parse</span></code> &rarr;
+  <a class="next" href="chemparseplot.plot.html" title="Next">
+    <code class="xref py py-mod docutils literal notranslate"><span class="pre">chemparseplot.plot</span></code> &rarr;
   </a>
   <div class="clear"></div>
     </nav>
