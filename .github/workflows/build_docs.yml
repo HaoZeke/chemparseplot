@@ -12,8 +12,6 @@ jobs:
         python-version: ["3.12"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
@@ -30,10 +28,10 @@ jobs:
         run: uv sync --extra doc
       - name: Build docs
         run: uv run sphinx-build doc/source doc/build/html
-      - name: Deploy Documentation
-        if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'HaoZeke/chemparseplot')}}
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy to Cloudflare Pages
+        if: github.ref == 'refs/heads/main' && github.repository == 'HaoZeke/chemparseplot'
+        uses: cloudflare/wrangler-action@v3
         with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./doc/build/html
-            cname: chemparseplot.rgoswami.me
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy doc/build/html --project-name=chemparseplot-docs --branch=main
