@@ -140,7 +140,9 @@ def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
         initial = atoms_list[0]
 
     saddle_path = job_dir / "saddle.con"
-    saddle = readcon.read_con_as_ase(str(saddle_path))[0] if saddle_path.exists() else None
+    saddle = (
+        readcon.read_con_as_ase(str(saddle_path))[0] if saddle_path.exists() else None
+    )
 
     mode = _load_mode_dat(job_dir / "mode.dat")
 

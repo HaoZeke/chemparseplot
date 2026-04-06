@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write

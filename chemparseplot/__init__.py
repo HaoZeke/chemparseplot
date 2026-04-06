@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: MIT
 
 from chemparseplot import parse, units
+
+__all__ = ["parse", "units"]

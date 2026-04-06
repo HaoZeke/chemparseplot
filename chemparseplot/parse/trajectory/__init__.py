@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: MIT
 
 from chemparseplot.parse.trajectory import hdf5, neb
+
+__all__ = ["hdf5", "neb"]

@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 """ChemGP visualization functions.
 
 Mixed plotnine (for 1D line charts) and matplotlib (for 2D
@@ -15,6 +13,7 @@ for ggplot2 grammar.
 """
 
 import logging
+from functools import lru_cache
 
 import matplotlib.patheffects as mpe
 import matplotlib.pyplot as plt

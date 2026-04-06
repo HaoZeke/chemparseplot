@@ -11,6 +11,15 @@ from chemparseplot.plot.theme import (
     setup_publication_theme,
 )
 
+__all__ = [
+    "RUHI_COLORS",
+    "RUHI_THEME",
+    "PlotTheme",
+    "get_theme",
+    "setup_global_theme",
+    "setup_publication_theme",
+]
+
 
 # Lazy imports for submodules with heavy deps (cmcrameri, pint, etc.)
 def __getattr__(name):

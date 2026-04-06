@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: MIT
 
 from chemparseplot.parse.orca import geomscan
+
+__all__ = ["geomscan"]
