@@ -1,7 +1,6 @@
 from typing import Any
 
 import matplotlib.pyplot as plt
-from rgpycrumbs.interpolation import spline_interp
 
 from chemparseplot.plot.structs import BasePlotter
 
@@ -23,6 +22,8 @@ def plot_energy_paths(
     for idx, path in enumerate(energy_paths):
         distance_values = path.distance.to(units["distance"])
         energy_values = path.energy.to(units["energy"])
+
+        from rgpycrumbs.interpolation import spline_interp
 
         distance_fine, energy_fine = spline_interp(distance_values.m, energy_values.m)
 

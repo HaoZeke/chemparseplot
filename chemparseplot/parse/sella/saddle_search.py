@@ -8,8 +8,13 @@ from pathlib import Path
 import ase
 import numpy as np
 from ase.io import read
-from rgpycrumbs.basetypes import SaddleMeasure, SpinID
-from rgpycrumbs.time.helpers import one_day_tdelta
+
+try:
+    from rgpycrumbs.basetypes import SaddleMeasure, SpinID
+    from rgpycrumbs.time.helpers import one_day_tdelta
+except ImportError:
+    SaddleMeasure = SpinID = None
+    one_day_tdelta = None
 
 log = logging.getLogger(__name__)
 

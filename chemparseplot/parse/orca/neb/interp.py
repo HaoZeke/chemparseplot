@@ -17,8 +17,6 @@ end
 
 import re
 
-from rgpycrumbs.basetypes import nebiter, nebpath
-
 import chemparseplot.parse.converter as conv
 import chemparseplot.parse.patterns as pat
 from chemparseplot.units import Q_
@@ -38,6 +36,8 @@ def extract_interp_points(text: str) -> list[int, Q_, Q_]:
     ```{versionadded} 0.0.2
     ```
     """
+    from rgpycrumbs.basetypes import nebiter, nebpath
+
     data = []
     for match in re.finditer(INTERP_PAT, text, re.DOTALL):
         iteration = int(match.group("iteration"))

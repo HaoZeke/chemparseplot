@@ -1,10 +1,18 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
+import pytest
+
+from tests.conftest import skip_if_not_env
+
+skip_if_not_env("neb")
+
 from rgpycrumbs.basetypes import nebiter
 
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.units import ureg
+
+pytestmark = pytest.mark.neb
 
 
 def test_extract_interp_points_valid_input():

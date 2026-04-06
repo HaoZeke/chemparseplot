@@ -15,12 +15,6 @@ from matplotlib import tri
 from matplotlib.collections import LineCollection
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
-from rgpycrumbs.surfaces import (
-    NYSTROM_N_INDUCING_DEFAULT,
-    NYSTROM_THRESHOLD,
-    get_surface_model,
-    nystrom_paths_needed,
-)
 from scipy import ndimage
 from scipy.interpolate import (
     CubicHermiteSpline,
@@ -812,6 +806,13 @@ def plot_landscape_surface(
     Added the *project_path* parameter for reaction-valley coordinate projection.
     ```
     """
+    from rgpycrumbs.surfaces import (
+        NYSTROM_N_INDUCING_DEFAULT,
+        NYSTROM_THRESHOLD,
+        get_surface_model,
+        nystrom_paths_needed,
+    )
+
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
     if basis is None and project_path:

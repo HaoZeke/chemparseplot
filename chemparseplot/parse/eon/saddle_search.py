@@ -7,10 +7,15 @@ from enum import Enum
 from pathlib import Path
 
 import numpy as np
-from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
-from rgpycrumbs.parsers.bless import BLESS_LOG
-from rgpycrumbs.parsers.common import _NUM
-from rgpycrumbs.search.helpers import tail
+
+try:
+    from rgpycrumbs.basetypes import DimerOpt, MolGeom, SaddleMeasure, SpinID
+    from rgpycrumbs.parsers.bless import BLESS_LOG
+    from rgpycrumbs.parsers.common import _NUM
+    from rgpycrumbs.search.helpers import tail
+except ImportError:
+    DimerOpt = MolGeom = SaddleMeasure = SpinID = None
+    BLESS_LOG = _NUM = tail = None
 
 log = logging.getLogger(__name__)
 

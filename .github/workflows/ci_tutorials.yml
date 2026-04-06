@@ -72,16 +72,16 @@ jobs:
           TUTORIAL_EOF
 
           # Run tutorial test
-          uv run --with matplotlib --with ase --with polars --with adjustText --with cmcrameri --with "jax[cpu]" python3 /tmp/test_orca_neb_tutorial.py
+          uv run --with rgpycrumbs --with matplotlib --with ase --with polars --with adjustText --with cmcrameri --with "jax[cpu]" python3 /tmp/test_orca_neb_tutorial.py
 
       - name: Test parsing modules compile
         run: |
-          uv run python3 -m py_compile chemparseplot/parse/orca/neb/opi_parser.py
-          uv run python3 -m py_compile chemparseplot/parse/orca/neb/interp.py
+          uv run --with rgpycrumbs python3 -m py_compile chemparseplot/parse/orca/neb/opi_parser.py
+          uv run --with rgpycrumbs python3 -m py_compile chemparseplot/parse/orca/neb/interp.py
           echo "✓ All parsing modules compile"
 
       - name: Test plotting modules compile
         run: |
-          uv run python3 -m py_compile chemparseplot/plot/neb.py
+          uv run --with rgpycrumbs --with scipy --with ase --with matplotlib python3 -m py_compile chemparseplot/plot/neb.py
           uv run python3 -m py_compile chemparseplot/plot/chemgp.py
           echo "✓ All plotting modules compile"

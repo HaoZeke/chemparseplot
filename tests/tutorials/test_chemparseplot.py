@@ -6,6 +6,12 @@ Verifies that tutorial code examples work correctly.
 Run with: cd chemparseplot && uv run python tests/tutorials/test_chemparseplot.py
 """
 
+import pytest
+
+from tests.conftest import skip_if_not_env
+
+skip_if_not_env("neb")
+
 import sys
 from pathlib import Path
 

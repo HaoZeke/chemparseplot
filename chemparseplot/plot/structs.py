@@ -2,7 +2,6 @@ from collections import namedtuple
 
 import matplotlib.pyplot as plt
 from cmcrameri import cm
-from rgpycrumbs.interpolation import spline_interp
 
 # Define a namedtuple for energy paths
 EnergyPath = namedtuple("EnergyPath", ["label", "distance", "energy"])
@@ -77,6 +76,8 @@ class TwoDimPlot(BasePlotter):
         for idx, xy_data in enumerate(self.data):
             x_values = xy_data.x.to(self.x_unit).m
             y_values = xy_data.y.to(self.y_unit).m
+            from rgpycrumbs.interpolation import spline_interp
+
             distance_fine, y_fine = spline_interp(x_values, y_values)
 
             color = self.colormap(idx / len(self.data))
