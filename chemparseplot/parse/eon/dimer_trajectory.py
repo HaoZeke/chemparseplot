@@ -15,8 +15,8 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
+import readcon
 from ase import Atoms
-from ase.io import read as ase_read
 
 log = logging.getLogger(__name__)
 
@@ -76,8 +76,7 @@ def parse_climb_con(path: Path) -> list[Atoms]:
         List of ASE Atoms objects, one per iteration.
     """
     # eOn .con files may not have a .con extension for movie files
-    atoms_list = ase_read(str(path), index=":", format="eon")
-    return list(atoms_list)
+    return readcon.read_con_as_ase(str(path))
 
 
 def _find_initial_structure(job_dir: Path) -> Atoms | None:
@@ -85,7 +84,7 @@ def _find_initial_structure(job_dir: Path) -> Atoms | None:
     for name in ("reactant.con", "pos.con"):
         p = job_dir / name
         if p.exists():
-            return ase_read(str(p), format="eon")
+            return readcon.read_con_as_ase(str(p))[0]
     return None
 
 
@@ -141,7 +140,7 @@ def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
         initial = atoms_list[0]
 
     saddle_path = job_dir / "saddle.con"
-    saddle = ase_read(str(saddle_path), format="eon") if saddle_path.exists() else None
+    saddle = readcon.read_con_as_ase(str(saddle_path))[0] if saddle_path.exists() else None
 
     mode = _load_mode_dat(job_dir / "mode.dat")
 

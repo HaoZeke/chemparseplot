@@ -151,6 +151,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ee/49/1377b49de7d0c1ce41292161ea0f721913fa8722c19fb9c1e3aa0367eecb/pytest_cov-7.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f8/9b/c108cdb55560eaf253f0cbdb61b29971e9fb34d9c3499b0e96e4e60ed8a5/pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/8c/42dde9df1a665e3589eeeaea463b11ec89c9d0c0e82db22d8128e3e14490/rdkit-2025.9.6-cp312-cp312-manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/38/f7/ce0aa9d209ac65023729f242be163eb1500496e51d99b291668e33e9c48b/readcon-0.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl
@@ -362,6 +363,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ee/49/1377b49de7d0c1ce41292161ea0f721913fa8722c19fb9c1e3aa0367eecb/pytest_cov-7.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f8/9b/c108cdb55560eaf253f0cbdb61b29971e9fb34d9c3499b0e96e4e60ed8a5/pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/8c/42dde9df1a665e3589eeeaea463b11ec89c9d0c0e82db22d8128e3e14490/rdkit-2025.9.6-cp312-cp312-manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/38/f7/ce0aa9d209ac65023729f242be163eb1500496e51d99b291668e33e9c48b/readcon-0.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl
@@ -522,6 +524,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ee/49/1377b49de7d0c1ce41292161ea0f721913fa8722c19fb9c1e3aa0367eecb/pytest_cov-7.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f8/9b/c108cdb55560eaf253f0cbdb61b29971e9fb34d9c3499b0e96e4e60ed8a5/pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/8c/42dde9df1a665e3589eeeaea463b11ec89c9d0c0e82db22d8128e3e14490/rdkit-2025.9.6-cp312-cp312-manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/38/f7/ce0aa9d209ac65023729f242be163eb1500496e51d99b291668e33e9c48b/readcon-0.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl
@@ -680,6 +683,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ee/49/1377b49de7d0c1ce41292161ea0f721913fa8722c19fb9c1e3aa0367eecb/pytest_cov-7.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f8/9b/c108cdb55560eaf253f0cbdb61b29971e9fb34d9c3499b0e96e4e60ed8a5/pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/8c/42dde9df1a665e3589eeeaea463b11ec89c9d0c0e82db22d8128e3e14490/rdkit-2025.9.6-cp312-cp312-manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/38/f7/ce0aa9d209ac65023729f242be163eb1500496e51d99b291668e33e9c48b/readcon-0.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/7b/ce1eafaf1a76852e2ec9b22edecf1daa58175c090266e9f6c64afcd81d91/stack_data-0.6.3-py3-none-any.whl
@@ -926,17 +930,17 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: chemparseplot
-  version: 1.4.3.dev40+gd1a42dc14.d20260323
-  sha256: 3ba84d6a95eb0c0eb3de5d7ffee6ffd48de5b1dd51b9a0dbfa2a862e67af9906
+  version: 1.5.3.dev10+gcdf54360c
+  sha256: bff5069ad855f951618879ec2918fd66b75aef0e614acbbbe1f13fde86e58e68
   requires_dist:
   - numpy>=1.26.2
   - pint>=0.22
-  - rgpycrumbs>=1.3.0
   - ase>=3.22 ; extra == 'all'
   - cmcrameri>=1.7 ; extra == 'all'
   - h5py>=3.0 ; extra == 'all'
   - matplotlib>=3.8.2 ; extra == 'all'
   - polars>=0.20 ; extra == 'all'
+  - readcon>=0.7.0 ; extra == 'all'
   - xyzrender>=0.1.2 ; extra == 'all'
   - mdit-py-plugins>=0.3.4 ; extra == 'doc'
   - myst-nb>=1 ; extra == 'doc'
@@ -952,6 +956,7 @@ packages:
   - ase>=3.22 ; extra == 'neb'
   - h5py>=3.0 ; extra == 'neb'
   - polars>=0.20 ; extra == 'neb'
+  - readcon>=0.7.0 ; extra == 'neb'
   - cmcrameri>=1.7 ; extra == 'plot'
   - matplotlib>=3.8.2 ; extra == 'plot'
   - pytest-cov>=4.1.0 ; extra == 'test'
@@ -2899,6 +2904,11 @@ packages:
   requires_dist:
   - numpy
   - pillow
+- pypi: https://files.pythonhosted.org/packages/38/f7/ce0aa9d209ac65023729f242be163eb1500496e51d99b291668e33e9c48b/readcon-0.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: readcon
+  version: 0.7.3
+  sha256: 1058228af70ef3113f0d3504478bd33d744279a4b13c35e91b98e6e6d41c654d
+  requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.2-h8c095d6_2.conda
   sha256: 2d6d0c026902561ed77cd646b5021aef2d4db22e57a5b0178dfc669231e06d2c
   md5: 283b96675859b20a825f8fa30f311446

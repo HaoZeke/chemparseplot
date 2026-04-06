@@ -1,0 +1,3 @@
+Replace ``ase.io.read(format="eon")`` with ``readcon.read_con_as_ase()`` for
+all ``.con`` file parsing in eOn trajectory modules. Adds ``readcon>=0.7.0``
+to the ``neb`` extra.
