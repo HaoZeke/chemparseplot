@@ -191,6 +191,10 @@ class TestPlotLazyImports:
 # ============================================================
 # chemparseplot.parse.neb_utils (calculate_landscape_coords)
 # ============================================================
+@pytest.mark.skipif(
+    importlib.util.find_spec("rgpycrumbs") is None,
+    reason="rgpycrumbs not installed",
+)
 class TestCalculateLandscapeCoords:
     def test_with_mock_ira(self):
         """Test with a mock IRA that returns identity RMSD."""

@@ -182,6 +182,8 @@ ban-relative-imports = "all"
   "FBT002",
   "PLW2901",
 ]
+"chemparseplot/plot/structs.py" = ["PLC0415"]
+"chemparseplot/plot/geomscan.py" = ["PLC0415"]
 "chemparseplot/plot/neb.py" = ["PLR2004", "PLC0415", "C408"]
 "chemparseplot/parse/orca/neb/opi_parser.py" = [
   "PLC0415", # late imports for optional deps (ase)
