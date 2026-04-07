@@ -930,8 +930,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: chemparseplot
-  version: 1.5.3.dev10+gcdf54360c
-  sha256: bff5069ad855f951618879ec2918fd66b75aef0e614acbbbe1f13fde86e58e68
+  version: 1.6.2.dev7+g07b7499d6
+  sha256: 1e0527d296334e3c6502b94f192a9c1d10ac168336293329e8c9f8b60a0759d0
   requires_dist:
   - numpy>=1.26.2
   - pint>=0.22
