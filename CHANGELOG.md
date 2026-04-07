@@ -2,6 +2,20 @@
 
 <!-- towncrier release notes start -->
 
+## [1.7.0](https://github.com/HaoZeke/chemparseplot/tree/1.7.0) - 2026-04-07
+
+### Changed
+
+- Replace ``ase.io.read(format="eon")`` with ``readcon.read_con_as_ase()`` for
+all ``.con`` file parsing in eOn trajectory modules. Adds ``readcon>=0.7.0``
+to the ``neb`` extra. ([#readcon-v2](https://github.com/HaoZeke/chemparseplot/issues/readcon-v2))
+
+### Fixed
+
+- Lazified all top-level rgpycrumbs imports to resolve circular dependency in CI environments.
+- Resolved all ruff lint errors: added ``__all__`` for re-exports, fixed import ordering, removed unused imports.
+
+
 ## [1.5.3](https://github.com/HaoZeke/chemparseplot/tree/1.5.3) - 2026-03-26
 
 ### Fixed
