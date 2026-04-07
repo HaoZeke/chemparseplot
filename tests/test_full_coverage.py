@@ -32,6 +32,8 @@ try:
 except ImportError:
     _HAS_CMCRAMERI = False
 
+_HAS_RGPYCRUMBS = importlib.util.find_spec("rgpycrumbs") is not None
+
 
 # ============================================================
 # chemparseplot.parse.chemgp_hdf5
@@ -773,7 +775,8 @@ _PY310 = sys.version_info < (3, 11)
 
 
 @pytest.mark.skipif(
-    not _HAS_CMCRAMERI or _PY310, reason="cmcrameri required, py3.10 has recursion issue"
+    not _HAS_CMCRAMERI or _PY310 or not _HAS_RGPYCRUMBS,
+    reason="cmcrameri + rgpycrumbs required, py3.10 has recursion issue",
 )
 class TestGeomscanPlot:
     def test_plot_energy_paths(self):
@@ -794,7 +797,7 @@ class TestGeomscanPlot:
         units = {"distance": "angstrom", "energy": "eV"}
 
         with patch(
-            "chemparseplot.plot.geomscan.spline_interp",
+            "rgpycrumbs.interpolation.spline_interp",
             return_value=(np.linspace(0, 3, 100), np.sin(np.linspace(0, 3, 100))),
         ):
             from chemparseplot.plot.geomscan import plot_energy_paths
@@ -1274,6 +1277,7 @@ class TestNebPlotSurface:
 # ============================================================
 # chemparseplot.parse.trajectory.hdf5 (lines 253-294)
 # ============================================================
+@pytest.mark.skipif(not _HAS_RGPYCRUMBS, reason="rgpycrumbs required")
 class TestTrajectoryHdf5:
     def _make_h5_result(self, tmp_path, n_images=5, n_atoms=3):
         """Create a minimal neb_result.h5 file."""
@@ -1414,6 +1418,7 @@ class TestTrajectoryHdf5:
 # ============================================================
 # chemparseplot.parse.trajectory.neb (fallback paths)
 # ============================================================
+@pytest.mark.skipif(not _HAS_RGPYCRUMBS, reason="rgpycrumbs required")
 class TestTrajectoryNeb:
     def test_get_energy_from_calc(self):
         from ase import Atoms
