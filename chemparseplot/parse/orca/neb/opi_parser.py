@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from rgpycrumbs._aux import ensure_import
 
 # Lazy import - will be loaded on first use
 _opi_output = None
@@ -27,6 +26,8 @@ def _get_opi_output():
     """Get OPI Output class, installing if needed."""
     global _opi_output
     if _opi_output is None:
+        from rgpycrumbs._aux import ensure_import
+
         _opi_output = ensure_import("opi.output.core").Output
     return _opi_output
 
