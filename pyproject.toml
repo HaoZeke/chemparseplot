@@ -53,7 +53,17 @@ release = [
   "twine>=4.0",
   "wheel>=0.40",
 ]
-test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
+test = [
+  "ase>=3.22",
+  "h5py>=3.0",
+  "matplotlib>=3.8.2",
+  "polars>=0.20",
+  "pytest>=7.4.3",
+  "pytest-cov>=4.1.0",
+  "readcon>=0.7.0",
+  "rgpycrumbs",
+  "scipy>=1.11",
+]
 lint = ["ruff>=0.1.6"]
 [project.urls]
 Documentation = "https://chemparseplot.rgoswami.me"
