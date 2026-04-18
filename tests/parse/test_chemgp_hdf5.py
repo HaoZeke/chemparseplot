@@ -115,13 +115,14 @@ class TestHDF5IO:
         """Test reading metadata from HDF5."""
         from collections.abc import Mapping
 
-        from chemparseplot.parse.chemgp_hdf5 import MetadataAttrs, read_h5_metadata
+        from chemparseplot.parse.chemgp_hdf5 import read_h5_metadata
+        from chemparseplot.parse.types import ParserAttrs
 
         with h5py.File(sample_h5_file, "r") as f:
             metadata = read_h5_metadata(f)
 
         assert isinstance(metadata, Mapping)
-        assert isinstance(metadata, MetadataAttrs)
+        assert isinstance(metadata, ParserAttrs)
         assert "conv_tol" in metadata
         assert "n_steps" in metadata
         assert metadata["conv_tol"] == 0.01

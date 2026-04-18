@@ -19,6 +19,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from chemparseplot.parse.types import ParserAttrs
+
 
 @dataclass
 class OptimizerTrace:
@@ -53,12 +55,12 @@ class ComparisonData:
     ----------
     traces : dict[str, OptimizerTrace]
         Keyed by method name.
-    summary : dict | None
+    summary : ParserAttrs | None
         Summary record if present.
     """
 
     traces: dict[str, OptimizerTrace] = field(default_factory=dict)
-    summary: dict[str, Any] | None = None
+    summary: ParserAttrs | None = None
 
 
 def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
@@ -82,7 +84,7 @@ def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
         for line in f:
             rec = json.loads(line.strip())
             if rec.get("summary"):
-                data.summary = rec
+                data.summary = ParserAttrs(values=rec)
                 continue
             method = rec["method"]
             if method not in data.traces:
@@ -222,7 +224,7 @@ class GPQualityData:
 
     Attributes
     ----------
-    meta : dict
+    meta : ParserAttrs
         Grid metadata (nx, ny, x_min, x_max, y_min, y_max).
     stationary : list[StationaryPoint]
         Minima and saddle points.
@@ -230,7 +232,7 @@ class GPQualityData:
         Grid data keyed by n_train.
     """
 
-    meta: dict[str, Any] = field(default_factory=dict)
+    meta: ParserAttrs = field(default_factory=ParserAttrs)
     stationary: list[StationaryPoint] = field(default_factory=list)
     grids: dict[int, GPQualityGrid] = field(default_factory=dict)
 
@@ -257,7 +259,7 @@ def parse_gp_quality_jsonl(path: str | Path) -> GPQualityData:
             rec = json.loads(line.strip())
             t = rec["type"]
             if t == "grid_meta":
-                data.meta = rec
+                data.meta = ParserAttrs(values=rec)
             elif t in ("minimum", "saddle"):
                 data.stationary.append(
                     StationaryPoint(

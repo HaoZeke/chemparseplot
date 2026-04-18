@@ -19,43 +19,10 @@ HDF5 Layout
     Extracted from chemgp.plt_gp to standalone module.
 """
 
-from collections.abc import Iterator, Mapping
-from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
-
-
-@dataclass(frozen=True, slots=True)
-class ArrayGroup(Mapping[str, np.ndarray]):
-    """Named mapping of arrays loaded from an HDF5 group."""
-
-    values: dict[str, np.ndarray] = field(default_factory=dict)
-
-    def __getitem__(self, key: str) -> np.ndarray:
-        return self.values[key]
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.values)
-
-    def __len__(self) -> int:
-        return len(self.values)
-
-
-@dataclass(frozen=True, slots=True)
-class MetadataAttrs(Mapping[str, Any]):
-    """Named mapping of HDF5 root metadata attributes."""
-
-    values: dict[str, Any] = field(default_factory=dict)
-
-    def __getitem__(self, key: str) -> Any:
-        return self.values[key]
-
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.values)
-
-    def __len__(self) -> int:
-        return len(self.values)
+from chemparseplot.parse.types import ArrayGroup, ParserAttrs
 
 
 def read_h5_table(f: Any, name: str = "table") -> Any:
@@ -160,7 +127,7 @@ def read_h5_points(f: Any, name: str) -> ArrayGroup:
     return ArrayGroup(values={k: g[k][()] for k in g.keys()})
 
 
-def read_h5_metadata(f: Any) -> MetadataAttrs:
+def read_h5_metadata(f: Any) -> ParserAttrs:
     """Read root-level metadata attributes.
 
     Parameters
@@ -170,10 +137,10 @@ def read_h5_metadata(f: Any) -> MetadataAttrs:
 
     Returns
     -------
-    MetadataAttrs
+    ParserAttrs
         Named mapping of metadata attributes
     """
-    return MetadataAttrs(values={k: f.attrs[k] for k in f.attrs.keys()})
+    return ParserAttrs(values={k: f.attrs[k] for k in f.attrs.keys()})
 
 
 def validate_hdf5_structure(

@@ -252,7 +252,7 @@ Simple ORCA NEB energy profile. Plots image index vs energy with labeled reactan
 
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =neb_data= | =dict= | - | Data from =parse_orca_neb()= |
+| =neb_data= | =OrcaNebResult= / =Mapping= | - | Typed result from =parse_orca_neb()= |
 | =output= | =Path= | - | Output file path |
 | =width= | =float= | =7.0= | Figure width (inches) |
 | =height= | =float= | =5.0= | Figure height (inches) |
@@ -266,7 +266,7 @@ Publication ORCA NEB energy profile using the eOn-style =plot_energy_path()= fun
 
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =neb_data= | =dict= | - | Data from =parse_orca_neb()= |
+| =neb_data= | =OrcaNebResult= / =Mapping= | - | Typed result from =parse_orca_neb()= |
 | =output= | =Path= | - | Output file path |
 | =width= | =float= | =5.37= | Figure width (inches) |
 | =height= | =float= | =5.37= | Figure height (inches) |
@@ -288,7 +288,7 @@ Publication ORCA NEB 2D landscape using =plot_landscape_surface()= and =plot_lan
 
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =neb_data= | =dict= | - | Data from =parse_orca_neb()= |
+| =neb_data= | =OrcaNebResult= / =Mapping= | - | Typed result from =parse_orca_neb()= |
 | =output= | =Path= | - | Output file path |
 | =width= | =float= | =5.37= | Figure width (inches) |
 | =height= | =float= | =5.37= | Figure height (inches) |

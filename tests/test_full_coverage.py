@@ -184,7 +184,8 @@ class TestChemGPHdf5:
     def test_read_h5_metadata(self):
         from collections.abc import Mapping
 
-        from chemparseplot.parse.chemgp_hdf5 import MetadataAttrs, read_h5_metadata
+        from chemparseplot.parse.chemgp_hdf5 import read_h5_metadata
+        from chemparseplot.parse.types import ParserAttrs
 
         f = MagicMock()
         f.attrs = MagicMock()
@@ -193,7 +194,7 @@ class TestChemGPHdf5:
 
         meta = read_h5_metadata(f)
         assert isinstance(meta, Mapping)
-        assert isinstance(meta, MetadataAttrs)
+        assert isinstance(meta, ParserAttrs)
         assert meta["surface"] == "mb"
         assert meta["version"] == 2
 
@@ -231,7 +232,10 @@ class TestChemGPHdf5:
 @pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestChemGPJsonl:
     def test_parse_comparison_jsonl(self, tmp_path):
+        from collections.abc import Mapping
+
         from chemparseplot.parse.chemgp_jsonl import parse_comparison_jsonl
+        from chemparseplot.parse.types import ParserAttrs
 
         lines = [
             json.dumps(
@@ -256,6 +260,8 @@ class TestChemGPJsonl:
         assert "gp_minimize" in data.traces
         assert "neb" in data.traces
         assert data.summary is not None
+        assert isinstance(data.summary, Mapping)
+        assert isinstance(data.summary, ParserAttrs)
         assert data.summary["total"] == 10
 
         gp_trace = data.traces["gp_minimize"]
@@ -304,7 +310,10 @@ class TestChemGPJsonl:
         assert len(data.energy_mae_vs_true) == 2
 
     def test_parse_gp_quality_jsonl(self, tmp_path):
+        from collections.abc import Mapping
+
         from chemparseplot.parse.chemgp_jsonl import parse_gp_quality_jsonl
+        from chemparseplot.parse.types import ParserAttrs
 
         lines = [
             json.dumps(
@@ -388,6 +397,8 @@ class TestChemGPJsonl:
         f.write_text("\n".join(lines))
 
         data = parse_gp_quality_jsonl(f)
+        assert isinstance(data.meta, Mapping)
+        assert isinstance(data.meta, ParserAttrs)
         assert data.meta["nx"] == 2
         assert len(data.stationary) == 2
         assert data.stationary[0].kind == "minimum"
@@ -1192,13 +1203,16 @@ class TestNebPlotSurface:
 
     def test_plot_orca_neb_profile(self, tmp_path):
         from chemparseplot.plot.neb import plot_orca_neb_profile
+        from chemparseplot.parse.types import OrcaNebResult
 
-        neb_data = {
-            "energies": [0.0, 0.5, 1.0, 0.5, 0.0],
-            "n_images": 5,
-            "barrier_forward": 1.0,
-            "barrier_reverse": 1.0,
-        }
+        neb_data = OrcaNebResult(
+            energies=np.array([0.0, 0.5, 1.0, 0.5, 0.0]),
+            converged=True,
+            barrier_forward=1.0,
+            barrier_reverse=1.0,
+            source="opi",
+            orca_version="6.1",
+        )
         output = tmp_path / "profile.png"
         plot_orca_neb_profile(neb_data, output)
         assert output.exists()
@@ -1657,13 +1671,16 @@ class TestTwoDimPlotMethods:
 class TestOrcaNebHighLevel:
     def test_plot_orca_neb_profile(self, tmp_path):
         from chemparseplot.plot.neb import plot_orca_neb_profile
+        from chemparseplot.parse.types import OrcaNebResult
 
-        data = {
-            "energies": [0.0, 0.5, 1.0, 0.8, 0.2],
-            "n_images": 5,
-            "barrier_forward": 1.0,
-            "barrier_reverse": 0.8,
-        }
+        data = OrcaNebResult(
+            energies=np.array([0.0, 0.5, 1.0, 0.8, 0.2]),
+            converged=True,
+            barrier_forward=1.0,
+            barrier_reverse=0.8,
+            source="opi",
+            orca_version="6.1",
+        )
         output = tmp_path / "profile.png"
         plot_orca_neb_profile(data, output)
         assert output.exists()

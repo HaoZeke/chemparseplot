@@ -18,6 +18,8 @@ from typing import Any
 
 import numpy as np
 
+from chemparseplot.parse.types import OrcaNebResult
+
 # Lazy import - will be loaded on first use
 _opi_output = None
 
@@ -35,7 +37,7 @@ def _get_opi_output():
 HAS_OPI = True  # Will fail gracefully at runtime if not installed
 
 
-def parse_orca_neb(basename: str, working_dir: Path | None = None) -> dict[str, Any]:
+def parse_orca_neb(basename: str, working_dir: Path | None = None) -> OrcaNebResult:
     """Parse ORCA NEB calculation using OPI.
 
     Returns data compatible with chemparseplot.plot.neb functions:
@@ -54,8 +56,8 @@ def parse_orca_neb(basename: str, working_dir: Path | None = None) -> dict[str, 
 
     Returns
     -------
-    dict
-        Structured NEB data compatible with plot_neb_profile() and plot_neb_landscape()
+    OrcaNebResult
+        Structured NEB data compatible with existing plotting helpers
 
     Example
     -------
@@ -156,22 +158,20 @@ def parse_orca_neb(basename: str, working_dir: Path | None = None) -> dict[str, 
         barrier_forward = None
         barrier_reverse = None
 
-    return {
-        "energies": energies,
-        "rmsd_r": rmsd_r,
-        "rmsd_p": rmsd_p,
-        "grad_r": grad_r,
-        "grad_p": grad_p,
-        "forces": forces if all(f is not None for f in forces) else None,
-        "converged": converged,
-        "n_images": n_images,
-        "barrier_forward": barrier_forward,
-        "barrier_reverse": barrier_reverse,
-        "source": "opi",
-        "orca_version": str(output.orca_version)
-        if hasattr(output, "orca_version")
-        else "unknown",
-    }
+    return OrcaNebResult(
+        energies=energies,
+        rmsd_r=rmsd_r,
+        rmsd_p=rmsd_p,
+        grad_r=grad_r,
+        grad_p=grad_p,
+        forces=forces if all(f is not None for f in forces) else None,
+        converged=converged,
+        n_images=n_images,
+        barrier_forward=barrier_forward,
+        barrier_reverse=barrier_reverse,
+        source="opi",
+        orca_version=str(output.orca_version) if hasattr(output, "orca_version") else "unknown",
+    )
 
 
 def _calculate_rmsd(ref: Any, mobile: Any) -> float:
@@ -202,14 +202,14 @@ def _compute_synthetic_gradients(rmsd_r, rmsd_p, forces, atoms_list):
 
 def parse_orca_neb_fallback(
     basename: str, working_dir: Path | None = None
-) -> dict[str, Any] | None:
+) -> OrcaNebResult | None:
     """Parse ORCA NEB using legacy regex parsing (ORCA < 6.1).
 
     Falls back to parsing .interp files if OPI is not available.
 
     Returns
     -------
-    dict or None
+    OrcaNebResult or None
         NEB data if successful, None if parsing fails
     """
     from chemparseplot.parse.orca.neb.interp import extract_interp_points
@@ -232,19 +232,19 @@ def parse_orca_neb_fallback(
         last_iter = data[-1]
         energies = last_iter.nebpath.energy.magnitude
 
-        return {
-            "energies": energies,
-            "rmsd_r": None,
-            "rmsd_p": None,
-            "grad_r": None,
-            "grad_p": None,
-            "forces": None,
-            "converged": True,
-            "n_images": len(energies),
-            "barrier_forward": None,
-            "barrier_reverse": None,
-            "source": "legacy_interp",
-            "orca_version": "<6.1",
-        }
+        return OrcaNebResult(
+            energies=np.asarray(energies),
+            rmsd_r=None,
+            rmsd_p=None,
+            grad_r=None,
+            grad_p=None,
+            forces=None,
+            converged=True,
+            n_images=len(energies),
+            barrier_forward=None,
+            barrier_reverse=None,
+            source="legacy_interp",
+            orca_version="<6.1",
+        )
     except Exception:
         return None

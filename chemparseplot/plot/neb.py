@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from collections.abc import Mapping
+
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
@@ -27,6 +29,7 @@ from chemparseplot.parse.projection import (
     inverse_sd_to_ab,
     project_to_sd,
 )
+from chemparseplot.parse.types import OrcaNebResult
 
 log = logging.getLogger(__name__)
 
@@ -1308,7 +1311,7 @@ def plot_neb_evolution(
 
 
 def plot_orca_neb_profile(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 7.0,
@@ -1320,10 +1323,7 @@ def plot_orca_neb_profile(
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: list of energies in eV
-        - n_images: number of images
-        - barrier_forward, barrier_reverse: barrier heights
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1340,10 +1340,10 @@ def plot_orca_neb_profile(
     """
     import matplotlib.pyplot as plt
 
-    energies = neb_data.get("energies", [])
-    n_images = neb_data.get("n_images", len(energies))
+    energies = np.asarray(neb_data.get("energies", []))
+    n_images = int(neb_data.get("n_images", len(energies)))
 
-    if not energies:
+    if energies.size == 0:
         msg = "No energy data in neb_data"
         raise ValueError(msg)
 
@@ -1357,10 +1357,10 @@ def plot_orca_neb_profile(
     # Label reactant, product, and saddle
     if len(energies) >= 3:
         ax.plot(0, energies[0], "go", markersize=12, label="Reactant")
-        ax.plot(-1, energies[-1], "ro", markersize=12, label="Product")
+        ax.plot(n_images - 1, energies[-1], "ro", markersize=12, label="Product")
 
         # Find saddle point
-        saddle_idx = energies.index(max(energies))
+        saddle_idx = int(np.argmax(energies))
         if saddle_idx != 0 and saddle_idx != len(energies) - 1:
             ax.plot(saddle_idx, energies[saddle_idx], "ys", markersize=12, label="Saddle")
 
@@ -1392,7 +1392,7 @@ def plot_orca_neb_profile(
 
 
 def plot_orca_neb_energy_profile(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 5.37,
@@ -1409,11 +1409,7 @@ def plot_orca_neb_energy_profile(
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: array of energies in eV
-        - rmsd_r, rmsd_p: RMSD coordinates (optional)
-        - grad_r, grad_p: gradients (optional)
-        - n_images: number of images
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1435,16 +1431,16 @@ def plot_orca_neb_energy_profile(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = neb_data.get("energies", [])
+    energies = np.asarray(neb_data.get("energies", []))
     rmsd_r = neb_data.get("rmsd_r")
     rmsd_p = neb_data.get("rmsd_p")
     grad_r = neb_data.get("grad_r")
     neb_data.get("grad_p")
-    n_images = neb_data.get("n_images", len(energies))
+    n_images = int(neb_data.get("n_images", len(energies)))
     barrier_fwd = neb_data.get("barrier_forward")
     neb_data.get("barrier_reverse")
 
-    if len(energies) == 0:
+    if energies.size == 0:
         msg = "No energy data in neb_data"
         raise ValueError(msg)
 
@@ -1525,7 +1521,7 @@ def plot_orca_neb_energy_profile(
 
 
 def plot_orca_neb_landscape(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 5.37,
@@ -1542,11 +1538,7 @@ def plot_orca_neb_landscape(
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: array of energies in eV
-        - rmsd_r, rmsd_p: RMSD coordinates
-        - grad_r, grad_p: gradients
-        - n_images: number of images
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1568,23 +1560,20 @@ def plot_orca_neb_landscape(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = neb_data.get("energies", [])
-    rmsd_r = neb_data.get("rmsd_r")
-    rmsd_p = neb_data.get("rmsd_p")
-    grad_r = neb_data.get("grad_r")
-    grad_p = neb_data.get("grad_p")
-
-    # Convert to numpy arrays if lists
-    rmsd_r = np.asarray(rmsd_r)
-    rmsd_p = np.asarray(rmsd_p)
-    energies = np.asarray(energies)
-
-    if rmsd_r is None or rmsd_p is None:
+    energies = np.asarray(neb_data.get("energies", []))
+    rmsd_r_raw = neb_data.get("rmsd_r")
+    rmsd_p_raw = neb_data.get("rmsd_p")
+    if rmsd_r_raw is None or rmsd_p_raw is None:
         msg = (
             "RMSD coordinates required for landscape plot. "
             "Re-run ORCA calculation with geometry output enabled."
         )
         raise ValueError(msg)
+
+    rmsd_r = np.asarray(rmsd_r_raw)
+    rmsd_p = np.asarray(rmsd_p_raw)
+    grad_r = neb_data.get("grad_r")
+    grad_p = neb_data.get("grad_p")
 
     # Create figure
     fig = plt.figure(figsize=(width, height), dpi=dpi)
