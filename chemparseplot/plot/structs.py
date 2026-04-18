@@ -2,7 +2,14 @@ from dataclasses import dataclass
 from typing import Any, Protocol, TypedDict
 
 import matplotlib.pyplot as plt
+import numpy as np
 from cmcrameri import cm
+
+_ENERGY_FACTORS = {
+    "eV": 1.0,
+    "kcal/mol": 23.06054783061903,
+    "kJ/mol": 96.48533212331002,
+}
 
 
 class UnitConverted(Protocol):
@@ -35,6 +42,33 @@ def axis_label(label: str, unit: str) -> str:
     """Format a consistent axis label with units."""
 
     return f"{label} ({unit})"
+
+
+def convert_energy(values: Any, unit: str, *, source_unit: str = "eV") -> np.ndarray:
+    """Convert energy-like values between supported presentation units."""
+
+    factor = _ENERGY_FACTORS[unit] / _ENERGY_FACTORS[source_unit]
+    return np.asarray(values, dtype=float) * factor
+
+
+def convert_energy_curvature(
+    values: Any, unit: str, *, source_unit: str = "eV"
+) -> np.ndarray:
+    """Convert eigenvalue-like values while preserving the Angstrom denominator."""
+
+    return convert_energy(values, unit, source_unit=source_unit)
+
+
+def energy_axis_label(unit: str, *, label: str = "Energy") -> str:
+    """Format a canonical energy-axis label."""
+
+    return axis_label(label, unit)
+
+
+def eigenvalue_axis_label(unit: str, *, label: str = "Eigenvalue") -> str:
+    """Format a canonical curvature-axis label."""
+
+    return f"{label} ({unit}/$\\AA^2$)"
 
 
 @dataclass(frozen=True, slots=True)

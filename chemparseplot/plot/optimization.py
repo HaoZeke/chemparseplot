@@ -23,6 +23,12 @@ from chemparseplot.plot.neb import (
     plot_landscape_path_overlay,
     plot_landscape_surface,
 )
+from chemparseplot.plot.structs import (
+    convert_energy,
+    convert_energy_curvature,
+    eigenvalue_axis_label,
+    energy_axis_label,
+)
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +57,8 @@ def plot_optimization_landscape(
     project_path: bool = True,
     method: str = "grad_matern",
     cmap: str = "viridis",
-    z_label: str = "Energy (eV)",
+    energy_unit: str = "eV",
+    z_label: str | None = None,
     **surface_kwargs,
 ) -> Any:
     """Plot 2D landscape for an optimization trajectory.
@@ -86,13 +93,17 @@ def plot_optimization_landscape(
     -------
     colorbar or None
     """
+    z_values = convert_energy(z_data, energy_unit)
+    grad_a_values = convert_energy(grad_a, energy_unit)
+    grad_b_values = convert_energy(grad_b, energy_unit)
+
     plot_landscape_surface(
         ax,
         rmsd_a,
         rmsd_b,
-        grad_a,
-        grad_b,
-        z_data,
+        grad_a_values,
+        grad_b_values,
+        z_values,
         method=method,
         cmap=cmap,
         project_path=project_path,
@@ -103,9 +114,9 @@ def plot_optimization_landscape(
         ax,
         rmsd_a,
         rmsd_b,
-        z_data,
+        z_values,
         cmap=cmap,
-        z_label=z_label,
+        z_label=z_label or energy_axis_label(energy_unit),
         project_path=project_path,
     )
 
@@ -129,6 +140,7 @@ def plot_optimization_profile(
     ax_eigen: Any = None,
     color: str = "#004D40",
     eigen_color: str = "#FF655D",
+    energy_unit: str = "eV",
 ) -> None:
     """Plot energy (and optionally eigenvalue) vs iteration.
 
@@ -149,14 +161,23 @@ def plot_optimization_profile(
     eigen_color
         Eigenvalue line color.
     """
-    ax.plot(iterations, energies, "o-", color=color, markersize=4, linewidth=1.5)
+    converted_energies = convert_energy(energies, energy_unit)
+    ax.plot(
+        iterations,
+        converted_energies,
+        "o-",
+        color=color,
+        markersize=4,
+        linewidth=1.5,
+    )
     ax.set_xlabel("Iteration")
-    ax.set_ylabel("Energy (eV)")
+    ax.set_ylabel(energy_axis_label(energy_unit))
 
     if eigenvalues is not None and ax_eigen is not None:
+        converted_eigenvalues = convert_energy_curvature(eigenvalues, energy_unit)
         ax_eigen.plot(
             iterations,
-            eigenvalues,
+            converted_eigenvalues,
             "s-",
             color=eigen_color,
             markersize=3,
@@ -164,7 +185,7 @@ def plot_optimization_profile(
         )
         ax_eigen.axhline(0, color="gray", linestyle=":", linewidth=1, alpha=0.6)
         ax_eigen.set_xlabel("Iteration")
-        ax_eigen.set_ylabel("Eigenvalue (eV/$\\AA^2$)")
+        ax_eigen.set_ylabel(eigenvalue_axis_label(energy_unit))
 
 
 def plot_convergence_panel(

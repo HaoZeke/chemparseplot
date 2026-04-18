@@ -59,6 +59,19 @@ class TestPlotOptimizationProfile:
         assert ax.get_ylabel() == "Energy (eV)"
         plt.close(fig)
 
+    def test_energy_unit_conversion(self):
+        fig, ax = plt.subplots()
+        iters = np.arange(3)
+        energies = np.array([0.0, 1.0, 2.0])
+        plot_optimization_profile(ax, iters, energies, energy_unit="kcal/mol")
+        assert ax.get_ylabel() == "Energy (kcal/mol)"
+        np.testing.assert_allclose(
+            ax.lines[0].get_ydata(),
+            np.array([0.0, 23.06054783, 46.12109566]),
+            rtol=1e-6,
+        )
+        plt.close(fig)
+
     def test_with_eigenvalues(self):
         fig, (ax, ax_ev) = plt.subplots(1, 2)
         iters = np.arange(8)
@@ -69,6 +82,25 @@ class TestPlotOptimizationProfile:
         )
         assert len(ax.lines) == 1
         assert len(ax_ev.lines) >= 2  # data + hline
+        plt.close(fig)
+
+    def test_eigenvalue_unit_conversion(self):
+        fig, (ax, ax_ev) = plt.subplots(1, 2)
+        iters = np.arange(2)
+        plot_optimization_profile(
+            ax,
+            iters,
+            np.array([0.0, 1.0]),
+            eigenvalues=np.array([0.0, 1.0]),
+            ax_eigen=ax_ev,
+            energy_unit="kJ/mol",
+        )
+        assert ax_ev.get_ylabel() == "Eigenvalue (kJ/mol/$\\AA^2$)"
+        np.testing.assert_allclose(
+            ax_ev.lines[0].get_ydata(),
+            np.array([0.0, 96.48533212]),
+            rtol=1e-6,
+        )
         plt.close(fig)
 
     def test_eigenvalues_without_ax_ignored(self):
