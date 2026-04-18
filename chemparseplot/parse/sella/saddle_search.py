@@ -1,7 +1,7 @@
 import datetime
 import logging
 import time
-from collections import Counter, namedtuple
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -18,22 +18,29 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-SellaLog = namedtuple(
-    "SellaLog",
-    ["step_id", "time_float", "energy", "fmax", "cmax", "rtrust", "rho", "trj_id"],
-)
-"""Named tuple for a single Sella log entry.
+@dataclass(frozen=True, slots=True)
+class SellaLog:
+    """Typed record for a single Sella geometry-step log entry.
 
 ```{versionadded} 0.0.3
 ```
 """
 
+    step_id: int
+    time_float: float
+    energy: float
+    fmax: float
+    cmax: float
+    rtrust: float
+    rho: float
+    trj_id: int
 
-def _sella_loglist(log_f):
+
+def _sella_loglist(log_f: str | Path) -> list[SellaLog]:
     _txt = np.loadtxt(log_f, skiprows=1, dtype=str)
-    rdat = []
-    for tline in _txt:
-        rdat.append(
+    records = []
+    for tline in np.atleast_2d(_txt):
+        records.append(
             SellaLog(
                 step_id=int(tline[1]),
                 time_float=time.mktime(
@@ -49,10 +56,10 @@ def _sella_loglist(log_f):
                 trj_id=int(tline[8]),
             )
         )
-    return rdat
+    return records
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class LogStart:
     """Start-of-log record for a Sella calculation.
 
@@ -64,7 +71,7 @@ class LogStart:
     init_energy: float
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class LogEnd:
     """End-of-log record for a Sella calculation.
 
@@ -140,6 +147,13 @@ def parse_log_line(line: str, line_type: str) -> LogStart | LogEnd | None:
         return None
 
 
+def _default_saddle_measure() -> SaddleMeasure:
+    if SaddleMeasure is None:
+        msg = "rgpycrumbs is required to construct Sella saddle measurements"
+        raise ImportError(msg)
+    return SaddleMeasure()
+
+
 def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
     """Parses Sella saddle point calculation results.
 
@@ -163,7 +177,7 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
             npes = len(traj)
         except Exception as e:
             log.warning("Could not read or process trajectory file %s: %s", traj_file, e)
-            return SaddleMeasure()
+            return _default_saddle_measure()
     else:
         log.warning("No .traj file found in %s. Using npes.txt or default.", eresp)
         respth = eresp / "npes.txt"
@@ -172,14 +186,14 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
                 npes = int(respth.read_text().split()[-1])
             except (IndexError, ValueError):
                 log.warning("Could not parse npes from %s", respth)
-                return SaddleMeasure()
+                return _default_saddle_measure()
         else:
-            return SaddleMeasure()
+            return _default_saddle_measure()
 
     log_files = [f for f in eresp.iterdir() if "log" in str(f)]
     if not log_files:
         log.warning("No log file found in %s", eresp)
-        return SaddleMeasure()
+        return _default_saddle_measure()
 
     try:
         logdat = log_files[0].read_text().strip().split("\n")
@@ -187,7 +201,7 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
         end_data = parse_log_line(logdat[-1], "end")
 
         if start_data is None or end_data is None:
-            return SaddleMeasure()
+            return _default_saddle_measure()
 
         tot_time = one_day_tdelta(end_data.tend, start_data.tstart)
 
@@ -207,7 +221,7 @@ def parse_sella_saddle(eresp: Path, rloc: SpinID) -> SaddleMeasure:
 
     except (IndexError, ValueError) as e:
         log.warning("Error parsing log data: %s", e)
-        return SaddleMeasure()
+        return _default_saddle_measure()
 
 
 def _no_ghost(atm: ase.Atoms):
@@ -224,7 +238,7 @@ def _get_ghosts(traj_f):
     return n_ghosts
 
 
-def get_unique_frames(traj, sloglist: list, nround: int = 2):
+def get_unique_frames(traj, sloglist: list[SellaLog], nround: int = 2):
     """Filter trajectory to unique frames by matching rounded fmax values.
 
     ```{versionadded} 0.0.3
