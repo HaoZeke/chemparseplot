@@ -47,6 +47,17 @@ class TestFindFilePaths:
 # chemparseplot.util (parse_target_coords)
 # ============================================================
 class TestParseTargetCoords:
+    def test_import_has_no_side_effects(self, monkeypatch):
+        import chemparseplot.util as util_mod
+
+        def fail_read(*_args, **_kwargs):
+            msg = "chemparseplot.util import should not read files"
+            raise AssertionError(msg)
+
+        monkeypatch.setattr("ase.io.read", fail_read)
+        reloaded = importlib.reload(util_mod)
+        assert hasattr(reloaded, "parse_target_coords")
+
     def test_valid_coords(self):
         from chemparseplot.util import parse_target_coords
 
