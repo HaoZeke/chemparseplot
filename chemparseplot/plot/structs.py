@@ -75,9 +75,9 @@ def eigenvalue_axis_label(unit: str, *, label: str = "Eigenvalue") -> str:
 class EnergyPath:
     """Typed energy path with unit-aware distance and energy series.
 
-```{versionadded} 0.0.3
-```
-"""
+    ```{versionadded} 0.0.3
+    ```
+    """
 
     label: str
     distance: UnitSeries
@@ -88,9 +88,9 @@ class EnergyPath:
 class XYData:
     """Typed generic XY data with unit-aware axes.
 
-```{versionadded} 0.0.3
-```
-"""
+    ```{versionadded} 0.0.3
+    ```
+    """
 
     label: str
     x: UnitSeries
