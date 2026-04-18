@@ -250,6 +250,7 @@ class TestCalculateLandscapeCoords:
         atoms_list = [molecule("H2O") for _ in range(3)]
         ref_a = molecule("H2O")
         ref_b = molecule("NH3")
+        mock_ira = MagicMock()
 
         captured_refs = []
 
@@ -263,7 +264,9 @@ class TestCalculateLandscapeCoords:
         ):
             from chemparseplot.parse.neb_utils import calculate_landscape_coords
 
-            calculate_landscape_coords(atoms_list, None, 1.8, ref_a=ref_a, ref_b=ref_b)
+            calculate_landscape_coords(
+                atoms_list, mock_ira, 1.8, ref_a=ref_a, ref_b=ref_b
+            )
             assert len(captured_refs) == 2
             assert captured_refs[0] is ref_a
             assert captured_refs[1] is ref_b
@@ -274,6 +277,7 @@ class TestCalculateLandscapeCoords:
         from ase.build import molecule
 
         atoms_list = [molecule("H2O"), molecule("NH3"), molecule("CH4")]
+        mock_ira = MagicMock()
         captured_refs = []
 
         def fake_rmsd(atoms, ira, ref_atom, ira_kmax):
@@ -286,9 +290,18 @@ class TestCalculateLandscapeCoords:
         ):
             from chemparseplot.parse.neb_utils import calculate_landscape_coords
 
-            calculate_landscape_coords(atoms_list, None, 1.8)
+            calculate_landscape_coords(atoms_list, mock_ira, 1.8)
             assert captured_refs[0] is atoms_list[0]
             assert captured_refs[1] is atoms_list[-1]
+
+    def test_requires_ira_for_landscape_coords(self):
+        from ase.build import molecule
+
+        from chemparseplot.parse.neb_utils import calculate_landscape_coords
+
+        atoms_list = [molecule("H2O") for _ in range(3)]
+        with pytest.raises(ImportError, match="IRA is required"):
+            calculate_landscape_coords(atoms_list, None, 1.8)
 
 
 # ============================================================

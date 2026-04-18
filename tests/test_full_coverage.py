@@ -1442,9 +1442,15 @@ class TestTrajectoryHdf5:
                 ]
             )
 
-        with patch(
-            "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
-            side_effect=fake_rmsd,
+        with (
+            patch(
+                "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
+                side_effect=fake_rmsd,
+            ),
+            patch(
+                "rgpycrumbs._aux._import_from_parent_env",
+                return_value=type("FakeIRAModule", (), {"IRA": lambda self: object()})(),
+            ),
         ):
             df = history_to_landscape_df(h5_path)
 
@@ -1615,9 +1621,15 @@ class TestTrajectoryNeb:
                 ]
             )
 
-        with patch(
-            "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
-            side_effect=fake_rmsd,
+        with (
+            patch(
+                "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
+                side_effect=fake_rmsd,
+            ),
+            patch(
+                "rgpycrumbs._aux._import_from_parent_env",
+                return_value=type("FakeIRAModule", (), {"IRA": lambda self: object()})(),
+            ),
         ):
             df = trajectory_to_landscape_df(atoms_list, step=0)
 
