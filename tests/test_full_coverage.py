@@ -33,7 +33,9 @@ try:
 except ImportError:
     _HAS_CMCRAMERI = False
 
-_HAS_RGPYCRUMBS = has_module_spec("rgpycrumbs") and optional_import_available("rgpycrumbs")
+_HAS_RGPYCRUMBS = has_module_spec("rgpycrumbs") and optional_import_available(
+    "rgpycrumbs"
+)
 _HAS_PLOTNINE = has_module_spec("plotnine") and optional_import_available("plotnine")
 
 
@@ -667,9 +669,7 @@ class TestChemGPPlot:
         save_plot(fig, output)
         assert output.exists()
 
-    @pytest.mark.skipif(
-        not _HAS_PLOTNINE, reason="plotnine required"
-    )
+    @pytest.mark.skipif(not _HAS_PLOTNINE, reason="plotnine required")
     def test_save_plot_plotnine(self, tmp_path):
         from chemparseplot.plot.chemgp import save_plot
 
@@ -1222,7 +1222,7 @@ class TestNebPlotSurface:
             orca_version="6.1",
         )
         output = tmp_path / "profile.png"
-        plot_orca_neb_profile(neb_data, output)
+        plot_orca_neb_profile(neb_data, output, energy_unit="kcal/mol")
         assert output.exists()
 
     def test_plot_orca_neb_profile_no_energies(self, tmp_path):
@@ -1245,7 +1245,7 @@ class TestNebPlotSurface:
             "barrier_reverse": 0.8,
         }
         output = tmp_path / "orca_profile.png"
-        plot_orca_neb_energy_profile(neb_data, output)
+        plot_orca_neb_energy_profile(neb_data, output, energy_unit="kJ/mol")
         assert output.exists()
 
     def test_plot_orca_neb_energy_profile_no_rmsd(self, tmp_path):
@@ -1694,7 +1694,7 @@ class TestOrcaNebHighLevel:
             orca_version="6.1",
         )
         output = tmp_path / "profile.png"
-        plot_orca_neb_profile(data, output)
+        plot_orca_neb_profile(data, output, energy_unit="kcal/mol")
         assert output.exists()
 
     def test_plot_orca_neb_profile_no_barrier(self, tmp_path):
@@ -1719,7 +1719,7 @@ class TestOrcaNebHighLevel:
             "barrier_reverse": 0.9,
         }
         output = tmp_path / "eprofile.png"
-        plot_orca_neb_energy_profile(data, output)
+        plot_orca_neb_energy_profile(data, output, energy_unit="kJ/mol")
         assert output.exists()
 
     def test_plot_orca_neb_energy_profile_no_rmsd(self, tmp_path):

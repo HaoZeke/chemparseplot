@@ -30,17 +30,24 @@ from chemparseplot.parse.projection import (
     project_to_sd,
 )
 from chemparseplot.parse.types import OrcaNebResult
+from chemparseplot.plot.structs import (
+    convert_energy,
+    convert_energy_curvature,
+    eigenvalue_axis_label,
+    energy_axis_label,
+)
 
 log = logging.getLogger(__name__)
+
 
 # --- Data Structures ---
 @dataclass(frozen=True, slots=True)
 class InsetImagePos:
     """Position specification for an inset structure image.
 
-```{versionadded} 0.1.0
-```
-"""
+    ```{versionadded} 0.1.0
+    ```
+    """
 
     x: float
     y: float
@@ -1317,6 +1324,7 @@ def plot_orca_neb_profile(
     width: float = 7.0,
     height: float = 5.0,
     dpi: int = 200,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB energy profile from OPI-parsed data.
 
@@ -1340,7 +1348,7 @@ def plot_orca_neb_profile(
     """
     import matplotlib.pyplot as plt
 
-    energies = np.asarray(neb_data.get("energies", []))
+    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
     n_images = int(neb_data.get("n_images", len(energies)))
 
     if energies.size == 0:
@@ -1370,7 +1378,7 @@ def plot_orca_neb_profile(
 
     if barrier_fwd is not None and barrier_fwd > 0:
         ax.annotate(
-            f"ΔE‡ = {barrier_fwd:.2f} eV",
+            f"ΔE‡ = {convert_energy([barrier_fwd], energy_unit)[0]:.2f} {energy_unit}",
             xy=(saddle_idx, energies[saddle_idx]),
             xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
             arrowprops={"arrowstyle": "->", "color": "black"},
@@ -1379,7 +1387,7 @@ def plot_orca_neb_profile(
 
     # Labels and formatting
     ax.set_xlabel("Image Index")
-    ax.set_ylabel("Energy (eV)")
+    ax.set_ylabel(energy_axis_label(energy_unit))
     ax.set_title("ORCA NEB Energy Profile")
     ax.legend()
     ax.grid(True, alpha=0.3)
@@ -1400,6 +1408,7 @@ def plot_orca_neb_energy_profile(
     dpi: int = 200,
     method: str = "hermite",
     smoothing: Any = None,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB energy profile using existing eOn-style plotting.
 
@@ -1431,7 +1440,7 @@ def plot_orca_neb_energy_profile(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = np.asarray(neb_data.get("energies", []))
+    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
     rmsd_r = neb_data.get("rmsd_r")
     rmsd_p = neb_data.get("rmsd_p")
     grad_r = neb_data.get("grad_r")
@@ -1448,7 +1457,11 @@ def plot_orca_neb_energy_profile(
     if rmsd_r is not None and rmsd_p is not None:
         # Use progress coordinate (similar to eOn)
         rc = rmsd_r
-        f_para = grad_r if grad_r is not None else np.zeros_like(rc)
+        f_para = (
+            convert_energy(np.asarray(grad_r), energy_unit)
+            if grad_r is not None
+            else np.zeros_like(rc)
+        )
         xlabel = r"RMSD from Reactant ($\AA$)"
     else:
         rc = np.arange(n_images)
@@ -1498,7 +1511,10 @@ def plot_orca_neb_energy_profile(
             # Add barrier annotation
             if barrier_fwd is not None and barrier_fwd > 0:
                 ax.annotate(
-                    f"$\\Delta E^\\ddagger = {barrier_fwd:.2f}$ eV",
+                    (
+                        f"$\\Delta E^\\ddagger = "
+                        f"{convert_energy([barrier_fwd], energy_unit)[0]:.2f}$ {energy_unit}"
+                    ),
                     xy=(rc[saddle_idx], energies[saddle_idx]),
                     xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
                     arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
@@ -1508,7 +1524,7 @@ def plot_orca_neb_energy_profile(
 
     # Labels and formatting
     ax.set_xlabel(xlabel)
-    ax.set_ylabel("Energy (eV)")
+    ax.set_ylabel(energy_axis_label(energy_unit))
     ax.set_title("ORCA NEB Energy Profile")
     ax.legend(frameon=False)
     ax.grid(True, alpha=0.3, linestyle="--")
@@ -1529,6 +1545,7 @@ def plot_orca_neb_landscape(
     dpi: int = 200,
     method: str = "grad_matern",
     project_path: bool = True,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB 2D landscape using existing eOn-style plotting.
 
@@ -1560,7 +1577,7 @@ def plot_orca_neb_landscape(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = np.asarray(neb_data.get("energies", []))
+    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
     rmsd_r_raw = neb_data.get("rmsd_r")
     rmsd_p_raw = neb_data.get("rmsd_p")
     if rmsd_r_raw is None or rmsd_p_raw is None:
@@ -1591,8 +1608,16 @@ def plot_orca_neb_landscape(
         ax,
         rmsd_r,
         rmsd_p,
-        grad_r if grad_r is not None else np.zeros_like(rmsd_r),
-        grad_p if grad_p is not None else np.zeros_like(rmsd_p),
+        (
+            convert_energy(np.asarray(grad_r), energy_unit)
+            if grad_r is not None
+            else np.zeros_like(rmsd_r)
+        ),
+        (
+            convert_energy(np.asarray(grad_p), energy_unit)
+            if grad_p is not None
+            else np.zeros_like(rmsd_p)
+        ),
         energies,
         method=method,
         cmap=cmap,
@@ -1607,7 +1632,7 @@ def plot_orca_neb_landscape(
         rmsd_p,
         energies,
         cmap=cmap,
-        z_label="Energy (eV)",
+        z_label=energy_axis_label(energy_unit),
         project_path=project_path,
     )
 
