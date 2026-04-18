@@ -978,7 +978,27 @@ def plot_landscape_surface(
     var_grid = ndimage.gaussian_filter(var_grid, sigma=2)  # smoothing variances
 
     # --- 4. Plotting ---
-    ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
+    z_finite = zg[np.isfinite(zg)]
+    if z_finite.size == 0:
+        msg = "Surface prediction produced no finite values for contourf."
+        raise ValueError(msg)
+    z_min = float(z_finite.min())
+    z_max = float(z_finite.max())
+    if np.isclose(z_min, z_max):
+        z_levels = np.array([z_min - 1e-9, z_max + 1e-9])
+    else:
+        z_levels = np.linspace(z_min, z_max, 20)
+
+    ax.contourf(
+        xg,
+        yg,
+        zg,
+        levels=z_levels,
+        cmap=cmap,
+        alpha=0.75,
+        zorder=10,
+        extend="both",
+    )
     # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
         # Get the actual min and max variance currently in the grid

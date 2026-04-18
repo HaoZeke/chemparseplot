@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 import pytest
+from matplotlib.axes import Axes
 
 from chemparseplot.plot.optimization import (
     _LABELS,
@@ -149,6 +150,45 @@ class TestPlotOptimizationLandscape:
             label_mode="reaction",
         )
         assert "Reaction" in ax.get_xlabel()
+        plt.close(fig)
+
+    def test_surface_contourf_uses_full_finite_range(self, monkeypatch):
+        fig, ax = plt.subplots()
+        rmsd_a = np.array([0.0, 1.0, 2.0, 3.0])
+        rmsd_b = np.array([3.0, 2.0, 1.0, 0.0])
+        grad_a = np.zeros_like(rmsd_a)
+        grad_b = np.zeros_like(rmsd_b)
+        z = np.array([0.0, 1.0, 2.0, 3.0])
+        contourf_calls = []
+
+        original_contourf = Axes.contourf
+
+        def recording_contourf(self, *args, **kwargs):
+            contourf_calls.append((args, kwargs))
+            return original_contourf(self, *args, **kwargs)
+
+        monkeypatch.setattr(Axes, "contourf", recording_contourf)
+
+        plot_optimization_landscape(
+            ax,
+            rmsd_a,
+            rmsd_b,
+            grad_a,
+            grad_b,
+            z,
+            project_path=True,
+            method="rbf",
+        )
+
+        surface_call = next(
+            kwargs for _, kwargs in contourf_calls if kwargs.get("zorder") == 10
+        )
+        levels = np.asarray(surface_call["levels"])
+
+        assert surface_call["extend"] == "both"
+        assert np.isfinite(levels).all()
+        assert levels[0] <= np.nanmin(z)
+        assert levels[-1] >= np.nanmax(z)
         plt.close(fig)
 
 
