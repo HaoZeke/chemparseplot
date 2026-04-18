@@ -46,6 +46,13 @@ plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
 neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.7.0"]
 xyzrender = ["xyzrender>=0.1.2"]
 all = ["chemparseplot[plot,neb,xyzrender]"]
+release = [
+  "build>=0.10",
+  "cocogitto>=6.2",
+  "towncrier>=24.8.0",
+  "twine>=4.0",
+  "wheel>=0.40",
+]
 test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
 lint = ["ruff>=0.1.6"]
 [project.urls]

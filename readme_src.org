@@ -1,5 +1,11 @@
 #+OPTIONS: num:nil
 
+#+begin_quote
+Canonical source note: this Org file is authoritative for contributor-facing
+documentation. Rendered Markdown files are derived artifacts and should not be
+edited separately.
+#+end_quote
+
 * About
 file:branding/logo/chemparseplot_logo.png
 #+begin_export markdown
@@ -81,6 +87,39 @@ Contributions are welcome. See [[https://github.com/HaoZeke/chemparseplot/blob/m
 guidelines, and our [[https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md][Code of Conduct]].
 
 For bug reports or questions, open an issue on [[https://github.com/HaoZeke/chemparseplot/issues][GitHub]].
+
+** Release Process
+
+Versions are derived automatically from Git tags via ~hatch-vcs~. We keep
+~towncrier~ for release-note aggregation and use ~cocogitto~ (~cog~) for the
+semantic version/tag step. The actual publish step is already handled by the
+tag-triggered ~.github/workflows/release.yml~ workflow.
+
+#+begin_src bash
+# 1. Run the same checks the tag workflow expects
+uv sync --extra test --extra plot --extra release
+uv run pytest --cov=chemparseplot tests
+uv run ruff check .
+uv run ruff format --check .
+uv run sphinx-build doc/source/ doc/build
+
+# 2. Preview the next semantic version from Conventional Commits
+uvx cocogitto cog bump --dry-run --auto
+
+# 3. Aggregate towncrier fragments into the changelog
+#    towncrier headings use X.Y.Z, while the git tag stays vX.Y.Z
+uvx towncrier build --version "1.7.1"
+
+# 4. Commit the release notes (historically: release: vX.Y.Z)
+git add CHANGELOG.md doc/release/upcoming_changes
+git commit -m "release: v1.7.1"
+
+# 5. Apply the release tag (hatch-vcs reads the version from tags)
+uvx cocogitto cog bump --auto
+
+# 6. Push main and tags; CI publishes from the tag
+git push origin main --tags
+#+end_src
 
 * License
 MIT. However, this is an academic resource, so *please cite* as much as possible

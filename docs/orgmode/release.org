@@ -1,0 +1,58 @@
+#+TITLE: Release Process
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:t num:nil
+
+* Release Workflow
+
+This project keeps release notes in ~towncrier~ fragments and uses
+~cocogitto~ (~cog~) to determine the next semantic version from Conventional
+Commits.
+
+The package version itself is derived from Git tags via ~hatch-vcs~, so there
+is no manual version file to edit.
+
+The actual publish step is handled by ~.github/workflows/release.yml~ after a
+~v*~ tag is pushed.
+
+** Canonical Docs Note
+
+Org sources are authoritative. Generated Markdown or rendered docs should not
+be edited separately.
+
+** Steps
+
+#+begin_src bash
+# 1. Run the same checks the tag workflow expects
+uv sync --extra test --extra plot --extra release
+uv run pytest --cov=chemparseplot tests
+uv run ruff check .
+uv run ruff format --check .
+uv run sphinx-build doc/source/ doc/build
+
+# 2. Preview the next semantic version
+uvx cocogitto cog bump --dry-run --auto
+
+# 3. Aggregate towncrier fragments into CHANGELOG.md
+uvx towncrier build --version "1.7.1"
+
+# 4. Commit the release notes and consumed fragments
+git add CHANGELOG.md doc/release/upcoming_changes
+git commit -m "release: v1.7.1"
+
+# 5. Tag the release and push
+uvx cocogitto cog bump --auto
+git push origin main --tags
+
+# 6. GitHub Actions publishes from the pushed tag
+#+end_src
+
+** Rationale
+
+- ~towncrier~ remains the structured release-notes source.
+- ~cog~ gives a cleaner semantic-version selection step than manual tag math.
+- ~hatch-vcs~ continues to derive the installable package version from the tag.
+- The changelog heading stays on plain ~X.Y.Z~ even when the pushed Git tag is
+  ~vX.Y.Z~.
+- The release workflow already runs tests, lint, docs, build, PyPI publish, and
+  GitHub release creation after the tag is pushed.
