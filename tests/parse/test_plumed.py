@@ -16,6 +16,7 @@ class TestCalculateFES1D:
     def test_single_hill_1d(self) -> None:
         """Test FES from a single 1D Gaussian hill."""
         from chemparseplot.parse.plumed import calculate_fes_from_hills
+        from chemparseplot.parse.types import PlumedFesResult
 
         # 1D HILLS: time, cv1, sigma1, height, bias_factor
         hills_data = np.array([[0.0, 0.0, 0.1, 1.0, 0.0]])
@@ -27,6 +28,7 @@ class TestCalculateFES1D:
         }
 
         result = calculate_fes_from_hills(hills, npoints=64)
+        assert isinstance(result, PlumedFesResult)
 
         assert result["dimension"] == 1
         assert result["fes"].shape == (64,)
@@ -95,6 +97,7 @@ class TestFindFESMinima:
             calculate_fes_from_hills,
             find_fes_minima,
         )
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         # Create a 1D FES with a single deep well at cv1=0
         hills_data = np.array([[0.0, 0.0, 0.3, 5.0, 0.0]])
@@ -111,6 +114,7 @@ class TestFindFESMinima:
         minima_result = find_fes_minima(result, nbins=8)
 
         assert minima_result is not None
+        assert isinstance(minima_result, PlumedMinimaResult)
         assert "minima" in minima_result
         assert len(minima_result["minima"]) >= 1
         assert "letter" in minima_result["minima"].columns
@@ -124,6 +128,7 @@ class TestFindFESMinima:
             calculate_fes_from_hills,
             find_fes_minima,
         )
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         # Create a 2D FES with a single deep well
         hills_data = np.array([[0.0, 0.0, 0.0, 0.3, 0.3, 5.0, 0.0]])
@@ -140,6 +145,7 @@ class TestFindFESMinima:
         minima_result = find_fes_minima(result, nbins=8)
 
         assert minima_result is not None
+        assert isinstance(minima_result, PlumedMinimaResult)
         assert "minima" in minima_result
         assert len(minima_result["minima"]) >= 1
         assert "CV1" in minima_result["minima"].columns

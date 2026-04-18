@@ -94,3 +94,26 @@ class TrajectoryNebResult(DataclassMapping):
     path: ArrayGroup
     convergence: ArrayGroup
     metadata: ParserAttrs
+
+
+@dataclass(frozen=True, slots=True)
+class PlumedFesResult(DataclassMapping):
+    """Structured PLUMED free-energy-surface result."""
+
+    fes: np.ndarray
+    hills: np.ndarray
+    rows: int
+    dimension: int
+    per: list[bool] | tuple[bool, ...]
+    x: np.ndarray
+    y: np.ndarray | None = None
+    pcv1: list[float] | tuple[float, ...] | None = None
+    pcv2: list[float] | tuple[float, ...] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PlumedMinimaResult(DataclassMapping):
+    """Structured PLUMED minima result."""
+
+    minima: Any
+    fes_result: PlumedFesResult

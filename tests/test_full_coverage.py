@@ -981,6 +981,7 @@ class TestOpiParserFull:
 class TestPlumedParse:
     def test_calculate_fes_2d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
+        from chemparseplot.parse.types import PlumedFesResult
 
         hills_data = np.array(
             [
@@ -991,6 +992,7 @@ class TestPlumedParse:
         )
         hills = {"hillsfile": hills_data, "per": [False, False]}
         result = calculate_fes_from_hills(hills, npoints=16)
+        assert isinstance(result, PlumedFesResult)
         assert result["dimension"] == 2
         assert result["fes"].shape == (16, 16)
         assert len(result["x"]) == 16
@@ -998,6 +1000,7 @@ class TestPlumedParse:
 
     def test_calculate_fes_1d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
+        from chemparseplot.parse.types import PlumedFesResult
 
         hills_data = np.array(
             [
@@ -1008,6 +1011,7 @@ class TestPlumedParse:
         )
         hills = {"hillsfile": hills_data, "per": [False]}
         result = calculate_fes_from_hills(hills, npoints=16)
+        assert isinstance(result, PlumedFesResult)
         assert result["dimension"] == 1
         assert len(result["fes"]) == 16
 
@@ -1104,6 +1108,7 @@ class TestPlumedParse:
 
     def test_find_fes_minima_2d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         # Create hills that produce a surface with at least one minimum
         hills_data = np.array(
@@ -1117,11 +1122,13 @@ class TestPlumedParse:
         minima = find_fes_minima(fes_result, nbins=4)
         # May or may not find minima depending on the surface, but should not crash
         if minima is not None:
+            assert isinstance(minima, PlumedMinimaResult)
             assert "minima" in minima
             assert "letter" in minima["minima"].columns
 
     def test_find_fes_minima_1d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         hills_data = np.array(
             [
@@ -1134,6 +1141,7 @@ class TestPlumedParse:
         result = find_fes_minima(fes_result, nbins=4)
         # May or may not find minima
         if result is not None:
+            assert isinstance(result, PlumedMinimaResult)
             assert "minima" in result
 
     def test_find_fes_minima_bad_nbins(self):
