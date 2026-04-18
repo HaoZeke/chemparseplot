@@ -255,7 +255,10 @@ class TestResultToAtomsList:
 
 class TestLoadNebResult:
     def test_has_expected_keys(self, result_h5):
+        from chemparseplot.parse.types import TrajectoryNebResult
+
         result = load_neb_result(result_h5)
+        assert isinstance(result, TrajectoryNebResult)
         assert "path" in result
         assert "convergence" in result
         assert "metadata" in result
@@ -273,8 +276,11 @@ class TestLoadNebResult:
 
 class TestLoadNebHistory:
     def test_returns_sorted_steps(self, history_h5):
+        from chemparseplot.parse.types import ArrayGroup
+
         steps = load_neb_history(history_h5)
         assert len(steps) == 3
+        assert isinstance(steps[0], ArrayGroup)
 
     def test_step_data_structure(self, history_h5):
         steps = load_neb_history(history_h5)

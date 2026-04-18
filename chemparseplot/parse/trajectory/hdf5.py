@@ -20,6 +20,7 @@ import numpy as np
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 
+from chemparseplot.parse.types import ArrayGroup, ParserAttrs, TrajectoryNebResult
 from chemparseplot.parse.neb_utils import (
     calculate_landscape_coords,
     compute_synthetic_gradients,
@@ -29,20 +30,22 @@ from chemparseplot.parse.neb_utils import (
 log = logging.getLogger(__name__)
 
 
-def _read_path_group(grp: h5py.Group) -> dict:
+def _read_path_group(grp: h5py.Group) -> ArrayGroup:
     """Extract arrays from an HDF5 path group.
 
     :param grp: An h5py Group containing ``images``, ``energies``,
         ``gradients``, ``f_para``, and ``rxn_coord`` datasets.
-    :return: Dictionary with numpy arrays for each field.
+    :return: Named mapping with numpy arrays for each field.
     """
-    return {
-        "images": np.asarray(grp["images"]),
-        "energies": np.asarray(grp["energies"]),
-        "gradients": np.asarray(grp["gradients"]),
-        "f_para": np.asarray(grp["f_para"]),
-        "rxn_coord": np.asarray(grp["rxn_coord"]),
-    }
+    return ArrayGroup(
+        data={
+            "images": np.asarray(grp["images"]),
+            "energies": np.asarray(grp["energies"]),
+            "gradients": np.asarray(grp["gradients"]),
+            "f_para": np.asarray(grp["f_para"]),
+            "rxn_coord": np.asarray(grp["rxn_coord"]),
+        }
+    )
 
 
 def _reconstruct_atoms(
@@ -96,27 +99,26 @@ def _reconstruct_atoms(
     return atoms_list
 
 
-def load_neb_result(h5_file: str) -> dict:
+def load_neb_result(h5_file: str) -> TrajectoryNebResult:
     """Read a ChemGP ``neb_result.h5`` file.
 
     ```{versionadded} 1.2.0
     ```
 
     :param h5_file: Path to the HDF5 result file.
-    :return: Dictionary with keys ``path`` (from :func:`_read_path_group`),
-        ``convergence`` (dict of arrays), and ``metadata`` (dict of scalars
-        and optional arrays).
+    :return: Structured result with keys ``path`` (from :func:`_read_path_group`),
+        ``convergence`` (array mapping), and ``metadata`` (metadata mapping).
     """
     with h5py.File(h5_file, "r") as f:
         path_data = _read_path_group(f["path"])
 
-        convergence = {}
+        convergence: dict[str, np.ndarray] = {}
         if "convergence" in f:
             conv_grp = f["convergence"]
             for key in conv_grp:
                 convergence[key] = np.asarray(conv_grp[key])
 
-        metadata = {}
+        metadata: dict[str, object] = {}
         if "metadata" in f:
             meta_grp = f["metadata"]
             for key in meta_grp:
@@ -131,22 +133,22 @@ def load_neb_result(h5_file: str) -> dict:
         path_data["images"].shape[0],
         h5_file,
     )
-    return {
-        "path": path_data,
-        "convergence": convergence,
-        "metadata": metadata,
-    }
+    return TrajectoryNebResult(
+        path=path_data,
+        convergence=ArrayGroup(data=convergence),
+        metadata=ParserAttrs(data=metadata),
+    )
 
 
-def load_neb_history(h5_file: str) -> list[dict]:
+def load_neb_history(h5_file: str) -> list[ArrayGroup]:
     """Read a ChemGP ``neb_history.h5`` file.
 
     ```{versionadded} 1.2.0
     ```
 
     :param h5_file: Path to the HDF5 history file.
-    :return: List of dicts (one per optimization step), sorted by step
-        number. Each dict has the same structure as :func:`_read_path_group`.
+    :return: List of array mappings (one per optimization step), sorted by step
+        number. Each entry has the same structure as :func:`_read_path_group`.
     """
     steps = []
     with h5py.File(h5_file, "r") as f:

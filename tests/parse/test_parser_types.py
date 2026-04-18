@@ -57,7 +57,7 @@ def test_parser_attrs_behaves_like_mapping():
 
     from chemparseplot.parse.types import ParserAttrs
 
-    attrs = ParserAttrs(values={"nx": 2, "ny": 3})
+    attrs = ParserAttrs(data={"nx": 2, "ny": 3})
 
     assert isinstance(attrs, Mapping)
     assert attrs["nx"] == 2

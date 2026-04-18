@@ -21,32 +21,32 @@ import numpy as np
 class ParserAttrs(Mapping[str, Any]):
     """Named mapping for metadata-style parser records."""
 
-    values: dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> Any:
-        return self.values[key]
+        return self.data[key]
 
     def __iter__(self) -> Iterator[str]:
-        return iter(self.values)
+        return iter(self.data)
 
     def __len__(self) -> int:
-        return len(self.values)
+        return len(self.data)
 
 
 @dataclass(frozen=True, slots=True)
 class ArrayGroup(Mapping[str, np.ndarray]):
     """Named mapping of arrays loaded from parser backends."""
 
-    values: dict[str, np.ndarray] = field(default_factory=dict)
+    data: dict[str, np.ndarray] = field(default_factory=dict)
 
     def __getitem__(self, key: str) -> np.ndarray:
-        return self.values[key]
+        return self.data[key]
 
     def __iter__(self) -> Iterator[str]:
-        return iter(self.values)
+        return iter(self.data)
 
     def __len__(self) -> int:
-        return len(self.values)
+        return len(self.data)
 
 
 class DataclassMapping(Mapping[str, Any]):
@@ -85,3 +85,12 @@ class OrcaNebResult(DataclassMapping):
     def __post_init__(self) -> None:
         if self.n_images is None:
             object.__setattr__(self, "n_images", int(len(self.energies)))
+
+
+@dataclass(frozen=True, slots=True)
+class TrajectoryNebResult(DataclassMapping):
+    """Structured ChemGP trajectory NEB result."""
+
+    path: ArrayGroup
+    convergence: ArrayGroup
+    metadata: ParserAttrs
