@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
+from tests._optional_imports import has_module_spec, optional_import_available
+
 try:
     import pandas as pd
 
@@ -32,7 +34,7 @@ try:
 except ImportError:
     _HAS_CMCRAMERI = False
 
-_HAS_RGPYCRUMBS = importlib.util.find_spec("rgpycrumbs") is not None
+_HAS_RGPYCRUMBS = has_module_spec("rgpycrumbs") and optional_import_available("rgpycrumbs")
 
 
 # ============================================================
