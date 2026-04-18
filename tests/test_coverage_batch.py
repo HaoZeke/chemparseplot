@@ -9,6 +9,8 @@ matplotlib.use("Agg")
 
 import importlib
 
+from tests._optional_imports import has_module_spec, optional_import_available
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -203,7 +205,7 @@ class TestPlotLazyImports:
 # chemparseplot.parse.neb_utils (calculate_landscape_coords)
 # ============================================================
 @pytest.mark.skipif(
-    importlib.util.find_spec("rgpycrumbs") is None,
+    not (has_module_spec("rgpycrumbs") and optional_import_available("rgpycrumbs")),
     reason="rgpycrumbs not installed",
 )
 class TestCalculateLandscapeCoords:

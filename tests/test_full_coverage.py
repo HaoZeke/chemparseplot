@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 """Full coverage tests for all under-covered modules."""
 
-import importlib.util
 import json
 import tempfile
 from pathlib import Path
@@ -35,6 +34,7 @@ except ImportError:
     _HAS_CMCRAMERI = False
 
 _HAS_RGPYCRUMBS = has_module_spec("rgpycrumbs") and optional_import_available("rgpycrumbs")
+_HAS_PLOTNINE = has_module_spec("plotnine") and optional_import_available("plotnine")
 
 
 # ============================================================
@@ -645,7 +645,7 @@ class TestChemGPPlot:
         assert output.exists()
 
     @pytest.mark.skipif(
-        not importlib.util.find_spec("plotnine"), reason="plotnine required"
+        not _HAS_PLOTNINE, reason="plotnine required"
     )
     def test_save_plot_plotnine(self, tmp_path):
         from chemparseplot.plot.chemgp import save_plot
@@ -825,7 +825,7 @@ class TestPlotInitLazy:
         assert hasattr(structs, "BasePlotter")
 
     @pytest.mark.skipif(
-        not _HAS_PANDAS or not importlib.util.find_spec("plotnine"),
+        not _HAS_PANDAS or not _HAS_PLOTNINE,
         reason="chemgp needs pandas + plotnine",
     )
     def test_lazy_chemgp(self):
