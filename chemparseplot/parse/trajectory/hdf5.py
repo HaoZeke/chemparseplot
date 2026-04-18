@@ -236,7 +236,7 @@ def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
     return dats
 
 
-def history_to_landscape_df(h5_file: str, ira_kmax: float = 1.8):
+def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
     """Convert a history HDF5 to a landscape DataFrame.
 
     ```{versionadded} 1.2.0
