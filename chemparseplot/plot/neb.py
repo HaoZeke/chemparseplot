@@ -3,7 +3,6 @@ import logging
 import shutil
 import subprocess
 import tempfile
-from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -32,12 +31,17 @@ from chemparseplot.parse.projection import (
 log = logging.getLogger(__name__)
 
 # --- Data Structures ---
-InsetImagePos = namedtuple("InsetImagePos", "x y rad")
-"""Position specification for an inset structure image (x, y, rad).
+@dataclass(frozen=True, slots=True)
+class InsetImagePos:
+    """Position specification for an inset structure image.
 
 ```{versionadded} 0.1.0
 ```
 """
+
+    x: float
+    y: float
+    rad: float
 
 
 @dataclass

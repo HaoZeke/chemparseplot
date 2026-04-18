@@ -9,7 +9,7 @@
 
 *** =InsetImagePos=
 
-=namedtuple("InsetImagePos", "x y rad")= -- Position specification for an inset structure image.
+Frozen dataclass for inset structure image placement with fields =x=, =y=, and =rad=.
 
 | Field | Type | Description |
 |-------+------+-------------|

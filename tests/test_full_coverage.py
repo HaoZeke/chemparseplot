@@ -728,13 +728,13 @@ class TestPlumedPlot:
 # ============================================================
 @pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestPlotStructs:
-    def test_energy_path_namedtuple(self):
+    def test_energy_path_record(self):
         from chemparseplot.plot.structs import EnergyPath
 
         ep = EnergyPath(label="test", distance=[1, 2], energy=[3, 4])
         assert ep.label == "test"
 
-    def test_xy_data_namedtuple(self):
+    def test_xy_data_record(self):
         from chemparseplot.plot.structs import XYData
 
         xy = XYData(label="a", x=[1], y=[2])
