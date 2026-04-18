@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-def min_e_result(eresp: Path) -> dict:
+def min_e_result(eresp: Path) -> float | None:
     """Reads and parses the results.dat file.
 
     ```{versionadded} 0.0.3
@@ -14,8 +14,8 @@ def min_e_result(eresp: Path) -> dict:
         eresp: Path to the eOn results directory.
 
     Returns:
-        A dictionary containing the parsed data from results.dat, or None if the file
-        does not exist or the termination reason is not 0.
+        The minimized energy from ``results.dat``, or ``None`` if the file does not
+        exist or the run did not terminate successfully.
     """
     respth = eresp / "results.dat"
     if not respth.exists():
