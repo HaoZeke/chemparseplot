@@ -71,7 +71,7 @@ class TestMinTrajectoryData:
 class TestLoadMinTrajectory:
     """Tests for load_min_trajectory with synthetic eOn output."""
 
-    def _make_job_dir(self, tmp_path, prefix="min"):
+    def _make_job_dir(self, tmp_path, prefix="minimization"):
         from ase.build import molecule
         from ase.io import write
 
@@ -108,7 +108,7 @@ class TestLoadMinTrajectory:
     def test_missing_movie_raises(self, tmp_path):
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
-        (tmp_path / "min.dat").write_text("iteration\tstep_size\n")
+        (tmp_path / "minimization.dat").write_text("iteration\tstep_size\n")
         with pytest.raises(FileNotFoundError, match="movie file"):
             load_min_trajectory(tmp_path)
 
@@ -118,7 +118,7 @@ class TestLoadMinTrajectory:
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
-        write(str(tmp_path / "min"), molecule("H2O"), format="eon")
+        write(str(tmp_path / "minimization"), molecule("H2O"), format="eon")
         with pytest.raises(FileNotFoundError, match=r"\.dat"):
             load_min_trajectory(tmp_path)
 
@@ -136,11 +136,18 @@ class TestLoadMinTrajectory:
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
         h2o = molecule("H2O")
-        write(str(tmp_path / "min"), [h2o, h2o], format="eon")
-        (tmp_path / "min.dat").write_text(
+        write(str(tmp_path / "minimization"), [h2o, h2o], format="eon")
+        (tmp_path / "minimization.dat").write_text(
             "iteration\tstep_size\tconvergence\tenergy\n"
             "0\t0.0\t0.5\t-10.0\n"
             "1\t0.1\t0.01\t-10.5\n"
         )
         traj = load_min_trajectory(tmp_path)
         assert traj.final_atoms is not None  # fell back to last frame
+
+    def test_legacy_prefix_still_supported_when_requested(self, tmp_path):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        self._make_job_dir(tmp_path, prefix="min")
+        traj = load_min_trajectory(tmp_path, prefix="min")
+        assert len(traj.atoms_list) == 4

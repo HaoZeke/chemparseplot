@@ -207,7 +207,7 @@ Dataclass containing the full trajectory:
 | =initial_atoms= | =Atoms= | Starting structure (first frame) |
 | =final_atoms= | =Atoms= | Final minimized structure (=min.con= or last frame) |
 
-** =load_min_trajectory(job_dir, prefix="min") -> MinTrajectoryData=
+** =load_min_trajectory(job_dir, prefix="minimization") -> MinTrajectoryData=
 
 Loads the complete trajectory from an eOn minimization job directory.
 

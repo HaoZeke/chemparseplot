@@ -76,7 +76,7 @@ def parse_min_con(path: Path) -> list[Atoms]:
 
 def load_min_trajectory(
     job_dir: Path,
-    prefix: str = "min",
+    prefix: str = "minimization",
 ) -> MinTrajectoryData:
     """Load a complete minimization trajectory from an eOn job directory.
 
@@ -87,7 +87,7 @@ def load_min_trajectory(
     job_dir
         Path to the eOn job output directory.
     prefix
-        Movie file prefix (default ``"min"``). The movie file is
+        Movie file prefix (default ``"minimization"``). The movie file is
         ``{prefix}`` and the data file is ``{prefix}.dat``.
 
     Returns
