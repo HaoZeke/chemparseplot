@@ -20,6 +20,7 @@ from ase import Atoms
 
 from chemparseplot.parse.trajectory.neb import (
     _get_energy,
+    _get_forces,
     compute_cumulative_distance,
     compute_tangent_force,
     extract_profile_data,
@@ -59,6 +60,21 @@ class TestGetEnergy:
     def test_energy_fallback_zero(self):
         atoms = Atoms("H", positions=[[0, 0, 0]])
         assert _get_energy(atoms) == 0.0
+
+
+class TestGetForces:
+    def test_forces_from_calc(self):
+        atoms = _make_atoms([[0, 0, 0]], energy=-2.0, forces=[[0.1, 0.2, 0.3]])
+        np.testing.assert_array_almost_equal(_get_forces(atoms), [[0.1, 0.2, 0.3]])
+
+    def test_forces_from_arrays_without_calc(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]])
+        atoms.arrays["forces"] = np.array([[0.4, 0.5, 0.6]])
+        np.testing.assert_array_almost_equal(_get_forces(atoms), [[0.4, 0.5, 0.6]])
+
+    def test_forces_fallback_zero(self):
+        atoms = Atoms("H", positions=[[0, 0, 0]])
+        np.testing.assert_array_equal(_get_forces(atoms), np.zeros((1, 3)))
 
 
 class TestComputeCumulativeDistance:
@@ -163,6 +179,17 @@ class TestComputeTangentForce:
         energies = np.array([0.0, 1.0, 0.5])
         f_para = compute_tangent_force(atoms_list, energies)
         np.testing.assert_array_equal(f_para, np.zeros(3))
+
+    def test_force_arrays_without_calc_are_used(self):
+        atoms_list = [
+            _make_atoms([[0, 0, 0]], energy=0.0),
+            _make_atoms([[1, 0, 0]], energy=1.0),
+            _make_atoms([[2, 0, 0]], energy=2.0),
+        ]
+        atoms_list[1].arrays["forces"] = np.array([[1.0, 0.0, 0.0]])
+        energies = np.array([0.0, 1.0, 2.0])
+        f_para = compute_tangent_force(atoms_list, energies)
+        assert f_para[1] == pytest.approx(1.0)
 
     def test_output_length(self):
         n = 6

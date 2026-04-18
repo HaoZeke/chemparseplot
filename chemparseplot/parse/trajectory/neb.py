@@ -33,6 +33,21 @@ def _get_energy(atoms: Atoms) -> float:
     return atoms.info.get("energy", 0.0)
 
 
+def _get_forces(atoms: Atoms) -> np.ndarray:
+    """Extract forces from an Atoms object, preferring stored arrays when needed."""
+    if atoms.calc is not None:
+        try:
+            return atoms.get_forces()
+        except Exception:
+            log.debug("get_forces() failed; falling back to stored force arrays")
+
+    stored_forces = atoms.arrays.get("forces")
+    if stored_forces is not None:
+        return np.asarray(stored_forces, dtype=float)
+
+    return np.zeros_like(atoms.positions)
+
+
 def load_trajectory(traj_file: str) -> list[Atoms]:
     """Load an extxyz trajectory file, returning all frames.
 
@@ -79,11 +94,7 @@ def compute_tangent_force(atoms_list: list[Atoms], energies: np.ndarray) -> np.n
     f_para = np.zeros(n)
 
     for i in range(n):
-        forces_i = (
-            atoms_list[i].get_forces()
-            if atoms_list[i].calc
-            else np.zeros_like(atoms_list[i].positions)
-        )
+        forces_i = _get_forces(atoms_list[i])
 
         if i == 0 or i == n - 1:
             # Endpoint: f_parallel = 0 by convention
