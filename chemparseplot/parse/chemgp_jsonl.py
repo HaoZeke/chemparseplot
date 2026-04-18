@@ -84,7 +84,7 @@ def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
         for line in f:
             rec = json.loads(line.strip())
             if rec.get("summary"):
-                data.summary = ParserAttrs(values=rec)
+                data.summary = ParserAttrs(data=rec)
                 continue
             method = rec["method"]
             if method not in data.traces:
@@ -259,7 +259,7 @@ def parse_gp_quality_jsonl(path: str | Path) -> GPQualityData:
             rec = json.loads(line.strip())
             t = rec["type"]
             if t == "grid_meta":
-                data.meta = ParserAttrs(values=rec)
+                data.meta = ParserAttrs(data=rec)
             elif t in ("minimum", "saddle"):
                 data.stationary.append(
                     StationaryPoint(

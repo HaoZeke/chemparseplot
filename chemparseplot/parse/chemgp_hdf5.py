@@ -105,7 +105,7 @@ def read_h5_path(f: Any, name: str) -> ArrayGroup:
         Named mapping of coordinate names to arrays
     """
     g = f[f"paths/{name}"]
-    return ArrayGroup(values={k: g[k][()] for k in g.keys()})
+    return ArrayGroup(data={k: g[k][()] for k in g.keys()})
 
 
 def read_h5_points(f: Any, name: str) -> ArrayGroup:
@@ -124,7 +124,7 @@ def read_h5_points(f: Any, name: str) -> ArrayGroup:
         Named mapping of coordinate names to arrays
     """
     g = f[f"points/{name}"]
-    return ArrayGroup(values={k: g[k][()] for k in g.keys()})
+    return ArrayGroup(data={k: g[k][()] for k in g.keys()})
 
 
 def read_h5_metadata(f: Any) -> ParserAttrs:
@@ -140,7 +140,7 @@ def read_h5_metadata(f: Any) -> ParserAttrs:
     ParserAttrs
         Named mapping of metadata attributes
     """
-    return ParserAttrs(values={k: f.attrs[k] for k in f.attrs.keys()})
+    return ParserAttrs(data={k: f.attrs[k] for k in f.attrs.keys()})
 
 
 def validate_hdf5_structure(
