@@ -19,9 +19,43 @@ HDF5 Layout
     Extracted from chemgp.plt_gp to standalone module.
 """
 
+from collections.abc import Iterator, Mapping
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+
+
+@dataclass(frozen=True, slots=True)
+class ArrayGroup(Mapping[str, np.ndarray]):
+    """Named mapping of arrays loaded from an HDF5 group."""
+
+    values: dict[str, np.ndarray] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        return self.values[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.values)
+
+    def __len__(self) -> int:
+        return len(self.values)
+
+
+@dataclass(frozen=True, slots=True)
+class MetadataAttrs(Mapping[str, Any]):
+    """Named mapping of HDF5 root metadata attributes."""
+
+    values: dict[str, Any] = field(default_factory=dict)
+
+    def __getitem__(self, key: str) -> Any:
+        return self.values[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.values)
+
+    def __len__(self) -> int:
+        return len(self.values)
 
 
 def read_h5_table(f: Any, name: str = "table") -> Any:
@@ -88,7 +122,7 @@ def read_h5_grid(
     return data, x_coords, y_coords
 
 
-def read_h5_path(f: Any, name: str) -> dict[str, np.ndarray]:
+def read_h5_path(f: Any, name: str) -> ArrayGroup:
     """Read a path (ordered point sequence).
 
     Parameters
@@ -100,14 +134,14 @@ def read_h5_path(f: Any, name: str) -> dict[str, np.ndarray]:
 
     Returns
     -------
-    dict
-        Dictionary mapping coordinate names to arrays
+    ArrayGroup
+        Named mapping of coordinate names to arrays
     """
     g = f[f"paths/{name}"]
-    return {k: g[k][()] for k in g.keys()}
+    return ArrayGroup(values={k: g[k][()] for k in g.keys()})
 
 
-def read_h5_points(f: Any, name: str) -> dict[str, np.ndarray]:
+def read_h5_points(f: Any, name: str) -> ArrayGroup:
     """Read a point set.
 
     Parameters
@@ -119,14 +153,14 @@ def read_h5_points(f: Any, name: str) -> dict[str, np.ndarray]:
 
     Returns
     -------
-    dict
-        Dictionary mapping coordinate names to arrays
+    ArrayGroup
+        Named mapping of coordinate names to arrays
     """
     g = f[f"points/{name}"]
-    return {k: g[k][()] for k in g.keys()}
+    return ArrayGroup(values={k: g[k][()] for k in g.keys()})
 
 
-def read_h5_metadata(f: Any) -> dict[str, Any]:
+def read_h5_metadata(f: Any) -> MetadataAttrs:
     """Read root-level metadata attributes.
 
     Parameters
@@ -136,10 +170,10 @@ def read_h5_metadata(f: Any) -> dict[str, Any]:
 
     Returns
     -------
-    dict
-        Dictionary of metadata attributes
+    MetadataAttrs
+        Named mapping of metadata attributes
     """
-    return {k: f.attrs[k] for k in f.attrs.keys()}
+    return MetadataAttrs(values={k: f.attrs[k] for k in f.attrs.keys()})
 
 
 def validate_hdf5_structure(

@@ -83,36 +83,45 @@ class TestHDF5IO:
 
     def test_read_h5_path(self, sample_h5_file: Path) -> None:
         """Test reading path from HDF5."""
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_path
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_path
 
         with h5py.File(sample_h5_file, "r") as f:
             path_data = read_h5_path(f, "path1")
 
-        assert isinstance(path_data, dict)
+        assert isinstance(path_data, Mapping)
+        assert isinstance(path_data, ArrayGroup)
         assert "path1_x" in path_data
         assert "path1_y" in path_data
         assert len(path_data["path1_x"]) == 3
 
     def test_read_h5_points(self, sample_h5_file: Path) -> None:
         """Test reading points from HDF5."""
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_points
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_points
 
         with h5py.File(sample_h5_file, "r") as f:
             points_data = read_h5_points(f, "train")
 
-        assert isinstance(points_data, dict)
+        assert isinstance(points_data, Mapping)
+        assert isinstance(points_data, ArrayGroup)
         assert "train_x" in points_data
         assert "train_y" in points_data
         assert len(points_data["train_x"]) == 3
 
     def test_read_h5_metadata(self, sample_h5_file: Path) -> None:
         """Test reading metadata from HDF5."""
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_metadata
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import MetadataAttrs, read_h5_metadata
 
         with h5py.File(sample_h5_file, "r") as f:
             metadata = read_h5_metadata(f)
 
-        assert isinstance(metadata, dict)
+        assert isinstance(metadata, Mapping)
+        assert isinstance(metadata, MetadataAttrs)
         assert "conv_tol" in metadata
         assert "n_steps" in metadata
         assert metadata["conv_tol"] == 0.01

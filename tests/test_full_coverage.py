@@ -136,7 +136,9 @@ class TestChemGPHdf5:
         assert y_coords is None
 
     def test_read_h5_path(self):
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_path
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_path
 
         x_ds = MagicMock()
         x_ds.__getitem__ = MagicMock(return_value=np.array([0.0, 1.0, 2.0]))
@@ -151,11 +153,15 @@ class TestChemGPHdf5:
         f.__getitem__ = MagicMock(return_value=path_group)
 
         result = read_h5_path(f, "mep")
+        assert isinstance(result, Mapping)
+        assert isinstance(result, ArrayGroup)
         assert "x" in result
         assert "y" in result
 
     def test_read_h5_points(self):
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_points
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_points
 
         pc1_ds = MagicMock()
         pc1_ds.__getitem__ = MagicMock(return_value=np.array([1.0, 2.0]))
@@ -170,11 +176,15 @@ class TestChemGPHdf5:
         f.__getitem__ = MagicMock(return_value=pts_group)
 
         result = read_h5_points(f, "fps")
+        assert isinstance(result, Mapping)
+        assert isinstance(result, ArrayGroup)
         assert "pc1" in result
         assert "pc2" in result
 
     def test_read_h5_metadata(self):
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_metadata
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import MetadataAttrs, read_h5_metadata
 
         f = MagicMock()
         f.attrs = MagicMock()
@@ -182,6 +192,8 @@ class TestChemGPHdf5:
         f.attrs.__getitem__ = lambda s, k: {"surface": "mb", "version": 2}[k]
 
         meta = read_h5_metadata(f)
+        assert isinstance(meta, Mapping)
+        assert isinstance(meta, MetadataAttrs)
         assert meta["surface"] == "mb"
         assert meta["version"] == 2
 
