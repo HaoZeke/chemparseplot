@@ -206,6 +206,54 @@ class GPQualityGrid:
     train_y: list[float] = field(default_factory=list)
     train_e: list[float] = field(default_factory=list)
 
+    @classmethod
+    def from_records(
+        cls,
+        *,
+        n_train: int,
+        meta: ParserAttrs,
+        records: list[dict[str, Any]],
+        train_points: TrainingPointSet | None = None,
+    ) -> GPQualityGrid:
+        """Build a typed grid from JSONL records and parsed metadata."""
+
+        nx = int(meta["nx"]) if "nx" in meta else 0
+        ny = int(meta["ny"]) if "ny" in meta else 0
+        grid = cls(n_train=n_train, nx=nx, ny=ny)
+        grid.x = [[0.0] * nx for _ in range(ny)]
+        grid.y = [[0.0] * nx for _ in range(ny)]
+        grid.true_e = [[0.0] * nx for _ in range(ny)]
+        grid.gp_e = [[0.0] * nx for _ in range(ny)]
+        grid.gp_var = [[0.0] * nx for _ in range(ny)]
+
+        for rec in records:
+            ix, iy = rec["ix"], rec["iy"]
+            grid.x[iy][ix] = rec["x"]
+            grid.y[iy][ix] = rec["y"]
+            grid.true_e[iy][ix] = rec["true_e"]
+            grid.gp_e[iy][ix] = rec["gp_e"]
+            grid.gp_var[iy][ix] = rec["gp_var"]
+
+        if train_points is not None:
+            grid.train_x = list(train_points.x)
+            grid.train_y = list(train_points.y)
+            grid.train_e = list(train_points.e)
+        return grid
+
+
+@dataclass
+class TrainingPointSet:
+    """Accumulated training points for a single ``n_train`` value."""
+
+    x: list[float] = field(default_factory=list)
+    y: list[float] = field(default_factory=list)
+    e: list[float] = field(default_factory=list)
+
+    def append(self, *, x: float, y: float, energy: float) -> None:
+        self.x.append(x)
+        self.y.append(y)
+        self.e.append(energy)
+
 
 @dataclass
 class StationaryPoint:
@@ -251,7 +299,7 @@ def parse_gp_quality_jsonl(path: str | Path) -> GPQualityData:
         Structured grid data with metadata and stationary points.
     """
     data = GPQualityData()
-    train_points = defaultdict(lambda: {"x": [], "y": [], "e": []})
+    train_points = defaultdict(TrainingPointSet)
     grid_records = defaultdict(list)
 
     with open(path) as f:
@@ -272,36 +320,16 @@ def parse_gp_quality_jsonl(path: str | Path) -> GPQualityData:
                 )
             elif t == "train_point":
                 n = rec["n_train"]
-                train_points[n]["x"].append(rec["x"])
-                train_points[n]["y"].append(rec["y"])
-                train_points[n]["e"].append(rec["energy"])
+                train_points[n].append(x=rec["x"], y=rec["y"], energy=rec["energy"])
             elif t == "grid":
                 grid_records[rec["n_train"]].append(rec)
 
-    nx = data.meta.get("nx", 0)
-    ny = data.meta.get("ny", 0)
-
     for n_train, records in grid_records.items():
-        grid = GPQualityGrid(n_train=n_train, nx=nx, ny=ny)
-        # Initialize 2D arrays
-        grid.x = [[0.0] * nx for _ in range(ny)]
-        grid.y = [[0.0] * nx for _ in range(ny)]
-        grid.true_e = [[0.0] * nx for _ in range(ny)]
-        grid.gp_e = [[0.0] * nx for _ in range(ny)]
-        grid.gp_var = [[0.0] * nx for _ in range(ny)]
-
-        for rec in records:
-            ix, iy = rec["ix"], rec["iy"]
-            grid.x[iy][ix] = rec["x"]
-            grid.y[iy][ix] = rec["y"]
-            grid.true_e[iy][ix] = rec["true_e"]
-            grid.gp_e[iy][ix] = rec["gp_e"]
-            grid.gp_var[iy][ix] = rec["gp_var"]
-
-        tp = train_points.get(n_train, {"x": [], "y": [], "e": []})
-        grid.train_x = tp["x"]
-        grid.train_y = tp["y"]
-        grid.train_e = tp["e"]
-        data.grids[n_train] = grid
+        data.grids[n_train] = GPQualityGrid.from_records(
+            n_train=n_train,
+            meta=data.meta,
+            records=records,
+            train_points=train_points.get(n_train),
+        )
 
     return data
