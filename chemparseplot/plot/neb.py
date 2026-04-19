@@ -1380,24 +1380,18 @@ def plot_orca_neb_profile(
     image_indices = list(range(n_images))
     ax.plot(image_indices, energies, "o-", linewidth=2, markersize=8)
 
-    # Label reactant, product, and saddle
-    if len(energies) >= 3:
-        ax.plot(0, energies[0], "go", markersize=12, label="Reactant")
-        ax.plot(n_images - 1, energies[-1], "ro", markersize=12, label="Product")
-
-        # Find saddle point
-        saddle_idx = _orca_saddle_index(energies)
-        if saddle_idx is not None:
-            ax.plot(saddle_idx, energies[saddle_idx], "ys", markersize=12, label="Saddle")
-            _annotate_orca_barrier(
-                ax,
-                x=float(saddle_idx),
-                y=float(energies[saddle_idx]),
-                barrier_forward=payload.barrier_forward,
-                energy_unit=energy_unit,
-                dx=1.0,
-                dy=0.5,
-            )
+    saddle_idx = _plot_orca_profile_keypoints(
+        ax,
+        x_values=np.asarray(image_indices, dtype=float),
+        energies=energies,
+        payload=payload,
+        energy_unit=energy_unit,
+        reactant_markersize=12,
+        product_markersize=12,
+        saddle_markersize=12,
+        barrier_dx=1.0,
+        barrier_dy=0.5,
+    )
 
     # Labels and formatting
     ax.set_xlabel("Image Index")
@@ -1407,10 +1401,7 @@ def plot_orca_neb_profile(
     ax.grid(True, alpha=0.3)
     ax.minorticks_on()
 
-    # Save
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
+    _save_orca_figure(fig, output, dpi=dpi)
 
 
 def plot_orca_neb_energy_profile(
@@ -1492,34 +1483,21 @@ def plot_orca_neb_energy_profile(
         smoothing=smoothing,
     )
 
-    # Label key points
-    if n_images >= 2:
-        ax.plot(rc[0], energies[0], "go", markersize=10, label="Reactant", zorder=20)
-        ax.plot(rc[-1], energies[-1], "ro", markersize=10, label="Product", zorder=20)
-
-        # Find and label saddle
-        saddle_idx = _orca_saddle_index(energies)
-        if saddle_idx is not None:
-            ax.plot(
-                rc[saddle_idx],
-                energies[saddle_idx],
-                "ys",
-                markersize=12,
-                label="Saddle",
-                zorder=20,
-            )
-
-            _annotate_orca_barrier(
-                ax,
-                x=float(rc[saddle_idx]),
-                y=float(energies[saddle_idx]),
-                barrier_forward=payload.barrier_forward,
-                energy_unit=energy_unit,
-                dx=0.5,
-                dy=0.5,
-                use_math_text=True,
-                zorder=30,
-            )
+    _plot_orca_profile_keypoints(
+        ax,
+        x_values=np.asarray(rc, dtype=float),
+        energies=energies,
+        payload=payload,
+        energy_unit=energy_unit,
+        reactant_markersize=10,
+        product_markersize=10,
+        saddle_markersize=12,
+        barrier_dx=0.5,
+        barrier_dy=0.5,
+        use_math_text=True,
+        zorder=20,
+        barrier_zorder=30,
+    )
 
     # Labels and formatting
     ax.set_xlabel(xlabel)
@@ -1529,10 +1507,7 @@ def plot_orca_neb_energy_profile(
     ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
 
-    # Save
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
+    _save_orca_figure(fig, output, dpi=dpi)
 
 
 def plot_orca_neb_landscape(
@@ -1636,10 +1611,7 @@ def plot_orca_neb_landscape(
     ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
 
-    # Save
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
+    _save_orca_figure(fig, output, dpi=dpi)
 
 
 def _normalize_orca_neb_plot_payload(
@@ -1720,3 +1692,79 @@ def _annotate_orca_barrier(
         arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
         **annotation_kwargs,
     )
+
+
+def _plot_orca_profile_keypoints(
+    ax,
+    *,
+    x_values: np.ndarray,
+    energies: np.ndarray,
+    payload: _OrcaNebPlotPayload,
+    energy_unit: str,
+    reactant_markersize: float,
+    product_markersize: float,
+    saddle_markersize: float,
+    barrier_dx: float,
+    barrier_dy: float,
+    use_math_text: bool = False,
+    zorder: int | None = None,
+    barrier_zorder: int | None = None,
+) -> int | None:
+    """Plot reactant/product/saddle markers for ORCA NEB profile-like plots."""
+
+    if len(energies) < 2:
+        return None
+
+    plot_kwargs = {}
+    if zorder is not None:
+        plot_kwargs["zorder"] = zorder
+
+    ax.plot(
+        x_values[0],
+        energies[0],
+        "go",
+        markersize=reactant_markersize,
+        label="Reactant",
+        **plot_kwargs,
+    )
+    ax.plot(
+        x_values[-1],
+        energies[-1],
+        "ro",
+        markersize=product_markersize,
+        label="Product",
+        **plot_kwargs,
+    )
+
+    saddle_idx = _orca_saddle_index(energies)
+    if saddle_idx is None:
+        return None
+
+    ax.plot(
+        x_values[saddle_idx],
+        energies[saddle_idx],
+        "ys",
+        markersize=saddle_markersize,
+        label="Saddle",
+        **plot_kwargs,
+    )
+    _annotate_orca_barrier(
+        ax,
+        x=float(x_values[saddle_idx]),
+        y=float(energies[saddle_idx]),
+        barrier_forward=payload.barrier_forward,
+        energy_unit=energy_unit,
+        dx=barrier_dx,
+        dy=barrier_dy,
+        use_math_text=use_math_text,
+        zorder=barrier_zorder,
+    )
+    return saddle_idx
+
+
+def _save_orca_figure(fig, output: Path, *, dpi: int) -> None:
+    """Save an ORCA plotting figure with the standard settings."""
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
