@@ -18,7 +18,7 @@ from chemparseplot.parse.eon.neb import (
     load_structures_and_calculate_additional_rmsd,
 )
 
-atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_rmsd(
+bundle = load_structures_and_calculate_additional_rmsd(
     con_file=Path("neb.con"),
     additional_con=[
         (Path("saddle.con"), "Saddle Point"),
@@ -30,16 +30,21 @@ atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_
 #+end_src
 
 This returns:
-- =atoms_list=: ASE Atoms objects from the main trajectory
-- =additional_data=: list of =NebOverlayStructure= records with =atoms=, =r=, =p=, and =label=
-- =sp_data=: =NebOverlayStructure= for the explicit saddle point, or =None=
+- =bundle.atoms_list=: ASE Atoms objects from the main trajectory
+- =bundle.additional_structures=: list of =NebOverlayStructure= records
+- =bundle.saddle_point=: explicit saddle-point overlay, or =None=
 
 #+begin_src python
-for overlay in additional_data:
+for overlay in bundle.additional_structures:
     print(overlay.label, overlay.r, overlay.p)
 
-if sp_data is not None:
-    print("Explicit saddle:", sp_data.label, sp_data.r, sp_data.p)
+if bundle.saddle_point is not None:
+    print(
+        "Explicit saddle:",
+        bundle.saddle_point.label,
+        bundle.saddle_point.r,
+        bundle.saddle_point.p,
+    )
 #+end_src
 
 Landscape-style RMSD coordinates require IRA. If =ira_mod= is unavailable,

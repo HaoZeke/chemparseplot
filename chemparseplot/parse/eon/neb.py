@@ -36,6 +36,15 @@ class NebOverlayStructure:
     label: str
 
 
+@dataclass(frozen=True, slots=True)
+class NebOverlayBundle:
+    """Typed bundle of main-path and overlay structures for NEB plotting."""
+
+    atoms_list: list[Atoms]
+    additional_structures: list[NebOverlayStructure]
+    saddle_point: NebOverlayStructure | None = None
+
+
 def _validate_data_atoms_match(z_data, atoms, dat_file_name):
     """Checks if data points count matches structure count."""
     if len(z_data) != len(atoms):
@@ -88,7 +97,7 @@ def load_structures_and_calculate_additional_rmsd(
     additional_con: list[tuple[Path, str]],
     ira_kmax: float,
     sp_file: Path | None = None,
-) -> tuple[list[Atoms], list[NebOverlayStructure], NebOverlayStructure | None]:
+) -> NebOverlayBundle:
     """Loads the main trajectory and calculates RMSD for additional comparison structures.
 
     ```{versionadded} 0.1.0
@@ -159,7 +168,11 @@ def load_structures_and_calculate_additional_rmsd(
                 )
             )
 
-    return atoms_list, additional_atoms_data, sp_data
+    return NebOverlayBundle(
+        atoms_list=atoms_list,
+        additional_structures=additional_atoms_data,
+        saddle_point=sp_data,
+    )
 
 
 def _process_single_path_step(

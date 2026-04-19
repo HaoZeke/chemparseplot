@@ -20,13 +20,13 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 
 *** Returns
 
-=tuple= of three elements:
+=NebOverlayBundle= with fields:
 
-| Element | Type | Description |
-|---------+------+-------------|
+| Field | Type | Description |
+|-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | ASE Atoms from main trajectory |
-| =additional_atoms_data= | =list[NebOverlayStructure]= | Typed overlay records with =atoms=, =r=, =p=, and =label= |
-| =sp_data= | =NebOverlayStructure= or =None= | Explicit saddle-point overlay record |
+| =additional_structures= | =list[NebOverlayStructure]= | Typed overlay records with =atoms=, =r=, =p=, and =label= |
+| =saddle_point= | =NebOverlayStructure= or =None= | Explicit saddle-point overlay record |
 
 *** Notes
 
