@@ -22,7 +22,7 @@ from typing import Any
 from chemparseplot.parse.types import ParserAttrs
 
 
-@dataclass
+@dataclass(slots=True)
 class OptimizerTrace:
     """Single optimizer trace from a comparison JSONL.
 
@@ -46,8 +46,23 @@ class OptimizerTrace:
     energies: list[float] | None = None
     forces: list[float] | None = None
 
+    def add_record(self, rec: dict[str, Any]) -> None:
+        """Accumulate one JSONL optimizer record into the trace."""
 
-@dataclass
+        self.steps.append(rec.get("step", len(self.steps)))
+        self.oracle_calls.append(rec["oracle_calls"])
+        if "energy" in rec:
+            if self.energies is None:
+                self.energies = []
+            self.energies.append(rec["energy"])
+        force_key = "force" if "force" in rec else "max_force"
+        if force_key in rec:
+            if self.forces is None:
+                self.forces = []
+            self.forces.append(rec[force_key])
+
+
+@dataclass(slots=True)
 class ComparisonData:
     """Parsed optimizer comparison from a single JSONL file.
 
@@ -61,6 +76,13 @@ class ComparisonData:
 
     traces: dict[str, OptimizerTrace] = field(default_factory=dict)
     summary: ParserAttrs | None = None
+
+    def ensure_trace(self, method: str) -> OptimizerTrace:
+        """Return the named optimizer trace, creating it if needed."""
+
+        if method not in self.traces:
+            self.traces[method] = OptimizerTrace(method=method)
+        return self.traces[method]
 
 
 def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
@@ -86,25 +108,12 @@ def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
             if rec.get("summary"):
                 data.summary = ParserAttrs(data=rec)
                 continue
-            method = rec["method"]
-            if method not in data.traces:
-                data.traces[method] = OptimizerTrace(method=method)
-            trace = data.traces[method]
-            trace.steps.append(rec.get("step", len(trace.steps)))
-            trace.oracle_calls.append(rec["oracle_calls"])
-            if "energy" in rec:
-                if trace.energies is None:
-                    trace.energies = []
-                trace.energies.append(rec["energy"])
-            force_key = "force" if "force" in rec else "max_force"
-            if force_key in rec:
-                if trace.forces is None:
-                    trace.forces = []
-                trace.forces.append(rec[force_key])
+            trace = data.ensure_trace(rec["method"])
+            trace.add_record(rec)
     return data
 
 
-@dataclass
+@dataclass(slots=True)
 class RFFQualityData:
     """Parsed RFF approximation quality data.
 
@@ -134,6 +143,21 @@ class RFFQualityData:
     energy_mae_vs_gp: list[float] = field(default_factory=list)
     gradient_mae_vs_gp: list[float] = field(default_factory=list)
 
+    def add_exact_gp(self, rec: dict[str, Any]) -> None:
+        """Store the exact-GP reference metrics."""
+
+        self.exact_energy_mae = rec["energy_mae"]
+        self.exact_gradient_mae = rec["gradient_mae"]
+
+    def add_rff(self, rec: dict[str, Any]) -> None:
+        """Store one RFF approximation record."""
+
+        self.d_rff_values.append(rec["d_rff"])
+        self.energy_mae_vs_true.append(rec["energy_mae_vs_true"])
+        self.gradient_mae_vs_true.append(rec["gradient_mae_vs_true"])
+        self.energy_mae_vs_gp.append(rec["energy_mae_vs_gp"])
+        self.gradient_mae_vs_gp.append(rec["gradient_mae_vs_gp"])
+
 
 def parse_rff_quality_jsonl(path: str | Path) -> RFFQualityData:
     """Parse a ChemGP RFF quality JSONL file.
@@ -153,18 +177,13 @@ def parse_rff_quality_jsonl(path: str | Path) -> RFFQualityData:
         for line in f:
             rec = json.loads(line.strip())
             if rec["type"] == "exact_gp":
-                data.exact_energy_mae = rec["energy_mae"]
-                data.exact_gradient_mae = rec["gradient_mae"]
+                data.add_exact_gp(rec)
             elif rec["type"] == "rff":
-                data.d_rff_values.append(rec["d_rff"])
-                data.energy_mae_vs_true.append(rec["energy_mae_vs_true"])
-                data.gradient_mae_vs_true.append(rec["gradient_mae_vs_true"])
-                data.energy_mae_vs_gp.append(rec["energy_mae_vs_gp"])
-                data.gradient_mae_vs_gp.append(rec["gradient_mae_vs_gp"])
+                data.add_rff(rec)
     return data
 
 
-@dataclass
+@dataclass(slots=True)
 class GPQualityGrid:
     """GP quality grid data for a single training set size.
 
@@ -241,7 +260,7 @@ class GPQualityGrid:
         return grid
 
 
-@dataclass
+@dataclass(slots=True)
 class TrainingPointSet:
     """Accumulated training points for a single ``n_train`` value."""
 
@@ -255,7 +274,7 @@ class TrainingPointSet:
         self.e.append(energy)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class StationaryPoint:
     """A stationary point (minimum or saddle) on the PES."""
 
@@ -266,7 +285,7 @@ class StationaryPoint:
     energy: float
 
 
-@dataclass
+@dataclass(slots=True)
 class GPQualityData:
     """Complete GP quality data from mb_gp_quality.jsonl.
 
