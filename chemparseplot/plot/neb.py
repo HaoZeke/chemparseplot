@@ -10,6 +10,7 @@ from typing import Any
 from collections.abc import Mapping
 
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib import tri
@@ -1176,7 +1177,13 @@ def plot_landscape_path_overlay(
 
     # Color segments by average Z of endpoints
     lc.set_array((z[:-1] + z[1:]) / 2)
-    lc.set_linewidth(3)
+    lc.set_linewidth(3.2)
+    lc.set_path_effects(
+        [
+            path_effects.Stroke(linewidth=5.8, foreground="white"),
+            path_effects.Normal(),
+        ]
+    )
     ax.add_collection(lc)
 
     ax.scatter(
@@ -1185,8 +1192,9 @@ def plot_landscape_path_overlay(
         c=z,
         cmap=colormap,
         norm=norm,
-        edgecolors="black",
-        linewidths=0.5,
+        s=42,
+        edgecolors="white",
+        linewidths=0.9,
         zorder=40,
     )
 

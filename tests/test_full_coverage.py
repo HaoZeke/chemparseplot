@@ -1193,6 +1193,32 @@ class TestNebPlotSurface:
         assert cb is not None
         plt.close(fig)
 
+    def test_plot_landscape_path_overlay_adds_visibility_stroke(self):
+        from matplotlib.collections import LineCollection, PathCollection
+
+        from chemparseplot.plot.neb import plot_landscape_path_overlay
+
+        fig, ax = plt.subplots()
+        r = np.linspace(0, 3, 11)
+        p = np.linspace(3, 0, 11)
+        z = np.sin(np.linspace(0, np.pi, 11))
+        plot_landscape_path_overlay(ax, r, p, z, "viridis", "E (eV)")
+
+        line = next(
+            collection
+            for collection in ax.collections
+            if isinstance(collection, LineCollection)
+        )
+        points = next(
+            collection
+            for collection in ax.collections
+            if isinstance(collection, PathCollection)
+        )
+
+        assert len(line.get_path_effects()) == 2
+        np.testing.assert_allclose(points.get_sizes(), np.array([42]))
+        plt.close(fig)
+
     def test_smoothing_params(self):
         from chemparseplot.plot.neb import SmoothingParams
 
