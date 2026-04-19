@@ -160,7 +160,7 @@ Renders an ASE Atoms object to a numpy RGBA image array using ASE's built-in PNG
 
 =np.ndarray= -- RGBA image array with shape =(H, W, 4)= and float dtype.
 
-*** =plot_structure_strip(ax, atoms_list, labels, zoom=0.3, rotation="0x,90y,0z", theme_color="black", max_cols=6, renderer="ase")=
+*** =plot_structure_strip(ax, atoms_list, labels=None, zoom=0.3, rotation="0x,90y,0z", theme_color="black", max_cols=6, renderer="ase")=
 
 Renders a horizontal gallery of atomic structures.
 
@@ -169,8 +169,8 @@ Renders a horizontal gallery of atomic structures.
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
 | =ax= | =matplotlib.axes.Axes= | - | Target axes (turned off) |
-| =atoms_list= | =list[Atoms]= | - | Structures to render |
-| =labels= | =list[str]= | - | Labels below each image |
+| =atoms_list= | =list[Atoms]= or =list[StructurePlacement]= | - | Structures to render, or typed strip entries |
+| =labels= | =list[str]= or =None= | =None= | Labels below each image; inferred from =StructurePlacement= entries when omitted |
 | =zoom= | =float= | =0.3= | Image zoom level |
 | =rotation= | =str= | ="0x,90y,0z"= | ASE rotation string |
 | =theme_color= | =str= | ="black"= | Label text color |
@@ -182,6 +182,7 @@ Renders a horizontal gallery of atomic structures.
 - Adaptive font size: shrinks for more than 4 items
 - Multi-row layout with =max_cols= wrapping
 - =xyzrender= renderer requires =pip install 'xyzrender>=0.1.3'=
+- =StructurePlacement= lets callers pass a typed strip payload instead of parallel =atoms_list= / =labels= lists
 
 *** =plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None, renderer="ase")=
 

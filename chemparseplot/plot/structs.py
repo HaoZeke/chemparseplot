@@ -97,6 +97,16 @@ class XYData:
     y: UnitSeries
 
 
+@dataclass(frozen=True, slots=True)
+class StructurePlacement:
+    """Typed structure placement for strips and inset-aligned labels."""
+
+    atoms: Any
+    x: float
+    label: str
+    y: float | None = None
+
+
 # Baseline plotting class
 class BasePlotter:
     """Thin wrapper around a matplotlib figure and axes with defaults.

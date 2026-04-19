@@ -18,6 +18,7 @@ from chemparseplot.plot.neb import (
     plot_structure_strip,
     render_structure_to_image,
 )
+from chemparseplot.plot.structs import StructurePlacement
 
 
 @pytest.fixture
@@ -146,6 +147,16 @@ class TestPlotStructureStrip:
     def test_single_structure(self, h2o):
         fig, ax = plt.subplots(figsize=(3, 2))
         plot_structure_strip(ax, [h2o], ["Mol"])
+        plt.close(fig)
+
+    def test_typed_structure_entries(self, small_molecules):
+        fig, ax = plt.subplots(figsize=(6, 2))
+        entries = [
+            StructurePlacement(atoms=atoms, x=float(i), label=label)
+            for i, (atoms, label) in enumerate(zip(small_molecules, ["A", "B", "C"]))
+        ]
+        plot_structure_strip(ax, entries)
+        assert not ax.axison
         plt.close(fig)
 
     def test_max_cols_wrapping(self):

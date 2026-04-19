@@ -32,6 +32,7 @@ from chemparseplot.parse.projection import (
 )
 from chemparseplot.parse.types import OrcaNebResult
 from chemparseplot.plot.structs import (
+    StructurePlacement,
     convert_energy,
     convert_energy_curvature,
     eigenvalue_axis_label,
@@ -449,7 +450,7 @@ def _render_ovito(atoms, rotation="0x,90y,0z", canvas_size=400):
 def plot_structure_strip(
     ax,
     atoms_list,
-    labels,
+    labels=None,
     zoom=0.3,
     rotation="0x,90y,0z",
     theme_color="black",
@@ -490,6 +491,13 @@ def plot_structure_strip(
     parameters. Added ``"solvis"`` and ``"ovito"`` renderer backends.
     ```
     """
+    if atoms_list and isinstance(atoms_list[0], StructurePlacement):
+        labels = [entry.label for entry in atoms_list]
+        atoms_list = [entry.atoms for entry in atoms_list]
+
+    if labels is None:
+        labels = []
+
     ax.axis("off")
     n_plot = len(atoms_list)
     n_cols = min(n_plot, max_cols)
