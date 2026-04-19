@@ -17,6 +17,7 @@ skip_if_not_env("neb")
 import h5py
 
 from chemparseplot.parse.trajectory.hdf5 import (
+    _read_metadata_group,
     _read_path_group,
     _reconstruct_atoms,
     history_to_profile_dats,
@@ -147,6 +148,26 @@ class TestReadPathGroup:
             data = _read_path_group(f["path"])
         for v in data.values():
             assert isinstance(v, np.ndarray)
+
+
+class TestReadMetadataGroup:
+    def test_none_group_returns_empty_attrs(self):
+        from chemparseplot.parse.types import ParserAttrs
+
+        metadata = _read_metadata_group(None)
+        assert isinstance(metadata, ParserAttrs)
+        assert len(metadata) == 0
+
+    def test_reads_scalars_and_arrays(self, result_h5):
+        from chemparseplot.parse.types import ParserAttrs
+
+        with h5py.File(result_h5, "r") as f:
+            metadata = _read_metadata_group(f["metadata"])
+
+        assert isinstance(metadata, ParserAttrs)
+        assert metadata["converged"] == True  # noqa: E712
+        assert metadata["oracle_calls"] == 30
+        np.testing.assert_array_equal(metadata["atomic_numbers"], [1, 6, 8])
 
 
 class TestReconstructAtoms:

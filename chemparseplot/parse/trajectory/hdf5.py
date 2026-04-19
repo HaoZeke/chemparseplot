@@ -48,6 +48,22 @@ def _read_path_group(grp: h5py.Group) -> ArrayGroup:
     )
 
 
+def _read_metadata_group(grp: h5py.Group | None) -> ParserAttrs:
+    """Read scalar/array metadata from an optional HDF5 metadata group."""
+
+    if grp is None:
+        return ParserAttrs()
+
+    metadata: dict[str, object] = {}
+    for key in grp:
+        val = grp[key]
+        if val.shape == ():
+            metadata[key] = val[()]
+        else:
+            metadata[key] = np.asarray(val)
+    return ParserAttrs(data=metadata)
+
+
 def _reconstruct_atoms(
     images: np.ndarray,
     atomic_numbers: np.ndarray | None,
@@ -118,15 +134,7 @@ def load_neb_result(h5_file: str) -> TrajectoryNebResult:
             for key in conv_grp:
                 convergence[key] = np.asarray(conv_grp[key])
 
-        metadata: dict[str, object] = {}
-        if "metadata" in f:
-            meta_grp = f["metadata"]
-            for key in meta_grp:
-                val = meta_grp[key]
-                if val.shape == ():
-                    metadata[key] = val[()]
-                else:
-                    metadata[key] = np.asarray(val)
+        metadata = _read_metadata_group(f.get("metadata"))
 
     log.info(
         "Loaded NEB result: %d images from %s",
@@ -136,7 +144,7 @@ def load_neb_result(h5_file: str) -> TrajectoryNebResult:
     return TrajectoryNebResult(
         path=path_data,
         convergence=ArrayGroup(data=convergence),
-        metadata=ParserAttrs(data=metadata),
+        metadata=metadata,
     )
 
 
@@ -203,8 +211,8 @@ def result_to_atoms_list(h5_file: str) -> list[Atoms]:
     meta = result["metadata"]
     return _reconstruct_atoms(
         path["images"],
-        meta.get("atomic_numbers"),
-        meta.get("cell"),
+        meta["atomic_numbers"] if "atomic_numbers" in meta else None,
+        meta["cell"] if "cell" in meta else None,
         path["gradients"],
         path["energies"],
     )
@@ -263,11 +271,11 @@ def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
         ira_instance = None
 
     with h5py.File(h5_file, "r") as f:
-        meta = f.get("metadata", {})
+        metadata = _read_metadata_group(f.get("metadata"))
         atomic_numbers = (
-            np.asarray(meta["atomic_numbers"]) if "atomic_numbers" in meta else None
+            metadata["atomic_numbers"] if "atomic_numbers" in metadata else None
         )
-        cell = np.asarray(meta["cell"]) if "cell" in meta else None
+        cell = metadata["cell"] if "cell" in metadata else None
 
     steps = load_neb_history(h5_file)
     frames = []
