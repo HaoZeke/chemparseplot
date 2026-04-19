@@ -17,10 +17,16 @@ import polars as pl
 import readcon
 from ase import Atoms
 
+from ._trajectory_common import (
+    load_movie_and_table,
+    load_optional_payload,
+    read_first_structure,
+)
+
 log = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class MinTrajectoryData:
     """Container for a minimization trajectory.
 
@@ -100,29 +106,18 @@ def load_min_trajectory(
     FileNotFoundError
         If required files are missing.
     """
-    movie_file = job_dir / prefix
-    if not movie_file.exists():
-        movie_file = job_dir / f"{prefix}.con"
-    if not movie_file.exists():
-        msg = f"No minimization movie file ({prefix}) found in {job_dir}"
-        raise FileNotFoundError(msg)
-
-    dat_file = job_dir / f"{prefix}.dat"
-    if not dat_file.exists():
-        msg = f"No {prefix}.dat found in {job_dir} (was write_movies enabled?)"
-        raise FileNotFoundError(msg)
-
-    log.info("Loading minimization trajectory from %s", job_dir)
-    atoms_list = parse_min_con(movie_file)
-    dat_df = parse_min_dat(dat_file)
-    log.info("Loaded %d frames, %d data rows", len(atoms_list), dat_df.height)
+    atoms_list, dat_df = load_movie_and_table(
+        job_dir,
+        movie_stem=prefix,
+        dat_name=f"{prefix}.dat",
+        parse_dat=parse_min_dat,
+        log_label="minimization",
+    )
 
     # Final structure: prefer explicit min.con, fall back to last movie frame
-    min_con = job_dir / "min.con"
-    if min_con.exists():
-        final = readcon.read_con_as_ase(str(min_con))[0]
-    else:
-        final = atoms_list[-1]
+    final = (
+        load_optional_payload(job_dir / "min.con", read_first_structure) or atoms_list[-1]
+    )
 
     return MinTrajectoryData(
         atoms_list=atoms_list,
