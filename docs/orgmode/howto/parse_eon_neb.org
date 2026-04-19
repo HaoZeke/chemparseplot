@@ -21,7 +21,7 @@ atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_
         (Path("saddle.con"), "Saddle Point"),
         (Path("minima.con"), "Local Minimum"),
     ],
-    ira_kmax=1.8,
+    ira_kmax=14.0,
     sp_file=Path("sp.con"),  # explicit saddle point (optional)
 )
 #+end_src
@@ -31,12 +31,18 @@ This returns:
 - =additional_data=: list of =(atoms, rmsd_r, rmsd_p, label)= tuples
 - =sp_data=: dict with ="atoms"=, ="r"=, ="p"= for the explicit saddle point
 
+Landscape-style RMSD coordinates require IRA. If =ira_mod= is unavailable,
+=load_structures_and_calculate_additional_rmsd()= and other landscape helpers
+now raise =ImportError= instead of silently switching to order-dependent
+alignment.
+
 ** Aggregate Landscape Data from Multiple Steps
 
 eOn NEB runs produce one DAT/CON pair per optimization step. Aggregate them into a single Polars DataFrame:
 
 #+begin_src python
 from pathlib import Path
+import ira_mod
 from chemparseplot.parse.eon.neb import aggregate_neb_landscape_data
 
 dat_paths = sorted(Path("neb_run").glob("*.dat"))
@@ -46,8 +52,8 @@ df = aggregate_neb_landscape_data(
     all_dat_paths=dat_paths,
     all_con_paths=con_paths,
     y_data_column=1,          # column index for energy in DAT files
-    ira_instance=None,        # auto-creates IRA if ira_mod available
-    ira_kmax=1.8,
+    ira_instance=ira_mod.IRA(),  # provide a real IRA backend
+    ira_kmax=14.0,
 )
 
 print(df.columns)  # ['r', 'p', 'grad_r', 'grad_p', 'z', 'step']
@@ -63,10 +69,10 @@ df = aggregate_neb_landscape_data(
     all_dat_paths=dat_paths,
     all_con_paths=con_paths,
     y_data_column=1,
-    ira_instance=None,
+    ira_instance=ira_mod.IRA(),
     cache_file=Path("landscape_cache.parquet"),
     force_recompute=False,    # set True to bypass cache
-    ira_kmax=1.8,
+    ira_kmax=14.0,
 )
 #+end_src
 
@@ -86,7 +92,7 @@ df = aggregate_neb_landscape_data(
     all_dat_paths=dat_paths,
     all_con_paths=con_paths,
     y_data_column=1,
-    ira_instance=None,
+    ira_instance=ira_mod.IRA(),
     cache_file=Path("landscape_cache.parquet"),
     augment_dat="extra_run/*.dat",
     augment_con="extra_run/*.con",
@@ -109,7 +115,7 @@ df_profile = compute_profile_rmsd(
     atoms_list,
     cache_file=Path("profile_cache.parquet"),
     force_recompute=False,
-    ira_kmax=1.8,
+    ira_kmax=14.0,
 )
 # df_profile has column: 'r' (RMSD from first frame)
 #+end_src

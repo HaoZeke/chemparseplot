@@ -30,8 +30,8 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 
 *** Notes
 
-- Uses IRA (Iterative Rotations and Assignments) for RMSD when =ira_mod= is available
-- Falls back to simple RMSD if =ira_mod= is not installed
+- Uses IRA (Iterative Rotations and Assignments) for RMSD
+- Raises =ImportError= if =ira_mod= is not available, because landscape coordinates without IRA are chemically misleading for permutationally symmetric systems
 - RMSD computed relative to first frame (reactant) and last frame (product)
 - Empty labels default to the file stem
 
@@ -46,7 +46,7 @@ Aggregates data from multiple NEB optimization steps for 2D landscape visualizat
 | =all_dat_paths= | =list[Path]= | - | Sorted list of DAT file paths |
 | =all_con_paths= | =list[Path]= | - | Sorted list of CON file paths (must match DAT order) |
 | =y_data_column= | =int= | - | Column index in DAT file for energy/eigenvalue |
-| =ira_instance= | object or =None= | - | IRA instance (auto-created if =None= and =ira_mod= available) |
+| =ira_instance= | object or =None= | - | IRA instance. Landscape coordinate generation requires a real IRA backend. |
 | =cache_file= | =Path= or =None= | =None= | Parquet file for caching results |
 | =force_recompute= | =bool= | =False= | Bypass cache and recompute |
 | =ira_kmax= | =float= | =1.8= | kmax factor for IRA alignment |
@@ -218,6 +218,14 @@ Reads the minimization TSV data file.
 * Module: =chemparseplot.parse.neb_utils= (updated)
 
 ** =calculate_landscape_coords(atoms_list, ira_instance, ira_kmax, ref_a=None, ref_b=None)=
+
+Calculates RMSD-A and RMSD-B coordinates for landscape plots.
+
+*** Notes
+
+- This function now requires a non-=None= IRA instance
+- If =ira_instance= is missing it raises =ImportError= instead of silently falling back to order-dependent alignment
+- =ref_a= and =ref_b= allow single-ended methods to reuse the same coordinate machinery with explicit endpoint references
 
 Now accepts explicit =ref_a= and =ref_b= reference structures. Defaults to first/last atoms for backward compatibility. For single-ended methods, pass the initial and final structures explicitly.
 
