@@ -1399,12 +1399,12 @@ class TestTrajectoryHdf5:
 
     def test_load_neb_history(self, tmp_path):
         from chemparseplot.parse.trajectory.hdf5 import load_neb_history
-        from chemparseplot.parse.types import ArrayGroup
+        from chemparseplot.parse.types import TrajectoryNebPath
 
         h5_path = self._make_h5_history(tmp_path)
         steps = load_neb_history(h5_path)
         assert len(steps) == 3
-        assert isinstance(steps[0], ArrayGroup)
+        assert isinstance(steps[0], TrajectoryNebPath)
         assert "energies" in steps[0]
 
     def test_result_to_profile_dat(self, tmp_path):

@@ -20,7 +20,12 @@ import numpy as np
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 
-from chemparseplot.parse.types import ArrayGroup, ParserAttrs, TrajectoryNebResult
+from chemparseplot.parse.types import (
+    ArrayGroup,
+    ParserAttrs,
+    TrajectoryNebPath,
+    TrajectoryNebResult,
+)
 from chemparseplot.parse.neb_utils import (
     calculate_landscape_coords,
     compute_synthetic_gradients,
@@ -30,21 +35,19 @@ from chemparseplot.parse.neb_utils import (
 log = logging.getLogger(__name__)
 
 
-def _read_path_group(grp: h5py.Group) -> ArrayGroup:
+def _read_path_group(grp: h5py.Group) -> TrajectoryNebPath:
     """Extract arrays from an HDF5 path group.
 
     :param grp: An h5py Group containing ``images``, ``energies``,
         ``gradients``, ``f_para``, and ``rxn_coord`` datasets.
     :return: Named mapping with numpy arrays for each field.
     """
-    return ArrayGroup(
-        data={
-            "images": np.asarray(grp["images"]),
-            "energies": np.asarray(grp["energies"]),
-            "gradients": np.asarray(grp["gradients"]),
-            "f_para": np.asarray(grp["f_para"]),
-            "rxn_coord": np.asarray(grp["rxn_coord"]),
-        }
+    return TrajectoryNebPath(
+        images=np.asarray(grp["images"]),
+        energies=np.asarray(grp["energies"]),
+        gradients=np.asarray(grp["gradients"]),
+        f_para=np.asarray(grp["f_para"]),
+        rxn_coord=np.asarray(grp["rxn_coord"]),
     )
 
 
@@ -115,6 +118,37 @@ def _reconstruct_atoms(
     return atoms_list
 
 
+def _path_to_profile_dat(path: TrajectoryNebPath) -> np.ndarray:
+    """Convert a typed path payload to eOn-style profile data."""
+
+    n = len(path.energies)
+    return np.array(
+        [
+            np.arange(n, dtype=float),
+            path.rxn_coord,
+            path.energies,
+            path.f_para,
+            np.zeros(n),
+        ]
+    )
+
+
+def _path_to_atoms_list(
+    path: TrajectoryNebPath,
+    *,
+    metadata: ParserAttrs,
+) -> list[Atoms]:
+    """Reconstruct ASE atoms from a typed path payload and metadata."""
+
+    return _reconstruct_atoms(
+        path.images,
+        metadata["atomic_numbers"] if "atomic_numbers" in metadata else None,
+        metadata["cell"] if "cell" in metadata else None,
+        path.gradients,
+        path.energies,
+    )
+
+
 def load_neb_result(h5_file: str) -> TrajectoryNebResult:
     """Read a ChemGP ``neb_result.h5`` file.
 
@@ -138,7 +172,7 @@ def load_neb_result(h5_file: str) -> TrajectoryNebResult:
 
     log.info(
         "Loaded NEB result: %d images from %s",
-        path_data["images"].shape[0],
+        path_data.images.shape[0],
         h5_file,
     )
     return TrajectoryNebResult(
@@ -148,15 +182,16 @@ def load_neb_result(h5_file: str) -> TrajectoryNebResult:
     )
 
 
-def load_neb_history(h5_file: str) -> list[ArrayGroup]:
+def load_neb_history(h5_file: str) -> list[TrajectoryNebPath]:
     """Read a ChemGP ``neb_history.h5`` file.
 
     ```{versionadded} 1.2.0
     ```
 
     :param h5_file: Path to the HDF5 history file.
-    :return: List of array mappings (one per optimization step), sorted by step
-        number. Each entry has the same structure as :func:`_read_path_group`.
+    :return: List of typed path payloads (one per optimization step), sorted by
+        step number. Each entry has the same structure as
+        :func:`_read_path_group`.
     """
     steps = []
     with h5py.File(h5_file, "r") as f:
@@ -184,17 +219,7 @@ def result_to_profile_dat(h5_file: str) -> np.ndarray:
     :return: Array of shape ``(5, n_images)``.
     """
     result = load_neb_result(h5_file)
-    path = result["path"]
-    n = len(path["energies"])
-    return np.array(
-        [
-            np.arange(n, dtype=float),
-            path["rxn_coord"],
-            path["energies"],
-            path["f_para"],
-            np.zeros(n),
-        ]
-    )
+    return _path_to_profile_dat(result.path)
 
 
 def result_to_atoms_list(h5_file: str) -> list[Atoms]:
@@ -207,15 +232,7 @@ def result_to_atoms_list(h5_file: str) -> list[Atoms]:
     :return: List of Atoms with SinglePointCalculators attached.
     """
     result = load_neb_result(h5_file)
-    path = result["path"]
-    meta = result["metadata"]
-    return _reconstruct_atoms(
-        path["images"],
-        meta["atomic_numbers"] if "atomic_numbers" in meta else None,
-        meta["cell"] if "cell" in meta else None,
-        path["gradients"],
-        path["energies"],
-    )
+    return _path_to_atoms_list(result.path, metadata=result.metadata)
 
 
 def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
@@ -230,20 +247,7 @@ def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
     :return: List of arrays, each of shape ``(5, n_images)``.
     """
     steps = load_neb_history(h5_file)
-    dats = []
-    for step_data in steps:
-        n = len(step_data["energies"])
-        dat = np.array(
-            [
-                np.arange(n, dtype=float),
-                step_data["rxn_coord"],
-                step_data["energies"],
-                step_data["f_para"],
-                np.zeros(n),
-            ]
-        )
-        dats.append(dat)
-    return dats
+    return [_path_to_profile_dat(step_data) for step_data in steps]
 
 
 def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
@@ -282,21 +286,21 @@ def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
 
     for step_idx, step_data in enumerate(steps):
         atoms_list = _reconstruct_atoms(
-            step_data["images"],
+            step_data.images,
             atomic_numbers,
             cell,
-            step_data["gradients"],
-            step_data["energies"],
+            step_data.gradients,
+            step_data.energies,
         )
 
         rmsd_r, rmsd_p = calculate_landscape_coords(atoms_list, ira_instance, ira_kmax)
-        grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, step_data["f_para"])
+        grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, step_data.f_para)
         df = create_landscape_dataframe(
             rmsd_r,
             rmsd_p,
             grad_r,
             grad_p,
-            step_data["energies"],
+            step_data.energies,
             step_idx,
         )
         frames.append(df)

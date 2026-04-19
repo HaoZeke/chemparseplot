@@ -114,10 +114,21 @@ class OrcaNebResult(DataclassMapping):
 
 
 @dataclass(frozen=True, slots=True)
+class TrajectoryNebPath(DataclassMapping):
+    """Structured ChemGP trajectory path arrays."""
+
+    images: np.ndarray
+    energies: np.ndarray
+    gradients: np.ndarray
+    f_para: np.ndarray
+    rxn_coord: np.ndarray
+
+
+@dataclass(frozen=True, slots=True)
 class TrajectoryNebResult(DataclassMapping):
     """Structured ChemGP trajectory NEB result."""
 
-    path: ArrayGroup
+    path: TrajectoryNebPath
     convergence: ArrayGroup
     metadata: ParserAttrs
 

@@ -124,8 +124,11 @@ def history_h5(tmp_path):
 
 class TestReadPathGroup:
     def test_returns_all_keys(self, result_h5):
+        from chemparseplot.parse.types import TrajectoryNebPath
+
         with h5py.File(result_h5, "r") as f:
             data = _read_path_group(f["path"])
+        assert isinstance(data, TrajectoryNebPath)
         assert set(data.keys()) == {
             "images",
             "energies",
@@ -297,11 +300,11 @@ class TestLoadNebResult:
 
 class TestLoadNebHistory:
     def test_returns_sorted_steps(self, history_h5):
-        from chemparseplot.parse.types import ArrayGroup
+        from chemparseplot.parse.types import TrajectoryNebPath
 
         steps = load_neb_history(history_h5)
         assert len(steps) == 3
-        assert isinstance(steps[0], ArrayGroup)
+        assert isinstance(steps[0], TrajectoryNebPath)
 
     def test_step_data_structure(self, history_h5):
         steps = load_neb_history(history_h5)
