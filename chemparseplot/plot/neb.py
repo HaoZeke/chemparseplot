@@ -1620,31 +1620,30 @@ def _normalize_orca_neb_plot_payload(
 ) -> _OrcaNebPlotPayload:
     """Normalize ORCA NEB inputs for plotting entrypoints."""
 
-    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
+    typed_result = (
+        neb_data
+        if isinstance(neb_data, OrcaNebResult)
+        else OrcaNebResult.from_mapping(neb_data)
+    )
+
+    energies = convert_energy(np.asarray(typed_result.energies), energy_unit)
     if energies.size == 0:
         msg = "No energy data in neb_data"
         raise ValueError(msg)
 
-    def _maybe_array(key: str) -> np.ndarray | None:
-        values = neb_data.get(key)
-        if values is None:
-            return None
-        return np.asarray(values)
-
-    def _maybe_energy(key: str) -> np.ndarray | None:
-        values = _maybe_array(key)
+    def _maybe_energy(values: np.ndarray | None) -> np.ndarray | None:
         if values is None:
             return None
         return convert_energy(values, energy_unit)
 
     return _OrcaNebPlotPayload(
         energies=energies,
-        n_images=int(neb_data.get("n_images", len(energies))),
-        barrier_forward=neb_data.get("barrier_forward"),
-        rmsd_r=_maybe_array("rmsd_r"),
-        rmsd_p=_maybe_array("rmsd_p"),
-        grad_r=_maybe_energy("grad_r"),
-        grad_p=_maybe_energy("grad_p"),
+        n_images=int(typed_result.n_images or len(energies)),
+        barrier_forward=typed_result.barrier_forward,
+        rmsd_r=typed_result.rmsd_r,
+        rmsd_p=typed_result.rmsd_p,
+        grad_r=_maybe_energy(typed_result.grad_r),
+        grad_p=_maybe_energy(typed_result.grad_p),
     )
 
 

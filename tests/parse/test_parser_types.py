@@ -52,6 +52,28 @@ def test_orca_neb_result_defaults_optional_fields():
     assert result.source == "unknown"
 
 
+def test_orca_neb_result_from_mapping_coerces_arrays():
+    from chemparseplot.parse.types import OrcaNebResult
+
+    result = OrcaNebResult.from_mapping(
+        {
+            "energies": [0.0, 0.5, 0.0],
+            "rmsd_r": [0.0, 1.0, 2.0],
+            "grad_r": [0.0, 0.1, 0.0],
+            "converged": True,
+            "barrier_forward": 0.5,
+            "source": "opi",
+        }
+    )
+
+    assert isinstance(result.energies, np.ndarray)
+    assert isinstance(result.rmsd_r, np.ndarray)
+    assert isinstance(result.grad_r, np.ndarray)
+    assert result.converged is True
+    assert result.barrier_forward == 0.5
+    assert result.source == "opi"
+
+
 def test_parser_attrs_behaves_like_mapping():
     from collections.abc import Mapping
 

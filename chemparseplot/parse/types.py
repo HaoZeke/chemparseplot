@@ -86,6 +86,32 @@ class OrcaNebResult(DataclassMapping):
         if self.n_images is None:
             object.__setattr__(self, "n_images", int(len(self.energies)))
 
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> OrcaNebResult:
+        """Coerce a mapping-like ORCA payload into a typed result."""
+
+        def _maybe_array(key: str) -> np.ndarray | None:
+            values = data.get(key)
+            if values is None:
+                return None
+            return np.asarray(values)
+
+        forces = data.get("forces")
+        return cls(
+            energies=np.asarray(data.get("energies", [])),
+            rmsd_r=_maybe_array("rmsd_r"),
+            rmsd_p=_maybe_array("rmsd_p"),
+            grad_r=_maybe_array("grad_r"),
+            grad_p=_maybe_array("grad_p"),
+            forces=list(forces) if forces is not None else None,
+            converged=bool(data.get("converged", False)),
+            n_images=data.get("n_images"),
+            barrier_forward=data.get("barrier_forward"),
+            barrier_reverse=data.get("barrier_reverse"),
+            source=str(data.get("source", "unknown")),
+            orca_version=str(data.get("orca_version", "unknown")),
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class TrajectoryNebResult(DataclassMapping):
