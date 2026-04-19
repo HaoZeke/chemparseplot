@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -23,6 +24,16 @@ except ImportError:
     ira_mod = None
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class NebOverlayStructure:
+    """One overlay structure positioned in the RMSD-R / RMSD-P plane."""
+
+    atoms: Atoms
+    r: float
+    p: float
+    label: str
 
 
 def _validate_data_atoms_match(z_data, atoms, dat_file_name):
@@ -77,7 +88,7 @@ def load_structures_and_calculate_additional_rmsd(
     additional_con: list[tuple[Path, str]],
     ira_kmax: float,
     sp_file: Path | None = None,
-):
+) -> tuple[list[Atoms], list[NebOverlayStructure], NebOverlayStructure | None]:
     """Loads the main trajectory and calculates RMSD for additional comparison structures.
 
     ```{versionadded} 0.1.0
@@ -106,7 +117,12 @@ def load_structures_and_calculate_additional_rmsd(
             ref_atom=atoms_list[-1],
             ira_kmax=ira_kmax,
         )[0]
-        sp_data = {"atoms": sp_atoms, "r": sp_rmsd_r, "p": sp_rmsd_p}
+        sp_data = NebOverlayStructure(
+            atoms=sp_atoms,
+            r=float(sp_rmsd_r),
+            p=float(sp_rmsd_p),
+            label="SP",
+        )
 
     # --- Additional Structures Loading ---
     additional_atoms_data = []
@@ -135,7 +151,12 @@ def load_structures_and_calculate_additional_rmsd(
             )[0]
 
             additional_atoms_data.append(
-                (additional_atoms, add_rmsd_r, add_rmsd_p, label)
+                NebOverlayStructure(
+                    atoms=additional_atoms,
+                    r=float(add_rmsd_r),
+                    p=float(add_rmsd_p),
+                    label=label,
+                )
             )
 
     return atoms_list, additional_atoms_data, sp_data

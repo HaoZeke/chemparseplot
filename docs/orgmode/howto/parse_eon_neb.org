@@ -13,7 +13,10 @@ You have eOn NEB output (CON/DAT file pairs) and want to extract energies, RMSD 
 
 #+begin_src python
 from pathlib import Path
-from chemparseplot.parse.eon.neb import load_structures_and_calculate_additional_rmsd
+from chemparseplot.parse.eon.neb import (
+    NebOverlayStructure,
+    load_structures_and_calculate_additional_rmsd,
+)
 
 atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_rmsd(
     con_file=Path("neb.con"),
@@ -28,8 +31,16 @@ atoms_list, additional_data, sp_data = load_structures_and_calculate_additional_
 
 This returns:
 - =atoms_list=: ASE Atoms objects from the main trajectory
-- =additional_data=: list of =(atoms, rmsd_r, rmsd_p, label)= tuples
-- =sp_data=: dict with ="atoms"=, ="r"=, ="p"= for the explicit saddle point
+- =additional_data=: list of =NebOverlayStructure= records with =atoms=, =r=, =p=, and =label=
+- =sp_data=: =NebOverlayStructure= for the explicit saddle point, or =None=
+
+#+begin_src python
+for overlay in additional_data:
+    print(overlay.label, overlay.r, overlay.p)
+
+if sp_data is not None:
+    print("Explicit saddle:", sp_data.label, sp_data.r, sp_data.p)
+#+end_src
 
 Landscape-style RMSD coordinates require IRA. If =ira_mod= is unavailable,
 =load_structures_and_calculate_additional_rmsd()= and other landscape helpers

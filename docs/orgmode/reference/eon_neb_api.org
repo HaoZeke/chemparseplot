@@ -25,8 +25,8 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 | Element | Type | Description |
 |---------+------+-------------|
 | =atoms_list= | =list[Atoms]= | ASE Atoms from main trajectory |
-| =additional_atoms_data= | =list[tuple]= | List of =(atoms, rmsd_r, rmsd_p, label)= |
-| =sp_data= | =dict= or =None= | ={ "atoms", "r", "p" }= for saddle point |
+| =additional_atoms_data= | =list[NebOverlayStructure]= | Typed overlay records with =atoms=, =r=, =p=, and =label= |
+| =sp_data= | =NebOverlayStructure= or =None= | Explicit saddle-point overlay record |
 
 *** Notes
 
@@ -35,7 +35,15 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 - RMSD computed relative to first frame (reactant) and last frame (product)
 - Empty labels default to the file stem
 
-** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=1.8, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
+*** Overlay Record
+
+=NebOverlayStructure= is a frozen typed record with four fields:
+- =atoms=: ASE structure to render
+- =r=: RMSD to the reactant
+- =p=: RMSD to the product
+- =label=: legend / annotation label
+
+** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=14.0, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
 
 Aggregates data from multiple NEB optimization steps for 2D landscape visualization.
 
@@ -49,7 +57,7 @@ Aggregates data from multiple NEB optimization steps for 2D landscape visualizat
 | =ira_instance= | object or =None= | - | IRA instance. Landscape coordinate generation requires a real IRA backend. |
 | =cache_file= | =Path= or =None= | =None= | Parquet file for caching results |
 | =force_recompute= | =bool= | =False= | Bypass cache and recompute |
-| =ira_kmax= | =float= | =1.8= | kmax factor for IRA alignment |
+| =ira_kmax= | =float= | =14.0= | kmax factor for IRA alignment |
 | =augment_dat= | =str= or =None= | =None= | Glob pattern for augmentation DAT files |
 | =augment_con= | =str= or =None= | =None= | Glob pattern for augmentation CON files |
 | =ref_atoms= | =Atoms= or =None= | =None= | Reference reactant for augmentation projection |
