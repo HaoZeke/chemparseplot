@@ -77,6 +77,36 @@ def test_parse_gp_quality_jsonl_returns_typed_meta(tmp_path):
     assert 5 in data.grids
 
 
+def test_parse_rff_quality_jsonl_keeps_typed_records(tmp_path):
+    from chemparseplot.parse.chemgp_jsonl import parse_rff_quality_jsonl
+
+    lines = [
+        json.dumps({"type": "exact_gp", "energy_mae": 0.1, "gradient_mae": 0.2}),
+        json.dumps(
+            {
+                "type": "rff",
+                "d_rff": 32,
+                "energy_mae_vs_true": 0.3,
+                "gradient_mae_vs_true": 0.4,
+                "energy_mae_vs_gp": 0.05,
+                "gradient_mae_vs_gp": 0.06,
+            }
+        ),
+    ]
+    path = tmp_path / "rff_quality.jsonl"
+    path.write_text("\n".join(lines))
+
+    data = parse_rff_quality_jsonl(path)
+
+    assert data.exact_energy_mae == pytest.approx(0.1)
+    assert data.exact_gradient_mae == pytest.approx(0.2)
+    assert data.d_rff_values == [32]
+    assert data.energy_mae_vs_true == pytest.approx([0.3])
+    assert data.gradient_mae_vs_true == pytest.approx([0.4])
+    assert data.energy_mae_vs_gp == pytest.approx([0.05])
+    assert data.gradient_mae_vs_gp == pytest.approx([0.06])
+
+
 def test_parse_gp_quality_jsonl_keeps_typed_training_points(tmp_path):
     from chemparseplot.parse.chemgp_jsonl import parse_gp_quality_jsonl
 

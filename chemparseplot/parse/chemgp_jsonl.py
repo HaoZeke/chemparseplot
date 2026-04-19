@@ -17,9 +17,31 @@ import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 from chemparseplot.parse.types import ParserAttrs
+
+
+@dataclass(frozen=True, slots=True)
+class ComparisonRecord:
+    """One optimizer-step record from a comparison JSONL."""
+
+    method: str
+    oracle_calls: int
+    step: int | None = None
+    energy: float | None = None
+    force: float | None = None
+    max_force: float | None = None
+
+    @classmethod
+    def from_mapping(cls, rec: ParserAttrs) -> ComparisonRecord:
+        return cls(
+            method=str(rec["method"]),
+            oracle_calls=int(rec["oracle_calls"]),
+            step=int(rec["step"]) if "step" in rec else None,
+            energy=float(rec["energy"]) if "energy" in rec else None,
+            force=float(rec["force"]) if "force" in rec else None,
+            max_force=float(rec["max_force"]) if "max_force" in rec else None,
+        )
 
 
 @dataclass(slots=True)
@@ -46,20 +68,20 @@ class OptimizerTrace:
     energies: list[float] | None = None
     forces: list[float] | None = None
 
-    def add_record(self, rec: dict[str, Any]) -> None:
-        """Accumulate one JSONL optimizer record into the trace."""
+    def add_record(self, rec: ComparisonRecord) -> None:
+        """Accumulate one typed optimizer record into the trace."""
 
-        self.steps.append(rec.get("step", len(self.steps)))
-        self.oracle_calls.append(rec["oracle_calls"])
-        if "energy" in rec:
+        self.steps.append(rec.step if rec.step is not None else len(self.steps))
+        self.oracle_calls.append(rec.oracle_calls)
+        if rec.energy is not None:
             if self.energies is None:
                 self.energies = []
-            self.energies.append(rec["energy"])
-        force_key = "force" if "force" in rec else "max_force"
-        if force_key in rec:
+            self.energies.append(rec.energy)
+        force_value = rec.force if rec.force is not None else rec.max_force
+        if force_value is not None:
             if self.forces is None:
                 self.forces = []
-            self.forces.append(rec[force_key])
+            self.forces.append(force_value)
 
 
 @dataclass(slots=True)
@@ -104,13 +126,50 @@ def parse_comparison_jsonl(path: str | Path) -> ComparisonData:
     data = ComparisonData()
     with open(path) as f:
         for line in f:
-            rec = json.loads(line.strip())
+            rec = ParserAttrs(data=json.loads(line.strip()))
             if rec.get("summary"):
-                data.summary = ParserAttrs(data=rec)
+                data.summary = rec
                 continue
-            trace = data.ensure_trace(rec["method"])
-            trace.add_record(rec)
+            record = ComparisonRecord.from_mapping(rec)
+            trace = data.ensure_trace(record.method)
+            trace.add_record(record)
     return data
+
+
+@dataclass(frozen=True, slots=True)
+class RFFExactRecord:
+    """Exact-GP benchmark reference record."""
+
+    energy_mae: float
+    gradient_mae: float
+
+    @classmethod
+    def from_mapping(cls, rec: ParserAttrs) -> RFFExactRecord:
+        return cls(
+            energy_mae=float(rec["energy_mae"]),
+            gradient_mae=float(rec["gradient_mae"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class RFFApproxRecord:
+    """One random-feature approximation benchmark record."""
+
+    d_rff: int
+    energy_mae_vs_true: float
+    gradient_mae_vs_true: float
+    energy_mae_vs_gp: float
+    gradient_mae_vs_gp: float
+
+    @classmethod
+    def from_mapping(cls, rec: ParserAttrs) -> RFFApproxRecord:
+        return cls(
+            d_rff=int(rec["d_rff"]),
+            energy_mae_vs_true=float(rec["energy_mae_vs_true"]),
+            gradient_mae_vs_true=float(rec["gradient_mae_vs_true"]),
+            energy_mae_vs_gp=float(rec["energy_mae_vs_gp"]),
+            gradient_mae_vs_gp=float(rec["gradient_mae_vs_gp"]),
+        )
 
 
 @dataclass(slots=True)
@@ -143,20 +202,20 @@ class RFFQualityData:
     energy_mae_vs_gp: list[float] = field(default_factory=list)
     gradient_mae_vs_gp: list[float] = field(default_factory=list)
 
-    def add_exact_gp(self, rec: dict[str, Any]) -> None:
+    def add_exact_gp(self, rec: RFFExactRecord) -> None:
         """Store the exact-GP reference metrics."""
 
-        self.exact_energy_mae = rec["energy_mae"]
-        self.exact_gradient_mae = rec["gradient_mae"]
+        self.exact_energy_mae = rec.energy_mae
+        self.exact_gradient_mae = rec.gradient_mae
 
-    def add_rff(self, rec: dict[str, Any]) -> None:
+    def add_rff(self, rec: RFFApproxRecord) -> None:
         """Store one RFF approximation record."""
 
-        self.d_rff_values.append(rec["d_rff"])
-        self.energy_mae_vs_true.append(rec["energy_mae_vs_true"])
-        self.gradient_mae_vs_true.append(rec["gradient_mae_vs_true"])
-        self.energy_mae_vs_gp.append(rec["energy_mae_vs_gp"])
-        self.gradient_mae_vs_gp.append(rec["gradient_mae_vs_gp"])
+        self.d_rff_values.append(rec.d_rff)
+        self.energy_mae_vs_true.append(rec.energy_mae_vs_true)
+        self.gradient_mae_vs_true.append(rec.gradient_mae_vs_true)
+        self.energy_mae_vs_gp.append(rec.energy_mae_vs_gp)
+        self.gradient_mae_vs_gp.append(rec.gradient_mae_vs_gp)
 
 
 def parse_rff_quality_jsonl(path: str | Path) -> RFFQualityData:
@@ -175,11 +234,11 @@ def parse_rff_quality_jsonl(path: str | Path) -> RFFQualityData:
     data = RFFQualityData()
     with open(path) as f:
         for line in f:
-            rec = json.loads(line.strip())
+            rec = ParserAttrs(data=json.loads(line.strip()))
             if rec["type"] == "exact_gp":
-                data.add_exact_gp(rec)
+                data.add_exact_gp(RFFExactRecord.from_mapping(rec))
             elif rec["type"] == "rff":
-                data.add_rff(rec)
+                data.add_rff(RFFApproxRecord.from_mapping(rec))
     return data
 
 
@@ -231,7 +290,7 @@ class GPQualityGrid:
         *,
         n_train: int,
         meta: ParserAttrs,
-        records: list[dict[str, Any]],
+        records: list[GPGridRecord],
         train_points: TrainingPointSet | None = None,
     ) -> GPQualityGrid:
         """Build a typed grid from JSONL records and parsed metadata."""
@@ -246,18 +305,42 @@ class GPQualityGrid:
         grid.gp_var = [[0.0] * nx for _ in range(ny)]
 
         for rec in records:
-            ix, iy = rec["ix"], rec["iy"]
-            grid.x[iy][ix] = rec["x"]
-            grid.y[iy][ix] = rec["y"]
-            grid.true_e[iy][ix] = rec["true_e"]
-            grid.gp_e[iy][ix] = rec["gp_e"]
-            grid.gp_var[iy][ix] = rec["gp_var"]
+            grid.x[rec.iy][rec.ix] = rec.x
+            grid.y[rec.iy][rec.ix] = rec.y
+            grid.true_e[rec.iy][rec.ix] = rec.true_e
+            grid.gp_e[rec.iy][rec.ix] = rec.gp_e
+            grid.gp_var[rec.iy][rec.ix] = rec.gp_var
 
         if train_points is not None:
             grid.train_x = list(train_points.x)
             grid.train_y = list(train_points.y)
             grid.train_e = list(train_points.e)
         return grid
+
+
+@dataclass(frozen=True, slots=True)
+class GPGridRecord:
+    """One grid-sample record from the GP-quality JSONL."""
+
+    ix: int
+    iy: int
+    x: float
+    y: float
+    true_e: float
+    gp_e: float
+    gp_var: float
+
+    @classmethod
+    def from_mapping(cls, rec: ParserAttrs) -> GPGridRecord:
+        return cls(
+            ix=int(rec["ix"]),
+            iy=int(rec["iy"]),
+            x=float(rec["x"]),
+            y=float(rec["y"]),
+            true_e=float(rec["true_e"]),
+            gp_e=float(rec["gp_e"]),
+            gp_var=float(rec["gp_var"]),
+        )
 
 
 @dataclass(slots=True)
@@ -323,25 +406,29 @@ def parse_gp_quality_jsonl(path: str | Path) -> GPQualityData:
 
     with open(path) as f:
         for line in f:
-            rec = json.loads(line.strip())
+            rec = ParserAttrs(data=json.loads(line.strip()))
             t = rec["type"]
             if t == "grid_meta":
-                data.meta = ParserAttrs(data=rec)
+                data.meta = rec
             elif t in ("minimum", "saddle"):
                 data.stationary.append(
                     StationaryPoint(
                         kind=t,
-                        id=rec["id"],
-                        x=rec["x"],
-                        y=rec["y"],
-                        energy=rec["energy"],
+                        id=int(rec["id"]),
+                        x=float(rec["x"]),
+                        y=float(rec["y"]),
+                        energy=float(rec["energy"]),
                     )
                 )
             elif t == "train_point":
-                n = rec["n_train"]
-                train_points[n].append(x=rec["x"], y=rec["y"], energy=rec["energy"])
+                n = int(rec["n_train"])
+                train_points[n].append(
+                    x=float(rec["x"]),
+                    y=float(rec["y"]),
+                    energy=float(rec["energy"]),
+                )
             elif t == "grid":
-                grid_records[rec["n_train"]].append(rec)
+                grid_records[int(rec["n_train"])].append(GPGridRecord.from_mapping(rec))
 
     for n_train, records in grid_records.items():
         data.grids[n_train] = GPQualityGrid.from_records(
