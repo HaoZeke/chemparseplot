@@ -67,6 +67,19 @@ class SmoothingParams:
     polyorder: int = 2
 
 
+@dataclass(frozen=True, slots=True)
+class _OrcaNebPlotPayload:
+    """Normalized ORCA NEB plotting payload."""
+
+    energies: np.ndarray
+    n_images: int
+    barrier_forward: float | None = None
+    rmsd_r: np.ndarray | None = None
+    rmsd_p: np.ndarray | None = None
+    grad_r: np.ndarray | None = None
+    grad_p: np.ndarray | None = None
+
+
 MIN_PATH_LENGTH = 1e-6
 
 # --- Structure Rendering Helpers ---
@@ -1356,12 +1369,9 @@ def plot_orca_neb_profile(
     """
     import matplotlib.pyplot as plt
 
-    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
-    n_images = int(neb_data.get("n_images", len(energies)))
-
-    if energies.size == 0:
-        msg = "No energy data in neb_data"
-        raise ValueError(msg)
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    energies = payload.energies
+    n_images = payload.n_images
 
     # Create figure
     fig, ax = plt.subplots(figsize=(width, height), dpi=dpi)
@@ -1376,22 +1386,18 @@ def plot_orca_neb_profile(
         ax.plot(n_images - 1, energies[-1], "ro", markersize=12, label="Product")
 
         # Find saddle point
-        saddle_idx = int(np.argmax(energies))
-        if saddle_idx != 0 and saddle_idx != len(energies) - 1:
+        saddle_idx = _orca_saddle_index(energies)
+        if saddle_idx is not None:
             ax.plot(saddle_idx, energies[saddle_idx], "ys", markersize=12, label="Saddle")
-
-    # Add barrier annotations
-    barrier_fwd = neb_data.get("barrier_forward")
-    neb_data.get("barrier_reverse")
-
-    if barrier_fwd is not None and barrier_fwd > 0:
-        ax.annotate(
-            f"ΔE‡ = {convert_energy([barrier_fwd], energy_unit)[0]:.2f} {energy_unit}",
-            xy=(saddle_idx, energies[saddle_idx]),
-            xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
-            arrowprops={"arrowstyle": "->", "color": "black"},
-            fontsize=10,
-        )
+            _annotate_orca_barrier(
+                ax,
+                x=float(saddle_idx),
+                y=float(energies[saddle_idx]),
+                barrier_forward=payload.barrier_forward,
+                energy_unit=energy_unit,
+                dx=1.0,
+                dy=0.5,
+            )
 
     # Labels and formatting
     ax.set_xlabel("Image Index")
@@ -1448,28 +1454,15 @@ def plot_orca_neb_energy_profile(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
-    rmsd_r = neb_data.get("rmsd_r")
-    rmsd_p = neb_data.get("rmsd_p")
-    grad_r = neb_data.get("grad_r")
-    neb_data.get("grad_p")
-    n_images = int(neb_data.get("n_images", len(energies)))
-    barrier_fwd = neb_data.get("barrier_forward")
-    neb_data.get("barrier_reverse")
-
-    if energies.size == 0:
-        msg = "No energy data in neb_data"
-        raise ValueError(msg)
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    energies = payload.energies
+    n_images = payload.n_images
 
     # Use RMSD as reaction coordinate if available, otherwise use image index
-    if rmsd_r is not None and rmsd_p is not None:
+    if payload.rmsd_r is not None and payload.rmsd_p is not None:
         # Use progress coordinate (similar to eOn)
-        rc = rmsd_r
-        f_para = (
-            convert_energy(np.asarray(grad_r), energy_unit)
-            if grad_r is not None
-            else np.zeros_like(rc)
-        )
+        rc = payload.rmsd_r
+        f_para = payload.grad_r if payload.grad_r is not None else np.zeros_like(rc)
         xlabel = r"RMSD from Reactant ($\AA$)"
     else:
         rc = np.arange(n_images)
@@ -1505,8 +1498,8 @@ def plot_orca_neb_energy_profile(
         ax.plot(rc[-1], energies[-1], "ro", markersize=10, label="Product", zorder=20)
 
         # Find and label saddle
-        saddle_idx = int(np.argmax(energies))
-        if saddle_idx != 0 and saddle_idx != n_images - 1:
+        saddle_idx = _orca_saddle_index(energies)
+        if saddle_idx is not None:
             ax.plot(
                 rc[saddle_idx],
                 energies[saddle_idx],
@@ -1516,19 +1509,17 @@ def plot_orca_neb_energy_profile(
                 zorder=20,
             )
 
-            # Add barrier annotation
-            if barrier_fwd is not None and barrier_fwd > 0:
-                ax.annotate(
-                    (
-                        f"$\\Delta E^\\ddagger = "
-                        f"{convert_energy([barrier_fwd], energy_unit)[0]:.2f}$ {energy_unit}"
-                    ),
-                    xy=(rc[saddle_idx], energies[saddle_idx]),
-                    xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
-                    arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
-                    fontsize=9,
-                    zorder=30,
-                )
+            _annotate_orca_barrier(
+                ax,
+                x=float(rc[saddle_idx]),
+                y=float(energies[saddle_idx]),
+                barrier_forward=payload.barrier_forward,
+                energy_unit=energy_unit,
+                dx=0.5,
+                dy=0.5,
+                use_math_text=True,
+                zorder=30,
+            )
 
     # Labels and formatting
     ax.set_xlabel(xlabel)
@@ -1585,20 +1576,16 @@ def plot_orca_neb_landscape(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
-    rmsd_r_raw = neb_data.get("rmsd_r")
-    rmsd_p_raw = neb_data.get("rmsd_p")
-    if rmsd_r_raw is None or rmsd_p_raw is None:
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    if payload.rmsd_r is None or payload.rmsd_p is None:
         msg = (
             "RMSD coordinates required for landscape plot. "
             "Re-run ORCA calculation with geometry output enabled."
         )
         raise ValueError(msg)
 
-    rmsd_r = np.asarray(rmsd_r_raw)
-    rmsd_p = np.asarray(rmsd_p_raw)
-    grad_r = neb_data.get("grad_r")
-    grad_p = neb_data.get("grad_p")
+    rmsd_r = payload.rmsd_r
+    rmsd_p = payload.rmsd_p
 
     # Create figure
     fig = plt.figure(figsize=(width, height), dpi=dpi)
@@ -1616,17 +1603,9 @@ def plot_orca_neb_landscape(
         ax,
         rmsd_r,
         rmsd_p,
-        (
-            convert_energy(np.asarray(grad_r), energy_unit)
-            if grad_r is not None
-            else np.zeros_like(rmsd_r)
-        ),
-        (
-            convert_energy(np.asarray(grad_p), energy_unit)
-            if grad_p is not None
-            else np.zeros_like(rmsd_p)
-        ),
-        energies,
+        payload.grad_r if payload.grad_r is not None else np.zeros_like(rmsd_r),
+        payload.grad_p if payload.grad_p is not None else np.zeros_like(rmsd_p),
+        payload.energies,
         method=method,
         cmap=cmap,
         show_pts=True,
@@ -1638,7 +1617,7 @@ def plot_orca_neb_landscape(
         ax,
         rmsd_r,
         rmsd_p,
-        energies,
+        payload.energies,
         cmap=cmap,
         z_label=energy_axis_label(energy_unit),
         project_path=project_path,
@@ -1661,3 +1640,83 @@ def plot_orca_neb_landscape(
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
     plt.close(fig)
+
+
+def _normalize_orca_neb_plot_payload(
+    neb_data: Mapping[str, Any] | OrcaNebResult,
+    energy_unit: str,
+) -> _OrcaNebPlotPayload:
+    """Normalize ORCA NEB inputs for plotting entrypoints."""
+
+    energies = convert_energy(np.asarray(neb_data.get("energies", [])), energy_unit)
+    if energies.size == 0:
+        msg = "No energy data in neb_data"
+        raise ValueError(msg)
+
+    def _maybe_array(key: str) -> np.ndarray | None:
+        values = neb_data.get(key)
+        if values is None:
+            return None
+        return np.asarray(values)
+
+    def _maybe_energy(key: str) -> np.ndarray | None:
+        values = _maybe_array(key)
+        if values is None:
+            return None
+        return convert_energy(values, energy_unit)
+
+    return _OrcaNebPlotPayload(
+        energies=energies,
+        n_images=int(neb_data.get("n_images", len(energies))),
+        barrier_forward=neb_data.get("barrier_forward"),
+        rmsd_r=_maybe_array("rmsd_r"),
+        rmsd_p=_maybe_array("rmsd_p"),
+        grad_r=_maybe_energy("grad_r"),
+        grad_p=_maybe_energy("grad_p"),
+    )
+
+
+def _orca_saddle_index(energies: np.ndarray) -> int | None:
+    """Return the internal saddle index for a NEB profile, if any."""
+
+    if len(energies) < 3:
+        return None
+    saddle_idx = int(np.argmax(energies))
+    if saddle_idx in {0, len(energies) - 1}:
+        return None
+    return saddle_idx
+
+
+def _annotate_orca_barrier(
+    ax,
+    *,
+    x: float,
+    y: float,
+    barrier_forward: float | None,
+    energy_unit: str,
+    dx: float,
+    dy: float,
+    use_math_text: bool = False,
+    zorder: int | None = None,
+) -> None:
+    """Annotate the forward barrier on an ORCA NEB profile plot."""
+
+    if barrier_forward is None or barrier_forward <= 0:
+        return
+
+    converted = convert_energy([barrier_forward], energy_unit)[0]
+    text = (
+        f"$\\Delta E^\\ddagger = {converted:.2f}$ {energy_unit}"
+        if use_math_text
+        else f"ΔE‡ = {converted:.2f} {energy_unit}"
+    )
+    annotation_kwargs = {"fontsize": 10 if not use_math_text else 9}
+    if zorder is not None:
+        annotation_kwargs["zorder"] = zorder
+    ax.annotate(
+        text,
+        xy=(x, y),
+        xytext=(x + dx, y + dy),
+        arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
+        **annotation_kwargs,
+    )
