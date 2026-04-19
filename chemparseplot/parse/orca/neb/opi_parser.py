@@ -13,6 +13,7 @@ Returns data in format compatible with chemparseplot.plot.neb plotting functions
 ```
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,23 @@ def _get_opi_output():
 
 
 HAS_OPI = True  # Will fail gracefully at runtime if not installed
+
+
+@dataclass(frozen=True, slots=True)
+class _OpiGeometry:
+    """Typed geometry payload extracted from one OPI image."""
+
+    coordinates: np.ndarray
+    atomic_numbers: tuple[int, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _OpiNebImage:
+    """Typed per-image NEB record extracted from OPI output."""
+
+    energy_ev: float
+    geometry: _OpiGeometry | None = None
+    gradient: np.ndarray | None = None
 
 
 def parse_orca_neb(basename: str, working_dir: Path | None = None) -> OrcaNebResult:
@@ -75,60 +93,21 @@ def parse_orca_neb(basename: str, working_dir: Path | None = None) -> OrcaNebRes
     output = Output(basename, working_dir=working_dir)
     output.parse()
 
-    # Check if calculation terminated normally
     converged = output.terminated_normally()
-
-    # Extract data for all NEB images
     n_images = output.num_results_gbw
-    energies = []
-    geometries = []
-    forces = []
-
-    for i in range(n_images):
-        # Get energy in eV
-        energy_eh = output.get_final_energy(index=i)
-        energy_ev = energy_eh * 27.211386245988  # Hartree to eV
-        energies.append(energy_ev)
-
-        # Get geometry
-        try:
-            geom = output.get_geometry(index=i)
-            geometries.append(
-                {
-                    "coordinates": geom.coordinates.cartesians,
-                    "atomic_numbers": [atom.atomic_number for atom in geom.atoms],
-                }
-            )
-        except (AttributeError, KeyError):
-            geometries.append(None)
-
-        # Get forces if available
-        try:
-            grad = output.get_gradient(index=i)
-            forces.append(grad)
-        except (AttributeError, KeyError):
-            forces.append(None)
-
-    energies = np.array(energies)
+    images = [_read_opi_neb_image(output, index=i) for i in range(n_images)]
+    energies = np.array([image.energy_ev for image in images])
 
     # Calculate RMSD from reactant and product if geometries available
     rmsd_r = None
     rmsd_p = None
     grad_r = None
     grad_p = None
+    forces = [image.gradient for image in images]
 
-    if all(g is not None for g in geometries) and len(geometries) >= 2:
+    if len(images) >= 2 and all(image.geometry is not None for image in images):
         try:
-            from ase import Atoms
-
-            # Convert to ASE Atoms
-            atoms_list = []
-            for geom in geometries:
-                atoms = Atoms(
-                    numbers=geom["atomic_numbers"],
-                    positions=geom["coordinates"],
-                )
-                atoms_list.append(atoms)
+            atoms_list = [_geometry_to_atoms(image.geometry) for image in images]  # type: ignore[arg-type]
 
             # Calculate RMSD from reactant and product
             rmsd_r = np.array(
@@ -170,8 +149,46 @@ def parse_orca_neb(basename: str, working_dir: Path | None = None) -> OrcaNebRes
         barrier_forward=barrier_forward,
         barrier_reverse=barrier_reverse,
         source="opi",
-        orca_version=str(output.orca_version) if hasattr(output, "orca_version") else "unknown",
+        orca_version=str(output.orca_version)
+        if hasattr(output, "orca_version")
+        else "unknown",
     )
+
+
+def _read_opi_neb_image(output, *, index: int) -> _OpiNebImage:
+    """Read one NEB image record from an OPI output object."""
+
+    energy_eh = output.get_final_energy(index=index)
+    geometry = None
+    gradient = None
+
+    try:
+        geom = output.get_geometry(index=index)
+        geometry = _OpiGeometry(
+            coordinates=np.asarray(geom.coordinates.cartesians),
+            atomic_numbers=tuple(atom.atomic_number for atom in geom.atoms),
+        )
+    except (AttributeError, KeyError):
+        geometry = None
+
+    try:
+        gradient = np.asarray(output.get_gradient(index=index))
+    except (AttributeError, KeyError):
+        gradient = None
+
+    return _OpiNebImage(
+        energy_ev=energy_eh * 27.211386245988,
+        geometry=geometry,
+        gradient=gradient,
+    )
+
+
+def _geometry_to_atoms(geometry: _OpiGeometry):
+    """Convert a typed OPI geometry payload to ASE Atoms."""
+
+    from ase import Atoms
+
+    return Atoms(numbers=geometry.atomic_numbers, positions=geometry.coordinates)
 
 
 def _calculate_rmsd(ref: Any, mobile: Any) -> float:
