@@ -119,8 +119,8 @@ class TestLoadMinTrajectory:
         ]
         dat.write_text("\n".join(lines) + "\n")
 
-        # min.con (final structure)
-        write(str(tmp_path / "min.con"), frames[-1], format="eon")
+        # explicit final structure
+        write(str(tmp_path / f"{prefix}.con"), frames[-1], format="eon")
         return tmp_path
 
     def test_load_full(self, tmp_path):
@@ -157,6 +157,20 @@ class TestLoadMinTrajectory:
         traj = load_min_trajectory(tmp_path, prefix="react_neb")
         assert len(traj.atoms_list) == 4
 
+    def test_custom_prefix_prefers_explicit_prefixed_final_structure(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        job = self._make_job_dir(tmp_path, prefix="qm_min")
+        explicit_final = molecule("H2O")
+        explicit_final.positions[1, 0] += 0.77
+        write(str(job / "qm_min.con"), explicit_final, format="eon")
+
+        traj = load_min_trajectory(job, prefix="qm_min")
+        np.testing.assert_allclose(traj.final_atoms.positions, explicit_final.positions)
+
     def test_no_min_con_uses_last_frame(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
@@ -172,6 +186,21 @@ class TestLoadMinTrajectory:
         )
         traj = load_min_trajectory(tmp_path)
         assert traj.final_atoms is not None  # fell back to last frame
+
+    def test_legacy_min_con_is_used_when_prefixed_final_is_absent(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        job = self._make_job_dir(tmp_path, prefix="qm_min")
+        (job / "qm_min.con").unlink()
+        legacy_final = molecule("H2O")
+        legacy_final.positions[2, 1] -= 0.44
+        write(str(job / "min.con"), legacy_final, format="eon")
+
+        traj = load_min_trajectory(job, prefix="qm_min")
+        np.testing.assert_allclose(traj.final_atoms.positions, legacy_final.positions)
 
     def test_legacy_prefix_still_supported_when_requested(self, tmp_path):
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory

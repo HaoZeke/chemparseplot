@@ -211,9 +211,9 @@ Dataclass containing the full trajectory:
 | Field | Type | Description |
 |-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
-| =dat_df= | =pl.DataFrame= | Metrics reconstructed from per-frame CON metadata when available, otherwise from =min.dat= (iteration, step_size, convergence, energy) |
+| =dat_df= | =pl.DataFrame= | Metrics reconstructed from per-frame CON metadata when available, otherwise from =minimization.dat= (or =<prefix>.dat=) with columns iteration, step_size, convergence, energy |
 | =initial_atoms= | =Atoms= | Starting structure (first frame) |
-| =final_atoms= | =Atoms= | Final minimized structure (=min.con= or last frame) |
+| =final_atoms= | =Atoms= | Final minimized structure (prefers =<prefix>.con=, then legacy =min.con=, otherwise last movie frame) |
 
 ** =load_min_trajectory(job_dir, prefix="minimization") -> MinTrajectoryData=
 

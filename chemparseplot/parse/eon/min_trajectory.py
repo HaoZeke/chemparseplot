@@ -20,8 +20,8 @@ from ase import Atoms
 from ._trajectory_common import (
     frame_rows_to_table,
     load_movie_and_table,
-    load_optional_payload,
     read_first_structure,
+    read_optional_first,
 )
 
 log = logging.getLogger(__name__)
@@ -132,10 +132,9 @@ def load_min_trajectory(
         log_label="minimization",
     )
 
-    # Final structure: prefer explicit min.con, fall back to last movie frame
-    final = (
-        load_optional_payload(job_dir / "min.con", read_first_structure) or atoms_list[-1]
-    )
+    # Prefer an explicit final structure matching the movie prefix, then the
+    # legacy eOn ``min.con`` output, before falling back to the last movie frame.
+    final = read_optional_first(job_dir, (f"{prefix}.con", "min.con")) or atoms_list[-1]
 
     return MinTrajectoryData(
         atoms_list=atoms_list,
