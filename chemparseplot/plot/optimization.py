@@ -404,7 +404,9 @@ def plot_convergence_panel(
     ax_step
         Axes for step size.
     dat_df
-        Polars DataFrame with iteration data (from climb.dat or min.dat).
+        Polars DataFrame with iteration data, usually reconstructed from
+        embedded CON metadata and only falling back to sidecar TSV data when
+        needed for compatibility.
     force_col, step_col, iter_col
         Column names.
     color
