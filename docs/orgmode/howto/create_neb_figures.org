@@ -271,9 +271,10 @@ The same 2D reaction valley projection works for dimer/saddle search and minimiz
 
 ** Dimer/Saddle Search Landscape
 
-Requires eOn output with =write_movies=true= and a =climb= movie file. When
-available, =climb.dat= remains the preferred table source; metadata-rich full
-CON movies can also provide the per-iteration metrics directly.
+Requires eOn output with =write_movies=true= and a =climb= movie file.
+Metadata-rich full CON movies are treated as the canonical structured source;
+=climb.dat= remains available as a fallback/export table when the embedded
+metadata is incomplete.
 
 #+begin_src python
 from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory

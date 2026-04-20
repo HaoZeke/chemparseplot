@@ -244,3 +244,34 @@ class TestLoadDimerTrajectory:
         assert len(traj.atoms_list) == 3
         assert traj.dat_df["iteration"].to_list() == [1, 2]
         assert traj.dat_df["rotations"].to_list() == [5, 3]
+
+    def test_metadata_preferred_over_sidecar_dat(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        (tmp_path / "climb").write_text("dummy movie")
+        (tmp_path / "climb.dat").write_text(
+            "iteration\tstep_size\tdelta_e\tconvergence\teigenvalue\ttorque\tangle\trotations\n"
+            "99\t9.9\t9.9\t9.9\t9.9\t9.9\t9.9\t9\n"
+        )
+
+        frames = [
+            DummyDimerFrame(iteration=0),
+            DummyDimerFrame(
+                iteration=1,
+                step_size=0.1,
+                delta_e=0.01,
+                convergence=0.05,
+                eigenvalue=-0.12,
+                torque=0.05,
+                angle=12.3,
+                rotations=5,
+            ),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_dimer_trajectory(tmp_path)
+        assert traj.dat_df["iteration"].to_list() == [1]
+        assert traj.dat_df["rotations"].to_list() == [5]

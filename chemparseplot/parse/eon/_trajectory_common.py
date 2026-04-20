@@ -69,22 +69,24 @@ def load_movie_and_table(
     frames = readcon.read_con(str(movie_file))
     atoms_list = [frame.to_ase() for frame in frames]
 
-    dat_file = job_dir / dat_name
-    if dat_file.exists():
-        dat_df = parse_dat(dat_file)
-    else:
-        dat_df = build_table_from_metadata(frames)
-        if dat_df.is_empty():
-            msg = (
-                f"No {dat_name} found in {job_dir} and no compatible frame metadata "
-                f"for columns {', '.join(metadata_columns)}"
-            )
-            raise FileNotFoundError(msg)
+    dat_df = build_table_from_metadata(frames)
+    if not dat_df.is_empty():
         log.info(
-            "Reconstructed %s metrics from frame metadata (%d rows)",
+            "Using %s metrics from frame metadata (%d rows)",
             log_label,
             dat_df.height,
         )
+    else:
+        dat_file = job_dir / dat_name
+        if dat_file.exists():
+            dat_df = parse_dat(dat_file)
+            log.info("Fell back to %s sidecar table %s", log_label, dat_file.name)
+        else:
+            msg = (
+                f"No compatible frame metadata for columns {', '.join(metadata_columns)} "
+                f"and no {dat_name} found in {job_dir}"
+            )
+            raise FileNotFoundError(msg)
     log.info("Loaded %d frames, %d data rows", len(atoms_list), dat_df.height)
     return atoms_list, dat_df
 
