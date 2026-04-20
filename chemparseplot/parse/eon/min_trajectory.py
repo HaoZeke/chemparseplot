@@ -89,6 +89,7 @@ def table_from_min_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
     df = frame_rows_to_table(
         frames,
         MIN_METADATA_COLUMNS,
+        allow_leading_incomplete=False,
     )
     if df.is_empty():
         return df

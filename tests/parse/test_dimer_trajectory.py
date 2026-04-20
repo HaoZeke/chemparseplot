@@ -275,3 +275,34 @@ class TestLoadDimerTrajectory:
         traj = load_dimer_trajectory(tmp_path)
         assert traj.dat_df["iteration"].to_list() == [1]
         assert traj.dat_df["rotations"].to_list() == [5]
+
+    def test_incomplete_metadata_falls_back_to_sidecar_dat(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        (tmp_path / "climb").write_text("dummy movie")
+        (tmp_path / "climb.dat").write_text(
+            "iteration\tstep_size\tdelta_e\tconvergence\teigenvalue\ttorque\tangle\trotations\n"
+            "1\t0.1\t0.01\t0.05\t-0.12\t0.05\t12.3\t5\n"
+        )
+
+        frames = [
+            DummyDimerFrame(iteration=0),
+            DummyDimerFrame(
+                iteration=1,
+                step_size=0.1,
+                delta_e=0.01,
+                convergence=0.05,
+                eigenvalue=-0.12,
+                torque=None,
+                angle=12.3,
+                rotations=5,
+            ),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_dimer_trajectory(tmp_path)
+        assert traj.dat_df["iteration"].to_list() == [1]
+        assert traj.dat_df["torque"].to_list() == [0.05]

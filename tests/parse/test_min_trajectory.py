@@ -221,3 +221,25 @@ class TestLoadMinTrajectory:
         traj = load_min_trajectory(tmp_path)
         assert traj.dat_df["iteration"].to_list() == [0, 1]
         assert traj.dat_df["energy"].to_list() == [-12.3, -12.4]
+
+    def test_incomplete_metadata_falls_back_to_sidecar_dat(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        (tmp_path / "minimization").write_text("dummy movie")
+        (tmp_path / "minimization.dat").write_text(
+            "iteration\tstep_size\tconvergence\tenergy\n"
+            "0\t0.0\t0.5\t-1.0\n"
+            "1\t0.1\t0.2\t-1.1\n"
+        )
+
+        frames = [
+            DummyMinFrame(0, 0.0, 0.5, -12.3),
+            DummyMinFrame(1, 0.1, None, -12.4),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_min_trajectory(tmp_path)
+        assert traj.dat_df["energy"].to_list() == [-1.0, -1.1]

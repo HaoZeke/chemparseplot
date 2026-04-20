@@ -82,11 +82,27 @@ class TestMetadataHelpers:
         assert isinstance(df, pl.DataFrame)
         assert df.height == 2
 
-    def test_frame_rows_to_table_drops_missing_rows(self):
+    def test_frame_rows_to_table_allows_incomplete_prefix_when_requested(self):
         frames = [
             DummyFrame(frame_index=0, metadata={}),
             DummyFrame(frame_index=1, metadata={"step_size": 0.2}),
         ]
-        df = frame_rows_to_table(frames, ("frame_index", "step_size"))
+        df = frame_rows_to_table(
+            frames,
+            ("frame_index", "step_size"),
+            allow_leading_incomplete=True,
+        )
         assert df.height == 1
         assert df["frame_index"].to_list() == [1]
+
+    def test_frame_rows_to_table_rejects_partial_metadata_after_start(self):
+        frames = [
+            DummyFrame(frame_index=0, metadata={"step_size": 0.1}),
+            DummyFrame(frame_index=1, metadata={}),
+        ]
+        df = frame_rows_to_table(
+            frames,
+            ("frame_index", "step_size"),
+            allow_leading_incomplete=True,
+        )
+        assert df.is_empty()

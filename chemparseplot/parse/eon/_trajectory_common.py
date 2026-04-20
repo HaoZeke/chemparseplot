@@ -104,14 +104,20 @@ def metadata_value(frame: readcon.ConFrame, key: str) -> Any:
 def frame_rows_to_table(
     frames: Sequence[readcon.ConFrame],
     columns: Sequence[str],
+    *,
+    allow_leading_incomplete: bool = False,
 ) -> pl.DataFrame:
     """Build a table from frame metadata when sidecar TSV data is absent."""
 
     rows: list[dict[str, Any]] = []
+    saw_complete_row = False
     for frame in frames:
         row = {column: metadata_value(frame, column) for column in columns}
         if any(value is None for value in row.values()):
+            if saw_complete_row or not allow_leading_incomplete:
+                return pl.DataFrame()
             continue
+        saw_complete_row = True
         rows.append(row)
     if not rows:
         return pl.DataFrame()

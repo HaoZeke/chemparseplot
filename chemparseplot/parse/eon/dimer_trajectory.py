@@ -111,6 +111,7 @@ def table_from_dimer_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
     df = frame_rows_to_table(
         frames,
         DIMER_METADATA_COLUMNS,
+        allow_leading_incomplete=True,
     )
     if df.is_empty():
         return df
