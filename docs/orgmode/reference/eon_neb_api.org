@@ -183,14 +183,14 @@ Dataclass containing the full trajectory:
 | Field | Type | Description |
 |-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
-| =dat_df= | =pl.DataFrame= | Metrics from =climb.dat= (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
+| =dat_df= | =pl.DataFrame= | Metrics from =climb.dat= when present, otherwise reconstructed from per-frame CON metadata (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
 | =initial_atoms= | =Atoms= | Starting structure (=reactant.con= or =pos.con=) |
 | =saddle_atoms= | =Atoms= or =None= | Saddle point (=saddle.con=) |
 | =mode_vector= | =np.ndarray= or =None= | Eigenvector (=mode.dat=) |
 
 ** =load_dimer_trajectory(job_dir) -> DimerTrajectoryData=
 
-Loads the complete trajectory from an eOn saddle search job directory. Expects =climb= movie file and =climb.dat= to exist.
+Loads the complete trajectory from an eOn saddle search job directory. Expects a =climb= movie file; =climb.dat= is preferred when present, otherwise the parser reconstructs the table from per-frame CON metadata.
 
 ** =parse_climb_dat(path) -> pl.DataFrame=
 
@@ -211,13 +211,13 @@ Dataclass containing the full trajectory:
 | Field | Type | Description |
 |-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
-| =dat_df= | =pl.DataFrame= | Metrics from =min.dat= (iteration, step_size, convergence, energy) |
+| =dat_df= | =pl.DataFrame= | Metrics from =min.dat= when present, otherwise reconstructed from per-frame CON metadata (iteration, step_size, convergence, energy) |
 | =initial_atoms= | =Atoms= | Starting structure (first frame) |
 | =final_atoms= | =Atoms= | Final minimized structure (=min.con= or last frame) |
 
 ** =load_min_trajectory(job_dir, prefix="minimization") -> MinTrajectoryData=
 
-Loads the complete trajectory from an eOn minimization job directory.
+Loads the complete trajectory from an eOn minimization job directory. The movie file is required; the sidecar =.dat= file is preferred but no longer mandatory when the movie frames carry full metadata.
 
 ** =parse_min_dat(path) -> pl.DataFrame=
 
