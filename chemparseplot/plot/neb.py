@@ -1354,6 +1354,91 @@ def plot_neb_evolution(
         ax.plot(px, py, "o-", color=color, alpha=alpha, markersize=2, linewidth=1)
 
 
+def convert_neb_values(values, plot_mode: str, energy_unit: str):
+    """Convert NEB values for the active plotted quantity."""
+
+    if plot_mode == "energy":
+        return convert_energy(values, energy_unit)
+    return convert_energy_curvature(values, energy_unit)
+
+
+def default_neb_ylabel(plot_mode: str, energy_unit: str) -> str:
+    """Return the canonical label for NEB energy-like axes."""
+
+    if plot_mode == "energy":
+        return energy_axis_label(energy_unit, label="Relative Energy")
+    return eigenvalue_axis_label(energy_unit, label="Lowest Eigenvalue")
+
+
+def landscape_projection_basis(global_basis, final_r, final_p):
+    """Reuse the full-dataset basis whenever projected overlays need one."""
+
+    if global_basis is not None:
+        return global_basis
+    return compute_projection_basis(final_r, final_p)
+
+
+def landscape_half_span(x_limits, final_r, final_p, additional_atoms_data, global_basis):
+    """Expand the symmetric landscape half-span to keep extra markers visible."""
+
+    half_span = (x_limits[1] - x_limits[0]) / 2
+    if not additional_atoms_data:
+        return half_span
+
+    basis = landscape_projection_basis(global_basis, final_r, final_p)
+    for overlay in additional_atoms_data:
+        _, add_d = project_to_sd(np.array([overlay.r]), np.array([overlay.p]), basis)
+        half_span = max(half_span, abs(float(add_d[0])) * 1.15)
+    return half_span
+
+
+def save_plot(output_file, dpi, *, has_strip):
+    """Save plots without tight-bbox strip overflow."""
+
+    save_kwargs = {"transparent": False, "pad_inches": 0.1, "dpi": dpi}
+    if not has_strip:
+        save_kwargs["bbox_inches"] = "tight"
+    plt.savefig(output_file, **save_kwargs)
+
+
+def profile_structure_indices(atoms_list, y_values, plot_structures, plot_mode):
+    """Select profile structures to render as a strip payload."""
+
+    if plot_structures == "all":
+        return list(range(len(atoms_list)))
+    saddle_idx = (
+        int(np.argmax(y_values[1:-1]) + 1)
+        if plot_mode == "energy"
+        else int(np.argmin(y_values))
+    )
+    return sorted({0, saddle_idx, len(atoms_list) - 1})
+
+
+def profile_strip_payload(atoms_list, x_values, y_values, plot_structures, plot_mode):
+    """Build an ordered strip payload for profile plots."""
+
+    payload = []
+    for index in profile_structure_indices(
+        atoms_list, y_values, plot_structures, plot_mode
+    ):
+        if plot_structures == "all":
+            label = str(index)
+        elif index == 0:
+            label = "R"
+        elif index == len(atoms_list) - 1:
+            label = "P"
+        else:
+            label = "SP"
+        payload.append(
+            StructurePlacement(
+                atoms=atoms_list[index],
+                x=float(x_values[index]),
+                label=label,
+            )
+        )
+    return payload
+
+
 def plot_orca_neb_profile(
     neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
