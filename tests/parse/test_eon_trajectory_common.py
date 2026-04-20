@@ -5,10 +5,14 @@
 
 from pathlib import Path
 
+import polars as pl
 import pytest
+from ase.build import molecule
 
 from chemparseplot.parse.eon._trajectory_common import (
+    frame_rows_to_table,
     load_optional_payload,
+    metadata_value,
     require_dat_file,
     resolve_movie_file,
 )
@@ -50,3 +54,39 @@ class TestLoadOptionalPayload:
         payload = tmp_path / "mode.dat"
         payload.write_text("1 0 0\n")
         assert load_optional_payload(payload, Path.read_text) == "1 0 0\n"
+
+
+class DummyFrame:
+    def __init__(self, *, frame_index=None, energy=None, metadata=None):
+        self.frame_index = frame_index
+        self.energy = energy
+        self.metadata = metadata or {}
+
+    def to_ase(self):
+        return molecule("H2O")
+
+
+class TestMetadataHelpers:
+    def test_metadata_value_reads_builtin_fields(self):
+        frame = DummyFrame(frame_index=3, energy=-1.25, metadata={"step_size": 0.1})
+        assert metadata_value(frame, "frame_index") == 3
+        assert metadata_value(frame, "energy") == -1.25
+        assert metadata_value(frame, "step_size") == 0.1
+
+    def test_frame_rows_to_table_skips_incomplete_frames(self):
+        frames = [
+            DummyFrame(frame_index=0, metadata={"step_size": 0.0}),
+            DummyFrame(frame_index=1, metadata={"step_size": 0.2}),
+        ]
+        df = frame_rows_to_table(frames, ("frame_index", "step_size"))
+        assert isinstance(df, pl.DataFrame)
+        assert df.height == 2
+
+    def test_frame_rows_to_table_drops_missing_rows(self):
+        frames = [
+            DummyFrame(frame_index=0, metadata={}),
+            DummyFrame(frame_index=1, metadata={"step_size": 0.2}),
+        ]
+        df = frame_rows_to_table(frames, ("frame_index", "step_size"))
+        assert df.height == 1
+        assert df["frame_index"].to_list() == [1]

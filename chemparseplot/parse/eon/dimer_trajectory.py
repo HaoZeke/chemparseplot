@@ -19,6 +19,7 @@ import readcon
 from ase import Atoms
 
 from ._trajectory_common import (
+    frame_rows_to_table,
     load_movie_and_table,
     load_optional_payload,
     read_first_structure,
@@ -26,6 +27,17 @@ from ._trajectory_common import (
 )
 
 log = logging.getLogger(__name__)
+
+DIMER_METADATA_COLUMNS = (
+    "frame_index",
+    "step_size",
+    "delta_e",
+    "convergence",
+    "eigenvalue",
+    "torque",
+    "angle",
+    "rotations",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -93,6 +105,18 @@ def _load_mode_dat(path: Path) -> np.ndarray | None:
     return np.loadtxt(path)
 
 
+def table_from_dimer_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
+    """Reconstruct climb metrics from per-frame CON metadata."""
+
+    df = frame_rows_to_table(
+        frames,
+        DIMER_METADATA_COLUMNS,
+    )
+    if df.is_empty():
+        return df
+    return df.rename({"frame_index": "iteration"})
+
+
 def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
     """Load a complete dimer/saddle search trajectory from an eOn job directory.
 
@@ -119,6 +143,8 @@ def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
         movie_stem="climb",
         dat_name="climb.dat",
         parse_dat=parse_climb_dat,
+        metadata_columns=DIMER_METADATA_COLUMNS,
+        build_table_from_metadata=table_from_dimer_metadata,
         log_label="dimer",
     )
 

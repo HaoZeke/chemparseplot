@@ -6,10 +6,12 @@
 import numpy as np
 import polars as pl
 import pytest
+from ase.build import molecule
 
 from chemparseplot.parse.eon.dimer_trajectory import (
     DimerTrajectoryData,
     parse_climb_dat,
+    table_from_dimer_metadata,
 )
 
 
@@ -56,6 +58,46 @@ class TestParseClimbDat:
     def test_missing_file_raises(self, tmp_path):
         with pytest.raises((FileNotFoundError, OSError)):
             parse_climb_dat(tmp_path / "nonexistent.dat")
+
+
+class DummyDimerFrame:
+    def __init__(self, iteration=None, **metadata):
+        self.frame_index = iteration
+        self.energy = metadata.pop("energy", None)
+        self.metadata = metadata
+
+    def to_ase(self):
+        return molecule("H2O")
+
+
+class TestMetadataDimerFallback:
+    def test_table_from_dimer_metadata_skips_initial_frame(self):
+        df = table_from_dimer_metadata(
+            [
+                DummyDimerFrame(iteration=0),
+                DummyDimerFrame(
+                    iteration=1,
+                    step_size=0.1,
+                    delta_e=0.01,
+                    convergence=0.05,
+                    eigenvalue=-0.12,
+                    torque=0.05,
+                    angle=12.3,
+                    rotations=5,
+                ),
+            ]
+        )
+        assert df.columns == [
+            "iteration",
+            "step_size",
+            "delta_e",
+            "convergence",
+            "eigenvalue",
+            "torque",
+            "angle",
+            "rotations",
+        ]
+        assert df["iteration"].to_list() == [1]
 
 
 class TestDimerTrajectoryData:
@@ -164,3 +206,41 @@ class TestLoadDimerTrajectory:
         assert traj.initial_atoms is not None  # fell back to first frame
         assert traj.saddle_atoms is None
         assert traj.mode_vector is None
+
+    def test_missing_dat_uses_frame_metadata(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+
+        (tmp_path / "climb").write_text("dummy movie")
+
+        frames = [
+            DummyDimerFrame(iteration=0),
+            DummyDimerFrame(
+                iteration=1,
+                step_size=0.1,
+                delta_e=0.01,
+                convergence=0.05,
+                eigenvalue=-0.12,
+                torque=0.05,
+                angle=12.3,
+                rotations=5,
+            ),
+            DummyDimerFrame(
+                iteration=2,
+                step_size=0.08,
+                delta_e=0.02,
+                convergence=0.03,
+                eigenvalue=-0.2,
+                torque=0.03,
+                angle=8.1,
+                rotations=3,
+            ),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_dimer_trajectory(tmp_path)
+        assert len(traj.atoms_list) == 3
+        assert traj.dat_df["iteration"].to_list() == [1, 2]
+        assert traj.dat_df["rotations"].to_list() == [5, 3]

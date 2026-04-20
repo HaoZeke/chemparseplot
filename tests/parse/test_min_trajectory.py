@@ -6,10 +6,12 @@
 import numpy as np
 import polars as pl
 import pytest
+from ase.build import molecule
 
 from chemparseplot.parse.eon.min_trajectory import (
     MinTrajectoryData,
     parse_min_dat,
+    table_from_min_metadata,
 )
 
 
@@ -53,6 +55,32 @@ class TestParseMinDat:
     def test_missing_file_raises(self, tmp_path):
         with pytest.raises((FileNotFoundError, OSError)):
             parse_min_dat(tmp_path / "nonexistent.dat")
+
+
+class DummyMinFrame:
+    def __init__(self, iteration, step_size, convergence, energy):
+        self.frame_index = iteration
+        self.energy = energy
+        self.metadata = {
+            "step_size": step_size,
+            "convergence": convergence,
+        }
+
+    def to_ase(self):
+        return molecule("H2O")
+
+
+class TestMetadataMinFallback:
+    def test_table_from_min_metadata(self):
+        df = table_from_min_metadata(
+            [
+                DummyMinFrame(0, 0.0, 0.5, -12.3),
+                DummyMinFrame(1, 0.1, 0.1, -12.5),
+            ]
+        )
+        assert df.columns == ["iteration", "step_size", "convergence", "energy"]
+        assert df["iteration"].to_list() == [0, 1]
+        assert df["energy"].to_list() == [-12.3, -12.5]
 
 
 class TestMinTrajectoryData:
@@ -151,3 +179,23 @@ class TestLoadMinTrajectory:
         self._make_job_dir(tmp_path, prefix="min")
         traj = load_min_trajectory(tmp_path, prefix="min")
         assert len(traj.atoms_list) == 4
+
+    def test_missing_dat_uses_frame_metadata(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        (tmp_path / "minimization").write_text("dummy movie")
+
+        frames = [
+            DummyMinFrame(0, 0.0, 0.5, -12.3),
+            DummyMinFrame(1, 0.1, 0.2, -12.4),
+            DummyMinFrame(2, 0.05, 0.01, -12.5),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_min_trajectory(tmp_path)
+        assert len(traj.atoms_list) == 3
+        assert traj.dat_df["iteration"].to_list() == [0, 1, 2]
+        assert traj.dat_df["energy"].to_list() == [-12.3, -12.4, -12.5]

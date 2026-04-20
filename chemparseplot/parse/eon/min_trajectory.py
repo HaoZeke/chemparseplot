@@ -18,12 +18,15 @@ import readcon
 from ase import Atoms
 
 from ._trajectory_common import (
+    frame_rows_to_table,
     load_movie_and_table,
     load_optional_payload,
     read_first_structure,
 )
 
 log = logging.getLogger(__name__)
+
+MIN_METADATA_COLUMNS = ("frame_index", "step_size", "convergence", "energy")
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +83,18 @@ def parse_min_con(path: Path) -> list[Atoms]:
     return readcon.read_con_as_ase(str(path))
 
 
+def table_from_min_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
+    """Reconstruct minimization metrics from per-frame CON metadata."""
+
+    df = frame_rows_to_table(
+        frames,
+        MIN_METADATA_COLUMNS,
+    )
+    if df.is_empty():
+        return df
+    return df.rename({"frame_index": "iteration"})
+
+
 def load_min_trajectory(
     job_dir: Path,
     prefix: str = "minimization",
@@ -111,6 +126,8 @@ def load_min_trajectory(
         movie_stem=prefix,
         dat_name=f"{prefix}.dat",
         parse_dat=parse_min_dat,
+        metadata_columns=MIN_METADATA_COLUMNS,
+        build_table_from_metadata=table_from_min_metadata,
         log_label="minimization",
     )
 

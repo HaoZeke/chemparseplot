@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import polars as pl
 import readcon
@@ -58,18 +58,62 @@ def load_movie_and_table(
     movie_stem: str,
     dat_name: str,
     parse_dat: Callable[[Path], pl.DataFrame],
+    metadata_columns: Sequence[str],
+    build_table_from_metadata: Callable[[Sequence[readcon.ConFrame]], pl.DataFrame],
     log_label: str,
 ) -> tuple[list[Atoms], pl.DataFrame]:
     """Load the shared movie/data payload for an eOn trajectory parser."""
 
     movie_file = resolve_movie_file(job_dir, movie_stem)
-    dat_file = require_dat_file(job_dir, dat_name)
-
     log.info("Loading %s trajectory from %s", log_label, job_dir)
-    atoms_list = readcon.read_con_as_ase(str(movie_file))
-    dat_df = parse_dat(dat_file)
+    frames = readcon.read_con(str(movie_file))
+    atoms_list = [frame.to_ase() for frame in frames]
+
+    dat_file = job_dir / dat_name
+    if dat_file.exists():
+        dat_df = parse_dat(dat_file)
+    else:
+        dat_df = build_table_from_metadata(frames)
+        if dat_df.is_empty():
+            msg = (
+                f"No {dat_name} found in {job_dir} and no compatible frame metadata "
+                f"for columns {', '.join(metadata_columns)}"
+            )
+            raise FileNotFoundError(msg)
+        log.info(
+            "Reconstructed %s metrics from frame metadata (%d rows)",
+            log_label,
+            dat_df.height,
+        )
     log.info("Loaded %d frames, %d data rows", len(atoms_list), dat_df.height)
     return atoms_list, dat_df
+
+
+def metadata_value(frame: readcon.ConFrame, key: str) -> Any:
+    """Return a typed metadata value from a readcon frame."""
+
+    if key == "frame_index":
+        return frame.frame_index
+    if key == "energy":
+        return frame.energy
+    return frame.metadata.get(key)
+
+
+def frame_rows_to_table(
+    frames: Sequence[readcon.ConFrame],
+    columns: Sequence[str],
+) -> pl.DataFrame:
+    """Build a table from frame metadata when sidecar TSV data is absent."""
+
+    rows: list[dict[str, Any]] = []
+    for frame in frames:
+        row = {column: metadata_value(frame, column) for column in columns}
+        if any(value is None for value in row.values()):
+            continue
+        rows.append(row)
+    if not rows:
+        return pl.DataFrame()
+    return pl.DataFrame(rows).select(list(columns))
 
 
 def load_optional_payload(path: Path, loader: Callable[[Path], T]) -> T | None:
