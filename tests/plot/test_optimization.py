@@ -15,10 +15,19 @@ from matplotlib.axes import Axes
 
 from chemparseplot.plot.optimization import (
     _LABELS,
+    OVERLAY_COLORS,
+    annotate_endpoint,
+    create_landscape_axes,
+    default_strip_zoom,
     plot_convergence_panel,
     plot_dimer_mode_evolution,
     plot_optimization_landscape,
     plot_optimization_profile,
+    plot_single_ended_convergence,
+    plot_single_ended_profile,
+    project_landscape_path,
+    render_endpoint_strip,
+    save_landscape_figure,
 )
 
 
@@ -250,6 +259,178 @@ class TestPlotConvergencePanel:
             iter_col="it",
         )
         plt.close(fig)
+
+
+class TestSingleEndedHelpers:
+    def test_project_landscape_path_reuses_basis(self, monkeypatch):
+        calls = []
+
+        def _fake_compute_projection_basis(*_args):
+            calls.append("compute")
+            return "basis"
+
+        def _fake_project_to_sd(_a, _b, basis):
+            calls.append(("project", basis))
+            return [1.0, 2.0], [3.0, 4.0]
+
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.compute_projection_basis",
+            _fake_compute_projection_basis,
+        )
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.project_to_sd",
+            _fake_project_to_sd,
+        )
+
+        x, y, basis = project_landscape_path([0.0, 1.0], [1.0, 0.0], project_path=True)
+        assert basis == "basis"
+        assert calls == ["compute", ("project", "basis")]
+
+        calls.clear()
+        x2, y2, basis2 = project_landscape_path(
+            [0.0, 1.0], [1.0, 0.0], project_path=True, basis="reused"
+        )
+        assert basis2 == "reused"
+        assert calls == [("project", "reused")]
+        assert x == x2 and y == y2
+
+    def test_save_landscape_figure_skips_tight_layout_with_strip(
+        self, monkeypatch, tmp_path
+    ):
+        class _FakeFigure:
+            def __init__(self):
+                self.tight_layout_calls = 0
+                self.saved = []
+
+            def tight_layout(self):
+                self.tight_layout_calls += 1
+
+            def savefig(self, *args, **kwargs):
+                self.saved.append((args, kwargs))
+
+        fake_fig = _FakeFigure()
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.plt.close", lambda _fig: None
+        )
+
+        save_landscape_figure(fake_fig, tmp_path / "strip.pdf", dpi=100, has_strip=True)
+        assert fake_fig.tight_layout_calls == 0
+        assert "bbox_inches" not in fake_fig.saved[0][1]
+
+        fake_fig = _FakeFigure()
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.plt.close", lambda _fig: None
+        )
+        save_landscape_figure(fake_fig, tmp_path / "plain.pdf", dpi=100, has_strip=False)
+        assert fake_fig.tight_layout_calls == 1
+        assert fake_fig.saved[0][1]["bbox_inches"] == "tight"
+
+    def test_plot_single_ended_profile_handles_optional_eigen_column(
+        self, monkeypatch, tmp_path
+    ):
+        class _Column:
+            def __init__(self, values):
+                self._values = np.asarray(values)
+
+            def to_numpy(self):
+                return self._values
+
+        class _Frame:
+            def __init__(self, columns):
+                self._columns = {key: _Column(val) for key, val in columns.items()}
+
+            @property
+            def columns(self):
+                return list(self._columns)
+
+            def __getitem__(self, key):
+                return self._columns[key]
+
+        trajs = [
+            type(
+                "Traj",
+                (),
+                {"dat_df": _Frame({"iteration": [0, 1], "delta_e": [0.0, 1.0]})},
+            )(),
+            type(
+                "Traj",
+                (),
+                {
+                    "dat_df": _Frame(
+                        {
+                            "iteration": [0, 1],
+                            "delta_e": [0.0, 1.0],
+                            "eigenvalue": [-1.0, -0.5],
+                        }
+                    )
+                },
+            )(),
+        ]
+
+        called = {}
+
+        def _fake_save(fig, output, *, dpi):
+            called["axes"] = len(fig.axes)
+
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.save_standard_figure", _fake_save
+        )
+        plot_single_ended_profile(
+            trajs,
+            ["a", "b"],
+            tmp_path / "profile.pdf",
+            100,
+            energy_unit="eV",
+            energy_column="delta_e",
+            title="Energy vs Iteration",
+            eigen_column="eigenvalue",
+        )
+        assert called["axes"] == 2
+
+    def test_plot_single_ended_convergence_adds_overlay_legend(
+        self, monkeypatch, tmp_path
+    ):
+        calls = []
+
+        def _fake_panel(ax_force, ax_step, dat_df, *, color):
+            calls.append(color)
+
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.plot_convergence_panel", _fake_panel
+        )
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.save_standard_figure",
+            lambda fig, output, *, dpi: None,
+        )
+
+        trajs = [
+            type("Traj", (), {"dat_df": object()})(),
+            type("Traj", (), {"dat_df": object()})(),
+        ]
+        plot_single_ended_convergence(trajs, ["one", "two"], tmp_path / "conv.pdf", 100)
+        assert len(calls) == 2
+
+    def test_create_landscape_axes_returns_optional_strip_axis(self):
+        fig, ax, ax_strip = create_landscape_axes(dpi=100, has_strip=True, theme=None)
+        assert ax is not None
+        assert ax_strip is not None
+        plt.close(fig)
+
+    def test_annotate_endpoint_adds_text(self):
+        fig, ax = plt.subplots()
+        annotate_endpoint(ax, 0.0, 1.0, "X", boxed=True)
+        assert ax.texts[0].get_text() == "X"
+        plt.close(fig)
+
+    def test_default_strip_zoom_has_floor(self):
+        class _FakeAtoms:
+            def __len__(self):
+                return 500
+
+        assert default_strip_zoom([_FakeAtoms()]) >= 0.25
+
+    def test_overlay_palette_is_nonempty(self):
+        assert OVERLAY_COLORS
 
 
 class TestPlotDimerModeEvolution:

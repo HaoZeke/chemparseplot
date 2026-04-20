@@ -194,11 +194,14 @@ Loads the complete trajectory from an eOn saddle search job directory. Expects a
 
 ** =parse_climb_dat(path) -> pl.DataFrame=
 
-Reads the =climb.dat= TSV file into a DataFrame.
+Reads the =climb.dat= TSV file into a DataFrame. This is a compatibility
+utility; metadata-native callers should prefer =load_dimer_trajectory(...)=.
 
 ** =parse_climb_con(path) -> list[Atoms]=
 
-Reads the concatenated =climb= movie file via ASE.
+Reads the concatenated =climb= movie file via ASE. This is a lower-level
+compatibility helper; metadata-native callers should prefer
+=load_dimer_trajectory(...)=.
 
 * Module: =chemparseplot.parse.eon.min_trajectory=
 
@@ -221,7 +224,9 @@ Loads the complete trajectory from an eOn minimization job directory. The movie 
 
 ** =parse_min_dat(path) -> pl.DataFrame=
 
-Reads the minimization TSV data file.
+Reads the minimization TSV data file. This remains available as a
+compatibility utility; metadata-native callers should prefer
+=load_min_trajectory(...)=.
 
 * Module: =chemparseplot.parse.neb_utils= (updated)
 

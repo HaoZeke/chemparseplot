@@ -993,17 +993,25 @@ def plot_landscape_surface(
                     dev = 10.0
                 noise_per_obs[s_mask] = best_noise + dev
 
-    rbf = model_class(
-        x=np.column_stack([rmsd_r, rmsd_p]),
-        y=z_data,
-        gradients=_grad_stack,
-        length_scale=best_ls,
-        smoothing=best_noise,
-        optimize=False,
-        nimags=actual_nimags,
-        noise_per_obs=noise_per_obs,
-        **_approx_kwargs,
-    )
+    if is_gradient_model:
+        rbf = model_class(
+            x=np.column_stack([rmsd_r, rmsd_p]),
+            y=z_data,
+            gradients=_grad_stack,
+            length_scale=best_ls,
+            smoothing=best_noise,
+            optimize=False,
+            nimags=actual_nimags,
+            noise_per_obs=noise_per_obs,
+            **_approx_kwargs,
+        )
+    else:
+        rbf = model_class(
+            x_obs=np.column_stack([rmsd_r, rmsd_p]),
+            y_obs=z_data,
+            smoothing=best_noise,
+            optimize=False,
+        )
 
     zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
     var_grid = (
