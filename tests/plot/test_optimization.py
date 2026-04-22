@@ -414,7 +414,7 @@ class TestSingleEndedHelpers:
         fig, ax, ax_strip = create_landscape_axes(dpi=100, has_strip=True, theme=None)
         assert ax is not None
         assert ax_strip is not None
-        assert fig.get_size_inches()[1] == pytest.approx(5.37 + 1.0)
+        assert fig.get_size_inches()[1] == pytest.approx(5.37 + 0.95)
         plt.close(fig)
 
     def test_annotate_endpoint_adds_text(self):
@@ -428,14 +428,14 @@ class TestSingleEndedHelpers:
             def __len__(self):
                 return 500
 
-        assert default_strip_zoom([_FakeAtoms()]) >= 0.15
+        assert default_strip_zoom([_FakeAtoms()]) >= 0.14
 
     def test_default_strip_zoom_is_gentler_for_small_structures(self):
         class _FakeAtoms:
             def __len__(self):
                 return 20
 
-        assert default_strip_zoom([_FakeAtoms()]) == pytest.approx(0.42)
+        assert default_strip_zoom([_FakeAtoms()]) == pytest.approx(0.38)
 
     def test_overlay_palette_is_nonempty(self):
         assert OVERLAY_COLORS

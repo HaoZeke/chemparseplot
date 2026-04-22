@@ -515,6 +515,18 @@ def plot_structure_strip(
     # Adaptive font size: shrink for many items
     label_fontsize = min(11, max(7, 14 - n_plot))
 
+    fig = ax.figure
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    ax_bbox = ax.get_window_extent(renderer)
+    per_row_px = ax_bbox.height / max(n_rows, 1)
+    per_col_px = ax_bbox.width / max(n_cols, 1)
+    label_band_px = label_fontsize * fig.dpi / 72 * 1.8
+    padding_px = 8.0
+    zoom_scale = max(0.35, zoom / 0.3)
+    usable_height_px = max(24.0, per_row_px - label_band_px - padding_px)
+    usable_width_px = max(24.0, per_col_px * 0.78)
+
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
@@ -529,8 +541,11 @@ def plot_structure_strip(
             xyzrender_config=xyzrender_config,
         )
 
-        effective_zoom = zoom * STRIP_IMAGE_ZOOM_SCALE
-        imagebox = OffsetImage(img_data, zoom=effective_zoom)
+        img_h_px, img_w_px = img_data.shape[:2]
+        target_height_px = usable_height_px * zoom_scale
+        effective_zoom = min(target_height_px / img_h_px, usable_width_px / img_w_px)
+        imagebox = OffsetImage(img_data, zoom=effective_zoom, dpi_cor=False)
+        image_height_pt = img_h_px * effective_zoom * 72 / fig.dpi
 
         ab = AnnotationBbox(
             imagebox,
@@ -539,20 +554,24 @@ def plot_structure_strip(
             xycoords="data",
             boxcoords="offset points",
             pad=0.0,
+            annotation_clip=False,
         )
         ab.set_clip_on(True)
         ax.add_artist(ab)
 
         if labels and i < len(labels):
-            ax.text(
-                x_pos,
-                y_pos - 0.8,
+            ax.annotate(
                 labels[i],
+                (x_pos, y_pos),
+                xytext=(0, -(image_height_pt / 2) - 4.0),
+                textcoords="offset points",
                 ha="center",
                 va="top",
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
+                annotation_clip=False,
+                clip_on=False,
             )
 
     # Divider lines between structures
