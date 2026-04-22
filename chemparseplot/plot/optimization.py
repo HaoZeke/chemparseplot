@@ -60,7 +60,7 @@ def create_landscape_axes(*, dpi: int, has_strip: bool, theme, base_size: float 
         figsize=(base_size, base_size + (0.95 if has_strip else 0)), dpi=dpi
     )
     if has_strip:
-        gs = GridSpec(2, 1, height_ratios=[1, 0.18], hspace=0.14, figure=fig)
+        gs = GridSpec(2, 1, height_ratios=[1, 0.16], hspace=0.22, figure=fig)
         ax = fig.add_subplot(gs[0])
         ax_strip = fig.add_subplot(gs[1])
         if theme:

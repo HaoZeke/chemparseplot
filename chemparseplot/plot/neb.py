@@ -523,9 +523,7 @@ def plot_structure_strip(
     per_col_px = ax_bbox.width / max(n_cols, 1)
     label_band_px = label_fontsize * fig.dpi / 72 * 1.8
     padding_px = 8.0
-    zoom_scale = max(0.35, zoom / 0.3)
     usable_height_px = max(24.0, per_row_px - label_band_px - padding_px)
-    usable_width_px = max(24.0, per_col_px * 0.78)
 
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
@@ -541,10 +539,9 @@ def plot_structure_strip(
             xyzrender_config=xyzrender_config,
         )
 
-        img_h_px, img_w_px = img_data.shape[:2]
-        target_height_px = usable_height_px * zoom_scale
-        effective_zoom = min(target_height_px / img_h_px, usable_width_px / img_w_px)
-        imagebox = OffsetImage(img_data, zoom=effective_zoom, dpi_cor=False)
+        img_h_px, _img_w_px = img_data.shape[:2]
+        effective_zoom = zoom * STRIP_IMAGE_ZOOM_SCALE
+        imagebox = OffsetImage(img_data, zoom=effective_zoom)
         image_height_pt = img_h_px * effective_zoom * 72 / fig.dpi
 
         ab = AnnotationBbox(
