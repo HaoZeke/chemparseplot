@@ -56,9 +56,9 @@ OVERLAY_COLORS = ["#004D40", "#FF655D", "#3F51B5", "#FF9800", "#9C27B0", "#00968
 def create_landscape_axes(*, dpi: int, has_strip: bool, theme, base_size: float = 5.37):
     """Create a landscape figure with an optional structure strip axis."""
 
-    fig = plt.figure(figsize=(base_size, base_size + (1.2 if has_strip else 0)), dpi=dpi)
+    fig = plt.figure(figsize=(base_size, base_size + (1.0 if has_strip else 0)), dpi=dpi)
     if has_strip:
-        gs = GridSpec(2, 1, height_ratios=[1, 0.24], hspace=0.12, figure=fig)
+        gs = GridSpec(2, 1, height_ratios=[1, 0.20], hspace=0.08, figure=fig)
         ax = fig.add_subplot(gs[0])
         ax_strip = fig.add_subplot(gs[1])
         if theme:
@@ -113,7 +113,7 @@ def default_strip_zoom(structs) -> float:
     """Scale strip zoom gently with atom count."""
 
     max_atoms = max(len(s) for s in structs) if structs else 10
-    return max(0.18, 0.5 * (20 / max(max_atoms, 20)) ** 0.25)
+    return max(0.15, 0.42 * (20 / max(max_atoms, 20)) ** 0.25)
 
 
 def render_endpoint_strip(
