@@ -53,12 +53,26 @@ _LABELS = {
 OVERLAY_COLORS = ["#004D40", "#FF655D", "#3F51B5", "#FF9800", "#9C27B0", "#009688"]
 
 
-def create_landscape_axes(*, dpi: int, has_strip: bool, theme, base_size: float = 5.37):
+def create_landscape_axes(
+    *,
+    dpi: int,
+    has_strip: bool,
+    theme,
+    base_size: float = 5.37,
+    strip_height_ratio: float = 0.18,
+    strip_hspace: float = 0.34,
+):
     """Create a landscape figure with an optional structure strip axis."""
 
     fig = plt.figure(figsize=(base_size, base_size + (1.20 if has_strip else 0)), dpi=dpi)
     if has_strip:
-        gs = GridSpec(2, 1, height_ratios=[1, 0.12], hspace=0.40, figure=fig)
+        gs = GridSpec(
+            2,
+            1,
+            height_ratios=[1, strip_height_ratio],
+            hspace=strip_hspace,
+            figure=fig,
+        )
         ax = fig.add_subplot(gs[0])
         ax_strip = fig.add_subplot(gs[1])
         if theme:

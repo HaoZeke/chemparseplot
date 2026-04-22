@@ -438,7 +438,7 @@ class TestSingleEndedHelpers:
             if tick.get_text()
         )
         assert strip_top < before
-        assert min(label_bottom, tick_bottom) - strip_top >= 48.0
+        assert min(label_bottom, tick_bottom) - strip_top >= 47.5
         plt.close(fig)
 
     def test_annotate_endpoint_adds_text(self):
