@@ -82,6 +82,8 @@ class _OrcaNebPlotPayload:
 
 
 MIN_PATH_LENGTH = 1e-6
+STRIP_IMAGE_ZOOM_SCALE = 0.18
+INSET_IMAGE_ZOOM_SCALE = 0.45
 
 # --- Structure Rendering Helpers ---
 
@@ -527,7 +529,7 @@ def plot_structure_strip(
             xyzrender_config=xyzrender_config,
         )
 
-        effective_zoom = zoom * 0.15
+        effective_zoom = zoom * STRIP_IMAGE_ZOOM_SCALE
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
         ab = AnnotationBbox(
@@ -603,7 +605,7 @@ def plot_structure_inset(
         xyzrender_config=xyzrender_config,
     )
     # Apply the same unified scaling as the strip
-    effective_zoom = zoom * 0.45
+    effective_zoom = zoom * INSET_IMAGE_ZOOM_SCALE
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
     # Default arrow properties matching plt_neb.py
@@ -1286,14 +1288,79 @@ def plot_mmf_peaks_overlay(
     ax.scatter(
         plot_x,
         plot_y,
+        c="black",
+        marker="o",
+        s=110,
+        alpha=0.75,
+        linewidths=0,
+        zorder=49,
+    )
+    ax.scatter(
+        plot_x,
+        plot_y,
         c=peak_e,
         cmap="coolwarm",
-        marker="*",
-        s=200,
+        marker="o",
+        s=48,
         edgecolors="black",
-        linewidths=1.0,
+        linewidths=0.8,
         zorder=50,
         label="MMF peaks",
+    )
+
+
+def plot_phase_points_overlay(
+    ax,
+    rmsd_r,
+    rmsd_p,
+    *,
+    project_path=True,  # noqa: FBT002
+    path_rmsd_r=None,
+    path_rmsd_p=None,
+    phase_color="#FF8F00",
+    label=None,
+) -> None:
+    """Overlay a second phase of sampled points on top of the NEB landscape.
+
+    This is intended for OCI-NEB / RONEB refinement trajectories, where the
+    main NEB band points are already shown as dark background samples and the
+    dimer/MMF phase needs a distinct inner marker to remain legible.
+    """
+    if len(rmsd_r) == 0:
+        return
+
+    phase_r = np.asarray(rmsd_r)
+    phase_p = np.asarray(rmsd_p)
+
+    if project_path:
+        if path_rmsd_r is not None and path_rmsd_p is not None:
+            basis = compute_projection_basis(
+                np.asarray(path_rmsd_r), np.asarray(path_rmsd_p)
+            )
+        else:
+            basis = compute_projection_basis(phase_r, phase_p)
+        plot_x, plot_y = project_to_sd(phase_r, phase_p, basis)
+    else:
+        plot_x, plot_y = phase_r, phase_p
+
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c="black",
+        s=34,
+        alpha=0.75,
+        linewidths=0,
+        zorder=45,
+    )
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c=phase_color,
+        s=13,
+        edgecolors="white",
+        linewidths=0.35,
+        zorder=46,
+        label=label,
     )
 
 

@@ -226,8 +226,8 @@ Overlays MMF (mode-following) refinement peak positions on the landscape. Used f
 
 **** Notes
 
-- Draws star markers (=*=, size=200) with black edge at zorder=50
-- Colors peaks by energy using =coolwarm= colormap
+- Draws a dark outer halo marker below each peak and an energy-colored core on top
+- Colors peak cores by energy using =coolwarm= colormap
 
 *** =plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap="Blues")=
 

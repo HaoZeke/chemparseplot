@@ -344,7 +344,10 @@ plot_optimization_profile(
 
 ** OCI-NEB/RONEB: MMF Peak Overlay
 
-When OCI-NEB produces =peak{NN}_pos.con= files, overlay them on the landscape:
+When OCI-NEB produces =peak{NN}_pos.con= files, overlay them on the landscape.
+If a metadata-rich =climb= / =climb.con= refinement movie is also present in the
+same directory, higher-level tools can distinguish the dimer/MMF samples from
+the base NEB band on the same 2D projection:
 
 #+begin_src python
 from chemparseplot.plot.neb import plot_mmf_peaks_overlay

@@ -860,6 +860,7 @@ class TestPlotInitLazy:
         from chemparseplot.plot import ureg
 
         assert ureg is not None
+        assert ureg._def_parser._diskcache is None
 
 
 # ============================================================

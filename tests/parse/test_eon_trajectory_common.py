@@ -82,6 +82,15 @@ class TestMetadataHelpers:
         assert isinstance(df, pl.DataFrame)
         assert df.height == 2
 
+    def test_frame_rows_to_table_coerces_numeric_strings(self):
+        frames = [
+            DummyFrame(frame_index="0", energy="-1.25", metadata={"step_size": "0.0", "convergence": "0.5"}),
+            DummyFrame(frame_index="1", energy="-1.50", metadata={"step_size": "0.2", "convergence": "0.1"}),
+        ]
+        df = frame_rows_to_table(frames, ("frame_index", "step_size", "convergence", "energy"))
+        assert df.dtypes == [pl.Int64, pl.Float64, pl.Float64, pl.Float64]
+        assert df["convergence"].to_list() == [0.5, 0.1]
+
     def test_frame_rows_to_table_allows_incomplete_prefix_when_requested(self):
         frames = [
             DummyFrame(frame_index=0, metadata={}),

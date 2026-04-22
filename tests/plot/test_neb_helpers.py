@@ -11,6 +11,11 @@ from chemparseplot.plot.structs import StructurePlacement
 
 
 class TestNebPlotHelpers:
+    def test_strip_image_zoom_scale_constant(self):
+        from chemparseplot.plot.neb import STRIP_IMAGE_ZOOM_SCALE
+
+        assert STRIP_IMAGE_ZOOM_SCALE == pytest.approx(0.18)
+
     def test_profile_strip_payload_returns_typed_entries(self):
         from chemparseplot.plot.neb import profile_strip_payload
 
@@ -73,3 +78,36 @@ class TestNebPlotHelpers:
 
         assert "bbox_inches" not in saved[str(strip_out)]
         assert saved[str(plain_out)]["bbox_inches"] == "tight"
+
+    def test_plot_mmf_peaks_overlay_draws_outer_and_inner_markers(self):
+        import matplotlib.pyplot as plt
+
+        from chemparseplot.plot.neb import plot_mmf_peaks_overlay
+
+        fig, ax = plt.subplots()
+        plot_mmf_peaks_overlay(
+            ax,
+            np.array([1.0, 2.0]),
+            np.array([0.5, 1.5]),
+            np.array([0.1, 0.2]),
+            project_path=False,
+        )
+
+        assert len(ax.collections) == 2
+        plt.close(fig)
+
+    def test_plot_phase_points_overlay_draws_outer_and_inner_markers(self):
+        import matplotlib.pyplot as plt
+
+        from chemparseplot.plot.neb import plot_phase_points_overlay
+
+        fig, ax = plt.subplots()
+        plot_phase_points_overlay(
+            ax,
+            np.array([1.0, 2.0]),
+            np.array([0.5, 1.5]),
+            project_path=False,
+        )
+
+        assert len(ax.collections) == 2
+        plt.close(fig)

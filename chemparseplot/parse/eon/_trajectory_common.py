@@ -16,6 +16,34 @@ log = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+_COLUMN_CASTERS: dict[str, Callable[[Any], Any]] = {
+    "frame_index": int,
+    "iteration": int,
+    "neb_band": int,
+    "neb_bead": int,
+    "rotations": int,
+    "energy": float,
+    "step_size": float,
+    "convergence": float,
+    "delta_e": float,
+    "eigenvalue": float,
+    "torque": float,
+    "angle": float,
+}
+
+
+def coerce_metadata_value(column: str, value: Any) -> Any:
+    """Coerce metadata strings back to the expected scalar type."""
+    if value is None:
+        return None
+    caster = _COLUMN_CASTERS.get(column)
+    if caster is None:
+        return value
+    if isinstance(value, caster):
+        return value
+    return caster(value)
+
+
 def resolve_movie_file(job_dir: Path, stem: str) -> Path:
     """Resolve an eOn movie file that may omit the ``.con`` suffix."""
 
@@ -112,7 +140,7 @@ def frame_rows_to_table(
     rows: list[dict[str, Any]] = []
     saw_complete_row = False
     for frame in frames:
-        row = {column: metadata_value(frame, column) for column in columns}
+        row = {column: coerce_metadata_value(column, metadata_value(frame, column)) for column in columns}
         if any(value is None for value in row.values()):
             if saw_complete_row or not allow_leading_incomplete:
                 return pl.DataFrame()

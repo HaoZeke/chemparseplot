@@ -11,7 +11,9 @@ import warnings
 
 import pint
 
-ureg = pint.UnitRegistry(cache_folder=":auto:")
+# ``:auto:`` lets flexcache persist environment-specific definition paths, which
+# breaks as soon as another Pixi env imports the same cached registry.
+ureg = pint.UnitRegistry(cache_folder=None)
 ureg.define("kcal_mol = kcal / 6.02214076e+23 = kcm")
 Q_ = ureg.Quantity
 
