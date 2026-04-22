@@ -464,6 +464,8 @@ def plot_structure_strip(
     divider_color="gray",
     divider_style="--",
     perspective_tilt=0.0,
+    max_display_height_px=52.0,
+    width_fill_fraction=0.82,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -524,7 +526,7 @@ def plot_structure_strip(
     label_band_px = label_fontsize * fig.dpi / 72 * 1.8
     padding_px = 8.0
     usable_height_px = max(24.0, per_row_px - label_band_px - padding_px)
-    usable_width_px = max(24.0, per_col_px * 0.82)
+    usable_width_px = max(24.0, per_col_px * width_fill_fraction)
 
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
@@ -544,7 +546,7 @@ def plot_structure_strip(
         base_display_height_px = img_h_px * zoom * STRIP_IMAGE_ZOOM_SCALE
         target_display_height_px = max(
             base_display_height_px,
-            min(usable_height_px, 52.0),
+            min(usable_height_px, max_display_height_px),
         )
         effective_zoom = min(
             target_display_height_px / img_h_px,
