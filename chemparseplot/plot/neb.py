@@ -544,7 +544,7 @@ def plot_structure_strip(
     divider_color="gray",
     divider_style="--",
     perspective_tilt=0.0,
-    max_display_height_px=52.0,
+    max_display_height_px: float | None = None,
     width_fill_fraction=0.82,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
@@ -615,9 +615,16 @@ def plot_structure_strip(
     target_width_px = max(
         20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
     )
+    available_height_px = max(20.0, slot_height_px - row_gap_px)
     target_height_px = max(
         20,
-        int(round(min(max_display_height_px, slot_height_px - row_gap_px))),
+        int(
+            round(
+                min(max_display_height_px, available_height_px)
+                if max_display_height_px is not None
+                else available_height_px
+            )
+        ),
     )
     label_y_px = 4.0
     canvas = np.zeros((ax_h_px, ax_w_px, 4), dtype=np.float32)

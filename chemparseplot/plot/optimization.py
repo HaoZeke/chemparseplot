@@ -145,7 +145,6 @@ def render_endpoint_strip(
         show_dividers=strip_dividers,
         perspective_tilt=perspective_tilt,
         xyzrender_config=xyzrender_config,
-        max_display_height_px=44.0,
         width_fill_fraction=0.78,
     )
 
