@@ -89,15 +89,32 @@ INSET_IMAGE_ZOOM_SCALE = 0.45
 
 
 def _crop_transparent_rgba(
-    img_data: np.ndarray, alpha_threshold: float = 0.02
+    img_data: np.ndarray,
+    alpha_threshold: float = 0.02,
+    matte_threshold: float = 0.04,
 ) -> np.ndarray:
-    """Crop transparent margins from an RGBA image when present."""
+    """Crop transparent or matte-colored margins from an RGBA image."""
 
     if img_data.ndim != 3 or img_data.shape[2] < 4:
         return img_data
 
     alpha = img_data[..., 3]
-    mask = alpha > alpha_threshold
+    mask = alpha > alpha_threshold if np.any(alpha <= alpha_threshold) else None
+
+    rgb = img_data[..., :3]
+    corner_rgb = np.stack(
+        [
+            rgb[0, 0],
+            rgb[0, -1],
+            rgb[-1, 0],
+            rgb[-1, -1],
+        ]
+    )
+    matte_rgb = np.median(corner_rgb, axis=0)
+    matte_distance = np.linalg.norm(rgb - matte_rgb, axis=2)
+    matte_mask = matte_distance > matte_threshold
+    mask = matte_mask if mask is None else (mask | matte_mask)
+
     if not np.any(mask):
         return img_data
 

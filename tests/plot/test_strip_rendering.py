@@ -13,6 +13,7 @@ import pytest
 from ase.build import molecule
 
 from chemparseplot.plot.neb import (
+    _crop_transparent_rgba,
     _render_atoms,
     plot_structure_inset,
     plot_structure_strip,
@@ -44,6 +45,19 @@ class TestRenderStructureToImage:
         # Different rotations produce valid images (may differ in size)
         assert img1.ndim == 3
         assert img2.ndim == 3
+
+
+class TestCropContent:
+    def test_crops_opaque_matte_background(self):
+        img = np.zeros((100, 120, 4), dtype=np.float32)
+        img[..., 3] = 1.0
+        img[30:70, 40:80, :3] = (1.0, 0.2, 0.2)
+
+        cropped = _crop_transparent_rgba(img)
+
+        assert cropped.shape[0] < img.shape[0]
+        assert cropped.shape[1] < img.shape[1]
+        assert np.any(cropped[..., 0] > 0.5)
 
 
 class TestRenderAtoms:
