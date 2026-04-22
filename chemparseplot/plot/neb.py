@@ -88,6 +88,69 @@ INSET_IMAGE_ZOOM_SCALE = 0.45
 # --- Structure Rendering Helpers ---
 
 
+def _crop_transparent_rgba(
+    img_data: np.ndarray, alpha_threshold: float = 0.02
+) -> np.ndarray:
+    """Crop transparent margins from an RGBA image when present."""
+
+    if img_data.ndim != 3 or img_data.shape[2] < 4:
+        return img_data
+
+    alpha = img_data[..., 3]
+    mask = alpha > alpha_threshold
+    if not np.any(mask):
+        return img_data
+
+    rows = np.where(mask.any(axis=1))[0]
+    cols = np.where(mask.any(axis=0))[0]
+    pad = 2
+    r0 = max(0, rows[0] - pad)
+    r1 = min(img_data.shape[0], rows[-1] + pad + 1)
+    c0 = max(0, cols[0] - pad)
+    c1 = min(img_data.shape[1], cols[-1] + pad + 1)
+    return img_data[r0:r1, c0:c1]
+
+
+def _resize_rgba_image(img_data: np.ndarray, target_h: int, target_w: int) -> np.ndarray:
+    """Resize an RGBA image to the requested pixel size."""
+
+    src_h, src_w = img_data.shape[:2]
+    if src_h == target_h and src_w == target_w:
+        return img_data
+    zoom_factors = (target_h / src_h, target_w / src_w, 1)
+    resized = ndimage.zoom(img_data, zoom_factors, order=1)
+    return np.clip(resized, 0.0, 1.0)
+
+
+def _alpha_blit_rgba(canvas: np.ndarray, img_data: np.ndarray, x0: int, y0: int) -> None:
+    """Composite an RGBA image onto a canvas at top-left pixel coordinates."""
+
+    h, w = img_data.shape[:2]
+    canvas_h, canvas_w = canvas.shape[:2]
+    if x0 >= canvas_w or y0 >= canvas_h:
+        return
+
+    x1 = min(canvas_w, x0 + w)
+    y1 = min(canvas_h, y0 + h)
+    if x1 <= x0 or y1 <= y0:
+        return
+
+    src = img_data[: y1 - y0, : x1 - x0]
+    dst = canvas[y0:y1, x0:x1]
+
+    src_rgb = src[..., :3]
+    src_alpha = src[..., 3:4]
+    dst_rgb = dst[..., :3]
+    dst_alpha = dst[..., 3:4]
+
+    out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha)
+    safe_alpha = np.where(out_alpha > 1e-8, out_alpha, 1.0)
+    out_rgb = (src_rgb * src_alpha + dst_rgb * dst_alpha * (1.0 - src_alpha)) / safe_alpha
+
+    dst[..., :3] = np.where(out_alpha > 1e-8, out_rgb, 0.0)
+    dst[..., 3:4] = out_alpha
+
+
 def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
     """Renders an ASE Atoms object to a numpy RGBA image array.
 
@@ -506,86 +569,97 @@ def plot_structure_strip(
     n_plot = len(atoms_list)
     n_cols = min(n_plot, max_cols)
     n_rows = (n_plot + max_cols - 1) // max_cols
-    row_step = 8.5
-
-    col_step = col_spacing
-    ax.set_xlim(-0.5, (n_cols - 1) * col_step + 0.5)
-    y_min = -((n_rows - 1) * row_step) - 0.8
-    y_max = 0.6
-    ax.set_ylim(y_min, y_max)
 
     # Adaptive font size: shrink for many items
     label_fontsize = min(11, max(7, 14 - n_plot))
 
     fig = ax.figure
     fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
-    ax_bbox = ax.get_window_extent(renderer)
-    per_row_px = ax_bbox.height / max(n_rows, 1)
-    per_col_px = ax_bbox.width / max(n_cols, 1)
+    mpl_renderer = fig.canvas.get_renderer()
+    ax_bbox = ax.get_window_extent(mpl_renderer)
+    ax_w_px = max(1, int(round(ax_bbox.width)))
+    ax_h_px = max(1, int(round(ax_bbox.height)))
+    ax.set_xlim(0, ax_w_px)
+    ax.set_ylim(0, ax_h_px)
+
+    per_row_px = ax_h_px / max(n_rows, 1)
+    per_col_px = ax_w_px / max(n_cols, 1)
     label_band_px = label_fontsize * fig.dpi / 72 * 1.8
-    padding_px = 8.0
-    usable_height_px = max(24.0, per_row_px - label_band_px - padding_px)
-    usable_width_px = max(24.0, per_col_px * width_fill_fraction)
+    top_padding_px = 6.0
+    bottom_padding_px = 6.0
+    row_gap_px = 10.0
+    usable_total_height_px = max(
+        24.0,
+        ax_h_px - label_band_px - top_padding_px - bottom_padding_px,
+    )
+    slot_height_px = usable_total_height_px / max(n_rows, 1)
+    slot_width_px = per_col_px
+    col_gap_px = max(6.0, (col_spacing - 1.0) * slot_width_px * 0.22)
+    target_width_px = max(
+        20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
+    )
+    target_height_px = max(
+        20,
+        int(round(min(max_display_height_px, slot_height_px - row_gap_px))),
+    )
+    label_y_px = 4.0
+    canvas = np.zeros((ax_h_px, ax_w_px, 4), dtype=np.float32)
 
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
-        x_pos, y_pos = col * col_step, -row * row_step
+        slot_center_x = (col + 0.5) * slot_width_px
+        slot_top_y = ax_h_px - top_padding_px - row * slot_height_px
+        img_top_y = (
+            slot_top_y - (slot_height_px - target_height_px) / 2 - target_height_px
+        )
+        x0 = int(round(slot_center_x - target_width_px / 2))
+        y0 = int(round(img_top_y))
 
+        render_canvas_px = max(400, int(max(target_width_px, target_height_px) * 3.0))
         img_data = _render_atoms(
             atoms,
             renderer,
             zoom,
             rotation,
+            canvas_size=render_canvas_px,
             perspective_tilt=perspective_tilt,
             xyzrender_config=xyzrender_config,
         )
-
+        img_data = _crop_transparent_rgba(img_data)
         img_h_px, img_w_px = img_data.shape[:2]
-        base_display_height_px = img_h_px * zoom * STRIP_IMAGE_ZOOM_SCALE
-        target_display_height_px = max(
-            base_display_height_px,
-            min(usable_height_px, max_display_height_px),
-        )
-        effective_zoom = min(
-            target_display_height_px / img_h_px,
-            usable_width_px / img_w_px,
-        )
-        imagebox = OffsetImage(img_data, zoom=effective_zoom)
-        image_height_pt = img_h_px * effective_zoom * 72 / fig.dpi
-
-        ab = AnnotationBbox(
-            imagebox,
-            (x_pos, y_pos),
-            frameon=False,
-            xycoords="data",
-            boxcoords="offset points",
-            pad=0.0,
-            annotation_clip=False,
-        )
-        ab.set_clip_on(False)
-        ax.add_artist(ab)
+        scale = min(target_width_px / img_w_px, target_height_px / img_h_px)
+        scaled_w = max(1, int(round(img_w_px * scale)))
+        scaled_h = max(1, int(round(img_h_px * scale)))
+        resized = _resize_rgba_image(img_data, scaled_h, scaled_w)
+        x0 += (target_width_px - scaled_w) // 2
+        y0 += (target_height_px - scaled_h) // 2
+        _alpha_blit_rgba(canvas, resized, x0, y0)
 
         if labels and i < len(labels):
-            ax.annotate(
+            ax.text(
                 labels[i],
-                (x_pos, y_pos),
-                xytext=(0, -(image_height_pt / 2) - 4.0),
-                textcoords="offset points",
+                slot_center_x,
+                label_y_px,
                 ha="center",
-                va="top",
+                va="bottom",
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
-                annotation_clip=False,
-                clip_on=False,
             )
+
+    ax.imshow(
+        canvas,
+        origin="lower",
+        extent=(0, ax_w_px, 0, ax_h_px),
+        interpolation="nearest",
+        zorder=1,
+    )
 
     # Divider lines between structures
     if show_dividers:
         for col in range(1, n_cols):
-            x_div = (col - 0.5) * col_step
+            x_div = col * slot_width_px
             ax.axvline(
                 x_div,
                 color=divider_color,

@@ -94,22 +94,19 @@ class TestPlotStructureStrip:
         plot_structure_strip(ax, small_molecules, ["A", "B", "C"])
         # Axes should be turned off
         assert not ax.axison
+        assert len(ax.images) == 1
         plt.close(fig)
 
     def test_col_spacing(self, small_molecules):
         fig, ax = plt.subplots(figsize=(8, 2))
         plot_structure_strip(ax, small_molecules, ["A", "B", "C"], col_spacing=2.5)
-        xlim = ax.get_xlim()
-        # With 3 items, spacing 2.5: x goes from -0.5 to 2*2.5+0.5=5.5
-        assert xlim[1] == pytest.approx(5.5)
+        assert len(ax.images) == 1
         plt.close(fig)
 
     def test_default_spacing(self, small_molecules):
         fig, ax = plt.subplots(figsize=(6, 2))
         plot_structure_strip(ax, small_molecules, ["A", "B", "C"])
-        xlim = ax.get_xlim()
-        # Default col_spacing=1.5: x goes from -0.5 to 2*1.5+0.5=3.5
-        assert xlim[1] == pytest.approx(3.5)
+        assert len(ax.images) == 1
         plt.close(fig)
 
     def test_dividers(self, small_molecules):
@@ -147,6 +144,7 @@ class TestPlotStructureStrip:
     def test_single_structure(self, h2o):
         fig, ax = plt.subplots(figsize=(3, 2))
         plot_structure_strip(ax, [h2o], ["Mol"])
+        assert len(ax.images) == 1
         plt.close(fig)
 
     def test_typed_structure_entries(self, small_molecules):
@@ -163,6 +161,24 @@ class TestPlotStructureStrip:
         mols = [molecule("H2O") for _ in range(8)]
         fig, ax = plt.subplots(figsize=(8, 4))
         plot_structure_strip(ax, mols, [str(i) for i in range(8)], max_cols=4)
+        assert len(ax.images) == 1
+        plt.close(fig)
+
+    def test_composes_single_canvas_not_annotation_boxes(
+        self, monkeypatch, small_molecules
+    ):
+        fig, ax = plt.subplots(figsize=(6, 2))
+
+        def _fake_render(*_args, **_kwargs):
+            img = np.zeros((60, 80, 4), dtype=np.float32)
+            img[10:50, 20:60, :3] = 1.0
+            img[10:50, 20:60, 3] = 1.0
+            return img
+
+        monkeypatch.setattr("chemparseplot.plot.neb._render_atoms", _fake_render)
+        plot_structure_strip(ax, small_molecules, ["A", "B", "C"])
+        assert len(ax.images) == 1
+        assert len(ax.artists) == 0
         plt.close(fig)
 
 
