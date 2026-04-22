@@ -59,8 +59,8 @@ def create_landscape_axes(
     has_strip: bool,
     theme,
     base_size: float = 5.37,
-    strip_height_ratio: float = 0.18,
-    strip_hspace: float = 0.34,
+    strip_height_ratio: float = 0.24,
+    strip_hspace: float = 0.30,
 ):
     """Create a landscape figure with an optional structure strip axis."""
 
@@ -159,7 +159,7 @@ def render_endpoint_strip(
         show_dividers=strip_dividers,
         perspective_tilt=perspective_tilt,
         xyzrender_config=xyzrender_config,
-        width_fill_fraction=0.78,
+        width_fill_fraction=0.86,
     )
 
 
