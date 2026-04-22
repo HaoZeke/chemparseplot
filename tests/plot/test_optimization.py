@@ -19,6 +19,7 @@ from chemparseplot.plot.optimization import (
     annotate_endpoint,
     create_landscape_axes,
     default_strip_zoom,
+    enforce_strip_clearance,
     plot_convergence_panel,
     plot_dimer_mode_evolution,
     plot_optimization_landscape,
@@ -414,7 +415,30 @@ class TestSingleEndedHelpers:
         fig, ax, ax_strip = create_landscape_axes(dpi=100, has_strip=True, theme=None)
         assert ax is not None
         assert ax_strip is not None
-        assert fig.get_size_inches()[1] == pytest.approx(5.37 + 0.95)
+        assert fig.get_size_inches()[1] == pytest.approx(5.37 + 1.20)
+        plt.close(fig)
+
+    def test_enforce_strip_clearance_uses_measured_text_extents(self):
+        fig, ax, ax_strip = create_landscape_axes(dpi=100, has_strip=True, theme=None)
+        ax.set_xlabel("A deliberately oversized x label", fontsize=26)
+        ax.set_xticks([0.0, 1.0, 2.0])
+        ax.set_xticklabels(["0.00", "1.00", "2.00"], fontsize=18)
+        fig.canvas.draw()
+
+        before = ax_strip.get_window_extent(fig.canvas.get_renderer()).y1
+        enforce_strip_clearance(fig, ax, ax_strip, min_clearance_px=48.0)
+        fig.canvas.draw()
+
+        renderer = fig.canvas.get_renderer()
+        strip_top = ax_strip.get_window_extent(renderer).y1
+        label_bottom = ax.xaxis.label.get_window_extent(renderer).y0
+        tick_bottom = min(
+            tick.get_window_extent(renderer).y0
+            for tick in ax.get_xticklabels()
+            if tick.get_text()
+        )
+        assert strip_top < before
+        assert min(label_bottom, tick_bottom) - strip_top >= 48.0
         plt.close(fig)
 
     def test_annotate_endpoint_adds_text(self):

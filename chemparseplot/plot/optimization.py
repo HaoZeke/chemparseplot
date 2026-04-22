@@ -56,9 +56,9 @@ OVERLAY_COLORS = ["#004D40", "#FF655D", "#3F51B5", "#FF9800", "#9C27B0", "#00968
 def create_landscape_axes(*, dpi: int, has_strip: bool, theme, base_size: float = 5.37):
     """Create a landscape figure with an optional structure strip axis."""
 
-    fig = plt.figure(figsize=(base_size, base_size + (1.05 if has_strip else 0)), dpi=dpi)
+    fig = plt.figure(figsize=(base_size, base_size + (1.20 if has_strip else 0)), dpi=dpi)
     if has_strip:
-        gs = GridSpec(2, 1, height_ratios=[1, 0.14], hspace=0.30, figure=fig)
+        gs = GridSpec(2, 1, height_ratios=[1, 0.12], hspace=0.40, figure=fig)
         ax = fig.add_subplot(gs[0])
         ax_strip = fig.add_subplot(gs[1])
         if theme:
@@ -150,9 +150,50 @@ def render_endpoint_strip(
     )
 
 
-def save_landscape_figure(fig, output: Path, *, dpi: int, has_strip: bool) -> None:
+def enforce_strip_clearance(
+    fig,
+    ax,
+    ax_strip,
+    *,
+    min_clearance_px: float = 32.0,
+) -> None:
+    """Ensure a minimum pixel gap between x-axis text and the strip axis."""
+
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+
+    x_text_bottoms = [ax.xaxis.label.get_window_extent(renderer).y0]
+    x_text_bottoms.extend(
+        tick.get_window_extent(renderer).y0
+        for tick in ax.get_xticklabels()
+        if tick.get_text()
+    )
+    target_bottom = min(x_text_bottoms)
+    strip_bbox = ax_strip.get_window_extent(renderer)
+    current_gap = target_bottom - strip_bbox.y1
+    if current_gap >= min_clearance_px:
+        return
+
+    delta_px = min_clearance_px - current_gap
+    fig_height_px = fig.get_size_inches()[1] * fig.dpi
+    delta_fig = delta_px / fig_height_px
+    pos = ax_strip.get_position()
+    ax_strip.set_position([pos.x0, pos.y0 - delta_fig, pos.width, pos.height])
+
+
+def save_landscape_figure(
+    fig,
+    output: Path,
+    *,
+    dpi: int,
+    has_strip: bool,
+    ax=None,
+    ax_strip=None,
+) -> None:
     """Save optimization landscapes without tight-layout strip warnings."""
 
+    if has_strip and ax is not None and ax_strip is not None:
+        enforce_strip_clearance(fig, ax, ax_strip)
     if not has_strip:
         fig.tight_layout()
         fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
