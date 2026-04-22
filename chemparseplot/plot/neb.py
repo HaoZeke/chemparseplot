@@ -638,9 +638,9 @@ def plot_structure_strip(
 
         if labels and i < len(labels):
             ax.text(
-                labels[i],
-                slot_center_x,
-                label_y_px,
+                x=slot_center_x,
+                y=label_y_px,
+                s=labels[i],
                 ha="center",
                 va="bottom",
                 fontsize=label_fontsize,
