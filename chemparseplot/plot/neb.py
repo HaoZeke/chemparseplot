@@ -524,6 +524,7 @@ def plot_structure_strip(
     label_band_px = label_fontsize * fig.dpi / 72 * 1.8
     padding_px = 8.0
     usable_height_px = max(24.0, per_row_px - label_band_px - padding_px)
+    usable_width_px = max(24.0, per_col_px * 0.82)
 
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
@@ -539,8 +540,16 @@ def plot_structure_strip(
             xyzrender_config=xyzrender_config,
         )
 
-        img_h_px, _img_w_px = img_data.shape[:2]
-        effective_zoom = zoom * STRIP_IMAGE_ZOOM_SCALE
+        img_h_px, img_w_px = img_data.shape[:2]
+        base_display_height_px = img_h_px * zoom * STRIP_IMAGE_ZOOM_SCALE
+        target_display_height_px = max(
+            base_display_height_px,
+            min(usable_height_px, 52.0),
+        )
+        effective_zoom = min(
+            target_display_height_px / img_h_px,
+            usable_width_px / img_w_px,
+        )
         imagebox = OffsetImage(img_data, zoom=effective_zoom)
         image_height_pt = img_h_px * effective_zoom * 72 / fig.dpi
 
@@ -553,7 +562,7 @@ def plot_structure_strip(
             pad=0.0,
             annotation_clip=False,
         )
-        ab.set_clip_on(True)
+        ab.set_clip_on(False)
         ax.add_artist(ab)
 
         if labels and i < len(labels):
