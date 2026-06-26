@@ -2,6 +2,30 @@
 
 <!-- towncrier release notes start -->
 
+## [1.8.0](https://github.com/HaoZeke/chemparseplot/tree/1.8.0) - 2026-06-26
+
+### Added
+
+- NEB and optimization plot APIs accept energy unit conversions for unit-aware profile and landscape plots. ([#energy-units](https://github.com/HaoZeke/chemparseplot/issues/energy-units))
+- Metadata-native eOn trajectory support prefers CON metadata over ``.dat`` tables, with typed parser results for trajectories, ChemGP, PLUMED, Sella, and ORCA NEB overlays. ([#metadata-native-eon](https://github.com/HaoZeke/chemparseplot/issues/metadata-native-eon))
+- ``stitch_neb_segments`` combines multiple NEB segments into one full path for end-to-end visualization and analysis. ([#stitch-neb](https://github.com/HaoZeke/chemparseplot/issues/stitch-neb))
+
+### Changed
+
+- Parser and plot modules return shared typed, unit-aware result records; NEB plotting helpers and single-ended APIs are centralized. ([#typed-parsers](https://github.com/HaoZeke/chemparseplot/issues/typed-parsers))
+
+### Fixed
+
+- RMSD landscape coordinates require IRA; projected path visibility and minimization prefix defaults improved for eOn outputs. ([#ira-landscape](https://github.com/HaoZeke/chemparseplot/issues/ira-landscape))
+- xyzrender structure strips size and clear axes correctly for single-ended and NEB plots (measured budgets, matte cropping, label clearance). ([#strip-layout](https://github.com/HaoZeke/chemparseplot/issues/strip-layout))
+
+### Miscellaneous
+
+- Migrated documentation deployment from GitHub Pages to Cloudflare Pages.
+- Added OIDC trusted publishing workflow for PyPI releases, gated on tests, lints, and docs.
+
+
+
 ## [1.7.0](https://github.com/HaoZeke/chemparseplot/tree/1.7.0) - 2026-04-07
 
 ### Changed

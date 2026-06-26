@@ -243,7 +243,7 @@ class TestCalculateLandscapeCoords:
             assert rmsd_a[0] == pytest.approx(0.0, abs=1e-10)
 
     def test_explicit_refs(self):
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         from ase.build import molecule
 
@@ -272,7 +272,7 @@ class TestCalculateLandscapeCoords:
             assert captured_refs[1] is ref_b
 
     def test_defaults_to_first_last(self):
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         from ase.build import molecule
 

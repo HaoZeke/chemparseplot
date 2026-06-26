@@ -109,7 +109,8 @@ class TestFindFESMinima:
         }
 
         result = calculate_fes_from_hills(hills, npoints=64)
-        result["fes"] -= np.min(result["fes"])
+        # Frozen dataclass: shift FES in place on the underlying ndarray buffer.
+        result.fes[:] -= np.min(result.fes)
 
         minima_result = find_fes_minima(result, nbins=8)
 
@@ -140,7 +141,8 @@ class TestFindFESMinima:
         }
 
         result = calculate_fes_from_hills(hills, npoints=32)
-        result["fes"] -= np.min(result["fes"])
+        # Frozen dataclass: shift FES in place on the underlying ndarray buffer.
+        result.fes[:] -= np.min(result.fes)
 
         minima_result = find_fes_minima(result, nbins=8)
 
