@@ -22,6 +22,27 @@ RUHI_COLORS = {
     "magenta": "#D81B60",
 }
 
+# --- Accessibility notes (added for paper + repro figure usage) ---
+# WCAG: Base theme uses white background + black text (excellent >18:1 contrast).
+# The 5 RUHI_COLORS are chosen to be reasonably separable under common CVD
+# (deuteranopia/protanopia/tritanopia):
+#   - teal (#004D40 dark teal-green) vs sky (#1E88E5 blue) : blue vs green axis.
+#   - coral (#FF655D warm red-pink) vs sunshine (#F1DB4B yellow) : yellow preserved
+#     better in RG CVD; not a pure red/green pair.
+#   - magenta (#D81B60) provides additional red-blue distinction.
+# Best practice (enforced in usage): never rely on color alone.
+#   - Use in combination with: marker styles (circle, square, triangle, diamond),
+#     line styles (solid, dashed, dotted, dashdot), hatches, direct text labels,
+#     or position.
+#   - For lines on white: prefer dimmed variants (e.g. color!70!black) if thin lines
+#     needed for contrast.
+#   - Test figures with simulators (Coblis, Photoshop, or colorspacious + matplotlib).
+# The ruhi_diverging and ruhi_full cmaps are multi-hue (better than jet/rainbow for
+# most viewers including CVD).
+# See also the TikZ usage in the rsx_bmc paper, which pairs these colors with
+# explicit "yes/no", "Frequentist/Bayesian", shape (box vs diamond), and labels.
+# --- end accessibility notes ---
+
 
 @dataclass(frozen=True)
 class PlotTheme:
