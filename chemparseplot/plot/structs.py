@@ -3,7 +3,6 @@ from typing import Any, Protocol, TypedDict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from cmcrameri import cm
 
 _ENERGY_FACTORS = {
     "eV": 1.0,
@@ -116,8 +115,12 @@ class BasePlotter:
     """
 
     def __init__(
-        self, figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=cm.batlow, style="bmh"
+        self, figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=None, style="bmh"
     ):
+        if colormap is None:
+            from cmcrameri import cm  # optional plot extra
+
+            colormap = cm.batlow
         self.figsize = figsize
         self.dpi = dpi
         self.pad = pad
