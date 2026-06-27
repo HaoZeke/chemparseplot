@@ -36,6 +36,22 @@ import numpy as np
 log = logging.getLogger(__name__)
 
 
+def _frame_with_energy(frame, energy: float):
+    """Return a ConFrame copy with ``energy`` set in metadata (readcon is read-only)."""
+    from readcon import ConFrame
+
+    metadata = {str(k): str(v) for k, v in (frame.metadata or {}).items()}
+    metadata["energy"] = str(float(energy))
+    return ConFrame(
+        frame.cell,
+        frame.angles,
+        frame.atoms,
+        frame.prebox_header,
+        frame.postbox_header,
+        metadata,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class StitchedSegment:
     """One stitched segment positioned in the combined band.
@@ -155,8 +171,7 @@ def stitch_neb_segments(
 
         seg_start = len(out_frames)
         for frame, energy in zip(kept_frames, kept_ref, strict=True):
-            frame.set_energy(float(energy))
-            out_frames.append(frame)
+            out_frames.append(_frame_with_energy(frame, float(energy)))
         seg_end = len(out_frames) - 1
         boundary_indices.append(seg_start)
 
@@ -201,8 +216,7 @@ def stitch_neb_segments(
     if sp_best is not None:
         from readcon import ConFrame
 
-        sp_frame = ConFrame.from_ase(sp_best[1])
-        sp_frame.set_energy(float(sp_best[0]))
+        sp_frame = _frame_with_energy(ConFrame.from_ase(sp_best[1]), float(sp_best[0]))
         write_con(str(out_dir / "sp.con"), [sp_frame])
     else:
         # Fallback: the global band maximum so the landscape overlay still works.
