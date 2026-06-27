@@ -6,10 +6,12 @@
 import numpy as np
 import polars as pl
 import pytest
+from ase.build import molecule
 
 from chemparseplot.parse.eon.min_trajectory import (
     MinTrajectoryData,
     parse_min_dat,
+    table_from_min_metadata,
 )
 
 
@@ -55,6 +57,32 @@ class TestParseMinDat:
             parse_min_dat(tmp_path / "nonexistent.dat")
 
 
+class DummyMinFrame:
+    def __init__(self, iteration, step_size, convergence, energy):
+        self.frame_index = iteration
+        self.energy = energy
+        self.metadata = {
+            "step_size": step_size,
+            "convergence": convergence,
+        }
+
+    def to_ase(self):
+        return molecule("H2O")
+
+
+class TestMetadataMinFallback:
+    def test_table_from_min_metadata(self):
+        df = table_from_min_metadata(
+            [
+                DummyMinFrame(0, 0.0, 0.5, -12.3),
+                DummyMinFrame(1, 0.1, 0.1, -12.5),
+            ]
+        )
+        assert df.columns == ["iteration", "step_size", "convergence", "energy"]
+        assert df["iteration"].to_list() == [0, 1]
+        assert df["energy"].to_list() == [-12.3, -12.5]
+
+
 class TestMinTrajectoryData:
     def test_dataclass_fields(self):
         from dataclasses import fields
@@ -71,7 +99,7 @@ class TestMinTrajectoryData:
 class TestLoadMinTrajectory:
     """Tests for load_min_trajectory with synthetic eOn output."""
 
-    def _make_job_dir(self, tmp_path, prefix="min"):
+    def _make_job_dir(self, tmp_path, prefix="minimization"):
         from ase.build import molecule
         from ase.io import write
 
@@ -91,8 +119,8 @@ class TestLoadMinTrajectory:
         ]
         dat.write_text("\n".join(lines) + "\n")
 
-        # min.con (final structure)
-        write(str(tmp_path / "min.con"), frames[-1], format="eon")
+        # explicit final structure
+        write(str(tmp_path / f"{prefix}.con"), frames[-1], format="eon")
         return tmp_path
 
     def test_load_full(self, tmp_path):
@@ -108,7 +136,7 @@ class TestLoadMinTrajectory:
     def test_missing_movie_raises(self, tmp_path):
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
-        (tmp_path / "min.dat").write_text("iteration\tstep_size\n")
+        (tmp_path / "minimization.dat").write_text("iteration\tstep_size\n")
         with pytest.raises(FileNotFoundError, match="movie file"):
             load_min_trajectory(tmp_path)
 
@@ -118,7 +146,7 @@ class TestLoadMinTrajectory:
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
-        write(str(tmp_path / "min"), molecule("H2O"), format="eon")
+        write(str(tmp_path / "minimization"), molecule("H2O"), format="eon")
         with pytest.raises(FileNotFoundError, match=r"\.dat"):
             load_min_trajectory(tmp_path)
 
@@ -129,6 +157,20 @@ class TestLoadMinTrajectory:
         traj = load_min_trajectory(tmp_path, prefix="react_neb")
         assert len(traj.atoms_list) == 4
 
+    def test_custom_prefix_prefers_explicit_prefixed_final_structure(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        job = self._make_job_dir(tmp_path, prefix="qm_min")
+        explicit_final = molecule("H2O")
+        explicit_final.positions[1, 0] += 0.77
+        write(str(job / "qm_min.con"), explicit_final, format="eon")
+
+        traj = load_min_trajectory(job, prefix="qm_min")
+        np.testing.assert_allclose(traj.final_atoms.positions, explicit_final.positions)
+
     def test_no_min_con_uses_last_frame(self, tmp_path):
         from ase.build import molecule
         from ase.io import write
@@ -136,11 +178,97 @@ class TestLoadMinTrajectory:
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
 
         h2o = molecule("H2O")
-        write(str(tmp_path / "min"), [h2o, h2o], format="eon")
-        (tmp_path / "min.dat").write_text(
+        write(str(tmp_path / "minimization"), [h2o, h2o], format="eon")
+        (tmp_path / "minimization.dat").write_text(
             "iteration\tstep_size\tconvergence\tenergy\n"
             "0\t0.0\t0.5\t-10.0\n"
             "1\t0.1\t0.01\t-10.5\n"
         )
         traj = load_min_trajectory(tmp_path)
         assert traj.final_atoms is not None  # fell back to last frame
+
+    def test_legacy_min_con_is_used_when_prefixed_final_is_absent(self, tmp_path):
+        from ase.build import molecule
+        from ase.io import write
+
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        job = self._make_job_dir(tmp_path, prefix="qm_min")
+        (job / "qm_min.con").unlink()
+        legacy_final = molecule("H2O")
+        legacy_final.positions[2, 1] -= 0.44
+        write(str(job / "min.con"), legacy_final, format="eon")
+
+        traj = load_min_trajectory(job, prefix="qm_min")
+        np.testing.assert_allclose(traj.final_atoms.positions, legacy_final.positions)
+
+    def test_legacy_prefix_still_supported_when_requested(self, tmp_path):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        self._make_job_dir(tmp_path, prefix="min")
+        traj = load_min_trajectory(tmp_path, prefix="min")
+        assert len(traj.atoms_list) == 4
+
+    def test_missing_dat_uses_frame_metadata(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        (tmp_path / "minimization").write_text("dummy movie")
+
+        frames = [
+            DummyMinFrame(0, 0.0, 0.5, -12.3),
+            DummyMinFrame(1, 0.1, 0.2, -12.4),
+            DummyMinFrame(2, 0.05, 0.01, -12.5),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_min_trajectory(tmp_path)
+        assert len(traj.atoms_list) == 3
+        assert traj.dat_df["iteration"].to_list() == [0, 1, 2]
+        assert traj.dat_df["energy"].to_list() == [-12.3, -12.4, -12.5]
+
+    def test_metadata_preferred_over_sidecar_dat(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        (tmp_path / "minimization").write_text("dummy movie")
+        (tmp_path / "minimization.dat").write_text(
+            "iteration\tstep_size\tconvergence\tenergy\n"
+            "0\t9.9\t9.9\t9.9\n"
+        )
+
+        frames = [
+            DummyMinFrame(0, 0.0, 0.5, -12.3),
+            DummyMinFrame(1, 0.1, 0.2, -12.4),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_min_trajectory(tmp_path)
+        assert traj.dat_df["iteration"].to_list() == [0, 1]
+        assert traj.dat_df["energy"].to_list() == [-12.3, -12.4]
+
+    def test_incomplete_metadata_falls_back_to_sidecar_dat(self, tmp_path, monkeypatch):
+        from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+        (tmp_path / "minimization").write_text("dummy movie")
+        (tmp_path / "minimization.dat").write_text(
+            "iteration\tstep_size\tconvergence\tenergy\n"
+            "0\t0.0\t0.5\t-1.0\n"
+            "1\t0.1\t0.2\t-1.1\n"
+        )
+
+        frames = [
+            DummyMinFrame(0, 0.0, 0.5, -12.3),
+            DummyMinFrame(1, 0.1, None, -12.4),
+        ]
+        monkeypatch.setattr(
+            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            lambda _: frames,
+        )
+
+        traj = load_min_trajectory(tmp_path)
+        assert traj.dat_df["energy"].to_list() == [-1.0, -1.1]

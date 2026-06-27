@@ -91,7 +91,7 @@ The (s, d) rotation math was duplicated in =plot/neb.py= (surface and overlay fu
 
 ** New Parsers
 
-=parse/eon/dimer_trajectory.py= and =parse/eon/min_trajectory.py= read eOn's structured trajectory output (=climb.dat=, =min.dat= TSV files alongside movie .con files). These produce dataclasses (=DimerTrajectoryData=, =MinTrajectoryData=) holding atoms lists, metric DataFrames, and reference structures -- everything needed to call =calculate_landscape_coords()= with explicit refs.
+=parse/eon/dimer_trajectory.py= and =parse/eon/min_trajectory.py= read eOn's structured trajectory output with metadata-rich full CON movies as the canonical source, falling back to the =climb.dat= / =min.dat= TSV sidecars only when the embedded metadata is incomplete. These produce dataclasses (=DimerTrajectoryData=, =MinTrajectoryData=) holding atoms lists, metric DataFrames, and reference structures -- everything needed to call =calculate_landscape_coords()= with explicit refs.
 
 * Related
 

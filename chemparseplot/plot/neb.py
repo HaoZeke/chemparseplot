@@ -3,12 +3,14 @@ import logging
 import shutil
 import subprocess
 import tempfile
-from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from collections.abc import Mapping
+
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as path_effects
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib import tri
@@ -28,16 +30,30 @@ from chemparseplot.parse.projection import (
     inverse_sd_to_ab,
     project_to_sd,
 )
+from chemparseplot.parse.types import OrcaNebResult
+from chemparseplot.plot.structs import (
+    StructurePlacement,
+    convert_energy,
+    convert_energy_curvature,
+    eigenvalue_axis_label,
+    energy_axis_label,
+)
 
 log = logging.getLogger(__name__)
 
-# --- Data Structures ---
-InsetImagePos = namedtuple("InsetImagePos", "x y rad")
-"""Position specification for an inset structure image (x, y, rad).
 
-```{versionadded} 0.1.0
-```
-"""
+# --- Data Structures ---
+@dataclass(frozen=True, slots=True)
+class InsetImagePos:
+    """Position specification for an inset structure image.
+
+    ```{versionadded} 0.1.0
+    ```
+    """
+
+    x: float
+    y: float
+    rad: float
 
 
 @dataclass
@@ -52,9 +68,104 @@ class SmoothingParams:
     polyorder: int = 2
 
 
+@dataclass(frozen=True, slots=True)
+class _OrcaNebPlotPayload:
+    """Normalized ORCA NEB plotting payload."""
+
+    energies: np.ndarray
+    n_images: int
+    barrier_forward: float | None = None
+    rmsd_r: np.ndarray | None = None
+    rmsd_p: np.ndarray | None = None
+    grad_r: np.ndarray | None = None
+    grad_p: np.ndarray | None = None
+
+
 MIN_PATH_LENGTH = 1e-6
+STRIP_IMAGE_ZOOM_SCALE = 0.18
+INSET_IMAGE_ZOOM_SCALE = 0.45
 
 # --- Structure Rendering Helpers ---
+
+
+def _crop_transparent_rgba(
+    img_data: np.ndarray,
+    alpha_threshold: float = 0.02,
+    matte_threshold: float = 0.04,
+) -> np.ndarray:
+    """Crop transparent or matte-colored margins from an RGBA image."""
+
+    if img_data.ndim != 3 or img_data.shape[2] < 4:
+        return img_data
+
+    alpha = img_data[..., 3]
+    mask = alpha > alpha_threshold if np.any(alpha <= alpha_threshold) else None
+
+    rgb = img_data[..., :3]
+    corner_rgb = np.stack(
+        [
+            rgb[0, 0],
+            rgb[0, -1],
+            rgb[-1, 0],
+            rgb[-1, -1],
+        ]
+    )
+    matte_rgb = np.median(corner_rgb, axis=0)
+    matte_distance = np.linalg.norm(rgb - matte_rgb, axis=2)
+    matte_mask = matte_distance > matte_threshold
+    mask = matte_mask if mask is None else (mask | matte_mask)
+
+    if not np.any(mask):
+        return img_data
+
+    rows = np.where(mask.any(axis=1))[0]
+    cols = np.where(mask.any(axis=0))[0]
+    pad = 2
+    r0 = max(0, rows[0] - pad)
+    r1 = min(img_data.shape[0], rows[-1] + pad + 1)
+    c0 = max(0, cols[0] - pad)
+    c1 = min(img_data.shape[1], cols[-1] + pad + 1)
+    return img_data[r0:r1, c0:c1]
+
+
+def _resize_rgba_image(img_data: np.ndarray, target_h: int, target_w: int) -> np.ndarray:
+    """Resize an RGBA image to the requested pixel size."""
+
+    src_h, src_w = img_data.shape[:2]
+    if src_h == target_h and src_w == target_w:
+        return img_data
+    zoom_factors = (target_h / src_h, target_w / src_w, 1)
+    resized = ndimage.zoom(img_data, zoom_factors, order=1)
+    return np.clip(resized, 0.0, 1.0)
+
+
+def _alpha_blit_rgba(canvas: np.ndarray, img_data: np.ndarray, x0: int, y0: int) -> None:
+    """Composite an RGBA image onto a canvas at top-left pixel coordinates."""
+
+    h, w = img_data.shape[:2]
+    canvas_h, canvas_w = canvas.shape[:2]
+    if x0 >= canvas_w or y0 >= canvas_h:
+        return
+
+    x1 = min(canvas_w, x0 + w)
+    y1 = min(canvas_h, y0 + h)
+    if x1 <= x0 or y1 <= y0:
+        return
+
+    src = img_data[: y1 - y0, : x1 - x0]
+    dst = canvas[y0:y1, x0:x1]
+
+    src_rgb = src[..., :3]
+    src_alpha = src[..., 3:4]
+    dst_rgb = dst[..., :3]
+    dst_alpha = dst[..., 3:4]
+
+    out_alpha = src_alpha + dst_alpha * (1.0 - src_alpha)
+    safe_alpha = np.where(out_alpha > 1e-8, out_alpha, 1.0)
+    out_rgb = (src_rgb * src_alpha + dst_rgb * dst_alpha * (1.0 - src_alpha)) / safe_alpha
+
+    dst[..., :3] = np.where(out_alpha > 1e-8, out_rgb, 0.0)
+    dst[..., 3:4] = out_alpha
 
 
 def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
@@ -421,7 +532,7 @@ def _render_ovito(atoms, rotation="0x,90y,0z", canvas_size=400):
 def plot_structure_strip(
     ax,
     atoms_list,
-    labels,
+    labels=None,
     zoom=0.3,
     rotation="0x,90y,0z",
     theme_color="black",
@@ -433,6 +544,8 @@ def plot_structure_strip(
     divider_color="gray",
     divider_style="--",
     perspective_tilt=0.0,
+    max_display_height_px: float | None = None,
+    width_fill_fraction=0.82,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -462,65 +575,115 @@ def plot_structure_strip(
     parameters. Added ``"solvis"`` and ``"ovito"`` renderer backends.
     ```
     """
+    if atoms_list and isinstance(atoms_list[0], StructurePlacement):
+        labels = [entry.label for entry in atoms_list]
+        atoms_list = [entry.atoms for entry in atoms_list]
+
+    if labels is None:
+        labels = []
+
     ax.axis("off")
     n_plot = len(atoms_list)
     n_cols = min(n_plot, max_cols)
     n_rows = (n_plot + max_cols - 1) // max_cols
-    row_step = 8.5
-
-    col_step = col_spacing
-    ax.set_xlim(-0.5, (n_cols - 1) * col_step + 0.5)
-    y_min = -((n_rows - 1) * row_step) - 0.8
-    y_max = 0.6
-    ax.set_ylim(y_min, y_max)
 
     # Adaptive font size: shrink for many items
     label_fontsize = min(11, max(7, 14 - n_plot))
 
+    fig = ax.figure
+    fig.canvas.draw()
+    mpl_renderer = fig.canvas.get_renderer()
+    ax_bbox = ax.get_window_extent(mpl_renderer)
+    ax_w_px = max(1, int(round(ax_bbox.width)))
+    ax_h_px = max(1, int(round(ax_bbox.height)))
+    ax.set_xlim(0, ax_w_px)
+    ax.set_ylim(0, ax_h_px)
+
+    per_row_px = ax_h_px / max(n_rows, 1)
+    per_col_px = ax_w_px / max(n_cols, 1)
+    label_band_px = label_fontsize * fig.dpi / 72 * 1.8
+    top_padding_px = 6.0
+    bottom_padding_px = 6.0
+    row_gap_px = 10.0
+    usable_total_height_px = max(
+        24.0,
+        ax_h_px - label_band_px - top_padding_px - bottom_padding_px,
+    )
+    slot_height_px = usable_total_height_px / max(n_rows, 1)
+    slot_width_px = per_col_px
+    col_gap_px = max(6.0, (col_spacing - 1.0) * slot_width_px * 0.22)
+    target_width_px = max(
+        20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
+    )
+    available_height_px = max(20.0, slot_height_px - row_gap_px)
+    target_height_px = max(
+        20,
+        int(
+            round(
+                min(max_display_height_px, available_height_px)
+                if max_display_height_px is not None
+                else available_height_px
+            )
+        ),
+    )
+    label_y_px = 4.0
+    canvas = np.zeros((ax_h_px, ax_w_px, 4), dtype=np.float32)
+
     for i, atoms in enumerate(atoms_list):
         col = i % max_cols
         row = i // max_cols
-        x_pos, y_pos = col * col_step, -row * row_step
+        slot_center_x = (col + 0.5) * slot_width_px
+        slot_top_y = ax_h_px - top_padding_px - row * slot_height_px
+        img_top_y = (
+            slot_top_y - (slot_height_px - target_height_px) / 2 - target_height_px
+        )
+        x0 = int(round(slot_center_x - target_width_px / 2))
+        y0 = int(round(img_top_y))
 
+        render_canvas_px = max(400, int(max(target_width_px, target_height_px) * 3.0))
         img_data = _render_atoms(
             atoms,
             renderer,
             zoom,
             rotation,
+            canvas_size=render_canvas_px,
             perspective_tilt=perspective_tilt,
             xyzrender_config=xyzrender_config,
         )
-
-        effective_zoom = zoom * 0.15
-        imagebox = OffsetImage(img_data, zoom=effective_zoom)
-
-        ab = AnnotationBbox(
-            imagebox,
-            (x_pos, y_pos),
-            frameon=False,
-            xycoords="data",
-            boxcoords="offset points",
-            pad=0.0,
-        )
-        ab.set_clip_on(True)
-        ax.add_artist(ab)
+        img_data = _crop_transparent_rgba(img_data)
+        img_h_px, img_w_px = img_data.shape[:2]
+        scale = min(target_width_px / img_w_px, target_height_px / img_h_px)
+        scaled_w = max(1, int(round(img_w_px * scale)))
+        scaled_h = max(1, int(round(img_h_px * scale)))
+        resized = _resize_rgba_image(img_data, scaled_h, scaled_w)
+        x0 += (target_width_px - scaled_w) // 2
+        y0 += (target_height_px - scaled_h) // 2
+        _alpha_blit_rgba(canvas, resized, x0, y0)
 
         if labels and i < len(labels):
             ax.text(
-                x_pos,
-                y_pos - 0.8,
-                labels[i],
+                x=slot_center_x,
+                y=label_y_px,
+                s=labels[i],
                 ha="center",
-                va="top",
+                va="bottom",
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
             )
 
+    ax.imshow(
+        canvas,
+        origin="lower",
+        extent=(0, ax_w_px, 0, ax_h_px),
+        interpolation="nearest",
+        zorder=1,
+    )
+
     # Divider lines between structures
     if show_dividers:
         for col in range(1, n_cols):
-            x_div = (col - 0.5) * col_step
+            x_div = col * slot_width_px
             ax.axvline(
                 x_div,
                 color=divider_color,
@@ -567,7 +730,7 @@ def plot_structure_inset(
         xyzrender_config=xyzrender_config,
     )
     # Apply the same unified scaling as the strip
-    effective_zoom = zoom * 0.45
+    effective_zoom = zoom * INSET_IMAGE_ZOOM_SCALE
     imagebox = OffsetImage(img_data, zoom=effective_zoom)
 
     # Default arrow properties matching plt_neb.py
@@ -957,17 +1120,25 @@ def plot_landscape_surface(
                     dev = 10.0
                 noise_per_obs[s_mask] = best_noise + dev
 
-    rbf = model_class(
-        x=np.column_stack([rmsd_r, rmsd_p]),
-        y=z_data,
-        gradients=_grad_stack,
-        length_scale=best_ls,
-        smoothing=best_noise,
-        optimize=False,
-        nimags=actual_nimags,
-        noise_per_obs=noise_per_obs,
-        **_approx_kwargs,
-    )
+    if is_gradient_model:
+        rbf = model_class(
+            x=np.column_stack([rmsd_r, rmsd_p]),
+            y=z_data,
+            gradients=_grad_stack,
+            length_scale=best_ls,
+            smoothing=best_noise,
+            optimize=False,
+            nimags=actual_nimags,
+            noise_per_obs=noise_per_obs,
+            **_approx_kwargs,
+        )
+    else:
+        rbf = model_class(
+            x_obs=np.column_stack([rmsd_r, rmsd_p]),
+            y_obs=z_data,
+            smoothing=best_noise,
+            optimize=False,
+        )
 
     zg = np.array(rbf(grid_pts_eval).reshape(xg.shape))
     var_grid = (
@@ -978,7 +1149,27 @@ def plot_landscape_surface(
     var_grid = ndimage.gaussian_filter(var_grid, sigma=2)  # smoothing variances
 
     # --- 4. Plotting ---
-    ax.contourf(xg, yg, zg, levels=20, cmap=cmap, alpha=0.75, zorder=10)
+    z_finite = zg[np.isfinite(zg)]
+    if z_finite.size == 0:
+        msg = "Surface prediction produced no finite values for contourf."
+        raise ValueError(msg)
+    z_min = float(z_finite.min())
+    z_max = float(z_finite.max())
+    if np.isclose(z_min, z_max):
+        z_levels = np.array([z_min - 1e-9, z_max + 1e-9])
+    else:
+        z_levels = np.linspace(z_min, z_max, 20)
+
+    ax.contourf(
+        xg,
+        yg,
+        zg,
+        levels=z_levels,
+        cmap=cmap,
+        alpha=0.75,
+        zorder=10,
+        extend="both",
+    )
     # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
         # Get the actual min and max variance currently in the grid
@@ -1142,7 +1333,13 @@ def plot_landscape_path_overlay(
 
     # Color segments by average Z of endpoints
     lc.set_array((z[:-1] + z[1:]) / 2)
-    lc.set_linewidth(3)
+    lc.set_linewidth(3.2)
+    lc.set_path_effects(
+        [
+            path_effects.Stroke(linewidth=5.8, foreground="white"),
+            path_effects.Normal(),
+        ]
+    )
     ax.add_collection(lc)
 
     ax.scatter(
@@ -1151,8 +1348,9 @@ def plot_landscape_path_overlay(
         c=z,
         cmap=colormap,
         norm=norm,
-        edgecolors="black",
-        linewidths=0.5,
+        s=42,
+        edgecolors="white",
+        linewidths=0.9,
         zorder=40,
     )
 
@@ -1215,14 +1413,79 @@ def plot_mmf_peaks_overlay(
     ax.scatter(
         plot_x,
         plot_y,
+        c="black",
+        marker="o",
+        s=110,
+        alpha=0.75,
+        linewidths=0,
+        zorder=49,
+    )
+    ax.scatter(
+        plot_x,
+        plot_y,
         c=peak_e,
         cmap="coolwarm",
-        marker="*",
-        s=200,
+        marker="o",
+        s=48,
         edgecolors="black",
-        linewidths=1.0,
+        linewidths=0.8,
         zorder=50,
         label="MMF peaks",
+    )
+
+
+def plot_phase_points_overlay(
+    ax,
+    rmsd_r,
+    rmsd_p,
+    *,
+    project_path=True,  # noqa: FBT002
+    path_rmsd_r=None,
+    path_rmsd_p=None,
+    phase_color="#FF8F00",
+    label=None,
+) -> None:
+    """Overlay a second phase of sampled points on top of the NEB landscape.
+
+    This is intended for OCI-NEB / RONEB refinement trajectories, where the
+    main NEB band points are already shown as dark background samples and the
+    dimer/MMF phase needs a distinct inner marker to remain legible.
+    """
+    if len(rmsd_r) == 0:
+        return
+
+    phase_r = np.asarray(rmsd_r)
+    phase_p = np.asarray(rmsd_p)
+
+    if project_path:
+        if path_rmsd_r is not None and path_rmsd_p is not None:
+            basis = compute_projection_basis(
+                np.asarray(path_rmsd_r), np.asarray(path_rmsd_p)
+            )
+        else:
+            basis = compute_projection_basis(phase_r, phase_p)
+        plot_x, plot_y = project_to_sd(phase_r, phase_p, basis)
+    else:
+        plot_x, plot_y = phase_r, phase_p
+
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c="black",
+        s=34,
+        alpha=0.75,
+        linewidths=0,
+        zorder=45,
+    )
+    ax.scatter(
+        plot_x,
+        plot_y,
+        c=phase_color,
+        s=13,
+        edgecolors="white",
+        linewidths=0.35,
+        zorder=46,
+        label=label,
     )
 
 
@@ -1283,23 +1546,106 @@ def plot_neb_evolution(
         ax.plot(px, py, "o-", color=color, alpha=alpha, markersize=2, linewidth=1)
 
 
+def convert_neb_values(values, plot_mode: str, energy_unit: str):
+    """Convert NEB values for the active plotted quantity."""
+
+    if plot_mode == "energy":
+        return convert_energy(values, energy_unit)
+    return convert_energy_curvature(values, energy_unit)
+
+
+def default_neb_ylabel(plot_mode: str, energy_unit: str) -> str:
+    """Return the canonical label for NEB energy-like axes."""
+
+    if plot_mode == "energy":
+        return energy_axis_label(energy_unit, label="Relative Energy")
+    return eigenvalue_axis_label(energy_unit, label="Lowest Eigenvalue")
+
+
+def landscape_projection_basis(global_basis, final_r, final_p):
+    """Reuse the full-dataset basis whenever projected overlays need one."""
+
+    if global_basis is not None:
+        return global_basis
+    return compute_projection_basis(final_r, final_p)
+
+
+def landscape_half_span(x_limits, final_r, final_p, additional_atoms_data, global_basis):
+    """Expand the symmetric landscape half-span to keep extra markers visible."""
+
+    half_span = (x_limits[1] - x_limits[0]) / 2
+    if not additional_atoms_data:
+        return half_span
+
+    basis = landscape_projection_basis(global_basis, final_r, final_p)
+    for overlay in additional_atoms_data:
+        _, add_d = project_to_sd(np.array([overlay.r]), np.array([overlay.p]), basis)
+        half_span = max(half_span, abs(float(add_d[0])) * 1.15)
+    return half_span
+
+
+def save_plot(output_file, dpi, *, has_strip):
+    """Save plots without tight-bbox strip overflow."""
+
+    save_kwargs = {"transparent": False, "pad_inches": 0.1, "dpi": dpi}
+    if not has_strip:
+        save_kwargs["bbox_inches"] = "tight"
+    plt.savefig(output_file, **save_kwargs)
+
+
+def profile_structure_indices(atoms_list, y_values, plot_structures, plot_mode):
+    """Select profile structures to render as a strip payload."""
+
+    if plot_structures == "all":
+        return list(range(len(atoms_list)))
+    saddle_idx = (
+        int(np.argmax(y_values[1:-1]) + 1)
+        if plot_mode == "energy"
+        else int(np.argmin(y_values))
+    )
+    return sorted({0, saddle_idx, len(atoms_list) - 1})
+
+
+def profile_strip_payload(atoms_list, x_values, y_values, plot_structures, plot_mode):
+    """Build an ordered strip payload for profile plots."""
+
+    payload = []
+    for index in profile_structure_indices(
+        atoms_list, y_values, plot_structures, plot_mode
+    ):
+        if plot_structures == "all":
+            label = str(index)
+        elif index == 0:
+            label = "R"
+        elif index == len(atoms_list) - 1:
+            label = "P"
+        else:
+            label = "SP"
+        payload.append(
+            StructurePlacement(
+                atoms=atoms_list[index],
+                x=float(x_values[index]),
+                label=label,
+            )
+        )
+    return payload
+
+
 def plot_orca_neb_profile(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 7.0,
     height: float = 5.0,
     dpi: int = 200,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB energy profile from OPI-parsed data.
 
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: list of energies in eV
-        - n_images: number of images
-        - barrier_forward, barrier_reverse: barrier heights
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1316,12 +1662,9 @@ def plot_orca_neb_profile(
     """
     import matplotlib.pyplot as plt
 
-    energies = neb_data.get("energies", [])
-    n_images = neb_data.get("n_images", len(energies))
-
-    if not energies:
-        msg = "No energy data in neb_data"
-        raise ValueError(msg)
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    energies = payload.energies
+    n_images = payload.n_images
 
     # Create figure
     fig, ax = plt.subplots(figsize=(width, height), dpi=dpi)
@@ -1330,45 +1673,32 @@ def plot_orca_neb_profile(
     image_indices = list(range(n_images))
     ax.plot(image_indices, energies, "o-", linewidth=2, markersize=8)
 
-    # Label reactant, product, and saddle
-    if len(energies) >= 3:
-        ax.plot(0, energies[0], "go", markersize=12, label="Reactant")
-        ax.plot(-1, energies[-1], "ro", markersize=12, label="Product")
-
-        # Find saddle point
-        saddle_idx = energies.index(max(energies))
-        if saddle_idx != 0 and saddle_idx != len(energies) - 1:
-            ax.plot(saddle_idx, energies[saddle_idx], "ys", markersize=12, label="Saddle")
-
-    # Add barrier annotations
-    barrier_fwd = neb_data.get("barrier_forward")
-    neb_data.get("barrier_reverse")
-
-    if barrier_fwd is not None and barrier_fwd > 0:
-        ax.annotate(
-            f"ΔE‡ = {barrier_fwd:.2f} eV",
-            xy=(saddle_idx, energies[saddle_idx]),
-            xytext=(saddle_idx + 1, energies[saddle_idx] + 0.5),
-            arrowprops={"arrowstyle": "->", "color": "black"},
-            fontsize=10,
-        )
+    saddle_idx = _plot_orca_profile_keypoints(
+        ax,
+        x_values=np.asarray(image_indices, dtype=float),
+        energies=energies,
+        payload=payload,
+        energy_unit=energy_unit,
+        reactant_markersize=12,
+        product_markersize=12,
+        saddle_markersize=12,
+        barrier_dx=1.0,
+        barrier_dy=0.5,
+    )
 
     # Labels and formatting
     ax.set_xlabel("Image Index")
-    ax.set_ylabel("Energy (eV)")
+    ax.set_ylabel(energy_axis_label(energy_unit))
     ax.set_title("ORCA NEB Energy Profile")
     ax.legend()
     ax.grid(True, alpha=0.3)
     ax.minorticks_on()
 
-    # Save
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
+    _save_orca_figure(fig, output, dpi=dpi)
 
 
 def plot_orca_neb_energy_profile(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 5.37,
@@ -1376,6 +1706,7 @@ def plot_orca_neb_energy_profile(
     dpi: int = 200,
     method: str = "hermite",
     smoothing: Any = None,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB energy profile using existing eOn-style plotting.
 
@@ -1385,11 +1716,7 @@ def plot_orca_neb_energy_profile(
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: array of energies in eV
-        - rmsd_r, rmsd_p: RMSD coordinates (optional)
-        - grad_r, grad_p: gradients (optional)
-        - n_images: number of images
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1411,24 +1738,15 @@ def plot_orca_neb_energy_profile(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = neb_data.get("energies", [])
-    rmsd_r = neb_data.get("rmsd_r")
-    rmsd_p = neb_data.get("rmsd_p")
-    grad_r = neb_data.get("grad_r")
-    neb_data.get("grad_p")
-    n_images = neb_data.get("n_images", len(energies))
-    barrier_fwd = neb_data.get("barrier_forward")
-    neb_data.get("barrier_reverse")
-
-    if len(energies) == 0:
-        msg = "No energy data in neb_data"
-        raise ValueError(msg)
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    energies = payload.energies
+    n_images = payload.n_images
 
     # Use RMSD as reaction coordinate if available, otherwise use image index
-    if rmsd_r is not None and rmsd_p is not None:
+    if payload.rmsd_r is not None and payload.rmsd_p is not None:
         # Use progress coordinate (similar to eOn)
-        rc = rmsd_r
-        f_para = grad_r if grad_r is not None else np.zeros_like(rc)
+        rc = payload.rmsd_r
+        f_para = payload.grad_r if payload.grad_r is not None else np.zeros_like(rc)
         xlabel = r"RMSD from Reactant ($\AA$)"
     else:
         rc = np.arange(n_images)
@@ -1458,50 +1776,35 @@ def plot_orca_neb_energy_profile(
         smoothing=smoothing,
     )
 
-    # Label key points
-    if n_images >= 2:
-        ax.plot(rc[0], energies[0], "go", markersize=10, label="Reactant", zorder=20)
-        ax.plot(rc[-1], energies[-1], "ro", markersize=10, label="Product", zorder=20)
-
-        # Find and label saddle
-        saddle_idx = int(np.argmax(energies))
-        if saddle_idx != 0 and saddle_idx != n_images - 1:
-            ax.plot(
-                rc[saddle_idx],
-                energies[saddle_idx],
-                "ys",
-                markersize=12,
-                label="Saddle",
-                zorder=20,
-            )
-
-            # Add barrier annotation
-            if barrier_fwd is not None and barrier_fwd > 0:
-                ax.annotate(
-                    f"$\\Delta E^\\ddagger = {barrier_fwd:.2f}$ eV",
-                    xy=(rc[saddle_idx], energies[saddle_idx]),
-                    xytext=(rc[saddle_idx] + 0.5, energies[saddle_idx] + 0.5),
-                    arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
-                    fontsize=9,
-                    zorder=30,
-                )
+    _plot_orca_profile_keypoints(
+        ax,
+        x_values=np.asarray(rc, dtype=float),
+        energies=energies,
+        payload=payload,
+        energy_unit=energy_unit,
+        reactant_markersize=10,
+        product_markersize=10,
+        saddle_markersize=12,
+        barrier_dx=0.5,
+        barrier_dy=0.5,
+        use_math_text=True,
+        zorder=20,
+        barrier_zorder=30,
+    )
 
     # Labels and formatting
     ax.set_xlabel(xlabel)
-    ax.set_ylabel("Energy (eV)")
+    ax.set_ylabel(energy_axis_label(energy_unit))
     ax.set_title("ORCA NEB Energy Profile")
     ax.legend(frameon=False)
     ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
 
-    # Save
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    plt.close(fig)
+    _save_orca_figure(fig, output, dpi=dpi)
 
 
 def plot_orca_neb_landscape(
-    neb_data: dict[str, Any],
+    neb_data: Mapping[str, Any] | OrcaNebResult,
     output: Path,
     *,
     width: float = 5.37,
@@ -1509,6 +1812,7 @@ def plot_orca_neb_landscape(
     dpi: int = 200,
     method: str = "grad_matern",
     project_path: bool = True,
+    energy_unit: str = "eV",
 ) -> None:
     """Plot ORCA NEB 2D landscape using existing eOn-style plotting.
 
@@ -1518,11 +1822,7 @@ def plot_orca_neb_landscape(
     Parameters
     ----------
     neb_data
-        Dictionary from parse_orca_neb() containing:
-        - energies: array of energies in eV
-        - rmsd_r, rmsd_p: RMSD coordinates
-        - grad_r, grad_p: gradients
-        - n_images: number of images
+        Mapping-like ORCA NEB result from parse_orca_neb()
     output
         Output file path
     width, height
@@ -1544,23 +1844,16 @@ def plot_orca_neb_landscape(
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
 
-    energies = neb_data.get("energies", [])
-    rmsd_r = neb_data.get("rmsd_r")
-    rmsd_p = neb_data.get("rmsd_p")
-    grad_r = neb_data.get("grad_r")
-    grad_p = neb_data.get("grad_p")
-
-    # Convert to numpy arrays if lists
-    rmsd_r = np.asarray(rmsd_r)
-    rmsd_p = np.asarray(rmsd_p)
-    energies = np.asarray(energies)
-
-    if rmsd_r is None or rmsd_p is None:
+    payload = _normalize_orca_neb_plot_payload(neb_data, energy_unit)
+    if payload.rmsd_r is None or payload.rmsd_p is None:
         msg = (
             "RMSD coordinates required for landscape plot. "
             "Re-run ORCA calculation with geometry output enabled."
         )
         raise ValueError(msg)
+
+    rmsd_r = payload.rmsd_r
+    rmsd_p = payload.rmsd_p
 
     # Create figure
     fig = plt.figure(figsize=(width, height), dpi=dpi)
@@ -1578,9 +1871,9 @@ def plot_orca_neb_landscape(
         ax,
         rmsd_r,
         rmsd_p,
-        grad_r if grad_r is not None else np.zeros_like(rmsd_r),
-        grad_p if grad_p is not None else np.zeros_like(rmsd_p),
-        energies,
+        payload.grad_r if payload.grad_r is not None else np.zeros_like(rmsd_r),
+        payload.grad_p if payload.grad_p is not None else np.zeros_like(rmsd_p),
+        payload.energies,
         method=method,
         cmap=cmap,
         show_pts=True,
@@ -1592,9 +1885,9 @@ def plot_orca_neb_landscape(
         ax,
         rmsd_r,
         rmsd_p,
-        energies,
+        payload.energies,
         cmap=cmap,
-        z_label="Energy (eV)",
+        z_label=energy_axis_label(energy_unit),
         project_path=project_path,
     )
 
@@ -1611,7 +1904,159 @@ def plot_orca_neb_landscape(
     ax.grid(True, alpha=0.3, linestyle="--")
     ax.minorticks_on()
 
-    # Save
+    _save_orca_figure(fig, output, dpi=dpi)
+
+
+def _normalize_orca_neb_plot_payload(
+    neb_data: Mapping[str, Any] | OrcaNebResult,
+    energy_unit: str,
+) -> _OrcaNebPlotPayload:
+    """Normalize ORCA NEB inputs for plotting entrypoints."""
+
+    typed_result = (
+        neb_data
+        if isinstance(neb_data, OrcaNebResult)
+        else OrcaNebResult.from_mapping(neb_data)
+    )
+
+    energies = convert_energy(np.asarray(typed_result.energies), energy_unit)
+    if energies.size == 0:
+        msg = "No energy data in neb_data"
+        raise ValueError(msg)
+
+    def _maybe_energy(values: np.ndarray | None) -> np.ndarray | None:
+        if values is None:
+            return None
+        return convert_energy(values, energy_unit)
+
+    return _OrcaNebPlotPayload(
+        energies=energies,
+        n_images=int(typed_result.n_images or len(energies)),
+        barrier_forward=typed_result.barrier_forward,
+        rmsd_r=typed_result.rmsd_r,
+        rmsd_p=typed_result.rmsd_p,
+        grad_r=_maybe_energy(typed_result.grad_r),
+        grad_p=_maybe_energy(typed_result.grad_p),
+    )
+
+
+def _orca_saddle_index(energies: np.ndarray) -> int | None:
+    """Return the internal saddle index for a NEB profile, if any."""
+
+    if len(energies) < 3:
+        return None
+    saddle_idx = int(np.argmax(energies))
+    if saddle_idx in {0, len(energies) - 1}:
+        return None
+    return saddle_idx
+
+
+def _annotate_orca_barrier(
+    ax,
+    *,
+    x: float,
+    y: float,
+    barrier_forward: float | None,
+    energy_unit: str,
+    dx: float,
+    dy: float,
+    use_math_text: bool = False,
+    zorder: int | None = None,
+) -> None:
+    """Annotate the forward barrier on an ORCA NEB profile plot."""
+
+    if barrier_forward is None or barrier_forward <= 0:
+        return
+
+    converted = convert_energy([barrier_forward], energy_unit)[0]
+    text = (
+        f"$\\Delta E^\\ddagger = {converted:.2f}$ {energy_unit}"
+        if use_math_text
+        else f"ΔE‡ = {converted:.2f} {energy_unit}"
+    )
+    annotation_kwargs = {"fontsize": 10 if not use_math_text else 9}
+    if zorder is not None:
+        annotation_kwargs["zorder"] = zorder
+    ax.annotate(
+        text,
+        xy=(x, y),
+        xytext=(x + dx, y + dy),
+        arrowprops={"arrowstyle": "->", "color": "black", "lw": 1.5},
+        **annotation_kwargs,
+    )
+
+
+def _plot_orca_profile_keypoints(
+    ax,
+    *,
+    x_values: np.ndarray,
+    energies: np.ndarray,
+    payload: _OrcaNebPlotPayload,
+    energy_unit: str,
+    reactant_markersize: float,
+    product_markersize: float,
+    saddle_markersize: float,
+    barrier_dx: float,
+    barrier_dy: float,
+    use_math_text: bool = False,
+    zorder: int | None = None,
+    barrier_zorder: int | None = None,
+) -> int | None:
+    """Plot reactant/product/saddle markers for ORCA NEB profile-like plots."""
+
+    if len(energies) < 2:
+        return None
+
+    plot_kwargs = {}
+    if zorder is not None:
+        plot_kwargs["zorder"] = zorder
+
+    ax.plot(
+        x_values[0],
+        energies[0],
+        "go",
+        markersize=reactant_markersize,
+        label="Reactant",
+        **plot_kwargs,
+    )
+    ax.plot(
+        x_values[-1],
+        energies[-1],
+        "ro",
+        markersize=product_markersize,
+        label="Product",
+        **plot_kwargs,
+    )
+
+    saddle_idx = _orca_saddle_index(energies)
+    if saddle_idx is None:
+        return None
+
+    ax.plot(
+        x_values[saddle_idx],
+        energies[saddle_idx],
+        "ys",
+        markersize=saddle_markersize,
+        label="Saddle",
+        **plot_kwargs,
+    )
+    _annotate_orca_barrier(
+        ax,
+        x=float(x_values[saddle_idx]),
+        y=float(energies[saddle_idx]),
+        barrier_forward=payload.barrier_forward,
+        energy_unit=energy_unit,
+        dx=barrier_dx,
+        dy=barrier_dy,
+        use_math_text=use_math_text,
+        zorder=barrier_zorder,
+    )
+    return saddle_idx
+
+
+def _save_orca_figure(fig, output: Path, *, dpi: int) -> None:
+    """Save an ORCA plotting figure with the standard settings."""
+
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
     plt.close(fig)

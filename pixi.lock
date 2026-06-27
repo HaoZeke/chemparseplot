@@ -930,8 +930,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: ./
   name: chemparseplot
-  version: 1.6.2.dev7+g07b7499d6
-  sha256: 1e0527d296334e3c6502b94f192a9c1d10ac168336293329e8c9f8b60a0759d0
+  version: 1.7.1.dev24+gd589f082a.d20260419
+  sha256: 3bf1eda04b9fa1661ae09c8846b4486764cebd692c83572a0e91fe7fc984d0ad
   requires_dist:
   - numpy>=1.26.2
   - pint>=0.22
@@ -959,8 +959,20 @@ packages:
   - readcon>=0.7.0 ; extra == 'neb'
   - cmcrameri>=1.7 ; extra == 'plot'
   - matplotlib>=3.8.2 ; extra == 'plot'
+  - build>=0.10 ; extra == 'release'
+  - cocogitto>=6.2 ; extra == 'release'
+  - towncrier>=24.8.0 ; extra == 'release'
+  - twine>=4.0 ; extra == 'release'
+  - wheel>=0.40 ; extra == 'release'
+  - ase>=3.22 ; extra == 'test'
+  - h5py>=3.0 ; extra == 'test'
+  - matplotlib>=3.8.2 ; extra == 'test'
+  - polars>=0.20 ; extra == 'test'
   - pytest-cov>=4.1.0 ; extra == 'test'
   - pytest>=7.4.3 ; extra == 'test'
+  - readcon>=0.7.0 ; extra == 'test'
+  - rgpycrumbs ; extra == 'test'
+  - scipy>=1.11 ; extra == 'test'
   - xyzrender>=0.1.2 ; extra == 'xyzrender'
   requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl

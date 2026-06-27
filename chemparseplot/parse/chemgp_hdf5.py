@@ -22,6 +22,7 @@ HDF5 Layout
 from typing import Any
 
 import numpy as np
+from chemparseplot.parse.types import ArrayGroup, ParserAttrs
 
 
 def read_h5_table(f: Any, name: str = "table") -> Any:
@@ -88,7 +89,7 @@ def read_h5_grid(
     return data, x_coords, y_coords
 
 
-def read_h5_path(f: Any, name: str) -> dict[str, np.ndarray]:
+def read_h5_path(f: Any, name: str) -> ArrayGroup:
     """Read a path (ordered point sequence).
 
     Parameters
@@ -100,14 +101,14 @@ def read_h5_path(f: Any, name: str) -> dict[str, np.ndarray]:
 
     Returns
     -------
-    dict
-        Dictionary mapping coordinate names to arrays
+    ArrayGroup
+        Named mapping of coordinate names to arrays
     """
     g = f[f"paths/{name}"]
-    return {k: g[k][()] for k in g.keys()}
+    return ArrayGroup(data={k: g[k][()] for k in g.keys()})
 
 
-def read_h5_points(f: Any, name: str) -> dict[str, np.ndarray]:
+def read_h5_points(f: Any, name: str) -> ArrayGroup:
     """Read a point set.
 
     Parameters
@@ -119,14 +120,14 @@ def read_h5_points(f: Any, name: str) -> dict[str, np.ndarray]:
 
     Returns
     -------
-    dict
-        Dictionary mapping coordinate names to arrays
+    ArrayGroup
+        Named mapping of coordinate names to arrays
     """
     g = f[f"points/{name}"]
-    return {k: g[k][()] for k in g.keys()}
+    return ArrayGroup(data={k: g[k][()] for k in g.keys()})
 
 
-def read_h5_metadata(f: Any) -> dict[str, Any]:
+def read_h5_metadata(f: Any) -> ParserAttrs:
     """Read root-level metadata attributes.
 
     Parameters
@@ -136,10 +137,10 @@ def read_h5_metadata(f: Any) -> dict[str, Any]:
 
     Returns
     -------
-    dict
-        Dictionary of metadata attributes
+    ParserAttrs
+        Named mapping of metadata attributes
     """
-    return {k: f.attrs[k] for k in f.attrs.keys()}
+    return ParserAttrs(data={k: f.attrs[k] for k in f.attrs.keys()})
 
 
 def validate_hdf5_structure(

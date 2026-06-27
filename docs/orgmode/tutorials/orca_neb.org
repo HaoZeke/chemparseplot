@@ -61,7 +61,7 @@ from chemparseplot.parse.orca.neb import parse_orca_neb
 # Parse the ORCA NEB calculation
 data = parse_orca_neb("job", working_dir=Path("."))
 
-# Inspect the parsed data
+# Inspect the typed result (mapping-style access is preserved)
 print(f"Number of images: {data['n_images']}")
 print(f"Converged: {data['converged']}")
 print(f"Energies (eV): {data['energies']}")

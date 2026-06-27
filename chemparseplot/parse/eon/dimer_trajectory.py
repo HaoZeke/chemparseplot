@@ -18,10 +18,29 @@ import polars as pl
 import readcon
 from ase import Atoms
 
+from ._trajectory_common import (
+    frame_rows_to_table,
+    load_movie_and_table,
+    load_optional_payload,
+    read_first_structure,
+    read_optional_first,
+)
+
 log = logging.getLogger(__name__)
 
+DIMER_METADATA_COLUMNS = (
+    "frame_index",
+    "step_size",
+    "delta_e",
+    "convergence",
+    "eigenvalue",
+    "torque",
+    "angle",
+    "rotations",
+)
 
-@dataclass
+
+@dataclass(frozen=True, slots=True)
 class DimerTrajectoryData:
     """Container for a dimer/saddle search trajectory.
 
@@ -79,20 +98,24 @@ def parse_climb_con(path: Path) -> list[Atoms]:
     return readcon.read_con_as_ase(str(path))
 
 
-def _find_initial_structure(job_dir: Path) -> Atoms | None:
-    """Locate the initial/reactant structure in the job directory."""
-    for name in ("reactant.con", "pos.con"):
-        p = job_dir / name
-        if p.exists():
-            return readcon.read_con_as_ase(str(p))[0]
-    return None
-
-
 def _load_mode_dat(path: Path) -> np.ndarray | None:
     """Load eigenvector from mode.dat (Nx3 whitespace-separated)."""
     if not path.exists():
         return None
     return np.loadtxt(path)
+
+
+def table_from_dimer_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
+    """Reconstruct climb metrics from per-frame CON metadata."""
+
+    df = frame_rows_to_table(
+        frames,
+        DIMER_METADATA_COLUMNS,
+        allow_leading_incomplete=True,
+    )
+    if df.is_empty():
+        return df
+    return df.rename({"frame_index": "iteration"})
 
 
 def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
@@ -116,35 +139,23 @@ def load_dimer_trajectory(job_dir: Path) -> DimerTrajectoryData:
     FileNotFoundError
         If required files (``climb``, ``climb.dat``) are missing.
     """
-    # Find the movie file (may be "climb" or "climb.con")
-    climb_con = job_dir / "climb"
-    if not climb_con.exists():
-        climb_con = job_dir / "climb.con"
-    if not climb_con.exists():
-        msg = f"No climb movie file found in {job_dir}"
-        raise FileNotFoundError(msg)
+    atoms_list, dat_df = load_movie_and_table(
+        job_dir,
+        movie_stem="climb",
+        dat_name="climb.dat",
+        parse_dat=parse_climb_dat,
+        metadata_columns=DIMER_METADATA_COLUMNS,
+        build_table_from_metadata=table_from_dimer_metadata,
+        log_label="dimer",
+    )
 
-    climb_dat = job_dir / "climb.dat"
-    if not climb_dat.exists():
-        msg = f"No climb.dat found in {job_dir} (was write_movies enabled?)"
-        raise FileNotFoundError(msg)
-
-    log.info("Loading dimer trajectory from %s", job_dir)
-    atoms_list = parse_climb_con(climb_con)
-    dat_df = parse_climb_dat(climb_dat)
-    log.info("Loaded %d frames, %d data rows", len(atoms_list), dat_df.height)
-
-    initial = _find_initial_structure(job_dir)
+    initial = read_optional_first(job_dir, ("reactant.con", "pos.con"))
     if initial is None:
         log.warning("No reactant.con or pos.con found; using first movie frame")
         initial = atoms_list[0]
 
-    saddle_path = job_dir / "saddle.con"
-    saddle = (
-        readcon.read_con_as_ase(str(saddle_path))[0] if saddle_path.exists() else None
-    )
-
-    mode = _load_mode_dat(job_dir / "mode.dat")
+    saddle = load_optional_payload(job_dir / "saddle.con", read_first_structure)
+    mode = load_optional_payload(job_dir / "mode.dat", _load_mode_dat)
 
     return DimerTrajectoryData(
         atoms_list=atoms_list,

@@ -20,22 +20,30 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 
 *** Returns
 
-=tuple= of three elements:
+=NebOverlayBundle= with fields:
 
-| Element | Type | Description |
-|---------+------+-------------|
+| Field | Type | Description |
+|-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | ASE Atoms from main trajectory |
-| =additional_atoms_data= | =list[tuple]= | List of =(atoms, rmsd_r, rmsd_p, label)= |
-| =sp_data= | =dict= or =None= | ={ "atoms", "r", "p" }= for saddle point |
+| =additional_structures= | =list[NebOverlayStructure]= | Typed overlay records with =atoms=, =r=, =p=, and =label= |
+| =saddle_point= | =NebOverlayStructure= or =None= | Explicit saddle-point overlay record |
 
 *** Notes
 
-- Uses IRA (Iterative Rotations and Assignments) for RMSD when =ira_mod= is available
-- Falls back to simple RMSD if =ira_mod= is not installed
+- Uses IRA (Iterative Rotations and Assignments) for RMSD
+- Raises =ImportError= if =ira_mod= is not available, because landscape coordinates without IRA are chemically misleading for permutationally symmetric systems
 - RMSD computed relative to first frame (reactant) and last frame (product)
 - Empty labels default to the file stem
 
-** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=1.8, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
+*** Overlay Record
+
+=NebOverlayStructure= is a frozen typed record with four fields:
+- =atoms=: ASE structure to render
+- =r=: RMSD to the reactant
+- =p=: RMSD to the product
+- =label=: legend / annotation label
+
+** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=14.0, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
 
 Aggregates data from multiple NEB optimization steps for 2D landscape visualization.
 
@@ -46,10 +54,10 @@ Aggregates data from multiple NEB optimization steps for 2D landscape visualizat
 | =all_dat_paths= | =list[Path]= | - | Sorted list of DAT file paths |
 | =all_con_paths= | =list[Path]= | - | Sorted list of CON file paths (must match DAT order) |
 | =y_data_column= | =int= | - | Column index in DAT file for energy/eigenvalue |
-| =ira_instance= | object or =None= | - | IRA instance (auto-created if =None= and =ira_mod= available) |
+| =ira_instance= | object or =None= | - | IRA instance. Landscape coordinate generation requires a real IRA backend. |
 | =cache_file= | =Path= or =None= | =None= | Parquet file for caching results |
 | =force_recompute= | =bool= | =False= | Bypass cache and recompute |
-| =ira_kmax= | =float= | =1.8= | kmax factor for IRA alignment |
+| =ira_kmax= | =float= | =14.0= | kmax factor for IRA alignment |
 | =augment_dat= | =str= or =None= | =None= | Glob pattern for augmentation DAT files |
 | =augment_con= | =str= or =None= | =None= | Glob pattern for augmentation CON files |
 | =ref_atoms= | =Atoms= or =None= | =None= | Reference reactant for augmentation projection |
@@ -175,22 +183,25 @@ Dataclass containing the full trajectory:
 | Field | Type | Description |
 |-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
-| =dat_df= | =pl.DataFrame= | Metrics from =climb.dat= (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
+| =dat_df= | =pl.DataFrame= | Metrics reconstructed from per-frame CON metadata when available, otherwise from =climb.dat= (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
 | =initial_atoms= | =Atoms= | Starting structure (=reactant.con= or =pos.con=) |
 | =saddle_atoms= | =Atoms= or =None= | Saddle point (=saddle.con=) |
 | =mode_vector= | =np.ndarray= or =None= | Eigenvector (=mode.dat=) |
 
 ** =load_dimer_trajectory(job_dir) -> DimerTrajectoryData=
 
-Loads the complete trajectory from an eOn saddle search job directory. Expects =climb= movie file and =climb.dat= to exist.
+Loads the complete trajectory from an eOn saddle search job directory. Expects a =climb= movie file; the parser prefers per-frame CON metadata and falls back to =climb.dat= only when the embedded metadata is incomplete.
 
 ** =parse_climb_dat(path) -> pl.DataFrame=
 
-Reads the =climb.dat= TSV file into a DataFrame.
+Reads the =climb.dat= TSV file into a DataFrame. This is a compatibility
+utility; metadata-native callers should prefer =load_dimer_trajectory(...)=.
 
 ** =parse_climb_con(path) -> list[Atoms]=
 
-Reads the concatenated =climb= movie file via ASE.
+Reads the concatenated =climb= movie file via ASE. This is a lower-level
+compatibility helper; metadata-native callers should prefer
+=load_dimer_trajectory(...)=.
 
 * Module: =chemparseplot.parse.eon.min_trajectory=
 
@@ -203,21 +214,31 @@ Dataclass containing the full trajectory:
 | Field | Type | Description |
 |-------+------+-------------|
 | =atoms_list= | =list[Atoms]= | Per-iteration structures from movie file |
-| =dat_df= | =pl.DataFrame= | Metrics from =min.dat= (iteration, step_size, convergence, energy) |
+| =dat_df= | =pl.DataFrame= | Metrics reconstructed from per-frame CON metadata when available, otherwise from =minimization.dat= (or =<prefix>.dat=) with columns iteration, step_size, convergence, energy |
 | =initial_atoms= | =Atoms= | Starting structure (first frame) |
-| =final_atoms= | =Atoms= | Final minimized structure (=min.con= or last frame) |
+| =final_atoms= | =Atoms= | Final minimized structure (prefers =<prefix>.con=, then legacy =min.con=, otherwise last movie frame) |
 
-** =load_min_trajectory(job_dir, prefix="min") -> MinTrajectoryData=
+** =load_min_trajectory(job_dir, prefix="minimization") -> MinTrajectoryData=
 
-Loads the complete trajectory from an eOn minimization job directory.
+Loads the complete trajectory from an eOn minimization job directory. The movie file is required; the parser prefers per-frame CON metadata and falls back to the sidecar =.dat= table only when the embedded metadata is incomplete.
 
 ** =parse_min_dat(path) -> pl.DataFrame=
 
-Reads the minimization TSV data file.
+Reads the minimization TSV data file. This remains available as a
+compatibility utility; metadata-native callers should prefer
+=load_min_trajectory(...)=.
 
 * Module: =chemparseplot.parse.neb_utils= (updated)
 
 ** =calculate_landscape_coords(atoms_list, ira_instance, ira_kmax, ref_a=None, ref_b=None)=
+
+Calculates RMSD-A and RMSD-B coordinates for landscape plots.
+
+*** Notes
+
+- This function now requires a non-=None= IRA instance
+- If =ira_instance= is missing it raises =ImportError= instead of silently falling back to order-dependent alignment
+- =ref_a= and =ref_b= allow single-ended methods to reuse the same coordinate machinery with explicit endpoint references
 
 Now accepts explicit =ref_a= and =ref_b= reference structures. Defaults to first/last atoms for backward compatibility. For single-ended methods, pass the initial and final structures explicitly.
 

@@ -76,7 +76,7 @@ Plot ORCA NEB energy profile using eOn-style plotting.
 
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =neb_data= | =dict= | - | Data from =parse_orca_neb()= |
+| =neb_data= | =OrcaNebResult= / =Mapping= | - | Typed result from =parse_orca_neb()= |
 | =output= | =Path= | - | Output file path |
 | =width= | =float= | =5.37= | Figure width (inches) |
 | =height= | =float= | =5.37= | Figure height (inches) |
@@ -106,7 +106,7 @@ Plot ORCA NEB 2D landscape using eOn-style plotting.
 
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =neb_data= | =dict= | - | Data from =parse_orca_neb()= |
+| =neb_data= | =OrcaNebResult= / =Mapping= | - | Typed result from =parse_orca_neb()= |
 | =output= | =Path= | - | Output file path |
 | =width= | =float= | =5.37= | Figure width (inches) |
 | =height= | =float= | =5.37= | Figure height (inches) |

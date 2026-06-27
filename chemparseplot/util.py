@@ -60,44 +60,41 @@ def parse_target_coords(text_block):
     return np.array(coords)
 
 
-# --- Toy Script using ASE ---
+def main():
+    """Run the coordinate matching helper as a script."""
+    atoms = None
+    try:
+        # Read the structure using ASE (handles format detection).
+        log.info("Reading %s using ASE...", POSCON_FILENAME)
+        atoms = read(POSCON_FILENAME)
+        log.info("Successfully read %d atoms.", len(atoms))
+        atom_coords_from_poscon = atoms.get_positions()
+    except FileNotFoundError:
+        log.error("Error: File not found at %s", POSCON_FILENAME)
+        atom_coords_from_poscon = None
+    except Exception as e:
+        log.error("Error reading %s with ASE: %s", POSCON_FILENAME, e)
+        atom_coords_from_poscon = None
 
-atoms = None
-try:
-    # 1. Read the structure using ASE (handles format detection)
-    log.info("Reading %s using ASE...", POSCON_FILENAME)
-    atoms = read(POSCON_FILENAME)
-    log.info("Successfully read %d atoms.", len(atoms))
-    atom_coords_from_poscon = atoms.get_positions()  # Get positions as NumPy array
+    log.info("Parsing target coordinates...")
+    target_coords = parse_target_coords(target_coords_text)
 
-except FileNotFoundError:
-    log.error("Error: File not found at %s", POSCON_FILENAME)
-except Exception as e:
-    log.error("Error reading %s with ASE: %s", POSCON_FILENAME, e)
+    if atoms is None or atom_coords_from_poscon is None or target_coords.size == 0:
+        log.warning("Aborted due to errors during parsing or file reading.")
+        return
 
-# 2. Parse the target coordinates
-log.info("Parsing target coordinates...")
-target_coords = parse_target_coords(target_coords_text)
-
-# Proceed only if both steps were successful
-if atoms is not None and target_coords.size > 0:
     log.info("Found %d atoms in %s.", len(atom_coords_from_poscon), POSCON_FILENAME)
     log.info("Found %d target coordinates to match.", len(target_coords))
 
     results = []
-    atom_symbols = atoms.get_chemical_symbols()  # Get symbols for richer output
+    atom_symbols = atoms.get_chemical_symbols()
 
-    # 3. For each target coordinate, find the closest atom
     log.info("Matching target coordinates to closest atoms...")
     for i, target_pos in enumerate(target_coords):
-        # Calculate distances (same numpy method)
         distances = np.linalg.norm(atom_coords_from_poscon - target_pos, axis=1)
+        closest_atom_index = np.argmin(distances)
 
-        # Find the index of the minimum distance
-        closest_atom_index = np.argmin(distances)  # 0-based index from ASE Atoms object
-
-        # Atom ID in eOn is 0 based so no change here
-        # XXX: LAMMPS uses 1 based indexing..
+        # Atom IDs are 0-based in eOn; LAMMPS uses 1-based indexing.
         closest_atom_id = closest_atom_index
         min_dist = distances[closest_atom_index]
 
@@ -112,7 +109,6 @@ if atoms is not None and target_coords.size > 0:
             }
         )
 
-    # 4. Log the results
     log.info("--- Results ---")
     for result in results:
         tp = result["target_pos"]
@@ -137,5 +133,6 @@ if atoms is not None and target_coords.size > 0:
         )
         log.info("     Distance: %.6f", result["distance"])
 
-else:
-    log.warning("Aborted due to errors during parsing or file reading.")
+
+if __name__ == "__main__":
+    main()

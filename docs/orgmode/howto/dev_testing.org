@@ -11,7 +11,7 @@ You want to run tests and check coverage across all optional dependency sets.
 
 ** Single Environment (uv)
 
-For basic development without conda-gated deps:
+For basic development without the heavier optional plotting stacks:
 
 #+BEGIN_SRC shell
 cd chemparseplot
@@ -19,7 +19,7 @@ uv sync --extra test
 uv run pytest tests/ --ignore=tests/tutorials
 #+END_SRC
 
-This covers ~86% of the codebase. The remaining 14% requires jax, pandas, or plotnine.
+This installs the base test floor used by the main parser and NEB suites. The remaining coverage still needs the heavier optional stacks: jax, pandas, and plotnine.
 
 ** Full Coverage (pixi)
 
@@ -106,7 +106,7 @@ def test_some_plot():
 - Coverage threshold: 90% (enforced by ~pixi run cov~)
 - Plot functions: at least smoke tests (figure creation + basic assertions)
 - Parsers: synthetic input data + output schema validation
-- Mock conda-only deps (IRA, jax, tblite) for the base test env
+- Keep base-env tests free of the heavier optional stacks (jax, pandas, plotnine)
 
 * See Also
 

@@ -1,13 +1,11 @@
-from typing import Any
-
 import matplotlib.pyplot as plt
 
-from chemparseplot.plot.structs import BasePlotter
+from chemparseplot.plot.structs import AxisUnits, BasePlotter, EnergyPath, axis_label, to_magnitude
 
 
 def plot_energy_paths(
-    energy_paths: list[Any],
-    units: dict[str, Any],
+    energy_paths: list[EnergyPath],
+    units: AxisUnits,
     colormap_fraction: float = 1.0,
     plotter: BasePlotter | None = None,
 ) -> BasePlotter:
@@ -20,12 +18,12 @@ def plot_energy_paths(
         plotter = BasePlotter()
 
     for idx, path in enumerate(energy_paths):
-        distance_values = path.distance.to(units["distance"])
-        energy_values = path.energy.to(units["energy"])
+        distance_values = to_magnitude(path.distance, units["distance"])
+        energy_values = to_magnitude(path.energy, units["energy"])
 
         from rgpycrumbs.interpolation import spline_interp
 
-        distance_fine, energy_fine = spline_interp(distance_values.m, energy_values.m)
+        distance_fine, energy_fine = spline_interp(distance_values, energy_values)
 
         # Determine the color for each path using the colormap
         color = plotter.colormap(idx / len(energy_paths) * colormap_fraction)
@@ -34,8 +32,8 @@ def plot_energy_paths(
             distance_values, energy_values, linestyle="", marker="o", color=color
         )
 
-    plotter.ax.set_xlabel(f"Distance ({units['distance']})")
-    plotter.ax.set_ylabel(f"Energy ({units['energy']})")
+    plotter.ax.set_xlabel(axis_label("Distance", units["distance"]))
+    plotter.ax.set_ylabel(axis_label("Energy", units["energy"]))
     plotter.ax.legend()
     plotter.ax.minorticks_on()
     plotter.ax.set_facecolor("gray")

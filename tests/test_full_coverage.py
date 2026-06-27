@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 """Full coverage tests for all under-covered modules."""
 
-import importlib.util
 import json
 import tempfile
 from pathlib import Path
@@ -16,6 +15,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
+from tests._optional_imports import has_module_spec, optional_import_available
 
 try:
     import pandas as pd
@@ -32,7 +33,10 @@ try:
 except ImportError:
     _HAS_CMCRAMERI = False
 
-_HAS_RGPYCRUMBS = importlib.util.find_spec("rgpycrumbs") is not None
+_HAS_RGPYCRUMBS = has_module_spec("rgpycrumbs") and optional_import_available(
+    "rgpycrumbs"
+)
+_HAS_PLOTNINE = has_module_spec("plotnine") and optional_import_available("plotnine")
 
 
 # ============================================================
@@ -134,7 +138,9 @@ class TestChemGPHdf5:
         assert y_coords is None
 
     def test_read_h5_path(self):
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_path
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_path
 
         x_ds = MagicMock()
         x_ds.__getitem__ = MagicMock(return_value=np.array([0.0, 1.0, 2.0]))
@@ -149,11 +155,15 @@ class TestChemGPHdf5:
         f.__getitem__ = MagicMock(return_value=path_group)
 
         result = read_h5_path(f, "mep")
+        assert isinstance(result, Mapping)
+        assert isinstance(result, ArrayGroup)
         assert "x" in result
         assert "y" in result
 
     def test_read_h5_points(self):
-        from chemparseplot.parse.chemgp_hdf5 import read_h5_points
+        from collections.abc import Mapping
+
+        from chemparseplot.parse.chemgp_hdf5 import ArrayGroup, read_h5_points
 
         pc1_ds = MagicMock()
         pc1_ds.__getitem__ = MagicMock(return_value=np.array([1.0, 2.0]))
@@ -168,11 +178,16 @@ class TestChemGPHdf5:
         f.__getitem__ = MagicMock(return_value=pts_group)
 
         result = read_h5_points(f, "fps")
+        assert isinstance(result, Mapping)
+        assert isinstance(result, ArrayGroup)
         assert "pc1" in result
         assert "pc2" in result
 
     def test_read_h5_metadata(self):
+        from collections.abc import Mapping
+
         from chemparseplot.parse.chemgp_hdf5 import read_h5_metadata
+        from chemparseplot.parse.types import ParserAttrs
 
         f = MagicMock()
         f.attrs = MagicMock()
@@ -180,6 +195,8 @@ class TestChemGPHdf5:
         f.attrs.__getitem__ = lambda s, k: {"surface": "mb", "version": 2}[k]
 
         meta = read_h5_metadata(f)
+        assert isinstance(meta, Mapping)
+        assert isinstance(meta, ParserAttrs)
         assert meta["surface"] == "mb"
         assert meta["version"] == 2
 
@@ -217,7 +234,10 @@ class TestChemGPHdf5:
 @pytest.mark.skipif(not _HAS_PANDAS, reason="pandas required")
 class TestChemGPJsonl:
     def test_parse_comparison_jsonl(self, tmp_path):
+        from collections.abc import Mapping
+
         from chemparseplot.parse.chemgp_jsonl import parse_comparison_jsonl
+        from chemparseplot.parse.types import ParserAttrs
 
         lines = [
             json.dumps(
@@ -242,6 +262,8 @@ class TestChemGPJsonl:
         assert "gp_minimize" in data.traces
         assert "neb" in data.traces
         assert data.summary is not None
+        assert isinstance(data.summary, Mapping)
+        assert isinstance(data.summary, ParserAttrs)
         assert data.summary["total"] == 10
 
         gp_trace = data.traces["gp_minimize"]
@@ -290,7 +312,10 @@ class TestChemGPJsonl:
         assert len(data.energy_mae_vs_true) == 2
 
     def test_parse_gp_quality_jsonl(self, tmp_path):
+        from collections.abc import Mapping
+
         from chemparseplot.parse.chemgp_jsonl import parse_gp_quality_jsonl
+        from chemparseplot.parse.types import ParserAttrs
 
         lines = [
             json.dumps(
@@ -374,6 +399,8 @@ class TestChemGPJsonl:
         f.write_text("\n".join(lines))
 
         data = parse_gp_quality_jsonl(f)
+        assert isinstance(data.meta, Mapping)
+        assert isinstance(data.meta, ParserAttrs)
         assert data.meta["nx"] == 2
         assert len(data.stationary) == 2
         assert data.stationary[0].kind == "minimum"
@@ -642,9 +669,7 @@ class TestChemGPPlot:
         save_plot(fig, output)
         assert output.exists()
 
-    @pytest.mark.skipif(
-        not importlib.util.find_spec("plotnine"), reason="plotnine required"
-    )
+    @pytest.mark.skipif(not _HAS_PLOTNINE, reason="plotnine required")
     def test_save_plot_plotnine(self, tmp_path):
         from chemparseplot.plot.chemgp import save_plot
 
@@ -726,13 +751,13 @@ class TestPlumedPlot:
 # ============================================================
 @pytest.mark.skipif(not _HAS_CMCRAMERI, reason="cmcrameri required")
 class TestPlotStructs:
-    def test_energy_path_namedtuple(self):
+    def test_energy_path_record(self):
         from chemparseplot.plot.structs import EnergyPath
 
         ep = EnergyPath(label="test", distance=[1, 2], energy=[3, 4])
         assert ep.label == "test"
 
-    def test_xy_data_namedtuple(self):
+    def test_xy_data_record(self):
         from chemparseplot.plot.structs import XYData
 
         xy = XYData(label="a", x=[1], y=[2])
@@ -823,7 +848,7 @@ class TestPlotInitLazy:
         assert hasattr(structs, "BasePlotter")
 
     @pytest.mark.skipif(
-        not _HAS_PANDAS or not importlib.util.find_spec("plotnine"),
+        not _HAS_PANDAS or not _HAS_PLOTNINE,
         reason="chemgp needs pandas + plotnine",
     )
     def test_lazy_chemgp(self):
@@ -835,6 +860,7 @@ class TestPlotInitLazy:
         from chemparseplot.plot import ureg
 
         assert ureg is not None
+        assert ureg._def_parser._diskcache is None
 
 
 # ============================================================
@@ -956,6 +982,7 @@ class TestOpiParserFull:
 class TestPlumedParse:
     def test_calculate_fes_2d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
+        from chemparseplot.parse.types import PlumedFesResult
 
         hills_data = np.array(
             [
@@ -966,6 +993,7 @@ class TestPlumedParse:
         )
         hills = {"hillsfile": hills_data, "per": [False, False]}
         result = calculate_fes_from_hills(hills, npoints=16)
+        assert isinstance(result, PlumedFesResult)
         assert result["dimension"] == 2
         assert result["fes"].shape == (16, 16)
         assert len(result["x"]) == 16
@@ -973,6 +1001,7 @@ class TestPlumedParse:
 
     def test_calculate_fes_1d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills
+        from chemparseplot.parse.types import PlumedFesResult
 
         hills_data = np.array(
             [
@@ -983,6 +1012,7 @@ class TestPlumedParse:
         )
         hills = {"hillsfile": hills_data, "per": [False]}
         result = calculate_fes_from_hills(hills, npoints=16)
+        assert isinstance(result, PlumedFesResult)
         assert result["dimension"] == 1
         assert len(result["fes"]) == 16
 
@@ -1079,6 +1109,7 @@ class TestPlumedParse:
 
     def test_find_fes_minima_2d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         # Create hills that produce a surface with at least one minimum
         hills_data = np.array(
@@ -1092,11 +1123,13 @@ class TestPlumedParse:
         minima = find_fes_minima(fes_result, nbins=4)
         # May or may not find minima depending on the surface, but should not crash
         if minima is not None:
+            assert isinstance(minima, PlumedMinimaResult)
             assert "minima" in minima
             assert "letter" in minima["minima"].columns
 
     def test_find_fes_minima_1d(self):
         from chemparseplot.parse.plumed import calculate_fes_from_hills, find_fes_minima
+        from chemparseplot.parse.types import PlumedMinimaResult
 
         hills_data = np.array(
             [
@@ -1109,6 +1142,7 @@ class TestPlumedParse:
         result = find_fes_minima(fes_result, nbins=4)
         # May or may not find minima
         if result is not None:
+            assert isinstance(result, PlumedMinimaResult)
             assert "minima" in result
 
     def test_find_fes_minima_bad_nbins(self):
@@ -1160,6 +1194,32 @@ class TestNebPlotSurface:
         assert cb is not None
         plt.close(fig)
 
+    def test_plot_landscape_path_overlay_adds_visibility_stroke(self):
+        from matplotlib.collections import LineCollection, PathCollection
+
+        from chemparseplot.plot.neb import plot_landscape_path_overlay
+
+        fig, ax = plt.subplots()
+        r = np.linspace(0, 3, 11)
+        p = np.linspace(3, 0, 11)
+        z = np.sin(np.linspace(0, np.pi, 11))
+        plot_landscape_path_overlay(ax, r, p, z, "viridis", "E (eV)")
+
+        line = next(
+            collection
+            for collection in ax.collections
+            if isinstance(collection, LineCollection)
+        )
+        points = next(
+            collection
+            for collection in ax.collections
+            if isinstance(collection, PathCollection)
+        )
+
+        assert len(line.get_path_effects()) == 2
+        np.testing.assert_allclose(points.get_sizes(), np.array([42]))
+        plt.close(fig)
+
     def test_smoothing_params(self):
         from chemparseplot.plot.neb import SmoothingParams
 
@@ -1178,15 +1238,18 @@ class TestNebPlotSurface:
 
     def test_plot_orca_neb_profile(self, tmp_path):
         from chemparseplot.plot.neb import plot_orca_neb_profile
+        from chemparseplot.parse.types import OrcaNebResult
 
-        neb_data = {
-            "energies": [0.0, 0.5, 1.0, 0.5, 0.0],
-            "n_images": 5,
-            "barrier_forward": 1.0,
-            "barrier_reverse": 1.0,
-        }
+        neb_data = OrcaNebResult(
+            energies=np.array([0.0, 0.5, 1.0, 0.5, 0.0]),
+            converged=True,
+            barrier_forward=1.0,
+            barrier_reverse=1.0,
+            source="opi",
+            orca_version="6.1",
+        )
         output = tmp_path / "profile.png"
-        plot_orca_neb_profile(neb_data, output)
+        plot_orca_neb_profile(neb_data, output, energy_unit="kcal/mol")
         assert output.exists()
 
     def test_plot_orca_neb_profile_no_energies(self, tmp_path):
@@ -1209,7 +1272,7 @@ class TestNebPlotSurface:
             "barrier_reverse": 0.8,
         }
         output = tmp_path / "orca_profile.png"
-        plot_orca_neb_energy_profile(neb_data, output)
+        plot_orca_neb_energy_profile(neb_data, output, energy_unit="kJ/mol")
         assert output.exists()
 
     def test_plot_orca_neb_energy_profile_no_rmsd(self, tmp_path):
@@ -1324,9 +1387,11 @@ class TestTrajectoryHdf5:
 
     def test_load_neb_result(self, tmp_path):
         from chemparseplot.parse.trajectory.hdf5 import load_neb_result
+        from chemparseplot.parse.types import TrajectoryNebResult
 
         h5_path = self._make_h5_result(tmp_path)
         result = load_neb_result(h5_path)
+        assert isinstance(result, TrajectoryNebResult)
         assert "path" in result
         assert "convergence" in result
         assert "metadata" in result
@@ -1335,10 +1400,12 @@ class TestTrajectoryHdf5:
 
     def test_load_neb_history(self, tmp_path):
         from chemparseplot.parse.trajectory.hdf5 import load_neb_history
+        from chemparseplot.parse.types import TrajectoryNebPath
 
         h5_path = self._make_h5_history(tmp_path)
         steps = load_neb_history(h5_path)
         assert len(steps) == 3
+        assert isinstance(steps[0], TrajectoryNebPath)
         assert "energies" in steps[0]
 
     def test_result_to_profile_dat(self, tmp_path):
@@ -1402,9 +1469,15 @@ class TestTrajectoryHdf5:
                 ]
             )
 
-        with patch(
-            "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
-            side_effect=fake_rmsd,
+        with (
+            patch(
+                "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
+                side_effect=fake_rmsd,
+            ),
+            patch(
+                "rgpycrumbs._aux._import_from_parent_env",
+                return_value=type("FakeIRAModule", (), {"IRA": lambda self: object()})(),
+            ),
         ):
             df = history_to_landscape_df(h5_path)
 
@@ -1575,9 +1648,15 @@ class TestTrajectoryNeb:
                 ]
             )
 
-        with patch(
-            "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
-            side_effect=fake_rmsd,
+        with (
+            patch(
+                "rgpycrumbs.geom.api.alignment.calculate_rmsd_from_ref",
+                side_effect=fake_rmsd,
+            ),
+            patch(
+                "rgpycrumbs._aux._import_from_parent_env",
+                return_value=type("FakeIRAModule", (), {"IRA": lambda self: object()})(),
+            ),
         ):
             df = trajectory_to_landscape_df(atoms_list, step=0)
 
@@ -1643,15 +1722,18 @@ class TestTwoDimPlotMethods:
 class TestOrcaNebHighLevel:
     def test_plot_orca_neb_profile(self, tmp_path):
         from chemparseplot.plot.neb import plot_orca_neb_profile
+        from chemparseplot.parse.types import OrcaNebResult
 
-        data = {
-            "energies": [0.0, 0.5, 1.0, 0.8, 0.2],
-            "n_images": 5,
-            "barrier_forward": 1.0,
-            "barrier_reverse": 0.8,
-        }
+        data = OrcaNebResult(
+            energies=np.array([0.0, 0.5, 1.0, 0.8, 0.2]),
+            converged=True,
+            barrier_forward=1.0,
+            barrier_reverse=0.8,
+            source="opi",
+            orca_version="6.1",
+        )
         output = tmp_path / "profile.png"
-        plot_orca_neb_profile(data, output)
+        plot_orca_neb_profile(data, output, energy_unit="kcal/mol")
         assert output.exists()
 
     def test_plot_orca_neb_profile_no_barrier(self, tmp_path):
@@ -1676,7 +1758,7 @@ class TestOrcaNebHighLevel:
             "barrier_reverse": 0.9,
         }
         output = tmp_path / "eprofile.png"
-        plot_orca_neb_energy_profile(data, output)
+        plot_orca_neb_energy_profile(data, output, energy_unit="kJ/mol")
         assert output.exists()
 
     def test_plot_orca_neb_energy_profile_no_rmsd(self, tmp_path):

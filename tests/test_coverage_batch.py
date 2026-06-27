@@ -9,6 +9,8 @@ matplotlib.use("Agg")
 
 import importlib
 
+from tests._optional_imports import has_module_spec, optional_import_available
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -47,6 +49,17 @@ class TestFindFilePaths:
 # chemparseplot.util (parse_target_coords)
 # ============================================================
 class TestParseTargetCoords:
+    def test_import_has_no_side_effects(self, monkeypatch):
+        import chemparseplot.util as util_mod
+
+        def fail_read(*_args, **_kwargs):
+            msg = "chemparseplot.util import should not read files"
+            raise AssertionError(msg)
+
+        monkeypatch.setattr("ase.io.read", fail_read)
+        reloaded = importlib.reload(util_mod)
+        assert hasattr(reloaded, "parse_target_coords")
+
     def test_valid_coords(self):
         from chemparseplot.util import parse_target_coords
 
@@ -192,7 +205,7 @@ class TestPlotLazyImports:
 # chemparseplot.parse.neb_utils (calculate_landscape_coords)
 # ============================================================
 @pytest.mark.skipif(
-    importlib.util.find_spec("rgpycrumbs") is None,
+    not (has_module_spec("rgpycrumbs") and optional_import_available("rgpycrumbs")),
     reason="rgpycrumbs not installed",
 )
 class TestCalculateLandscapeCoords:
@@ -230,13 +243,14 @@ class TestCalculateLandscapeCoords:
             assert rmsd_a[0] == pytest.approx(0.0, abs=1e-10)
 
     def test_explicit_refs(self):
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         from ase.build import molecule
 
         atoms_list = [molecule("H2O") for _ in range(3)]
         ref_a = molecule("H2O")
         ref_b = molecule("NH3")
+        mock_ira = MagicMock()
 
         captured_refs = []
 
@@ -250,17 +264,20 @@ class TestCalculateLandscapeCoords:
         ):
             from chemparseplot.parse.neb_utils import calculate_landscape_coords
 
-            calculate_landscape_coords(atoms_list, None, 1.8, ref_a=ref_a, ref_b=ref_b)
+            calculate_landscape_coords(
+                atoms_list, mock_ira, 1.8, ref_a=ref_a, ref_b=ref_b
+            )
             assert len(captured_refs) == 2
             assert captured_refs[0] is ref_a
             assert captured_refs[1] is ref_b
 
     def test_defaults_to_first_last(self):
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
 
         from ase.build import molecule
 
         atoms_list = [molecule("H2O"), molecule("NH3"), molecule("CH4")]
+        mock_ira = MagicMock()
         captured_refs = []
 
         def fake_rmsd(atoms, ira, ref_atom, ira_kmax):
@@ -273,9 +290,18 @@ class TestCalculateLandscapeCoords:
         ):
             from chemparseplot.parse.neb_utils import calculate_landscape_coords
 
-            calculate_landscape_coords(atoms_list, None, 1.8)
+            calculate_landscape_coords(atoms_list, mock_ira, 1.8)
             assert captured_refs[0] is atoms_list[0]
             assert captured_refs[1] is atoms_list[-1]
+
+    def test_requires_ira_for_landscape_coords(self):
+        from ase.build import molecule
+
+        from chemparseplot.parse.neb_utils import calculate_landscape_coords
+
+        atoms_list = [molecule("H2O") for _ in range(3)]
+        with pytest.raises(ImportError, match="IRA is required"):
+            calculate_landscape_coords(atoms_list, None, 1.8)
 
 
 # ============================================================

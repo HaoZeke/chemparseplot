@@ -36,7 +36,7 @@ def calculate_landscape_coords(
     ```
 
     :param atoms_list: List of ASE Atoms objects representing the path.
-    :param ira_instance: An instantiated IRA object (or None).
+    :param ira_instance: An instantiated IRA object.
     :param ira_kmax: kmax factor for IRA.
     :param ref_a: Reference structure A. Defaults to ``atoms_list[0]``.
     :param ref_b: Reference structure B. Defaults to ``atoms_list[-1]``.
@@ -45,6 +45,14 @@ def calculate_landscape_coords(
     from concurrent.futures import ThreadPoolExecutor
 
     from rgpycrumbs.geom.api.alignment import calculate_rmsd_from_ref
+
+    if ira_instance is None:
+        msg = (
+            "IRA is required for chemically meaningful RMSD landscape coordinates. "
+            "Install or provide ira_mod instead of falling back to order-dependent "
+            "ASE alignment."
+        )
+        raise ImportError(msg)
 
     if ref_a is None:
         ref_a = atoms_list[0]

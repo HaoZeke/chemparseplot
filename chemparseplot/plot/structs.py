@@ -1,22 +1,110 @@
-from collections import namedtuple
+from dataclasses import dataclass
+from typing import Any, Protocol, TypedDict
 
 import matplotlib.pyplot as plt
+import numpy as np
 from cmcrameri import cm
 
-# Define a namedtuple for energy paths
-EnergyPath = namedtuple("EnergyPath", ["label", "distance", "energy"])
-"""Named tuple holding a labeled energy path (label, distance, energy).
+_ENERGY_FACTORS = {
+    "eV": 1.0,
+    "kcal/mol": 23.06054783061903,
+    "kJ/mol": 96.48533212331002,
+}
 
-```{versionadded} 0.0.3
-```
-"""
 
-XYData = namedtuple("XYData", ["label", "x", "y"])
-"""Named tuple holding generic labeled XY data (label, x, y).
+class UnitConverted(Protocol):
+    """Protocol for the result of converting a unit-aware series."""
 
-```{versionadded} 0.0.3
-```
-"""
+    @property
+    def m(self) -> Any: ...
+
+
+class UnitSeries(Protocol):
+    """Protocol for pint-like data accepted by plotting helpers."""
+
+    def to(self, unit: str) -> UnitConverted: ...
+
+
+class AxisUnits(TypedDict):
+    """Canonical axis-unit mapping for 2D plot helpers."""
+
+    distance: str
+    energy: str
+
+
+def to_magnitude(values: UnitSeries, unit: str) -> Any:
+    """Convert a unit-aware series to magnitudes in the requested unit."""
+
+    return values.to(unit).m
+
+
+def axis_label(label: str, unit: str) -> str:
+    """Format a consistent axis label with units."""
+
+    return f"{label} ({unit})"
+
+
+def convert_energy(values: Any, unit: str, *, source_unit: str = "eV") -> np.ndarray:
+    """Convert energy-like values between supported presentation units."""
+
+    factor = _ENERGY_FACTORS[unit] / _ENERGY_FACTORS[source_unit]
+    return np.asarray(values, dtype=float) * factor
+
+
+def convert_energy_curvature(
+    values: Any, unit: str, *, source_unit: str = "eV"
+) -> np.ndarray:
+    """Convert eigenvalue-like values while preserving the Angstrom denominator."""
+
+    return convert_energy(values, unit, source_unit=source_unit)
+
+
+def energy_axis_label(unit: str, *, label: str = "Energy") -> str:
+    """Format a canonical energy-axis label."""
+
+    return axis_label(label, unit)
+
+
+def eigenvalue_axis_label(unit: str, *, label: str = "Eigenvalue") -> str:
+    """Format a canonical curvature-axis label."""
+
+    return f"{label} ({unit}/$\\AA^2$)"
+
+
+@dataclass(frozen=True, slots=True)
+class EnergyPath:
+    """Typed energy path with unit-aware distance and energy series.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
+    label: str
+    distance: UnitSeries
+    energy: UnitSeries
+
+
+@dataclass(frozen=True, slots=True)
+class XYData:
+    """Typed generic XY data with unit-aware axes.
+
+    ```{versionadded} 0.0.3
+    ```
+    """
+
+    label: str
+    x: UnitSeries
+    y: UnitSeries
+
+
+@dataclass(frozen=True, slots=True)
+class StructurePlacement:
+    """Typed structure placement for strips and inset-aligned labels."""
+
+    atoms: Any
+    x: float
+    label: str
+    y: float | None = None
 
 
 # Baseline plotting class
@@ -51,7 +139,7 @@ class TwoDimPlot(BasePlotter):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.data = []  # Stores XYData objects
+        self.data: list[XYData] = []
         self.x_unit = "dimensionless"
         self.y_unit = "dimensionless"
         self.x_label = "X"
@@ -68,14 +156,14 @@ class TwoDimPlot(BasePlotter):
         self.redraw_plot()
 
     def update_labels(self):
-        self.ax.set_xlabel(f"{self.x_label} ({self.x_unit})")
-        self.ax.set_ylabel(f"{self.y_label} ({self.y_unit})")
+        self.ax.set_xlabel(axis_label(self.x_label, self.x_unit))
+        self.ax.set_ylabel(axis_label(self.y_label, self.y_unit))
 
     def redraw_plot(self):
         self.ax.clear()
         for idx, xy_data in enumerate(self.data):
-            x_values = xy_data.x.to(self.x_unit).m
-            y_values = xy_data.y.to(self.y_unit).m
+            x_values = to_magnitude(xy_data.x, self.x_unit)
+            y_values = to_magnitude(xy_data.y, self.y_unit)
             from rgpycrumbs.interpolation import spline_interp
 
             distance_fine, y_fine = spline_interp(x_values, y_values)
@@ -96,7 +184,7 @@ class TwoDimPlot(BasePlotter):
         self.update_labels()
         self.fig.canvas.draw_idle()
 
-    def add_data(self, xy_data):
+    def add_data(self, xy_data: XYData):
         self.data.append(xy_data)
         self.redraw_plot()
 

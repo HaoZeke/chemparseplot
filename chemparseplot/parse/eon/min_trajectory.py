@@ -17,10 +17,19 @@ import polars as pl
 import readcon
 from ase import Atoms
 
+from ._trajectory_common import (
+    frame_rows_to_table,
+    load_movie_and_table,
+    read_first_structure,
+    read_optional_first,
+)
+
 log = logging.getLogger(__name__)
 
+MIN_METADATA_COLUMNS = ("frame_index", "step_size", "convergence", "energy")
 
-@dataclass
+
+@dataclass(frozen=True, slots=True)
 class MinTrajectoryData:
     """Container for a minimization trajectory.
 
@@ -74,9 +83,22 @@ def parse_min_con(path: Path) -> list[Atoms]:
     return readcon.read_con_as_ase(str(path))
 
 
+def table_from_min_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
+    """Reconstruct minimization metrics from per-frame CON metadata."""
+
+    df = frame_rows_to_table(
+        frames,
+        MIN_METADATA_COLUMNS,
+        allow_leading_incomplete=False,
+    )
+    if df.is_empty():
+        return df
+    return df.rename({"frame_index": "iteration"})
+
+
 def load_min_trajectory(
     job_dir: Path,
-    prefix: str = "min",
+    prefix: str = "minimization",
 ) -> MinTrajectoryData:
     """Load a complete minimization trajectory from an eOn job directory.
 
@@ -87,7 +109,7 @@ def load_min_trajectory(
     job_dir
         Path to the eOn job output directory.
     prefix
-        Movie file prefix (default ``"min"``). The movie file is
+        Movie file prefix (default ``"minimization"``). The movie file is
         ``{prefix}`` and the data file is ``{prefix}.dat``.
 
     Returns
@@ -100,29 +122,19 @@ def load_min_trajectory(
     FileNotFoundError
         If required files are missing.
     """
-    movie_file = job_dir / prefix
-    if not movie_file.exists():
-        movie_file = job_dir / f"{prefix}.con"
-    if not movie_file.exists():
-        msg = f"No minimization movie file ({prefix}) found in {job_dir}"
-        raise FileNotFoundError(msg)
+    atoms_list, dat_df = load_movie_and_table(
+        job_dir,
+        movie_stem=prefix,
+        dat_name=f"{prefix}.dat",
+        parse_dat=parse_min_dat,
+        metadata_columns=MIN_METADATA_COLUMNS,
+        build_table_from_metadata=table_from_min_metadata,
+        log_label="minimization",
+    )
 
-    dat_file = job_dir / f"{prefix}.dat"
-    if not dat_file.exists():
-        msg = f"No {prefix}.dat found in {job_dir} (was write_movies enabled?)"
-        raise FileNotFoundError(msg)
-
-    log.info("Loading minimization trajectory from %s", job_dir)
-    atoms_list = parse_min_con(movie_file)
-    dat_df = parse_min_dat(dat_file)
-    log.info("Loaded %d frames, %d data rows", len(atoms_list), dat_df.height)
-
-    # Final structure: prefer explicit min.con, fall back to last movie frame
-    min_con = job_dir / "min.con"
-    if min_con.exists():
-        final = readcon.read_con_as_ase(str(min_con))[0]
-    else:
-        final = atoms_list[-1]
+    # Prefer an explicit final structure matching the movie prefix, then the
+    # legacy eOn ``min.con`` output, before falling back to the last movie frame.
+    final = read_optional_first(job_dir, (f"{prefix}.con", "min.con")) or atoms_list[-1]
 
     return MinTrajectoryData(
         atoms_list=atoms_list,

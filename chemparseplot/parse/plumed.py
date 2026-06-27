@@ -9,6 +9,8 @@ import warnings
 
 import numpy as np
 
+from chemparseplot.parse.types import PlumedFesResult, PlumedMinimaResult
+
 _MIN_COLS_1D = 5
 _MIN_COLS_2D = 7
 _ALPHABET_SIZE = 26
@@ -135,15 +137,7 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
                                  Defaults to 256.
 
     Returns:
-        dict: A dictionary containing the FES and associated metadata, with keys:
-              'fes': The calculated FES as a 1D or 2D NumPy array.
-              'hills': The original hills data used.
-              'rows': Number of grid points (npoints).
-              'dimension': 1 or 2.
-              'per': Periodicity flags.
-              'x': The grid coordinates for the first dimension (CV1).
-              'y': The grid coordinates for the second dimension (CV2, if applicable).
-              'pcv1', 'pcv2': Periodic boundary values.
+        PlumedFesResult: Typed free-energy-surface data with mapping-style access.
     """
     hills_data = hills["hillsfile"]
     num_hills, num_cols = hills_data.shape
@@ -225,17 +219,17 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
             fesm = _calculate_fes_2d(selected_hills, x, y, hills["per"], npoints)
 
         # Prepare results
-        result = {
-            "fes": fesm,
-            "hills": hills_data,
-            "rows": npoints,
-            "dimension": dimension,
-            "per": hills["per"],
-            "x": x,
-            "y": y,
-            "pcv1": hills.get("pcv1"),
-            "pcv2": hills.get("pcv2"),
-        }
+        result = PlumedFesResult(
+            fes=fesm,
+            hills=hills_data,
+            rows=npoints,
+            dimension=dimension,
+            per=hills["per"],
+            x=x,
+            y=y,
+            pcv1=hills.get("pcv1"),
+            pcv2=hills.get("pcv2"),
+        )
 
     # --- Case 2: 1D FES (CV1, sigma1, height) ---
     elif num_cols >= _MIN_COLS_1D:  # Usually 5 for Plumed output
@@ -273,16 +267,17 @@ def calculate_fes_from_hills(hills, imin=1, imax=None, xlim=None, ylim=None, npo
             fesm = _calculate_fes_1d(selected_hills, x, hills["per"], npoints)
 
         # Prepare results
-        result = {
-            "fes": fesm,
-            "hills": hills_data,
-            "rows": npoints,
-            "dimension": dimension,
-            "per": hills["per"],
-            "x": x,
-            "pcv1": hills.get("pcv1"),
-            "pcv2": hills.get("pcv2"),
-        }
+        result = PlumedFesResult(
+            fes=fesm,
+            hills=hills_data,
+            rows=npoints,
+            dimension=dimension,
+            per=hills["per"],
+            x=x,
+            y=None,
+            pcv1=hills.get("pcv1"),
+            pcv2=hills.get("pcv2"),
+        )
 
     else:
         msg = (
@@ -307,8 +302,8 @@ def find_fes_minima(fes_result, nbins=8):
         nbins (int): The number of bins to divide each dimension into for the search.
 
     Returns:
-        dict: A dictionary containing a pandas DataFrame of the minima and the original
-              FES data. Returns None if no minima are found.
+        PlumedMinimaResult: Typed minima result with mapping-style access.
+        Returns None if no minima are found.
     """
     fes = fes_result["fes"]
     rows = fes_result["rows"]
@@ -429,7 +424,4 @@ def find_fes_minima(fes_result, nbins=8):
         labels.extend(extra_labels)
     minima_df.insert(0, "letter", labels[: len(minima_df)])
 
-    # Create a copy of the input dictionary and add the minima DataFrame
-    minima_result = fes_result.copy()
-    minima_result["minima"] = minima_df
-    return minima_result
+    return PlumedMinimaResult(minima=minima_df, fes_result=fes_result)

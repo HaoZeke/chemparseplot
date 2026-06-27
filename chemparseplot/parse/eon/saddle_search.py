@@ -3,6 +3,7 @@ import gzip
 import logging
 import os
 import re
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
@@ -18,6 +19,24 @@ except ImportError:
     BLESS_LOG = _NUM = tail = None
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, slots=True)
+class EonSaddleResults:
+    """Parsed subset of ``results.dat`` needed for saddle post-processing."""
+
+    termination_status: str
+    pes_calls: int | None = None
+    iter_steps: int | None = None
+    saddle_energy: float | None = None
+
+    @property
+    def terminal_only(self) -> bool:
+        return (
+            self.pes_calls is None
+            and self.iter_steps is None
+            and self.saddle_energy is None
+        )
 
 
 class EONSaddleStatus(Enum):
@@ -86,15 +105,14 @@ def extract_saddle_gprd(log: list[str]):
     return MolGeom(pos=numdat[0], energy=numdat[1], forces=numdat[2])
 
 
-def _read_results_dat(eresp: Path) -> dict:
+def _read_results_dat(eresp: Path) -> EonSaddleResults | None:
     """Reads and parses the results.dat file.
 
     Args:
         eresp: Path to the eOn results directory.
 
     Returns:
-        A dictionary containing the parsed data from results.dat, or None if the file
-        does not exist or the termination reason is not 0.
+        Parsed results data, or ``None`` if the file does not exist.
     """
     respth = eresp / "results.dat"
     if not respth.exists():
@@ -103,21 +121,18 @@ def _read_results_dat(eresp: Path) -> dict:
     rdat = respth.read_text()
     termination_int = int(re.search(r"(\d+) termination_reason", rdat).group(1))
     termination_reason = EONSaddleStatus.from_value(termination_int)
-    term_dict = {
-        "termination_status": str(termination_reason).split(".")[-1],
-    }
+    termination_status = str(termination_reason).split(".")[-1]
     if termination_reason != EONSaddleStatus.GOOD:
-        return term_dict
+        return EonSaddleResults(termination_status=termination_status)
 
-    results_data = {
-        "pes_calls": int(re.search(r"(\d+) total_force_calls", rdat).group(1)),
-        "iter_steps": int(re.search(r"(\d+) iterations", rdat).group(1)),
-        "saddle_energy": float(
+    return EonSaddleResults(
+        termination_status=termination_status,
+        pes_calls=int(re.search(r"(\d+) total_force_calls", rdat).group(1)),
+        iter_steps=int(re.search(r"(\d+) iterations", rdat).group(1)),
+        saddle_energy=float(
             re.search(r"(-?\d+\.\d+) potential_energy_saddle", rdat).group(1)
         ),
-    }
-    results_data |= term_dict
-    return results_data
+    )
 
 
 def _find_log_file(eresp: Path) -> Path | None:
@@ -289,7 +304,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
         )
 
-    if list(results_data.keys()) == ["termination_status"]:
+    if results_data.terminal_only:
         return SaddleMeasure(
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),
@@ -297,16 +312,16 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             method=meth.saddle,
             dimer_rot=meth.rot,
             dimer_trans=meth.trans,
-            termination_status=results_data["termination_status"],
+            termination_status=results_data.termination_status,
         )
 
     # 2. Find the log file
     log_file = _find_log_file(eresp)
     if log_file is None:
         return SaddleMeasure(
-            pes_calls=results_data["pes_calls"],
-            iter_steps=results_data["iter_steps"],
-            saddle_energy=results_data["saddle_energy"],
+            pes_calls=results_data.pes_calls,
+            iter_steps=results_data.iter_steps,
+            saddle_energy=results_data.saddle_energy,
             tot_time=0.0,
             saddle_fmax=0.0,
             success=False,
@@ -315,7 +330,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             dimer_trans=meth.trans,
             mol_id=getattr(rloc, "mol_id", None),
             spin=getattr(rloc, "spin", None),
-            termination_status=results_data["termination_status"],
+            termination_status=results_data.termination_status,
         )
 
     # 3. Parse the log file
@@ -336,17 +351,17 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
             method=meth.saddle,
             dimer_rot=meth.rot,
             dimer_trans=meth.trans,
-            pes_calls=results_data["pes_calls"],
-            iter_steps=results_data["iter_steps"],
-            saddle_energy=results_data["saddle_energy"],
-            termination_status=results_data["termination_status"],
+            pes_calls=results_data.pes_calls,
+            iter_steps=results_data.iter_steps,
+            saddle_energy=results_data.saddle_energy,
+            termination_status=results_data.termination_status,
         )
 
     return SaddleMeasure(
-        pes_calls=results_data["pes_calls"],
-        iter_steps=results_data["iter_steps"],
+        pes_calls=results_data.pes_calls,
+        iter_steps=results_data.iter_steps,
         tot_time=tot_time,
-        saddle_energy=results_data["saddle_energy"],
+        saddle_energy=results_data.saddle_energy,
         saddle_fmax=saddle_fmax,
         success=True,
         method=meth.saddle,
@@ -354,11 +369,11 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
         dimer_trans=meth.trans,
         init_energy=init_energy,
         barrier=(
-            results_data["saddle_energy"] - init_energy
+            results_data.saddle_energy - init_energy
             if init_energy is not None
             else None
         ),
         mol_id=getattr(rloc, "mol_id", None),
         spin=getattr(rloc, "spin", None),
-        termination_status=results_data["termination_status"],
+        termination_status=results_data.termination_status,
     )
