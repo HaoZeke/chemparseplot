@@ -73,6 +73,12 @@ See the [[https://chemparseplot.rgoswami.me/installation.html][installation guid
 - Trajectory formats
   + HDF5 trajectories (ChemGP output with pre-computed forces)
   + Generic ASE-readable formats (extxyz, .traj) for NEB analysis
+- Multi-segment NEB stitching (~stitch_neb_segments~) for continuous bands
+  across chained minimizations (v1.8+)
+- Metadata-native eOn CON frames (prefer JSON metadata energies over ~.dat~
+  tables) with typed parser results shared by NEB and single-ended tools
+- Unit-aware NEB/optimization plot helpers (~convert_neb_values~, centralized
+  strip rendering) consumed by ~rgpycrumbs~ CLIs
 
 ** Documentation
 

@@ -77,6 +77,9 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 -   **Unit preserving** throughout via `pint`
 -   **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation,
     and structure analysis
+-   **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+)
+-   **Metadata-native eOn** CON frames and typed parser results for NEB and single-ended tools
+-   **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs
 
 
 <a id="org3c6cfc2"></a>
