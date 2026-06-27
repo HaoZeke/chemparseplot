@@ -48,7 +48,6 @@ xyzrender = ["xyzrender>=0.1.2"]
 all = ["chemparseplot[plot,neb,xyzrender]"]
 release = [
   "build>=0.10",
-  "cocogitto>=6.2",
   "towncrier>=24.8.0",
   "twine>=4.0",
   "wheel>=0.40",

@@ -16,7 +16,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
-      - run: uv sync --all-extras
+      - run: uv sync --extra test --extra plot --extra neb
       - run: uv run pytest --cov=chemparseplot tests
 
   lint:
@@ -26,7 +26,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --all-extras
+      - run: uv sync --extra lint --extra test
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 
@@ -37,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
-      - run: uv sync --all-extras
+      - run: uv sync --extra doc --extra test --extra plot
       - run: uv run sphinx-build doc/source/ doc/build
 
   build:
