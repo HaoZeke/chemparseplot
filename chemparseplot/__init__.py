@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: MIT
 """chemparseplot public surface with deferred heavy submodules.
 
-``parse`` and ``units`` remain importable as attributes, but ``units`` (pint)
-is only loaded on first access so a bare ``import chemparseplot`` stays light
-when only parsers are needed via ``chemparseplot.parse``.
+``parse`` and ``units`` remain attributes; they load via importlib on first
+access so a bare ``import chemparseplot`` does not construct the pint registry
+or pull the full parse package graph until needed.
 """
 
 from __future__ import annotations
 
+import importlib
 from typing import TYPE_CHECKING, Any
 
 __all__ = ["parse", "units"]
@@ -21,11 +22,7 @@ if TYPE_CHECKING:
 
 def __getattr__(name: str) -> Any:
     if name == "parse":
-        from chemparseplot import parse as _parse
-
-        return _parse
+        return importlib.import_module("chemparseplot.parse")
     if name == "units":
-        from chemparseplot import units as _units
-
-        return _units
+        return importlib.import_module("chemparseplot.units")
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
