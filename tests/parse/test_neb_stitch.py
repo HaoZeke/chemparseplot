@@ -68,3 +68,27 @@ def test_stitch_two_segments_dedupes_and_aligns(tmp_path):
     # Energy continuity at the junction equals B's own internal step.
     junction_step = energies[2] - energies[1]
     assert junction_step == pytest.approx(1.0)
+
+
+def test_cumulative_rmsd_matches_stepwise_and_is_vectorized():
+    """Shipped cumulative RMSD agrees with per-frame steps (vectorized path)."""
+    import numpy as np
+
+    from chemparseplot.parse.eon.stitch import _cartesian_rmsd, _cumulative_rmsd
+
+    class _A:
+        def __init__(self, p):
+            self._p = np.asarray(p, dtype=float)
+
+        def get_positions(self):
+            return self._p
+
+    rng = np.random.default_rng(42)
+    atoms = [_A(rng.normal(size=(12, 3))) for _ in range(25)]
+    got = _cumulative_rmsd(atoms)
+    slow = [0.0]
+    for prev, cur in zip(atoms[:-1], atoms[1:], strict=True):
+        slow.append(slow[-1] + _cartesian_rmsd(prev, cur))
+    assert np.allclose(got, slow)
+    assert got[0] == 0.0
+    assert len(got) == len(atoms)

@@ -1,7 +1,6 @@
 import logging
 
 import numpy as np
-from ase.io import read
 
 log = logging.getLogger(__name__)
 
@@ -65,6 +64,8 @@ def main():
     atoms = None
     try:
         # Read the structure using ASE (handles format detection).
+        from ase.io import read
+
         log.info("Reading %s using ASE...", POSCON_FILENAME)
         atoms = read(POSCON_FILENAME)
         log.info("Successfully read %d atoms.", len(atoms))

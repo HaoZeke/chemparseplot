@@ -90,11 +90,20 @@ def _cartesian_rmsd(atoms_a, atoms_b) -> float:
 
 
 def _cumulative_rmsd(atoms_list) -> list[float]:
-    """Cumulative consecutive-frame RMSD, starting at 0 for the first frame."""
-    coords = [0.0]
-    for prev, cur in zip(atoms_list[:-1], atoms_list[1:], strict=True):
-        coords.append(coords[-1] + _cartesian_rmsd(prev, cur))
-    return coords
+    """Cumulative consecutive-frame RMSD, starting at 0 for the first frame.
+
+    Stacks positions once and uses vectorized pairwise steps instead of a
+    Python loop over ASE frames (hot path for multi-segment stitch bands).
+    """
+    if not atoms_list:
+        return []
+    if len(atoms_list) == 1:
+        return [0.0]
+    # Materialize positions in one array: (n_frames, n_atoms, 3)
+    pos = np.stack([np.asarray(a.get_positions(), dtype=float) for a in atoms_list])
+    deltas = pos[1:] - pos[:-1]
+    step = np.sqrt(np.mean(np.sum(deltas * deltas, axis=2), axis=1))
+    return [0.0, *np.cumsum(step).tolist()]
 
 
 def stitch_neb_segments(
