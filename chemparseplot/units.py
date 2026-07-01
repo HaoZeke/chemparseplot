@@ -83,8 +83,8 @@ def _ensure_registry():
     _ureg.define("kcal_mol = kcal / 6.02214076e+23 = kcm")
     # Chemical energy presentation dimension (plot axes / CLI --energy-unit).
     _ureg.define("chem_eV = [chem_energy]")
-    _ureg.define("chem_kcal_mol = 23.06054783061903 * chem_eV")
-    _ureg.define("chem_kJ_mol = 96.48533212331002 * chem_eV")
+    _ureg.define("chem_kcal_mol = chem_eV / 23.06054783061903")
+    _ureg.define("chem_kJ_mol = chem_eV / 96.48533212331002")
     _Q = _ureg.Quantity
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
