@@ -44,10 +44,31 @@ def axis_label(label: str, unit: str) -> str:
 
 
 def convert_energy(values: Any, unit: str, *, source_unit: str = "eV") -> np.ndarray:
-    """Convert energy-like values between supported presentation units."""
+    """Convert energy-like values between supported presentation units.
 
-    factor = _ENERGY_FACTORS[unit] / _ENERGY_FACTORS[source_unit]
-    return np.asarray(values, dtype=float) * factor
+    Delegates to :func:`chemparseplot.units.convert_energy_magnitude` (pint-backed).
+    Accepts plain arrays or pint ``Quantity`` instances (converted via ``.to``).
+    """
+    from chemparseplot.units import convert_energy_magnitude, normalize_energy_unit
+
+    # Pint Quantity with a compatible unit → magnitude in target presentation unit.
+    to_method = getattr(values, "to", None)
+    magnitude = getattr(values, "magnitude", None)
+    units = getattr(values, "units", None)
+    if callable(to_method) and magnitude is not None and units is not None:
+        try:
+            # Prefer chemical presentation units when already tagged.
+            unit_s = str(units)
+            if "chem_" in unit_s or "chem_eV" in unit_s:
+                return convert_energy_magnitude(magnitude, unit, source_unit=source_unit)
+            # Generic energy Quantity: convert to eV then to presentation unit.
+            in_eV = np.asarray(values.to("eV").magnitude, dtype=float)
+            return convert_energy_magnitude(in_eV, unit, source_unit="eV")
+        except Exception:
+            # Fall through to array path.
+            values = magnitude
+
+    return convert_energy_magnitude(values, unit, source_unit=source_unit)
 
 
 def convert_energy_curvature(
