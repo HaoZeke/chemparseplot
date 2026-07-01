@@ -503,3 +503,46 @@ class TestLabelsDict:
         for k in _LABELS:
             assert "x" in _LABELS[k]
             assert "y" in _LABELS[k]
+
+
+def test_render_single_ended_landscape_writes_pdf(tmp_path, monkeypatch):
+    """Shipped landscape pipeline builds a figure (RMSD coords stubbed)."""
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    import numpy as np
+    from ase import Atoms
+
+    from chemparseplot.plot.optimization import render_single_ended_landscape
+
+    def _fake_coords(atoms_list, ira_instance, ira_kmax, *, ref_a=None, ref_b=None):
+        n = len(atoms_list)
+        return np.linspace(0.0, 1.0, n), np.linspace(1.0, 0.0, n)
+
+    monkeypatch.setattr(
+        "chemparseplot.parse.neb_utils.calculate_landscape_coords",
+        _fake_coords,
+    )
+    monkeypatch.setattr(
+        "chemparseplot.parse.neb_utils.compute_synthetic_gradients",
+        lambda ra, rb, f: (np.zeros_like(ra), np.zeros_like(rb)),
+    )
+
+    atoms_list = [Atoms("H", positions=[[0.0, 0.0, float(i)]]) for i in range(5)]
+    energies = np.array([0.0, 0.2, 0.5, 0.3, 0.1])
+    out = tmp_path / "land.pdf"
+    render_single_ended_landscape(
+        atoms_list=atoms_list,
+        energies_eV=energies,
+        ref_a=atoms_list[0],
+        ref_b=atoms_list[-1],
+        overlay_atom_lists=[atoms_list],
+        overlay_labels=["path"],
+        ira_instance=None,
+        project_path=False,
+        surface_type="rbf",
+        energy_unit="eV",
+        output=out,
+        dpi=80,
+        plot_structures="none",
+    )
+    assert out.is_file() and out.stat().st_size > 0

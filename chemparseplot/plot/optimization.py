@@ -14,6 +14,7 @@ The key semantic difference from NEB plots:
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -296,6 +297,163 @@ def plot_single_ended_convergence(trajs, labels, output: Path, dpi: int) -> None
     if len(trajs) > 1:
         ax_force.legend(frameon=False)
     save_standard_figure(fig, output, dpi=dpi)
+
+
+def render_single_ended_landscape(
+    *,
+    atoms_list: Sequence[Any],
+    energies_eV: np.ndarray,
+    ref_a: Any,
+    ref_b: Any,
+    overlay_atom_lists: Sequence[Sequence[Any]] | None = None,
+    overlay_labels: Sequence[str] | None = None,
+    ira_instance: Any | None = None,
+    ira_kmax: float = 14.0,
+    project_path: bool = True,
+    surface_type: str = "grad_matern",
+    energy_unit: str = "eV",
+    energy_cap: float | None = None,
+    energy_cap_window: float | None = None,
+    cmap: str = "viridis",
+    output: Path,
+    dpi: int = 150,
+    theme: Any | None = None,
+    plot_structures: str = "none",
+    strip_structs: Sequence[Any] | None = None,
+    strip_labels: Sequence[str] | None = None,
+    endpoint_start_label: str = "Init",
+    endpoint_end_label: str = "Min",
+    endpoint_boxed: bool = True,
+    annotate_overlay_starts: bool = False,
+    overlay_start_label: str = "R",
+    strip_renderer: str = "xyzrender",
+    xyzrender_config: str = "paton",
+    strip_spacing: float = 1.5,
+    strip_zoom: float | None = None,
+    strip_dividers: bool = False,
+    rotation: str = "auto",
+    perspective_tilt: float = 0.0,
+) -> None:
+    """Full single-ended landscape pipeline shared by min/saddle CLIs.
+
+    Coordinates use :func:`~chemparseplot.parse.neb_utils.calculate_landscape_coords`
+    and synthetic gradients; the surface/path overlay uses
+    :func:`plot_optimization_landscape`. Energies are passed in **eV** and
+    converted once for display (avoids double conversion when ``energy_unit``
+    is not eV).
+
+    ```{versionadded} 1.8.1
+    ```
+    """
+    from chemparseplot.parse.neb_utils import (
+        calculate_landscape_coords,
+        compute_synthetic_gradients,
+    )
+
+    has_strip = plot_structures == "endpoints" and strip_structs is not None
+    fig, ax, ax_strip = create_landscape_axes(dpi=dpi, has_strip=has_strip, theme=theme)
+
+    rmsd_a, rmsd_b = calculate_landscape_coords(
+        atoms_list,
+        ira_instance,
+        ira_kmax,
+        ref_a=ref_a,
+        ref_b=ref_b,
+    )
+    energies = np.asarray(energies_eV, dtype=float)
+    n = min(len(rmsd_a), len(energies))
+    rmsd_a, rmsd_b, energies = rmsd_a[:n], rmsd_b[:n], energies[:n]
+    display_e = convert_energy(energies, energy_unit)
+    cap = energy_cap
+    if cap is None and energy_cap_window is not None:
+        cap = float(np.min(display_e)) + energy_cap_window
+    if cap is not None:
+        # Cap in display units, map back to eV for the surface routine which
+        # converts from eV once.
+        factor = float(convert_energy(np.array([1.0]), energy_unit)[0])
+        energies = np.minimum(energies, cap / factor if factor else cap)
+        display_e = convert_energy(energies, energy_unit)
+
+    f_para = -np.gradient(energies)
+    grad_a, grad_b = compute_synthetic_gradients(rmsd_a, rmsd_b, f_para)
+
+    plot_optimization_landscape(
+        ax,
+        rmsd_a,
+        rmsd_b,
+        grad_a,
+        grad_b,
+        energies,
+        project_path=project_path,
+        method=surface_type,
+        cmap=cmap,
+        label_mode="optimization",
+        energy_unit=energy_unit,
+    )
+
+    basis = None
+    if project_path:
+        _, _, basis = project_landscape_path(rmsd_a, rmsd_b, project_path=True)
+
+    overlays = overlay_atom_lists or ()
+    labels = list(overlay_labels or ())
+    for idx, atoms_ov in enumerate(overlays):
+        lbl = labels[idx] if idx < len(labels) else f"path{idx}"
+        ra, rb = calculate_landscape_coords(
+            atoms_ov,
+            ira_instance,
+            ira_kmax,
+            ref_a=ref_a,
+            ref_b=ref_b,
+        )
+        m = min(len(ra), len(atoms_ov))
+        ra, rb = ra[:m], rb[:m]
+        px, py, _ = project_landscape_path(ra, rb, project_path=project_path, basis=basis)
+        color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
+        if len(overlays) > 1:
+            ax.plot(
+                px,
+                py,
+                "o-",
+                color=color,
+                markersize=3,
+                linewidth=1.5,
+                alpha=0.8,
+                zorder=55,
+                label=lbl,
+            )
+        if annotate_overlay_starts and len(px):
+            annotate_endpoint(ax, float(px[0]), float(py[0]), overlay_start_label, boxed=False)
+
+    plot_x, plot_y, _ = project_landscape_path(
+        rmsd_a, rmsd_b, project_path=project_path, basis=basis
+    )
+    annotate_endpoint(
+        ax, float(plot_x[0]), float(plot_y[0]), endpoint_start_label, boxed=endpoint_boxed
+    )
+    annotate_endpoint(
+        ax, float(plot_x[-1]), float(plot_y[-1]), endpoint_end_label, boxed=endpoint_boxed
+    )
+
+    if overlays and len(overlays) > 1:
+        ax.legend(frameon=True, framealpha=0.9, loc="best")
+
+    if has_strip and ax_strip is not None and strip_structs is not None:
+        render_endpoint_strip(
+            ax_strip,
+            list(strip_structs),
+            list(strip_labels or []),
+            strip_zoom=strip_zoom,
+            rotation=rotation,
+            theme=theme,
+            strip_renderer=strip_renderer,
+            strip_spacing=strip_spacing,
+            strip_dividers=strip_dividers,
+            perspective_tilt=perspective_tilt,
+            xyzrender_config=xyzrender_config,
+        )
+
+    save_landscape_figure(fig, output, dpi=dpi, has_strip=has_strip, ax=ax, ax_strip=ax_strip)
 
 
 def plot_optimization_landscape(
