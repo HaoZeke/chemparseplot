@@ -92,3 +92,76 @@ def test_cumulative_rmsd_matches_stepwise_and_is_vectorized():
     assert np.allclose(got, slow)
     assert got[0] == 0.0
     assert len(got) == len(atoms)
+
+
+def test_stitch_writes_sidecar_artifacts_via_con_io(tmp_path):
+    from chemparseplot.parse.eon.con_io import read_con_frames
+
+    band_a = tmp_path / "a.con"
+    band_b = tmp_path / "b.con"
+    _write_band(band_a, [(0.0, 0.0), (1.0, 0.5), (0.5, 1.0)])
+    _write_band(band_b, [(10.5, 1.0), (11.5, 1.5)])
+    out_dir = tmp_path / "stitched"
+    summary = stitch_neb_segments(
+        [("A", band_a, None, None), ("B", band_b, None, None)],
+        out_dir,
+    )
+
+    neb = read_con_frames(out_dir / "neb.con")
+    path0 = read_con_frames(out_dir / "neb_path_000.con")
+    sp = read_con_frames(out_dir / "sp.con")
+    assert len(neb) == summary.n_frames == 4
+    assert [f.energy for f in neb] == pytest.approx([f.energy for f in path0])
+    assert len(sp) == 1
+    assert sp[0].energy == pytest.approx(summary.highest_energy)
+    dat = (out_dir / "neb_000.dat").read_text().strip().splitlines()
+    assert dat[0].split()[:3] == ["img", "rxn_coord", "energy"]
+    assert len(dat) == summary.n_frames + 1
+    assert summary.segments[0].label == "A"
+    assert summary.segments[1].barrier == pytest.approx(
+        summary.segments[1].peak_energy - summary.segments[1].well_energy
+    )
+
+
+def test_stitch_saddle_override_writes_sp_energy(tmp_path):
+    from chemparseplot.parse.eon.con_io import read_con_frames, write_atoms_as_con
+    from ase import Atoms
+
+    band_a = tmp_path / "a.con"
+    band_b = tmp_path / "b.con"
+    _write_band(band_a, [(0.0, 0.0), (1.0, 0.5)])
+    _write_band(band_b, [(10.0, 0.5), (12.0, 1.0)])
+    sad = tmp_path / "dimer_saddle.con"
+    write_atoms_as_con(
+        sad,
+        [Atoms("H", positions=[[0.0, 0.0, 0.75]], cell=[10, 10, 10], pbc=True)],
+        energies=[11.5],
+    )
+    out_dir = tmp_path / "stitched"
+    summary = stitch_neb_segments(
+        [("A", band_a, 0, None), ("B", band_b, 0, None)],
+        out_dir,
+        saddle_overrides={"B": (sad, 11.5)},
+    )
+    sp = read_con_frames(out_dir / "sp.con")
+    assert len(sp) == 1
+    # A ends at 1.0 eV; B shift is 1.0 - 10.0 = -9.0, so referenced saddle is
+    # 11.5 - 9.0 - 0.0 = 2.5 eV on the global reactant scale.
+    assert sp[0].energy == pytest.approx(2.5)
+    assert summary.segments[1].peak_energy == pytest.approx(2.5)
+    # well_energy is the segment entry (junction) on the global scale (= 1.0 eV).
+    assert summary.segments[1].well_energy == pytest.approx(1.0)
+    assert summary.segments[1].barrier == pytest.approx(1.5)
+    # highest_energy tracks the stitched band maximum (kept B frame at 3.0 eV),
+    # while sp.con carries the override geometry/energy for overlay plotting.
+    assert summary.highest_energy == pytest.approx(3.0)
+    band_energies = [frame.energy for frame in read_con_frames(out_dir / "neb.con")]
+    assert max(band_energies) == pytest.approx(3.0)
+
+
+
+def test_stitch_empty_slice_raises(tmp_path):
+    band = tmp_path / "a.con"
+    _write_band(band, [(0.0, 0.0), (1.0, 0.5)])
+    with pytest.raises(ValueError, match="zero frames"):
+        stitch_neb_segments([("A", band, 2, 2)], tmp_path / "out")

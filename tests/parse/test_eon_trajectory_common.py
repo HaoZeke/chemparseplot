@@ -115,3 +115,76 @@ class TestMetadataHelpers:
             allow_leading_incomplete=True,
         )
         assert df.is_empty()
+
+
+@pytest.mark.neb
+class TestTrajectoryCommonReadcon:
+    def test_read_first_structure_uses_con_io(self, tmp_path):
+        from tests.parse._con_fixtures import write_band
+        from chemparseplot.parse.eon._trajectory_common import read_first_structure
+        from chemparseplot.parse.eon.con_io import read_first_atoms
+
+        path = write_band(tmp_path / "reactant.con", [( -1.5, 0.3)])
+        atoms = read_first_structure(path)
+        direct = read_first_atoms(path)
+        assert atoms.get_chemical_symbols() == direct.get_chemical_symbols() == ["H"]
+        assert atoms.get_positions()[0, 2] == pytest.approx(0.3)
+
+    def test_read_optional_first_prefers_existing(self, tmp_path):
+        from tests.parse._con_fixtures import write_band
+        from chemparseplot.parse.eon._trajectory_common import read_optional_first
+
+        write_band(tmp_path / "saddle.con", [(2.0, 0.8)])
+        atoms = read_optional_first(tmp_path, ["missing.con", "saddle.con"])
+        assert atoms is not None
+        assert atoms.get_positions()[0, 2] == pytest.approx(0.8)
+        assert read_optional_first(tmp_path, ["nope.con"]) is None
+
+    def test_load_movie_and_table_from_metadata(self, tmp_path):
+        from tests.parse._con_fixtures import write_band
+
+        from chemparseplot.parse.eon import con_io
+        from chemparseplot.parse.eon._trajectory_common import (
+            frame_rows_to_table,
+            load_movie_and_table,
+            metadata_value,
+        )
+
+        src = write_band(
+            tmp_path / "minimization.con",
+            [(-12.0, 0.0), (-12.5, 0.1), (-12.8, 0.2)],
+        )
+        frames = con_io.read_con_frames(src)
+        for idx, (frame, step_size, convergence) in enumerate(
+            zip(frames, (0.1, 0.05, 0.01), (0.5, 0.2, 0.05), strict=True)
+        ):
+            frame.set_frame_index(idx)
+            frame.set_scalar_metadata("step_size", step_size)
+            frame.set_scalar_metadata("convergence", convergence)
+        con_io.write_con_frames(tmp_path / "minimization.con", frames)
+
+        columns = ("frame_index", "step_size", "convergence", "energy")
+
+        def _build(frames_):
+            return frame_rows_to_table(frames_, columns)
+
+        def _parse_dat(_path):
+            raise AssertionError("sidecar dat should not be required")
+
+        atoms_list, table = load_movie_and_table(
+            tmp_path,
+            movie_stem="minimization",
+            dat_name="minimization.dat",
+            parse_dat=_parse_dat,
+            metadata_columns=columns,
+            build_table_from_metadata=_build,
+            log_label="minimization",
+        )
+        assert len(atoms_list) == 3
+        loaded = con_io.read_con_frames(tmp_path / "minimization.con")
+        assert [metadata_value(frame, "energy") for frame in loaded] == pytest.approx(
+            [-12.0, -12.5, -12.8]
+        )
+        assert table["frame_index"].to_list() == [0, 1, 2]
+        assert table["energy"].to_list() == pytest.approx([-12.0, -12.5, -12.8])
+        assert table["step_size"].to_list() == pytest.approx([0.1, 0.05, 0.01])

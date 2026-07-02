@@ -45,3 +45,34 @@ def test_stitch_and_trajectory_import_con_io():
     assert "chemparseplot.parse.eon.con_io" in stitch
     assert "chemparseplot.parse.eon import con_io" in common or "parse.eon.con_io" in common
     assert "ase.io" not in stitch
+
+
+@pytest.mark.pure
+def test_eon_modules_do_not_import_readcon_at_module_level_except_typed_files():
+    """Only legacy type-hint modules may keep top-level readcon imports."""
+    allowed = {"min_trajectory.py", "dimer_trajectory.py"}
+    offenders = []
+    for path in sorted(EON_PARSE.glob("*.py")):
+        if path.name in allowed or path.name.startswith("_"):
+            # _trajectory_common should not top-level import readcon anymore
+            if path.name == "_trajectory_common.py":
+                text = path.read_text()
+                assert "import readcon" not in text.split("def ")[0]
+            continue
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name == "readcon" or alias.name.startswith("readcon."):
+                        offenders.append(path.name)
+            if isinstance(node, ast.ImportFrom) and node.module == "readcon":
+                offenders.append(path.name)
+    assert offenders == []
+
+
+@pytest.mark.pure
+def test_con_io_is_single_readcon_entry_point():
+    text = (EON_PARSE / "con_io.py").read_text()
+    assert "readcon>=0.7" in text
+    assert "def read_con_frames" in text
+    assert "def write_con_frames" in text
