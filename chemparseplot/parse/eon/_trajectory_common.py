@@ -8,8 +8,9 @@ from pathlib import Path
 from typing import Any, TypeVar
 
 import polars as pl
-import readcon
 from ase import Atoms
+
+from chemparseplot.parse.eon import con_io
 
 log = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ def require_dat_file(job_dir: Path, name: str) -> Path:
 def read_first_structure(path: Path) -> Atoms:
     """Read the first structure from an eOn CON file."""
 
-    return readcon.read_con_as_ase(str(path))[0]
+    return con_io.read_first_atoms(path)
 
 
 def read_optional_first(job_dir: Path, names: Sequence[str]) -> Atoms | None:
@@ -87,14 +88,14 @@ def load_movie_and_table(
     dat_name: str,
     parse_dat: Callable[[Path], pl.DataFrame],
     metadata_columns: Sequence[str],
-    build_table_from_metadata: Callable[[Sequence[readcon.ConFrame]], pl.DataFrame],
+    build_table_from_metadata: Callable[[Sequence[object]], pl.DataFrame],
     log_label: str,
 ) -> tuple[list[Atoms], pl.DataFrame]:
     """Load the shared movie/data payload for an eOn trajectory parser."""
 
     movie_file = resolve_movie_file(job_dir, movie_stem)
     log.info("Loading %s trajectory from %s", log_label, job_dir)
-    frames = readcon.read_con(str(movie_file))
+    frames = con_io.read_con_frames(movie_file)
     atoms_list = [frame.to_ase() for frame in frames]
 
     dat_df = build_table_from_metadata(frames)
@@ -119,7 +120,7 @@ def load_movie_and_table(
     return atoms_list, dat_df
 
 
-def metadata_value(frame: readcon.ConFrame, key: str) -> Any:
+def metadata_value(frame: object, key: str) -> Any:
     """Return a typed metadata value from a readcon frame."""
 
     if key == "frame_index":
@@ -130,7 +131,7 @@ def metadata_value(frame: readcon.ConFrame, key: str) -> Any:
 
 
 def frame_rows_to_table(
-    frames: Sequence[readcon.ConFrame],
+    frames: Sequence[object],
     columns: Sequence[str],
     *,
     allow_leading_incomplete: bool = False,

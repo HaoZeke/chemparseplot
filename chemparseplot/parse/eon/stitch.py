@@ -37,19 +37,10 @@ log = logging.getLogger(__name__)
 
 
 def _frame_with_energy(frame, energy: float):
-    """Return a ConFrame copy with ``energy`` set in metadata (readcon is read-only)."""
-    from readcon import ConFrame
+    """Return a ConFrame copy with ``energy`` set via :mod:`con_io`."""
+    from chemparseplot.parse.eon.con_io import frame_with_energy
 
-    metadata = {str(k): str(v) for k, v in (frame.metadata or {}).items()}
-    metadata["energy"] = str(float(energy))
-    return ConFrame(
-        frame.cell,
-        frame.angles,
-        frame.atoms,
-        frame.prebox_header,
-        frame.postbox_header,
-        metadata,
-    )
+    return frame_with_energy(frame, energy)
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,7 +129,11 @@ def stitch_neb_segments(
     StitchSummary
         Boundary indices, per-segment barriers, and the overall highest point.
     """
-    from readcon import read_con, write_con
+    from chemparseplot.parse.eon.con_io import (
+        read_con_frames,
+        write_atoms_as_con,
+        write_con_frames,
+    )
 
     saddle_overrides = saddle_overrides or {}
     out_dir = Path(out_dir)
@@ -153,7 +148,7 @@ def stitch_neb_segments(
     sp_best: tuple[float, object] | None = None  # (referenced energy, saddle atoms)
 
     for seg_idx, (label, con_path, start, end) in enumerate(segments):
-        frames = read_con(str(con_path))
+        frames = read_con_frames(con_path)
         seg_frames = list(frames[start:end])
         if not seg_frames:
             msg = f"Segment '{label}' ({con_path}) sliced to zero frames."
@@ -190,7 +185,7 @@ def stitch_neb_segments(
         if label in saddle_overrides:
             sad_path, sad_abs = saddle_overrides[label]
             peak_energy = float(sad_abs) + shift - ref
-            sad_atoms = read_con(str(sad_path))[0].to_ase()
+            sad_atoms = read_con_frames(sad_path)[0].to_ase()
             if sp_best is None or peak_energy > sp_best[0]:
                 sp_best = (peak_energy, sad_atoms)
         else:
@@ -208,8 +203,8 @@ def stitch_neb_segments(
         )
 
     # --- Write the combined band ---
-    write_con(str(out_dir / "neb.con"), out_frames)
-    write_con(str(out_dir / "neb_path_000.con"), out_frames)
+    write_con_frames(out_dir / "neb.con", out_frames)
+    write_con_frames(out_dir / "neb_path_000.con", out_frames)
 
     atoms_list = [f.to_ase() for f in out_frames]
     rxn_coord = _cumulative_rmsd(atoms_list)
@@ -223,14 +218,11 @@ def stitch_neb_segments(
 
     # --- Saddle overlay (sp.con) ---
     if sp_best is not None:
-        from readcon import ConFrame
-
-        sp_frame = _frame_with_energy(ConFrame.from_ase(sp_best[1]), float(sp_best[0]))
-        write_con(str(out_dir / "sp.con"), [sp_frame])
+        write_atoms_as_con(out_dir / "sp.con", [sp_best[1]], energies=[float(sp_best[0])])
     else:
         # Fallback: the global band maximum so the landscape overlay still works.
         peak_idx = int(np.argmax(energies))
-        write_con(str(out_dir / "sp.con"), [out_frames[peak_idx]])
+        write_con_frames(out_dir / "sp.con", [out_frames[peak_idx]])
 
     highest_index = int(np.argmax(energies))
     summary = StitchSummary(

@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 import readcon
+
+from chemparseplot.parse.eon import con_io
 from ase import Atoms
 
 from ._trajectory_common import (
@@ -95,7 +97,7 @@ def parse_climb_con(path: Path) -> list[Atoms]:
         List of ASE Atoms objects, one per iteration.
     """
     # eOn .con files may not have a .con extension for movie files
-    return readcon.read_con_as_ase(str(path))
+    return con_io.read_con_as_ase(path)
 
 
 def _load_mode_dat(path: Path) -> np.ndarray | None:

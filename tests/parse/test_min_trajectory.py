@@ -220,7 +220,7 @@ class TestLoadMinTrajectory:
             DummyMinFrame(2, 0.05, 0.01, -12.5),
         ]
         monkeypatch.setattr(
-            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            "chemparseplot.parse.eon.con_io.read_con_frames",
             lambda _: frames,
         )
 
@@ -243,7 +243,7 @@ class TestLoadMinTrajectory:
             DummyMinFrame(1, 0.1, 0.2, -12.4),
         ]
         monkeypatch.setattr(
-            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            "chemparseplot.parse.eon.con_io.read_con_frames",
             lambda _: frames,
         )
 
@@ -266,7 +266,7 @@ class TestLoadMinTrajectory:
             DummyMinFrame(1, 0.1, None, -12.4),
         ]
         monkeypatch.setattr(
-            "chemparseplot.parse.eon._trajectory_common.readcon.read_con",
+            "chemparseplot.parse.eon.con_io.read_con_frames",
             lambda _: frames,
         )
 

@@ -135,12 +135,14 @@ chemparseplot/
 
 | Package | Purpose | Required |
 |---------|---------|----------|
-| pint | Unit handling | ✓ |
-| numpy | Numerical operations | ✓ |
-| rgpycrumbs | Computational delegation | ✓ |
-| matplotlib | Plotting backend | ✓ |
-| polars | DataFrames for NEB data | ✓ |
-| ase | Atoms object handling | ✓ |
+| pint | Unit handling | ✓ hard |
+| numpy | Numerical operations | ✓ hard |
+| matplotlib | Plotting backend | optional (`[plot]`) |
+| polars | DataFrames for NEB / trajectory tables | optional (`[neb]`) |
+| ase | Atoms object handling | optional (`[neb]`) |
+| readcon (>=0.7) | CON/convel I/O and metadata-native energies | optional (`[neb]`) |
+| rgpycrumbs | Interpolation, surfaces, RMSD alignment | optional (compute delegation; install alongside or via tests/pixi) |
+| h5py | ChemGP / trajectory HDF5 | optional (`[neb]`) |
 
 ## Versioning
 
@@ -157,3 +159,4 @@ Version is derived from git tags automatically.
 - **[pychum](https://github.com/HaoZeke/pychum)**: Input file generation
 - **[eOn](https://eondocs.org/)**: Saddle point search code (parser target)
 - **[ORCA](https://orcaforum.kofo.mpg.de/)**: Quantum chemistry code (parser target)
+- **[readcon-core](https://github.com/lode-org/readcon-core)** (PyPI `readcon`): CON/convel codec used by eOn parsers

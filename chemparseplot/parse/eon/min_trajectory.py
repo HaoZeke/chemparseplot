@@ -15,6 +15,8 @@ from pathlib import Path
 
 import polars as pl
 import readcon
+
+from chemparseplot.parse.eon import con_io
 from ase import Atoms
 
 from ._trajectory_common import (
@@ -80,7 +82,7 @@ def parse_min_con(path: Path) -> list[Atoms]:
     list[Atoms]
         List of ASE Atoms objects, one per iteration.
     """
-    return readcon.read_con_as_ase(str(path))
+    return con_io.read_con_as_ase(path)
 
 
 def table_from_min_metadata(frames: list[readcon.ConFrame]) -> pl.DataFrame:
