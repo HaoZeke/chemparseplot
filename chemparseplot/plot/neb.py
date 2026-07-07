@@ -546,6 +546,7 @@ def plot_structure_strip(
     perspective_tilt=0.0,
     max_display_height_px: float | None = None,
     width_fill_fraction=0.82,
+    prefer_single_row: bool = True,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -562,6 +563,10 @@ def plot_structure_strip(
         Color for divider lines.
     divider_style : str
         Linestyle for divider lines (e.g. ``"--"``, ``"-"``, ``":"``).
+    prefer_single_row : bool
+        If True (default), pack up to 16 structures in one row. If False,
+        honour ``max_cols`` so e.g. 12 images with ``max_cols=6`` become two
+        rows of larger molecules.
 
     ```{versionadded} 0.1.0
     ```
@@ -584,9 +589,12 @@ def plot_structure_strip(
 
     ax.axis("off")
     n_plot = len(atoms_list)
-    # Prefer a single row when everything fits; multi-row with a shared label
-    # baseline previously stacked numbers on top of each other.
-    effective_max_cols = max(max_cols, n_plot) if n_plot <= 16 else max_cols
+    # Single-row packing is optional: landscape strips with many images often
+    # want max_cols=6 → two rows of larger structures.
+    if prefer_single_row and n_plot <= 16:
+        effective_max_cols = max(max_cols, n_plot)
+    else:
+        effective_max_cols = max(1, int(max_cols))
     n_cols = min(n_plot, effective_max_cols)
     n_rows = (n_plot + effective_max_cols - 1) // effective_max_cols
 

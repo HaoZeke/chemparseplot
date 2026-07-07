@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.6](https://github.com/HaoZeke/chemparseplot/tree/v1.9.6) - 2026-07-07
+
+### Added
+
+- ``plot_structure_strip(..., prefer_single_row=False)`` honours ``max_cols`` for
+  multi-row galleries (e.g. 12 structures → two rows of six larger molecules).
+
 ## [1.9.5](https://github.com/HaoZeke/chemparseplot/tree/v1.9.5) - 2026-07-07
 
 ### Fixed
