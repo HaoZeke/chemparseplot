@@ -584,11 +584,14 @@ def plot_structure_strip(
 
     ax.axis("off")
     n_plot = len(atoms_list)
-    n_cols = min(n_plot, max_cols)
-    n_rows = (n_plot + max_cols - 1) // max_cols
+    # Prefer a single row when everything fits; multi-row with a shared label
+    # baseline previously stacked numbers on top of each other.
+    effective_max_cols = max(max_cols, n_plot) if n_plot <= 16 else max_cols
+    n_cols = min(n_plot, effective_max_cols)
+    n_rows = (n_plot + effective_max_cols - 1) // effective_max_cols
 
     # Adaptive font size: shrink for many items
-    label_fontsize = min(11, max(7, 14 - n_plot))
+    label_fontsize = min(11, max(7, 14 - n_plot // 2))
 
     fig = ax.figure
     fig.canvas.draw()
@@ -599,7 +602,6 @@ def plot_structure_strip(
     ax.set_xlim(0, ax_w_px)
     ax.set_ylim(0, ax_h_px)
 
-    per_row_px = ax_h_px / max(n_rows, 1)
     per_col_px = ax_w_px / max(n_cols, 1)
     label_band_px = label_fontsize * fig.dpi / 72 * 1.8
     top_padding_px = 6.0
@@ -607,7 +609,7 @@ def plot_structure_strip(
     row_gap_px = 10.0
     usable_total_height_px = max(
         24.0,
-        ax_h_px - label_band_px - top_padding_px - bottom_padding_px,
+        ax_h_px - label_band_px * n_rows - top_padding_px - bottom_padding_px,
     )
     slot_height_px = usable_total_height_px / max(n_rows, 1)
     slot_width_px = per_col_px
@@ -615,7 +617,7 @@ def plot_structure_strip(
     target_width_px = max(
         20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
     )
-    available_height_px = max(20.0, slot_height_px - row_gap_px)
+    available_height_px = max(20.0, slot_height_px - row_gap_px - label_band_px * 0.35)
     target_height_px = max(
         20,
         int(
@@ -626,14 +628,14 @@ def plot_structure_strip(
             )
         ),
     )
-    label_y_px = 4.0
     canvas = np.zeros((ax_h_px, ax_w_px, 4), dtype=np.float32)
 
     for i, atoms in enumerate(atoms_list):
-        col = i % max_cols
-        row = i // max_cols
+        col = i % effective_max_cols
+        row = i // effective_max_cols
         slot_center_x = (col + 0.5) * slot_width_px
         slot_top_y = ax_h_px - top_padding_px - row * slot_height_px
+        slot_bottom_y = slot_top_y - slot_height_px
         img_top_y = (
             slot_top_y - (slot_height_px - target_height_px) / 2 - target_height_px
         )
@@ -661,15 +663,20 @@ def plot_structure_strip(
         _alpha_blit_rgba(canvas, resized, x0, y0)
 
         if labels and i < len(labels):
+            # Label under *this* cell (not a shared strip baseline). Multi-row
+            # layouts previously wrote every label at y=4, so column mates from
+            # different rows stacked on top of each other.
+            cell_label_y = max(2.0, slot_bottom_y + 3.0)
             ax.text(
                 x=slot_center_x,
-                y=label_y_px,
+                y=cell_label_y,
                 s=labels[i],
                 ha="center",
                 va="bottom",
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
+                clip_on=False,
             )
 
     ax.imshow(

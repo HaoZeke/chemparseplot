@@ -69,7 +69,7 @@ def load_or_compute_data(
     ```{versionadded} 0.1.0
     ```
     """
-    if cache_file and cache_file.exists() and not force_recompute:
+    if cache_file and Path(cache_file).exists() and not force_recompute:
         log.info(f"Loading cached {context_name} data from {cache_file}...")
         try:
             df = pl.read_parquet(cache_file)
@@ -111,7 +111,7 @@ def load_structures_and_calculate_additional_rmsd(
     sp_data = None
     ira_instance = ira_mod.IRA() if ira_mod else None
 
-    if sp_file and sp_file.exists():
+    if sp_file and Path(sp_file).exists():
         log.info(f"Loading explicit saddle point from {sp_file}")
         sp_atoms = ase_read(sp_file)
         sp_rmsd_r = calculate_rmsd_from_ref(
