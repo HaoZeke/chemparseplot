@@ -43,7 +43,9 @@ doc = [
   "sphinxcontrib-apidoc>=0.4",
 ]
 plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
-neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.7.0"]
+# readcon>=0.13 required for eOn 2.16+ con_spec_version=2 metadata
+# (energy/neb_bead/reaction_coordinate on ConFrame).
+neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.13.1"]
 xyzrender = ["xyzrender>=0.1.2"]
 all = ["chemparseplot[plot,neb,xyzrender]"]
 release = [
@@ -59,7 +61,7 @@ test = [
   "polars>=0.20",
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
-  "readcon>=0.7.0",
+  "readcon>=0.13.1",
   "rgpycrumbs",
   "scipy>=1.11",
 ]
