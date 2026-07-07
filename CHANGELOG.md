@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.5](https://github.com/HaoZeke/chemparseplot/tree/v1.9.5) - 2026-07-07
+
+### Fixed
+
+- ``landscape_half_span(..., equal_metric=True)`` sets ``|d|`` half-span to at least
+  half the *s* window so equal-aspect panels are true 1:1 Å (``Δs = Δd``).
+
 ## [1.9.4](https://github.com/HaoZeke/chemparseplot/tree/v1.9.4) - 2026-07-07
 
 ### Fixed

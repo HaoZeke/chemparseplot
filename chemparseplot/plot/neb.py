@@ -1590,11 +1590,14 @@ def landscape_half_span(
     *,
     path_pad: float = 1.15,
     min_half: float = 0.02,
+    equal_metric: bool = True,
 ):
-    """Symmetric |d| half-span from the path (and optional overlays), not s/2.
+    """Symmetric |d| half-span for a projected (s, d) landscape.
 
-    Using the reaction-progress half-width as the default forced a near-square
-    frame and large empty bands above/below paths that stay near ``d=0``.
+    With ``equal_metric=True`` (default), the half-span is at least half the
+    *s* window so that ``Δs = Δd`` and ``set_aspect('equal')`` yields a square
+    panel where 1 Å of progress matches 1 Å of orthogonal deviation (same RMSD
+    metric). Path/overlay markers still expand the span when they exceed that.
     """
 
     basis = landscape_projection_basis(global_basis, final_r, final_p)
@@ -1605,9 +1608,9 @@ def landscape_half_span(
             np.array([overlay.r]), np.array([overlay.p]), basis
         )
         half_span = max(half_span, abs(float(add_d[0])) * path_pad)
-    # Tiny floor only (absolute), never a fraction of s — that reintroduced the
-    # empty top/bottom bands on near-linear paths.
-    del x_limits  # reserved for future asymmetric s handling
+    if equal_metric and x_limits is not None:
+        s_half = 0.5 * max(float(x_limits[1] - x_limits[0]), 1e-9)
+        half_span = max(half_span, s_half)
     return max(half_span, min_half)
 
 
