@@ -2,6 +2,33 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.3](https://github.com/HaoZeke/chemparseplot/tree/v1.9.3) - 2026-07-07
+
+### Added
+
+- ``mark_saddle_point`` draws a high-contrast gold star (optional vertical guide) for SP markers.
+
+### Fixed
+
+- Landscape half-span is path-driven (``d`` extent), not ``s/2``, so 2D frames no longer pad with empty bands.
+- Strip figure saves use a smaller ``pad_inches`` to crop unused canvas.
+
+## [1.9.0](https://github.com/HaoZeke/chemparseplot/tree/v1.9.0) - 2026-07-07
+
+### Added
+
+- Public ``chemparseplot.parse.eon.con_io`` helpers route all CON I/O through readcon (metadata-native energies).
+
+### Changed
+
+- ``neb`` / test extras require ``readcon>=0.13.1`` for eOn 2.16 ``con_spec_version=2`` frame metadata.
+- Energy unit conversions route through pint quantities; single-ended landscape pipeline centralized.
+
+### Fixed
+
+- Avoid recursion when lazy-loading ``chemparseplot.parse``; vectorize stitch RMSD path.
+
+
 ## [1.8.0](https://github.com/HaoZeke/chemparseplot/tree/1.8.0) - 2026-06-27
 
 ### Added

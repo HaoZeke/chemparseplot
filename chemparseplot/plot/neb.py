@@ -1577,18 +1577,86 @@ def landscape_projection_basis(global_basis, final_r, final_p):
     return compute_projection_basis(final_r, final_p)
 
 
-def landscape_half_span(x_limits, final_r, final_p, additional_atoms_data, global_basis):
-    """Expand the symmetric landscape half-span to keep extra markers visible."""
+def landscape_half_span(
+    x_limits,
+    final_r,
+    final_p,
+    additional_atoms_data,
+    global_basis,
+    *,
+    path_pad: float = 1.15,
+    min_half: float = 0.02,
+):
+    """Symmetric |d| half-span from the path (and optional overlays), not s/2.
 
-    half_span = (x_limits[1] - x_limits[0]) / 2
-    if not additional_atoms_data:
-        return half_span
+    Using the reaction-progress half-width as the default forced a near-square
+    frame and large empty bands above/below paths that stay near ``d=0``.
+    """
 
     basis = landscape_projection_basis(global_basis, final_r, final_p)
-    for overlay in additional_atoms_data:
-        _, add_d = project_to_sd(np.array([overlay.r]), np.array([overlay.p]), basis)
-        half_span = max(half_span, abs(float(add_d[0])) * 1.15)
-    return half_span
+    _s, _d = project_to_sd(np.asarray(final_r), np.asarray(final_p), basis)
+    half_span = max(abs(float(_d.max())), abs(float(_d.min())), min_half) * path_pad
+    for overlay in additional_atoms_data or []:
+        _, add_d = project_to_sd(
+            np.array([overlay.r]), np.array([overlay.p]), basis
+        )
+        half_span = max(half_span, abs(float(add_d[0])) * path_pad)
+    # Tiny floor only (absolute), never a fraction of s — that reintroduced the
+    # empty top/bottom bands on near-linear paths.
+    del x_limits  # reserved for future asymmetric s handling
+    return max(half_span, min_half)
+
+
+def mark_saddle_point(
+    ax,
+    x,
+    y,
+    *,
+    label: str = "SP",
+    font_size: float = 12.0,
+    vline: bool = False,
+    annotate: bool = True,
+):
+    """Draw a high-contrast saddle marker (gold star) on a profile or landscape."""
+
+    ax.scatter(
+        float(x),
+        float(y),
+        marker="*",
+        s=max(280, int(font_size**2 * 3.2)),
+        c="#FFD700",
+        edgecolors="black",
+        linewidths=1.8,
+        zorder=100,
+        label=label,
+    )
+    if vline:
+        ax.axvline(
+            float(x),
+            color="black",
+            linestyle="--",
+            linewidth=1.4,
+            alpha=0.75,
+            zorder=50,
+        )
+    if annotate:
+        ax.annotate(
+            label,
+            xy=(float(x), float(y)),
+            xytext=(10, 14),
+            textcoords="offset points",
+            fontsize=int(font_size * 1.05),
+            fontweight="bold",
+            color="black",
+            zorder=101,
+            bbox={
+                "boxstyle": "round,pad=0.2",
+                "facecolor": "white",
+                "edgecolor": "black",
+                "linewidth": 0.8,
+                "alpha": 0.92,
+            },
+        )
 
 
 def save_plot(output_file, dpi, *, has_strip):
@@ -1603,7 +1671,7 @@ def save_plot(output_file, dpi, *, has_strip):
         transparent=False,
         dpi=dpi,
         bbox_inches="tight",
-        pad_inches=0.12,
+        pad_inches=0.05,
     )
 
 
