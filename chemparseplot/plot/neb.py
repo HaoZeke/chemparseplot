@@ -1592,12 +1592,19 @@ def landscape_half_span(x_limits, final_r, final_p, additional_atoms_data, globa
 
 
 def save_plot(output_file, dpi, *, has_strip):
-    """Save plots without tight-bbox strip overflow."""
+    """Save plots, cropping unused figure canvas (including strip layouts)."""
 
-    save_kwargs = {"transparent": False, "pad_inches": 0.1, "dpi": dpi}
-    if not has_strip:
-        save_kwargs["bbox_inches"] = "tight"
-    plt.savefig(output_file, **save_kwargs)
+    # Strips use imshow+Text (not unclipped AnnotationBbox growth), so tight
+    # bbox is safe and removes the large whitespace left by equal-aspect
+    # landscape axes inside a tall/wide figure.
+    del has_strip  # kept for API compatibility with callers
+    plt.savefig(
+        output_file,
+        transparent=False,
+        dpi=dpi,
+        bbox_inches="tight",
+        pad_inches=0.12,
+    )
 
 
 def profile_structure_indices(atoms_list, y_values, plot_structures, plot_mode):
@@ -1617,15 +1624,22 @@ def profile_strip_payload(atoms_list, x_values, y_values, plot_structures, plot_
     """Build an ordered strip payload for profile plots."""
 
     payload = []
+    saddle_idx = (
+        int(np.argmax(y_values[1:-1]) + 1)
+        if plot_mode == "energy" and len(y_values) > 2
+        else int(np.argmin(y_values))
+    )
     for index in profile_structure_indices(
         atoms_list, y_values, plot_structures, plot_mode
     ):
-        if plot_structures == "all":
-            label = str(index)
-        elif index == 0:
+        if index == 0:
             label = "R"
         elif index == len(atoms_list) - 1:
             label = "P"
+        elif index == saddle_idx:
+            label = "SP"
+        elif plot_structures == "all":
+            label = str(index)
         else:
             label = "SP"
         payload.append(
