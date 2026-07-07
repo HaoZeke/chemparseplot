@@ -1362,8 +1362,12 @@ def plot_landscape_path_overlay(
     )
 
     cb = ax.figure.colorbar(
-        plt.cm.ScalarMappable(norm=norm, cmap=colormap), ax=ax, label=z_label
+        plt.cm.ScalarMappable(norm=norm, cmap=colormap),
+        ax=ax,
+        fraction=0.046,
+        pad=0.02,
     )
+    cb.set_label(z_label, rotation=270, labelpad=16)
     return cb
 
 
@@ -1671,7 +1675,9 @@ def save_plot(output_file, dpi, *, has_strip):
         transparent=False,
         dpi=dpi,
         bbox_inches="tight",
-        pad_inches=0.05,
+        # Enough pad for vertical axis labels / colorbar titles on equal-aspect
+        # (s,d) landscapes; still crops large empty canvas from the figure.
+        pad_inches=0.25,
     )
 
 

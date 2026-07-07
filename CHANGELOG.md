@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.4](https://github.com/HaoZeke/chemparseplot/tree/v1.9.4) - 2026-07-07
+
+### Fixed
+
+- Colorbar label uses explicit ``labelpad`` so equal-aspect (s, d) maps keep a full energy label.
+- Strip ``savefig`` pad increased slightly so axis labels are not clipped on wide equal-aspect figures.
+
 ## [1.9.3](https://github.com/HaoZeke/chemparseplot/tree/v1.9.3) - 2026-07-07
 
 ### Added
