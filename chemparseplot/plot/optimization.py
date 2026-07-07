@@ -59,13 +59,15 @@ def create_landscape_axes(
     dpi: int,
     has_strip: bool,
     theme,
-    base_size: float = 5.37,
-    strip_height_ratio: float = 0.24,
-    strip_hspace: float = 0.30,
+    base_size: float = 6.0,
+    strip_height_ratio: float = 0.38,
+    strip_hspace: float = 0.22,
 ):
     """Create a landscape figure with an optional structure strip axis."""
 
-    fig = plt.figure(figsize=(base_size, base_size + (1.20 if has_strip else 0)), dpi=dpi)
+    # Extra bottom room so x-label / ticks are not crushed by the strip.
+    fig_h = base_size + (2.15 if has_strip else 0.35)
+    fig = plt.figure(figsize=(base_size + 1.1, fig_h), dpi=dpi)
     if has_strip:
         gs = GridSpec(
             2,
@@ -73,6 +75,10 @@ def create_landscape_axes(
             height_ratios=[1, strip_height_ratio],
             hspace=strip_hspace,
             figure=fig,
+            left=0.14,
+            right=0.86,
+            top=0.90,
+            bottom=0.08,
         )
         ax = fig.add_subplot(gs[0])
         ax_strip = fig.add_subplot(gs[1])
@@ -102,22 +108,24 @@ def annotate_endpoint(ax, x: float, y: float, label: str, *, boxed: bool):
     """Annotate an optimization endpoint consistently."""
 
     kwargs = {
-        "fontsize": 10,
+        "fontsize": 12,
         "fontweight": "bold",
+        "color": "black",
         "ha": "center",
         "va": "bottom",
-        "zorder": 60,
+        "zorder": 120,
     }
     if boxed:
         kwargs.update(
             {
-                "xytext": (0, 6),
+                "xytext": (0, 8),
                 "textcoords": "offset points",
                 "bbox": {
-                    "boxstyle": "round,pad=0.2",
+                    "boxstyle": "round,pad=0.25",
                     "facecolor": "white",
-                    "edgecolor": "none",
-                    "alpha": 0.85,
+                    "edgecolor": "black",
+                    "linewidth": 0.8,
+                    "alpha": 0.95,
                 },
             }
         )
@@ -160,7 +168,8 @@ def render_endpoint_strip(
         show_dividers=strip_dividers,
         perspective_tilt=perspective_tilt,
         xyzrender_config=xyzrender_config,
-        width_fill_fraction=0.86,
+        width_fill_fraction=0.72,
+        prefer_single_row=True,
     )
 
 
@@ -204,15 +213,21 @@ def save_landscape_figure(
     ax=None,
     ax_strip=None,
 ) -> None:
-    """Save optimization landscapes without tight-layout strip warnings."""
+    """Save optimization landscapes; always crop with a pad so labels stay visible."""
 
     if has_strip and ax is not None and ax_strip is not None:
-        enforce_strip_clearance(fig, ax, ax_strip)
-    if not has_strip:
+        enforce_strip_clearance(fig, ax, ax_strip, min_clearance_px=40.0)
+    elif not has_strip:
         fig.tight_layout()
-        fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
-    else:
-        fig.savefig(str(output), dpi=dpi)
+    # Always tight-crop: without it strip layouts left large white margins and
+    # could hide axis labels depending on the viewer/frame.
+    fig.savefig(
+        str(output),
+        dpi=dpi,
+        bbox_inches="tight",
+        pad_inches=0.25,
+        facecolor=fig.get_facecolor(),
+    )
     plt.close(fig)
 
 
@@ -314,6 +329,8 @@ def render_single_ended_landscape(
     energy_unit: str = "eV",
     energy_cap: float | None = None,
     energy_cap_window: float | None = None,
+    relative_energy: bool = True,
+    title: str | None = None,
     cmap: str = "viridis",
     output: Path,
     dpi: int = 150,
@@ -321,8 +338,8 @@ def render_single_ended_landscape(
     plot_structures: str = "none",
     strip_structs: Sequence[Any] | None = None,
     strip_labels: Sequence[str] | None = None,
-    endpoint_start_label: str = "Init",
-    endpoint_end_label: str = "Min",
+    endpoint_start_label: str = "initial",
+    endpoint_end_label: str = "minimized",
     endpoint_boxed: bool = True,
     annotate_overlay_starts: bool = False,
     overlay_start_label: str = "R",
@@ -345,6 +362,8 @@ def render_single_ended_landscape(
     ```{versionadded} 1.8.1
     ```
     """
+    from matplotlib import ticker
+
     from chemparseplot.parse.neb_utils import (
         calculate_landscape_coords,
         compute_synthetic_gradients,
@@ -363,33 +382,46 @@ def render_single_ended_landscape(
     energies = np.asarray(energies_eV, dtype=float)
     n = min(len(rmsd_a), len(energies))
     rmsd_a, rmsd_b, energies = rmsd_a[:n], rmsd_b[:n], energies[:n]
-    display_e = convert_energy(energies, energy_unit)
+    # Relative energy keeps colorbars readable (absolute eV often span <0.2 eV
+    # and all ticks collapse to the same printed value).
+    e_ref = float(np.min(energies)) if relative_energy else 0.0
+    energies_plot = energies - e_ref
+    display_e = convert_energy(energies_plot, energy_unit)
     cap = energy_cap
     if cap is None and energy_cap_window is not None:
         cap = float(np.min(display_e)) + energy_cap_window
     if cap is not None:
-        # Cap in display units, map back to eV for the surface routine which
-        # converts from eV once.
         factor = float(convert_energy(np.array([1.0]), energy_unit)[0])
-        energies = np.minimum(energies, cap / factor if factor else cap)
-        display_e = convert_energy(energies, energy_unit)
+        energies_plot = np.minimum(
+            energies_plot, cap / factor if factor else cap
+        )
+        display_e = convert_energy(energies_plot, energy_unit)
 
-    f_para = -np.gradient(energies)
+    f_para = -np.gradient(energies_plot)
     grad_a, grad_b = compute_synthetic_gradients(rmsd_a, rmsd_b, f_para)
 
-    plot_optimization_landscape(
+    z_label = (
+        f"Relative energy ({energy_unit})"
+        if relative_energy
+        else energy_axis_label(energy_unit)
+    )
+    cb = plot_optimization_landscape(
         ax,
         rmsd_a,
         rmsd_b,
         grad_a,
         grad_b,
-        energies,
+        energies_plot,
         project_path=project_path,
         method=surface_type,
         cmap=cmap,
         label_mode="optimization",
         energy_unit=energy_unit,
+        z_label=z_label,
     )
+    if cb is not None:
+        cb.ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
+        cb.set_label(z_label, rotation=270, labelpad=18)
 
     basis = None
     if project_path:
@@ -408,7 +440,9 @@ def render_single_ended_landscape(
         )
         m = min(len(ra), len(atoms_ov))
         ra, rb = ra[:m], rb[:m]
-        px, py, _ = project_landscape_path(ra, rb, project_path=project_path, basis=basis)
+        px, py, _ = project_landscape_path(
+            ra, rb, project_path=project_path, basis=basis
+        )
         color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
         if len(overlays) > 1:
             ax.plot(
@@ -423,37 +457,77 @@ def render_single_ended_landscape(
                 label=lbl,
             )
         if annotate_overlay_starts and len(px):
-            annotate_endpoint(ax, float(px[0]), float(py[0]), overlay_start_label, boxed=False)
+            annotate_endpoint(
+                ax, float(px[0]), float(py[0]), overlay_start_label, boxed=False
+            )
 
     plot_x, plot_y, _ = project_landscape_path(
         rmsd_a, rmsd_b, project_path=project_path, basis=basis
     )
     annotate_endpoint(
-        ax, float(plot_x[0]), float(plot_y[0]), endpoint_start_label, boxed=endpoint_boxed
+        ax,
+        float(plot_x[0]),
+        float(plot_y[0]),
+        endpoint_start_label,
+        boxed=endpoint_boxed,
     )
     annotate_endpoint(
-        ax, float(plot_x[-1]), float(plot_y[-1]), endpoint_end_label, boxed=endpoint_boxed
+        ax,
+        float(plot_x[-1]),
+        float(plot_y[-1]),
+        endpoint_end_label,
+        boxed=endpoint_boxed,
     )
 
+    # True 1:1 Å panel: Δd window matches Δs (same RMSD metric).
+    if project_path and len(plot_x) > 1:
+        x0, x1 = float(np.min(plot_x)), float(np.max(plot_x))
+        y0, y1 = float(np.min(plot_y)), float(np.max(plot_y))
+        s_pad = max((x1 - x0) * 0.06, 0.01)
+        x0, x1 = x0 - s_pad, x1 + s_pad
+        half = max(0.5 * (x1 - x0), abs(y0), abs(y1), 0.02)
+        x_mid = 0.5 * (x0 + x1)
+        ax.set_xlim(x_mid - half, x_mid + half)
+        ax.set_ylim(-half, half)
+        ax.set_aspect("equal", adjustable="box")
+
+    # Re-assert axis labels after surface/path (bold, large enough to read).
+    if project_path:
+        ax.set_xlabel(_LABELS["optimization"]["x"], fontweight="bold", fontsize=12)
+        ax.set_ylabel(_LABELS["optimization"]["y"], fontweight="bold", fontsize=12)
+    else:
+        ax.set_xlabel(r"RMSD from ref A ($\AA$)", fontweight="bold", fontsize=12)
+        ax.set_ylabel(r"RMSD from ref B ($\AA$)", fontweight="bold", fontsize=12)
+    ax.tick_params(axis="both", labelsize=10)
+    if title:
+        ax.set_title(title, fontweight="bold", fontsize=13, pad=10)
+
     if overlays and len(overlays) > 1:
-        ax.legend(frameon=True, framealpha=0.9, loc="best")
+        ax.legend(frameon=True, framealpha=0.95, loc="best")
 
     if has_strip and ax_strip is not None and strip_structs is not None:
+        zoom = (
+            strip_zoom
+            if strip_zoom is not None
+            else max(0.45, default_strip_zoom(list(strip_structs)) * 1.6)
+        )
         render_endpoint_strip(
             ax_strip,
             list(strip_structs),
             list(strip_labels or []),
-            strip_zoom=strip_zoom,
+            strip_zoom=zoom,
             rotation=rotation,
             theme=theme,
             strip_renderer=strip_renderer,
-            strip_spacing=strip_spacing,
+            strip_spacing=max(strip_spacing, 2.2),
             strip_dividers=strip_dividers,
             perspective_tilt=perspective_tilt,
             xyzrender_config=xyzrender_config,
         )
 
-    save_landscape_figure(fig, output, dpi=dpi, has_strip=has_strip, ax=ax, ax_strip=ax_strip)
+    save_landscape_figure(
+        fig, output, dpi=dpi, has_strip=has_strip, ax=ax, ax_strip=ax_strip
+    )
 
 
 def plot_optimization_landscape(
@@ -533,11 +607,11 @@ def plot_optimization_landscape(
 
     labels = _LABELS.get(label_mode, _LABELS["optimization"])
     if project_path:
-        ax.set_xlabel(labels["x"])
-        ax.set_ylabel(labels["y"])
+        ax.set_xlabel(labels["x"], fontweight="bold", fontsize=12)
+        ax.set_ylabel(labels["y"], fontweight="bold", fontsize=12)
     else:
-        ax.set_xlabel(r"RMSD from ref A ($\AA$)")
-        ax.set_ylabel(r"RMSD from ref B ($\AA$)")
+        ax.set_xlabel(r"RMSD from ref A ($\AA$)", fontweight="bold", fontsize=12)
+        ax.set_ylabel(r"RMSD from ref B ($\AA$)", fontweight="bold", fontsize=12)
 
     return cb
 

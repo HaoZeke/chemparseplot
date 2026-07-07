@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.7](https://github.com/HaoZeke/chemparseplot/tree/v1.9.7) - 2026-07-07
+
+### Fixed
+
+- Single-ended landscapes: bold axis labels, tight save with pad, relative-energy
+  colorbars (readable ticks), optional title, and 1:1 (s, d) panel limits.
+- Endpoint annotations use a high-contrast white box with black edge.
+
 ## [1.9.6](https://github.com/HaoZeke/chemparseplot/tree/v1.9.6) - 2026-07-07
 
 ### Added
