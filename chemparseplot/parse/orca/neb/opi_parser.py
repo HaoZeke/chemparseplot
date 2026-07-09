@@ -2,40 +2,54 @@
 #
 # SPDX-License-Identifier: MIT
 
-"""Parse ORCA NEB calculations using OPI (ORCA Python Interface).
+"""Parse ORCA NEB calculations via a stable public API.
 
-Requires ORCA 6.1+ and the orca-pi package.
-Falls back to legacy parsing for older ORCA versions.
+**OPI is an optional internal backend.** Prefer::
 
-Returns data in format compatible with chemparseplot.plot.neb plotting functions.
+    from chemparseplot.parse.orca.neb import parse_orca_neb
+
+Do **not** import ``opi`` in application code for suite-supported workflows.
+
+- ``backend="auto"`` (default): try OPI, then legacy ``.interp`` parsing.
+- ``backend="opi"``: require OPI (ORCA 6.1+ / ``opi`` package).
+- ``backend="legacy"``: ``.interp`` only.
+
+Returns :class:`~chemparseplot.parse.types.OrcaNebResult` for plot helpers.
 
 ```{versionadded} 0.2.0
 ```
+```{versionchanged} 1.9.0
+OPI is loaded only through :mod:`chemparseplot.parse.orca._opi` (no
+``rgpycrumbs.ensure_import``). Public entry supports ``backend=`` selection.
+```
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 
+from chemparseplot.parse.orca._opi import get_opi_output_class, opi_available
 from chemparseplot.parse.types import OrcaNebResult
 
-# Lazy import - will be loaded on first use
-_opi_output = None
+Backend = Literal["auto", "opi", "legacy"]
 
 
 def _get_opi_output():
-    """Get OPI Output class, installing if needed."""
-    global _opi_output
-    if _opi_output is None:
-        from rgpycrumbs._aux import ensure_import
-
-        _opi_output = ensure_import("opi.output.core").Output
-    return _opi_output
+    """Get OPI Output class (lazy). Public tests may monkeypatch this."""
+    return get_opi_output_class()
 
 
-HAS_OPI = True  # Will fail gracefully at runtime if not installed
+def _has_opi() -> bool:
+    return opi_available()
+
+
+# Back-compat: prefer :func:`chemparseplot.parse.orca._opi.opi_available`.
+# Recomputed at import; use opi_available() for a live probe after installs.
+HAS_OPI = opi_available()
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,39 +69,74 @@ class _OpiNebImage:
     gradient: np.ndarray | None = None
 
 
-def parse_orca_neb(basename: str, working_dir: Path | None = None) -> OrcaNebResult:
-    """Parse ORCA NEB calculation using OPI.
-
-    Returns data compatible with chemparseplot.plot.neb functions:
-    - energies: array of energies in eV
-    - rmsd_r, rmsd_p: RMSD from reactant/product (if geometries available)
-    - grad_r, grad_p: gradients (if forces available)
-    - converged: bool
-    - n_images: number of images
+def parse_orca_neb(
+    basename: str,
+    working_dir: Path | None = None,
+    *,
+    backend: Backend = "auto",
+) -> OrcaNebResult:
+    """Parse ORCA NEB into :class:`OrcaNebResult` (public entry point).
 
     Parameters
     ----------
     basename
-        ORCA job basename (without extension)
+        ORCA job basename (without extension).
     working_dir
-        Working directory containing ORCA output files
+        Directory containing ORCA outputs (default: cwd).
+    backend
+        ``auto`` (default): OPI if importable, else legacy ``.interp``.
+        ``opi``: require OPI. ``legacy``: ``.interp`` only.
 
     Returns
     -------
     OrcaNebResult
-        Structured NEB data compatible with existing plotting helpers
+        Structured NEB data for :mod:`chemparseplot.plot.neb`.
 
     Example
     -------
     >>> from chemparseplot.parse.orca.neb import parse_orca_neb
-    >>> from chemparseplot.plot.neb import plot_energy_path, plot_landscape_path_overlay
     >>> data = parse_orca_neb("job", Path("calc"))
-    >>> # Use with existing plotting functions
     """
-    Output = _get_opi_output()
-
     if working_dir is None:
         working_dir = Path.cwd()
+    working_dir = Path(working_dir)
+
+    if backend == "legacy":
+        return _require_fallback(basename, working_dir)
+
+    if backend in ("auto", "opi"):
+        try:
+            return _parse_orca_neb_opi(basename, working_dir)
+        except ImportError:
+            if backend == "opi":
+                raise
+        # auto + ImportError: fall through to legacy
+        if backend == "auto":
+            legacy = parse_orca_neb_fallback(basename, working_dir)
+            if legacy is not None:
+                return legacy
+            msg = (
+                "OPI is not available and no legacy "
+                f"{basename}.interp was found under {working_dir}. "
+                "Install chemparseplot[opi] or provide ORCA NEB .interp output."
+            )
+            raise FileNotFoundError(msg)
+
+    msg = f"Unknown backend {backend!r}; expected auto|opi|legacy"
+    raise ValueError(msg)
+
+
+def _require_fallback(basename: str, working_dir: Path) -> OrcaNebResult:
+    legacy = parse_orca_neb_fallback(basename, working_dir)
+    if legacy is None:
+        msg = f"No legacy NEB data for {basename!r} under {working_dir}"
+        raise FileNotFoundError(msg)
+    return legacy
+
+
+def _parse_orca_neb_opi(basename: str, working_dir: Path) -> OrcaNebResult:
+    """Parse ORCA NEB using OPI only (internal)."""
+    Output = _get_opi_output()
 
     # Parse ORCA output using OPI
     output = Output(basename, working_dir=working_dir)

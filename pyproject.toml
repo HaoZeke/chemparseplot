@@ -47,7 +47,10 @@ plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
 # (energy/neb_bead/reaction_coordinate on ConFrame).
 neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.13.1"]
 xyzrender = ["xyzrender>=0.1.2"]
-all = ["chemparseplot[plot,neb,xyzrender]"]
+# Optional ORCA Python Interface (import name: opi). Used only as an
+# internal backend for parse.orca.neb — consumers use parse_orca_neb.
+opi = ["orca-pi>=0.1.0"]
+all = ["chemparseplot[plot,neb,xyzrender,opi]"]
 release = [
   "build>=0.10",
   "towncrier>=24.8.0",

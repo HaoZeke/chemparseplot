@@ -144,6 +144,23 @@ chemparseplot/
 | rgpycrumbs | Interpolation, surfaces, RMSD alignment | optional (compute delegation; install alongside or via tests/pixi) |
 | h5py | ChemGP / trajectory HDF5 | optional (`[neb]`) |
 
+
+
+## ORCA backends (OPI proxy)
+
+ORCA NEB and other structured products are exposed through **stable public
+functions** under `chemparseplot.parse.orca` (for example `parse_orca_neb`).
+
+| Backend | When | Consumer-facing? |
+|---------|------|------------------|
+| **OPI** (`opi` package / `chemparseplot[opi]`) | ORCA 6.1+ structured output | **No** — internal only |
+| **legacy** (`.interp` / text) | Older ORCA or OPI missing | Via same public API (`backend="legacy"` or auto) |
+
+Applications and **wailord** (batch shell) must call chemparseplot APIs, not
+`import opi`. Text-heavy ORCA sections without a structured API are a separate
+**grammar/AST** track inside chemparseplot (parsimonious-class parsers), not a
+reason for a second ORCA SDK.
+
 ## Versioning
 
 chemparseplot uses semantic versioning via `hatch-vcs`:

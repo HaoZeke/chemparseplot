@@ -2,13 +2,16 @@
 #
 # SPDX-License-Identifier: MIT
 
-"""ORCA NEB parsing utilities.
+"""ORCA NEB parsing utilities (public).
 
-Supports both:
-- OPI (ORCA Python Interface) for ORCA 6.1+ JSON output
-- Legacy regex parsing for older ORCA versions
+Backends (selected via :func:`parse_orca_neb` ``backend=``):
+
+- **OPI** (optional): ORCA 6.1+ structured output via the ``opi`` package,
+  loaded only inside chemparseplot — not a public consumer dependency.
+- **legacy**: regex / ``.interp`` parsing for older ORCA outputs.
 """
 
+from chemparseplot.parse.orca._opi import opi_available
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.parse.orca.neb.opi_parser import (
     HAS_OPI,
@@ -19,6 +22,7 @@ from chemparseplot.parse.orca.neb.opi_parser import (
 __all__ = [
     "HAS_OPI",
     "extract_interp_points",
+    "opi_available",
     "parse_orca_neb",
     "parse_orca_neb_fallback",
 ]
