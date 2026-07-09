@@ -2,6 +2,16 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.8](https://github.com/HaoZeke/chemparseplot/tree/v1.9.8) - 2026-07-09
+
+### Added
+
+- ``chemparseplot.api`` stable surface: ``extract_orca_geomscan_energy`` (ORCA
+  geomscan text → typed pint Quantities), energy helpers, and ``suite_pins()``
+  via the rgpkgs hub config.
+- Docs: suite ``rgpkgs.toml`` / ``~/.config/rgpkgs`` shared config; feature
+  extras documented as transitional toward the hub uv design.
+
 ## [1.9.7](https://github.com/HaoZeke/chemparseplot/tree/v1.9.7) - 2026-07-07
 
 ### Fixed
