@@ -3,19 +3,33 @@
 # SPDX-License-Identifier: MIT
 """Stable public library entry points for chemparseplot.
 
-Prefer this module for new consumers (cookbooks, wailord). Heavy plot/parse
-stacks still live under ``chemparseplot.plot`` / ``chemparseplot.parse`` and
-may require optional deps (transitional extras until suite uv design fully
-covers them).
+Prefer this module for new consumers (cookbooks, wailord, notebooks).
+
+**Representative in-process path (parse → typed result):**
+
+.. code-block:: python
+
+    from chemparseplot.api import extract_orca_geomscan_energy
+
+    dist_bohr, energy_Eh = extract_orca_geomscan_energy(orca_out_text, "Actual Energy")
+    # dist_bohr, energy_Eh are pint Quantities (bohr, hartree)
+
+Heavy plot stacks still live under ``chemparseplot.plot`` (optional deps /
+transitional extras until suite uv design fully covers them).
 
 Suite pins/config: use ``rgpycrumbs.api`` (shared rgpkgs TOML) — this package
 does **not** invent ``~/.config/chemparseplot``.
 
 .. versionadded:: 1.9.8
+.. versionchanged:: 1.9.9
+   Expose ORCA geomscan energy parse as the stable library path.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+from chemparseplot.parse.orca.geomscan import extract_energy_data
 from chemparseplot.units import (
     ENERGY_UNITS,
     convert_energy_magnitude,
@@ -23,13 +37,40 @@ from chemparseplot.units import (
     normalize_energy_unit,
 )
 
+if TYPE_CHECKING:
+    from chemparseplot.units import Q_
+
 __all__ = [
     "ENERGY_UNITS",
     "convert_energy_magnitude",
     "energy_quantity",
+    "extract_orca_geomscan_energy",
     "normalize_energy_unit",
     "suite_pins",
 ]
+
+
+def extract_orca_geomscan_energy(
+    data: str, energy_type: str = "Actual Energy"
+) -> tuple[Q_, Q_]:
+    """Parse ORCA geometry-scan surface energies from output text.
+
+    In-process library path: text → typed ``(distance, energy)`` pint Quantities
+    in Bohr and Hartree (ORCA defaults).
+
+    Parameters
+    ----------
+    data:
+        Blob of ORCA output containing ``Calculated Surface`` blocks.
+    energy_type:
+        ``\"Actual Energy\"`` or ``\"SCF energy\"`` (substring match in the block).
+
+    Returns
+    -------
+    tuple[Q_, Q_]
+        Distances (bohr) and energies (hartree). Empty quantities if no match.
+    """
+    return extract_energy_data(data, energy_type)
 
 
 def suite_pins() -> dict[str, str]:

@@ -1,0 +1,9 @@
+The Calculated Surface using the 'Actual Energy'
+   7.55890395  -0.74239862
+   7.32930292  -0.74349939
+   7.09970189  -0.74467446
+
+The Calculated Surface using the SCF energy
+   7.55890395  -0.74239862
+   7.32930292  -0.74349939
+   7.09970189  -0.74467446
