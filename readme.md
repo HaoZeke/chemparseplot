@@ -45,6 +45,18 @@ publication-quality plots.
 ## Installation
 
     pip install chemparseplot
+
+Suite config (shared with rgpycrumbs — **no** `~/.config/chemparseplot`):
+
+    # ~/.config/rgpkgs/config.toml  or  ./rgpkgs.toml
+    # [pins] lock = "uv.lock"
+    # [pins.packages] …
+
+Feature extras (`plot`, `neb`, …) are *transitional* install convenience. Target
+is the same on-demand uv / `ensure_import` design as the rgpycrumbs hub; prefer
+bare install + suite pins for new work.
+
+    # transitional:
     # With plotting support
     pip install "chemparseplot[plot]"
     # Everything
