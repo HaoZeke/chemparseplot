@@ -50,7 +50,9 @@ xyzrender = ["xyzrender>=0.1.2"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
 # internal backend for parse.orca.neb — consumers use parse_orca_neb.
 opi = ["orca-pi>=0.1.0"]
-all = ["chemparseplot[plot,neb,xyzrender,opi]"]
+# Grammar/AST track (parsimonious) for XYZ and text-heavy ORCA sections.
+grammar = ["parsimonious>=0.10.0"]
+all = ["chemparseplot[plot,neb,xyzrender,opi,grammar]"]
 release = [
   "build>=0.10",
   "towncrier>=24.8.0",
@@ -61,6 +63,7 @@ test = [
   "ase>=3.22",
   "h5py>=3.0",
   "matplotlib>=3.8.2",
+  "parsimonious>=0.10.0",
   "polars>=0.20",
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
@@ -93,6 +96,7 @@ addopts = ["-ra", "-q"]
 markers = [
   "pure: mark a test as needing only numpy",
   "neb: mark a test as needing numpy, polars, and ase",
+  "grammar: mark a test as needing parsimonious (chemparseplot[grammar])",
 ]
 minversion = "7.4"
 testpaths = ["tests"]
@@ -212,6 +216,14 @@ ban-relative-imports = "all"
   "N806",    # Output class reference
   "PLR2004", # magic value 2 in len check
   "ARG001",  # unused atoms_list kept for API compat
+]
+"chemparseplot/parse/grammar/**/*" = [
+  "PLC0415", # deferred parsimonious imports
+  "PLW0603", # global grammar cache
+  "N802",    # visit_* method names fixed by parsimonious
+  "N806",    # Grammar / NodeVisitor class refs
+  "S110",    # grammar parse try/except for candidate lines
+  "BLE001",  # broad except around parsimonious ParseError variants
 ]
 # Tutorial scripts use print and uppercase physics variables (X, Y, Z, NLL, etc.)
 "doc/source/tutorials/**/*" = ["T201", "N806"]

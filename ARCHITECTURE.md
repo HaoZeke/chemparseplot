@@ -105,6 +105,9 @@ chemparseplot/
 │   ├── file_.py       # File discovery utilities
 │   ├── neb_utils.py   # Common NEB parsing utilities
 │   ├── patterns.py    # Regular expression patterns
+│   ├── grammar/          # optional parsimonious track (XYZ, ORCA text)
+│   │   ├── xyz.py
+│   │   └── orca_text.py
 │   ├── orca/
 │   │   ├── __init__.py
 │   │   ├── geomscan.py
@@ -143,6 +146,7 @@ chemparseplot/
 | readcon (>=0.7) | CON/convel I/O and metadata-native energies | optional (`[neb]`) |
 | rgpycrumbs | Interpolation, surfaces, RMSD alignment | optional (compute delegation; install alongside or via tests/pixi) |
 | h5py | ChemGP / trajectory HDF5 | optional (`[neb]`) |
+| parsimonious | Grammar/AST text parsers (XYZ, ORCA energy/coords) | optional (`[grammar]`) |
 
 
 
@@ -160,6 +164,17 @@ Applications and **wailord** (batch shell) must call chemparseplot APIs, not
 `import opi`. Text-heavy ORCA sections without a structured API are a separate
 **grammar/AST** track inside chemparseplot (parsimonious-class parsers), not a
 reason for a second ORCA SDK.
+
+### Grammar track (`chemparseplot[grammar]`)
+
+| Entry point | Role |
+|-------------|------|
+| `chemparseplot.parse.grammar.parse_xyz_text` / `parse_xyz_file` | XYZ frame grammar |
+| `chemparseplot.parse.grammar.parse_orca_text_summary` | Final energies + last Cartesian (Å) |
+| `chemparseplot.api.parse_xyz` / `parse_orca_final_energy` | Stable library shims |
+
+Install: `pip install 'chemparseplot[grammar]'`. Without parsimonious these
+APIs raise `ImportError` with an install hint (same pattern as OPI).
 
 ## Versioning
 

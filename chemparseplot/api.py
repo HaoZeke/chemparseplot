@@ -45,9 +45,61 @@ __all__ = [
     "convert_energy_magnitude",
     "energy_quantity",
     "extract_orca_geomscan_energy",
+    "grammar_available",
     "normalize_energy_unit",
+    "parse_orca_final_energy",
+    "parse_xyz",
     "suite_pins",
 ]
+
+
+def grammar_available() -> bool:
+    """True if the optional parsimonious grammar track is importable."""
+    from chemparseplot.parse.grammar import grammar_available as _ga
+
+    return _ga()
+
+
+def _looks_like_path(s: str) -> bool:
+    """True for short path-like strings (avoid Path on multi-line blobs)."""
+    if "\n" in s or len(s) > 4096:
+        return False
+    from pathlib import Path
+
+    try:
+        return Path(s).is_file()
+    except OSError:
+        return False
+
+
+def parse_xyz(path_or_text: str):
+    """Parse XYZ via grammar track (file path if exists, else text).
+
+    Requires ``chemparseplot[grammar]``.
+    """
+    from chemparseplot.parse.grammar.xyz import parse_xyz_file, parse_xyz_text
+
+    if _looks_like_path(path_or_text):
+        return parse_xyz_file(path_or_text)
+    return parse_xyz_text(path_or_text)
+
+
+def parse_orca_final_energy(path_or_text: str):
+    """Last ``FINAL SINGLE POINT ENERGY`` as a hartree Quantity.
+
+    Grammar track; requires ``chemparseplot[grammar]``.
+    """
+    from chemparseplot.parse.grammar.orca_text import (
+        parse_orca_text_file,
+        parse_orca_text_summary,
+    )
+
+    if _looks_like_path(path_or_text):
+        summary = parse_orca_text_file(path_or_text)
+    else:
+        summary = parse_orca_text_summary(path_or_text)
+    return summary.final_energy
+
 
 
 def extract_orca_geomscan_energy(
