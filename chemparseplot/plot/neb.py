@@ -789,13 +789,39 @@ def plot_energy_path(
     smoothing=None,
     label=None,
 ) -> Any:
-    """Plots 1D energy profile with optional Hermite spline interpolation.
+    """Plots 1D energy profile with optional spline interpolation.
+
+    Parameters
+    ----------
+    method :
+        ``"hermite"`` — cubic Hermite using ``-f_para`` as dE/d(rc) (path-length
+        coordinates only; meaningless when ``rc`` is image index).
+        ``"spline"`` — cubic spline through the energy points.
+        ``"none"`` — markers joined by straight segments only (no interpolant).
 
     ```{versionadded} 0.1.0
     ```
     """
     if smoothing is None:
         smoothing = SmoothingParams()
+
+    # Points only / piecewise linear: no smooth interpolant.
+    # Use this when the abscissa is image index (force derivatives are not dE/dindex).
+    if method in ("none", "linear", "raw"):
+        ax.plot(
+            rc,
+            energy,
+            marker="o",
+            ls="-",
+            color=color,
+            ms=6,
+            alpha=alpha,
+            zorder=zorder + 1,
+            markerfacecolor=color,
+            markeredgewidth=0.5,
+            label=label,
+        )
+        return
 
     # Derivative is negative force
     deriv = -f_para

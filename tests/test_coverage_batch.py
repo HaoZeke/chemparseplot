@@ -329,6 +329,18 @@ class TestNebPlotFunctions:
         plot_energy_path(ax, rc, energy, f_para, "red", 0.8, 5, method="spline")
         plt.close(fig)
 
+    def test_plot_energy_path_none(self):
+        from chemparseplot.plot.neb import plot_energy_path
+
+        fig, ax = plt.subplots()
+        rc = np.linspace(0, 3, 11)
+        energy = np.sin(rc)
+        f_para = np.cos(rc)
+        plot_energy_path(ax, rc, energy, f_para, "green", 1.0, 10, method="none")
+        # single polyline+markers, no fine interpolant
+        assert len(ax.lines) == 1
+        plt.close(fig)
+
     def test_plot_eigenvalue_path(self):
         from chemparseplot.plot.neb import plot_eigenvalue_path
 
