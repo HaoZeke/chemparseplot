@@ -14,8 +14,7 @@ Prefer this module for new consumers (cookbooks, wailord, notebooks).
     dist_bohr, energy_Eh = extract_orca_geomscan_energy(orca_out_text, "Actual Energy")
     # dist_bohr, energy_Eh are pint Quantities (bohr, hartree)
 
-Heavy plot stacks still live under ``chemparseplot.plot`` (optional deps /
-transitional extras until suite uv design fully covers them).
+Heavy plot stacks are re-exported lazily so bare installs stay light.
 
 Suite pins/config: use ``rgpycrumbs.api`` (shared rgpkgs TOML) — this package
 does **not** invent ``~/.config/chemparseplot``.
@@ -23,11 +22,13 @@ does **not** invent ``~/.config/chemparseplot``.
 .. versionadded:: 1.9.8
 .. versionchanged:: 1.9.9
    Expose ORCA geomscan energy parse as the stable library path.
+.. versionchanged:: 1.9.11
+   Expand re-exports (SurfaceFitConfig, plot helpers, basetypes); hub suite_pins.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from chemparseplot.parse.orca.geomscan import extract_energy_data
 from chemparseplot.units import (
@@ -42,14 +43,30 @@ if TYPE_CHECKING:
 
 __all__ = [
     "ENERGY_UNITS",
+    "Q_",
+    "SurfaceFitConfig",
     "convert_energy_magnitude",
     "energy_quantity",
     "extract_orca_geomscan_energy",
     "grammar_available",
     "normalize_energy_unit",
     "parse_orca_final_energy",
+    "parse_orca_ir_spectrum",
+    "parse_orca_populations",
+    "parse_orca_vibrational_frequencies",
+    "parse_orca_vpt2_fundamentals",
     "parse_xyz",
+    "load_con_trajectory",
+    "frames_to_table",
+    "plot_con_energy_profile",
+    "plot_con_overview",
+    "chemfiles_available",
+    "plot_con_structure_strip",
+    "plot_con_overlay",
+    "load_trajectory",
+    "plot_landscape_surface",
     "suite_pins",
+    "ureg",
 ]
 
 
@@ -101,7 +118,6 @@ def parse_orca_final_energy(path_or_text: str):
     return summary.final_energy
 
 
-
 def extract_orca_geomscan_energy(
     data: str, energy_type: str = "Actual Energy"
 ) -> tuple[Q_, Q_]:
@@ -109,35 +125,96 @@ def extract_orca_geomscan_energy(
 
     In-process library path: text → typed ``(distance, energy)`` pint Quantities
     in Bohr and Hartree (ORCA defaults).
-
-    Parameters
-    ----------
-    data:
-        Blob of ORCA output containing ``Calculated Surface`` blocks.
-    energy_type:
-        ``\"Actual Energy\"`` or ``\"SCF energy\"`` (substring match in the block).
-
-    Returns
-    -------
-    tuple[Q_, Q_]
-        Distances (bohr) and energies (hartree). Empty quantities if no match.
     """
     return extract_energy_data(data, energy_type)
 
 
 def suite_pins() -> dict[str, str]:
-    """Return suite package pins from rgpkgs config + env (soft on old hub).
+    """Return suite package pins from rgpkgs config + env (soft on old hub)."""
+    import importlib
 
-    Empty dict if rgpycrumbs is missing or too old.
-    """
     try:
-        from rgpycrumbs.api import load_config, pins_from_env
+        mod = importlib.import_module("rgpycrumbs.api")
+        fn = getattr(mod, "suite_pins", None)
+        if callable(fn):
+            return fn()
     except ImportError:
+        pass
+    try:
+        mod = importlib.import_module("rgpycrumbs.api")
+        pins_from_env = getattr(mod, "pins_from_env")
+        load_config = getattr(mod, "load_config")
+    except (ImportError, AttributeError):
         return {}
     pins = dict(pins_from_env())
     try:
-        cfg = load_config()
-        pins.update(cfg.merged_package_pins_normalized())
-    except Exception:  # noqa: BLE001 — soft fail for consumers
+        pins.update(load_config().merged_package_pins_normalized())
+    except Exception:  # noqa: BLE001
         pass
     return pins
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy optional re-exports (plot stack / units / ORCA analysis)."""
+    if name in {"ureg", "Q_"}:
+        from chemparseplot import units as _units
+
+        return getattr(_units, name)
+    if name == "SurfaceFitConfig":
+        from chemparseplot.plot.neb import SurfaceFitConfig
+
+        return SurfaceFitConfig
+    if name == "plot_landscape_surface":
+        from chemparseplot.plot.neb import plot_landscape_surface
+
+        return plot_landscape_surface
+    if name == "parse_orca_vibrational_frequencies":
+        from chemparseplot.parse.orca.freq import parse_orca_vibrational_frequencies
+
+        return parse_orca_vibrational_frequencies
+    if name == "parse_orca_ir_spectrum":
+        from chemparseplot.parse.orca.freq import parse_orca_ir_spectrum
+
+        return parse_orca_ir_spectrum
+    if name == "parse_orca_vpt2_fundamentals":
+        from chemparseplot.parse.orca.vpt2 import parse_orca_vpt2_fundamentals
+
+        return parse_orca_vpt2_fundamentals
+    if name == "parse_orca_populations":
+        from chemparseplot.parse.orca.populations import parse_orca_populations
+
+        return parse_orca_populations
+    if name == "load_con_trajectory":
+        from chemparseplot.parse.con import load_con_trajectory
+
+        return load_con_trajectory
+    if name == "frames_to_table":
+        from chemparseplot.parse.con import frames_to_table
+
+        return frames_to_table
+    if name == "plot_con_energy_profile":
+        from chemparseplot.plot.con import plot_con_energy_profile
+
+        return plot_con_energy_profile
+    if name == "plot_con_overview":
+        from chemparseplot.plot.con import plot_con_overview
+
+        return plot_con_overview
+
+    if name == "load_trajectory":
+        from chemparseplot.parse.con import load_trajectory
+
+        return load_trajectory
+    if name == "plot_con_overlay":
+        from chemparseplot.plot.con import plot_con_overlay
+
+        return plot_con_overlay
+    if name == "plot_con_structure_strip":
+        from chemparseplot.plot.con import plot_con_structure_strip
+
+        return plot_con_structure_strip
+    if name == "chemfiles_available":
+        from chemparseplot.parse.con import chemfiles_available
+
+        return chemfiles_available
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

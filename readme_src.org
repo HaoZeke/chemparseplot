@@ -50,7 +50,10 @@ uv sync --all-extras
 See the [[https://chemparseplot.rgoswami.me/installation.html][installation guide]] and [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart]] for details.
 
 ** Ecosystem Overview
-   ~chemparseplot~ is part of the ~rgpycrumbs~ suite of interlinked libraries.
+   ~chemparseplot~ is part of the ~rgpkgs~ suite (hub: ~rgpycrumbs~).
+
+- CON/convel: [[https://github.com/lode-org/readcon-core][readcon-core]] (PyPI: ~readcon~)
+- Hub: [[https://github.com/HaoZeke/rgpycrumbs][rgpycrumbs]] · inputs: [[https://github.com/HaoZeke/pychum][pychum]] · engine: [[https://eondocs.org][eOn]]
 
 [[file:branding/logo/ecosystem.png]]
 
