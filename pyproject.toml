@@ -16,7 +16,7 @@ readme = "readme.md"
 keywords = ["compchem", "parser", "plot"]
 license = { text = "MIT" }
 authors = [{ name = "Rohit Goswami", email = "rog32@hi.is" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
