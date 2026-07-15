@@ -2,6 +2,20 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.9](https://github.com/HaoZeke/chemparseplot/tree/1.9.9) - 2026-07-15
+
+### Added
+
+- Optional ``auto_thin`` / ``max_surface_points`` on
+``plot_landscape_surface`` and ``render_single_ended_landscape`` (default
+off). When enabled, dense observation clouds are evenly subsampled for the
+GP surface fit only (endpoints kept; viewport and scatter stay full). ([#auto_thin_surface](https://github.com/HaoZeke/chemparseplot/issues/auto_thin_surface))
+- Grammar/AST track for text-heavy formats via optional ``parsimonious``
+(``chemparseplot[grammar]``): XYZ frames and ORCA final-energy / Cartesian
+coordinate extractors under ``chemparseplot.parse.grammar``, with stable
+shims ``chemparseplot.api.parse_xyz`` and ``parse_orca_final_energy``. ([#grammar_track](https://github.com/HaoZeke/chemparseplot/issues/grammar_track))
+
+
 ## [1.9.8](https://github.com/HaoZeke/chemparseplot/tree/v1.9.8) - 2026-07-09
 
 ### Added
