@@ -48,7 +48,9 @@ __all__ = [
     "convert_energy_magnitude",
     "energy_quantity",
     "extract_orca_geomscan_energy",
+    "frames_to_table",
     "grammar_available",
+    "load_con_trajectory",
     "load_trajectory",
     "normalize_energy_unit",
     "parse_orca_final_energy",
@@ -57,6 +59,7 @@ __all__ = [
     "parse_orca_vibrational_frequencies",
     "parse_orca_vpt2_fundamentals",
     "parse_xyz",
+    "plot_con_energy_profile",
     "plot_con_overlay",
     "plot_con_overview",
     "plot_landscape_surface",
@@ -163,15 +166,17 @@ def suite_pins() -> dict[str, str]:
         pass
     try:
         mod = importlib.import_module("rgpycrumbs.api")
-        pins_from_env = getattr(mod, "pins_from_env")
-        load_config = getattr(mod, "load_config")
+        pins_from_env = mod.pins_from_env
+        load_config = mod.load_config
     except (ImportError, AttributeError):
         return {}
     pins = dict(pins_from_env())
     try:
         cfg = load_config()
         pins.update(cfg.merged_package_pins_normalized())
-    except Exception:  # noqa: BLE001 — soft fail for consumers
+    except Exception:
+        # Older hubs raise while reading a partial config. An empty pin set
+        # is the same result as a missing hub.
         pass
     return pins
 
@@ -206,4 +211,21 @@ def __getattr__(name: str) -> Any:
         from chemparseplot.parse.orca.populations import parse_orca_populations
 
         return parse_orca_populations
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name == "load_con_trajectory":
+        from chemparseplot.parse.con import load_con_trajectory
+
+        return load_con_trajectory
+    if name == "frames_to_table":
+        from chemparseplot.parse.con import frames_to_table
+
+        return frames_to_table
+    if name == "plot_con_energy_profile":
+        from chemparseplot.plot.con import plot_con_energy_profile
+
+        return plot_con_energy_profile
+    if name == "plot_con_overview":
+        from chemparseplot.plot.con import plot_con_overview
+
+        return plot_con_overview
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)

@@ -232,7 +232,12 @@ ban-relative-imports = "all"
   "RUF059",
 ]
 "chemparseplot/__init__.py" = ["PLC0414", "EM102", "F401"]
-"chemparseplot/api.py" = ["PLR2004", "S110", "PLC0415"]
+"chemparseplot/api.py" = [
+  "PLR2004",
+  "S110",
+  "PLC0415",
+  "F822",  # lazy re-exports via __getattr__
+]
 "chemparseplot/util.py" = ["PLC0415"]
 "chemparseplot/parse/**/*" = [
   "PLC0415",

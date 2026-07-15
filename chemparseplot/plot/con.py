@@ -1,7 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-"""Draw CON trajectory profiles. These helpers do not parse files."""
+"""Draw CON trajectory profiles. These helpers do not parse files.
+
+``plot_con_energy_profile`` and ``plot_con_force_profile`` draw one curve.
+``plot_con_overview`` stacks energy, optional fmax, and an optional
+structure strip. ``plot_con_overlay`` draws several trajectories together.
+"""
 
 from __future__ import annotations
 
@@ -184,3 +189,97 @@ def plot_con_overlay(
     if labels:
         ax.legend(frameon=False)
     return fig
+
+
+def _x_axis(traj: Any) -> np.ndarray:
+    table = getattr(traj, "table", None)
+    empty = getattr(table, "is_empty", lambda: True)
+    if table is not None and not empty() and "frame_index" in table.columns:
+        x = np.asarray(table["frame_index"].to_numpy(), dtype=float)
+        if np.all(np.isfinite(x)):
+            return x
+    return np.arange(int(traj.n_frames), dtype=float)
+
+
+def plot_con_energy_profile(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    energy_unit: str = "eV",
+    relative: bool = True,
+    color: str | None = None,
+    marker: str = "o",
+    label: str | None = None,
+    title: str | None = None,
+) -> Axes:
+    """Plot energy against frame index for one CON trajectory.
+
+    *relative* subtracts the first finite energy. *energy_unit* is the
+    presentation unit.
+    """
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 3.5), constrained_layout=True)
+    style: dict[str, Any] = {"marker": marker}
+    if color is not None:
+        style["color"] = color
+    if label is not None:
+        style["label"] = label
+    ax.plot(
+        _x_axis(traj),
+        _display_energies(traj.energies, energy_unit, relative=relative),
+        **style,
+    )
+    ax.set_xlabel("Frame")
+    ax.set_ylabel(_energy_ylabel(energy_unit, relative=relative))
+    if title:
+        ax.set_title(title)
+    elif getattr(traj, "path", None) is not None:
+        ax.set_title(str(traj.path.name))
+    if label:
+        ax.legend(frameon=False)
+    ax.grid(True, alpha=0.3)
+    return ax
+
+
+def plot_con_force_profile(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    which: str = "fmax",
+    color: str | None = None,
+    marker: str = "s",
+    label: str | None = None,
+    title: str | None = None,
+) -> Axes:
+    """Plot a per-frame force norm from the trajectory table.
+
+    *which* is ``fmax`` or ``frms``. A table without that column raises
+    ``ValueError``.
+    """
+    if which not in {"fmax", "frms"}:
+        msg = f"which must be 'fmax' or 'frms', got {which!r}"
+        raise ValueError(msg)
+    table = getattr(traj, "table", None)
+    missing = (
+        table is None
+        or table.is_empty()
+        or which not in table.columns
+        or table[which].null_count() == table.height
+    )
+    if missing:
+        msg = f"trajectory has no {which} data (frames lack forces)"
+        raise ValueError(msg)
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 3.5), constrained_layout=True)
+    style: dict[str, Any] = {"marker": marker, "label": label or which}
+    if color is not None:
+        style["color"] = color
+    ax.plot(_x_axis(traj), np.asarray(table[which].to_numpy(), dtype=float), **style)
+    ax.set_xlabel("Frame")
+    ax.set_ylabel(f"{which} (eV/Å)")
+    if title:
+        ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+    if label:
+        ax.legend(frameon=False)
+    return ax
