@@ -70,6 +70,11 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 
 `chemparseplot` is part of the `rgpkgs` suite of interlinked libraries (hub: `rgpycrumbs`).
 
+- Hub / CLI: [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+- Inputs: [`pychum`](https://github.com/HaoZeke/pychum)
+- CON/convel I/O: [`readcon-core`](https://github.com/lode-org/readcon-core) (PyPI: [`readcon`](https://pypi.org/project/readcon/))
+- Engine: [eOn](https://eondocs.org)
+
 ![img](branding/logo/ecosystem.png)
 
 
@@ -82,7 +87,7 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 - **Unit preserving** throughout via `pint`.
 - **Optional computation** via [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis (not a hard dependency).
 - **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+).
-- **Metadata-native eOn** `.con` frames and typed parser results for NEB and single-ended tools.
+- **Metadata-native eOn** `.con` frames ([readcon-core](https://github.com/lode-org/readcon-core)) and typed parser results for NEB and single-ended tools.
 - **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs.
 
 
