@@ -112,3 +112,76 @@ class TestPlotLandscapeSurfaceAutoThin:
         assert seen["n"] <= 64
         assert seen["n"] < n
         plt.close(fig)
+
+
+class TestSurfaceFitConfig:
+    def test_from_mapping_defaults(self):
+        from chemparseplot.plot.neb import SurfaceFitConfig
+
+        cfg = SurfaceFitConfig.from_mapping(None)
+        assert cfg.auto_thin is False
+        assert cfg.max_surface_points == 64
+
+    def test_from_mapping_overrides(self):
+        from chemparseplot.plot.neb import SurfaceFitConfig
+
+        cfg = SurfaceFitConfig.from_mapping(
+            {"auto_thin": True, "max_surface_points": 48, "noise": "ignored"}
+        )
+        assert cfg.auto_thin is True
+        assert cfg.max_surface_points == 48
+
+    def test_surface_fit_kwarg_overrides_scalars(self):
+        import sys
+        import types
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        from chemparseplot.plot import neb as neb_mod
+        from chemparseplot.plot.neb import SurfaceFitConfig
+
+        seen: dict = {}
+
+        class DummyModel:
+            def __init__(self, **kwargs):
+                x = kwargs.get("x", kwargs.get("x_obs"))
+                seen["n"] = len(x)
+                self.ls = 0.5
+                self.noise = 1e-2
+
+            def __call__(self, pts):
+                return np.zeros(len(pts))
+
+            def predict_var(self, pts):
+                return np.ones(len(pts)) * 0.01
+
+        fake = types.ModuleType("rgpycrumbs.surfaces")
+        fake.NYSTROM_N_INDUCING_DEFAULT = 300
+        fake.NYSTROM_THRESHOLD = 1000
+        fake.get_surface_model = lambda method: DummyModel
+        fake.nystrom_paths_needed = lambda *a, **k: 1
+        sys.modules["rgpycrumbs.surfaces"] = fake
+        sys.modules.setdefault("rgpycrumbs", types.ModuleType("rgpycrumbs"))
+
+        n = 100
+        r = np.linspace(0.0, 1.0, n)
+        p = np.linspace(1.0, 0.0, n)
+        z = np.linspace(0.0, 0.2, n)
+        fig, ax = plt.subplots()
+        neb_mod.plot_landscape_surface(
+            ax,
+            r,
+            p,
+            np.zeros(n),
+            np.zeros(n),
+            z,
+            method="rbf",
+            project_path=False,
+            show_pts=False,
+            auto_thin=False,
+            max_surface_points=64,
+            surface_fit=SurfaceFitConfig(auto_thin=True, max_surface_points=20),
+        )
+        assert seen["n"] <= 20
+        plt.close(fig)

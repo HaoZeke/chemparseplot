@@ -988,6 +988,36 @@ def surface_fit_indices(n: int, max_points: int) -> np.ndarray:
     return idx
 
 
+@dataclass(frozen=True, slots=True)
+class SurfaceFitConfig:
+    """Declarative surface-fit knobs (TOML-friendly mapping).
+
+    Prefer this over growing positional/flag lists. Key names match
+    rgpycrumbs eOn plot TOML (``[shared]`` / ``[min]`` / ``[neb]``)::
+
+        auto_thin = false
+        max_surface_points = 64
+
+    Defaults keep historical behaviour (no thinning).
+
+    ```{versionadded} 1.9.10
+    ```
+    """
+
+    auto_thin: bool = False
+    max_surface_points: int = 64
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any] | None) -> SurfaceFitConfig:
+        """Build from a TOML table or plain dict (unknown keys ignored)."""
+        if not data:
+            return cls()
+        return cls(
+            auto_thin=bool(data.get("auto_thin", False)),
+            max_surface_points=int(data.get("max_surface_points", 64)),
+        )
+
+
 def plot_landscape_surface(
     ax,
     rmsd_r,
@@ -1009,6 +1039,7 @@ def plot_landscape_surface(
     basis=None,
     auto_thin: bool = False,  # noqa: FBT001, FBT002
     max_surface_points: int = 64,
+    surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1035,6 +1066,9 @@ def plot_landscape_surface(
         opt in (dense eOn min movies can otherwise yield non-finite grids).
     max_surface_points : int, default 64
         Cap on fit observations when ``auto_thin`` is True.
+    surface_fit : SurfaceFitConfig or mapping, optional
+        TOML-friendly config object. When given, overrides *auto_thin* and
+        *max_surface_points* (prefer this over ad-hoc kwargs).
 
     ```{versionadded} 0.1.0
     ```
@@ -1046,6 +1080,10 @@ def plot_landscape_surface(
     ```{versionadded} 1.9.9
     Added *auto_thin* and *max_surface_points*.
     ```
+
+    ```{versionadded} 1.9.10
+    Added *surface_fit* (:class:`SurfaceFitConfig` / mapping).
+    ```
     """
     from rgpycrumbs.surfaces import (
         NYSTROM_N_INDUCING_DEFAULT,
@@ -1053,6 +1091,14 @@ def plot_landscape_surface(
         get_surface_model,
         nystrom_paths_needed,
     )
+
+    if surface_fit is not None:
+        if isinstance(surface_fit, SurfaceFitConfig):
+            fit_cfg = surface_fit
+        else:
+            fit_cfg = SurfaceFitConfig.from_mapping(surface_fit)
+        auto_thin = fit_cfg.auto_thin
+        max_surface_points = fit_cfg.max_surface_points
 
     rmsd_r = np.asarray(rmsd_r, dtype=float)
     rmsd_p = np.asarray(rmsd_p, dtype=float)
