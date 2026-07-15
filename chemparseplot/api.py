@@ -14,8 +14,7 @@ Prefer this module for new consumers (cookbooks, wailord, notebooks).
     dist_bohr, energy_Eh = extract_orca_geomscan_energy(orca_out_text, "Actual Energy")
     # dist_bohr, energy_Eh are pint Quantities (bohr, hartree)
 
-Heavy plot stacks still live under ``chemparseplot.plot`` (optional deps /
-transitional extras until suite uv design fully covers them).
+Heavy plot stacks are re-exported lazily so bare installs stay light.
 
 Suite pins/config: use ``rgpycrumbs.api`` (shared rgpkgs TOML) — this package
 does **not** invent ``~/.config/chemparseplot``.
@@ -23,11 +22,13 @@ does **not** invent ``~/.config/chemparseplot``.
 .. versionadded:: 1.9.8
 .. versionchanged:: 1.9.9
    Expose ORCA geomscan energy parse as the stable library path.
+.. versionchanged:: 1.9.11
+   Expand re-exports (SurfaceFitConfig, plot helpers, basetypes); hub suite_pins.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from chemparseplot.parse.orca.geomscan import extract_energy_data
 from chemparseplot.units import (
@@ -42,6 +43,8 @@ if TYPE_CHECKING:
 
 __all__ = [
     "ENERGY_UNITS",
+    "Q_",
+    "SurfaceFitConfig",
     "convert_energy_magnitude",
     "energy_quantity",
     "extract_orca_geomscan_energy",
@@ -49,7 +52,9 @@ __all__ = [
     "normalize_energy_unit",
     "parse_orca_final_energy",
     "parse_xyz",
+    "plot_landscape_surface",
     "suite_pins",
+    "ureg",
 ]
 
 
@@ -101,7 +106,6 @@ def parse_orca_final_energy(path_or_text: str):
     return summary.final_energy
 
 
-
 def extract_orca_geomscan_energy(
     data: str, energy_type: str = "Actual Energy"
 ) -> tuple[Q_, Q_]:
@@ -109,28 +113,12 @@ def extract_orca_geomscan_energy(
 
     In-process library path: text → typed ``(distance, energy)`` pint Quantities
     in Bohr and Hartree (ORCA defaults).
-
-    Parameters
-    ----------
-    data:
-        Blob of ORCA output containing ``Calculated Surface`` blocks.
-    energy_type:
-        ``\"Actual Energy\"`` or ``\"SCF energy\"`` (substring match in the block).
-
-    Returns
-    -------
-    tuple[Q_, Q_]
-        Distances (bohr) and energies (hartree). Empty quantities if no match.
     """
     return extract_energy_data(data, energy_type)
 
 
 def suite_pins() -> dict[str, str]:
-    """Return suite package pins from rgpkgs config + env (soft on old hub).
-
-    Prefer the hub implementation when present; fall back to a local merge for
-    older rgpycrumbs. Empty dict if the hub is missing entirely.
-    """
+    """Return suite package pins from rgpkgs config + env (soft on old hub)."""
     try:
         from rgpycrumbs.api import suite_pins as _suite_pins
 
@@ -144,6 +132,23 @@ def suite_pins() -> dict[str, str]:
     pins = dict(pins_from_env())
     try:
         pins.update(load_config().merged_package_pins_normalized())
-    except Exception:  # noqa: BLE001 — soft fail for consumers
+    except Exception:  # noqa: BLE001
         pass
     return pins
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy optional re-exports (plot stack / units)."""
+    if name in {"ureg", "Q_"}:
+        from chemparseplot import units as _units
+
+        return getattr(_units, name)
+    if name == "SurfaceFitConfig":
+        from chemparseplot.plot.neb import SurfaceFitConfig
+
+        return SurfaceFitConfig
+    if name == "plot_landscape_surface":
+        from chemparseplot.plot.neb import plot_landscape_surface
+
+        return plot_landscape_surface
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

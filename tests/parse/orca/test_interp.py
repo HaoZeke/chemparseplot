@@ -7,7 +7,7 @@ from tests.conftest import skip_if_not_env
 
 skip_if_not_env("neb")
 
-from rgpycrumbs.basetypes import nebiter
+from chemparseplot.basetypes import nebiter
 
 from chemparseplot.parse.orca.neb.interp import extract_interp_points
 from chemparseplot.units import ureg
