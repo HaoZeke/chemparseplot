@@ -60,6 +60,10 @@ __all__ = [
     "frames_to_table",
     "plot_con_energy_profile",
     "plot_con_overview",
+    "chemfiles_available",
+    "plot_con_structure_strip",
+    "plot_con_overlay",
+    "load_trajectory",
     "plot_landscape_surface",
     "suite_pins",
     "ureg",
@@ -196,4 +200,21 @@ def __getattr__(name: str) -> Any:
         from chemparseplot.plot.con import plot_con_overview
 
         return plot_con_overview
+
+    if name == "load_trajectory":
+        from chemparseplot.parse.con import load_trajectory
+
+        return load_trajectory
+    if name == "plot_con_overlay":
+        from chemparseplot.plot.con import plot_con_overlay
+
+        return plot_con_overlay
+    if name == "plot_con_structure_strip":
+        from chemparseplot.plot.con import plot_con_structure_strip
+
+        return plot_con_structure_strip
+    if name == "chemfiles_available":
+        from chemparseplot.parse.con import chemfiles_available
+
+        return chemfiles_available
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

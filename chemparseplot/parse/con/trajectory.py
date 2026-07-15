@@ -25,6 +25,7 @@ __all__ = [
     "ConTrajectory",
     "frames_to_table",
     "load_con_trajectory",
+    "load_trajectory",
 ]
 
 # Columns we always try to surface from ConFrame first-class fields.
@@ -219,3 +220,24 @@ def load_con_trajectory(path: str | Path) -> ConTrajectory:
         table=table,
         source="readcon",
     )
+
+
+def load_trajectory(path: str | Path) -> ConTrajectory:
+    """Load CON/convel **or** chemfiles-supported formats into ConTrajectory.
+
+    - ``.con`` / ``.convel`` → :func:`load_con_trajectory` (readcon native)
+    - other extensions → :func:`load_chemfiles_trajectory` when chemfiles is linked
+
+    Raises
+    ------
+    ImportError
+        Chemfiles path requested but readcon has no chemfiles support.
+    """
+    from chemparseplot.parse.con.io import is_con_path
+
+    path = Path(path)
+    if is_con_path(path):
+        return load_con_trajectory(path)
+    from chemparseplot.parse.con.chemfiles import load_chemfiles_trajectory
+
+    return load_chemfiles_trajectory(path)
