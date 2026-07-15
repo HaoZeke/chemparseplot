@@ -965,6 +965,29 @@ def _augment_with_gradients(r, p, z, gr, gp, epsilon=0.05):
     )
 
 
+def surface_fit_indices(n: int, max_points: int) -> np.ndarray:
+    """Return indices for evenly spaced surface-fit observations.
+
+    Always includes the first and last indices when ``n > 0``. When
+    ``n <= max_points``, returns ``arange(n)``. Used by
+    :func:`plot_landscape_surface` when ``auto_thin`` is enabled.
+
+    ```{versionadded} 1.9.9
+    ```
+    """
+    if n <= 0:
+        return np.array([], dtype=int)
+    if max_points < 2:
+        msg = "max_points must be >= 2 to keep both endpoints"
+        raise ValueError(msg)
+    if n <= max_points:
+        return np.arange(n, dtype=int)
+    idx = np.unique(np.linspace(0, n - 1, num=max_points, dtype=int))
+    if idx[-1] != n - 1:
+        idx = np.unique(np.append(idx, n - 1))
+    return idx
+
+
 def plot_landscape_surface(
     ax,
     rmsd_r,
@@ -984,6 +1007,8 @@ def plot_landscape_surface(
     xlim=None,
     ylim=None,
     basis=None,
+    auto_thin: bool = False,  # noqa: FBT001, FBT002
+    max_surface_points: int = 64,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1002,12 +1027,24 @@ def plot_landscape_surface(
         instead of computing one from ``rmsd_r``/``rmsd_p``. Pass this
         when the surface data is a subset (e.g. last step only) but the
         basis should come from the full path.
+    auto_thin : bool, default False
+        If True and the number of observations exceeds
+        ``max_surface_points``, subsample for the GP surface fit only
+        (first/last + evenly spaced intermediates). Viewport and scatter
+        points still use the full cloud. Off by default so callers must
+        opt in (dense eOn min movies can otherwise yield non-finite grids).
+    max_surface_points : int, default 64
+        Cap on fit observations when ``auto_thin`` is True.
 
     ```{versionadded} 0.1.0
     ```
 
     ```{versionchanged} 1.1.0
     Added the *project_path* parameter for reaction-valley coordinate projection.
+    ```
+
+    ```{versionadded} 1.9.9
+    Added *auto_thin* and *max_surface_points*.
     ```
     """
     from rgpycrumbs.surfaces import (
@@ -1016,6 +1053,35 @@ def plot_landscape_surface(
         get_surface_model,
         nystrom_paths_needed,
     )
+
+    rmsd_r = np.asarray(rmsd_r, dtype=float)
+    rmsd_p = np.asarray(rmsd_p, dtype=float)
+    z_data = np.asarray(z_data, dtype=float)
+    if grad_r is not None:
+        grad_r = np.asarray(grad_r, dtype=float)
+    if grad_p is not None:
+        grad_p = np.asarray(grad_p, dtype=float)
+    if step_data is not None:
+        step_data = np.asarray(step_data)
+
+    n_obs = len(rmsd_r)
+    fit_idx = np.arange(n_obs, dtype=int)
+    if auto_thin and n_obs > max_surface_points:
+        fit_idx = surface_fit_indices(n_obs, max_surface_points)
+        log.warning(
+            "auto_thin: fitting surface on %d of %d points "
+            "(max_surface_points=%d)",
+            len(fit_idx),
+            n_obs,
+            max_surface_points,
+        )
+
+    fit_r = rmsd_r[fit_idx]
+    fit_p = rmsd_p[fit_idx]
+    fit_z = z_data[fit_idx]
+    fit_grad_r = grad_r[fit_idx] if grad_r is not None else None
+    fit_grad_p = grad_p[fit_idx] if grad_p is not None else None
+    fit_step = step_data[fit_idx] if step_data is not None else None
 
     log.info(f"Generating 2D surface using {method} (Projected: {project_path})...")
 
@@ -1074,13 +1140,13 @@ def plot_landscape_surface(
         )
         xg, yg = np.meshgrid(xg_1d, yg_1d)
 
-    if step_data is not None:
-        actual_nimags = int(np.sum(step_data == step_data.max()))
+    if fit_step is not None:
+        actual_nimags = int(np.sum(fit_step == fit_step.max()))
     else:
         actual_nimags = None
 
-    # --- 2. Hyperparameter Optimization ---
-    if method == "grad_imq" and len(rmsd_r) > NYSTROM_THRESHOLD:
+    # --- 2. Hyperparameter Optimization (on thinned fit set when auto_thin) ---
+    if method == "grad_imq" and len(fit_r) > NYSTROM_THRESHOLD:
         log.warning(
             "More than %d points, switching to Nystrom",
             NYSTROM_THRESHOLD,
@@ -1093,9 +1159,9 @@ def plot_landscape_surface(
     h_noise = 1e-2
 
     mask_opt = (
-        (step_data == step_data.max())
-        if step_data is not None
-        else np.ones(len(z_data), dtype=bool)
+        (fit_step == fit_step.max())
+        if fit_step is not None
+        else np.ones(len(fit_z), dtype=bool)
     )
     # Build extra kwargs for Nystrom model
     _approx_kwargs = {}
@@ -1103,16 +1169,16 @@ def plot_landscape_surface(
         _approx_kwargs["n_inducing"] = n_inducing
 
     opt_kwargs = {
-        "x": np.column_stack([rmsd_r, rmsd_p])[mask_opt],
-        "y": z_data[mask_opt],
+        "x": np.column_stack([fit_r, fit_p])[mask_opt],
+        "y": fit_z[mask_opt],
         "ls": h_ls,
         "smoothing": h_noise,
-        "nimags": len(z_data),
+        "nimags": len(fit_z),
         "optimize": True,
         **_approx_kwargs,
     }
     if is_gradient_model:
-        opt_kwargs["gradients"] = np.column_stack([grad_r, grad_p])[mask_opt]
+        opt_kwargs["gradients"] = np.column_stack([fit_grad_r, fit_grad_p])[mask_opt]
 
     try:
         learner = (
@@ -1138,23 +1204,25 @@ def plot_landscape_surface(
     else:
         grid_pts_eval = np.column_stack([xg.ravel(), yg.ravel()])
 
-    _grad_stack = np.column_stack([grad_r, grad_p]) if grad_r is not None else None
+    _grad_stack = (
+        np.column_stack([fit_grad_r, fit_grad_p]) if fit_grad_r is not None else None
+    )
 
     # Convergence-based heteroscedastic noise: early (unconverged) NEB steps
     # get higher noise so the GP trusts the converged data more. This allows
     # using all optimization steps for off-path coverage without corrupting
     # the surface fit near the converged path.
     noise_per_obs = None
-    if step_data is not None:
-        max_s = int(step_data.max())
+    if fit_step is not None:
+        max_s = int(fit_step.max())
         if max_s > 0:
-            last_mask = step_data == max_s
-            last_z = z_data[last_mask]
+            last_mask = fit_step == max_s
+            last_z = fit_z[last_mask]
             n_imgs = int(last_mask.sum())
-            noise_per_obs = np.full(len(z_data), best_noise)
+            noise_per_obs = np.full(len(fit_z), best_noise)
             for s in range(max_s + 1):
-                s_mask = step_data == s
-                s_z = z_data[s_mask]
+                s_mask = fit_step == s
+                s_z = fit_z[s_mask]
                 if len(s_z) == n_imgs:
                     dev = np.mean(np.abs(s_z - last_z))
                 else:
@@ -1163,8 +1231,8 @@ def plot_landscape_surface(
 
     if is_gradient_model:
         rbf = model_class(
-            x=np.column_stack([rmsd_r, rmsd_p]),
-            y=z_data,
+            x=np.column_stack([fit_r, fit_p]),
+            y=fit_z,
             gradients=_grad_stack,
             length_scale=best_ls,
             smoothing=best_noise,
@@ -1175,8 +1243,8 @@ def plot_landscape_surface(
         )
     else:
         rbf = model_class(
-            x_obs=np.column_stack([rmsd_r, rmsd_p]),
-            y_obs=z_data,
+            x_obs=np.column_stack([fit_r, fit_p]),
+            y_obs=fit_z,
             smoothing=best_noise,
             optimize=False,
         )

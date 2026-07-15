@@ -350,6 +350,8 @@ def render_single_ended_landscape(
     strip_dividers: bool = False,
     rotation: str = "auto",
     perspective_tilt: float = 0.0,
+    auto_thin: bool = False,
+    max_surface_points: int = 64,
 ) -> None:
     """Full single-ended landscape pipeline shared by min/saddle CLIs.
 
@@ -359,7 +361,19 @@ def render_single_ended_landscape(
     converted once for display (avoids double conversion when ``energy_unit``
     is not eV).
 
+    Parameters
+    ----------
+    auto_thin
+        Forwarded to :func:`~chemparseplot.plot.neb.plot_landscape_surface`
+        (default False: opt-in subsampling of dense fit clouds).
+    max_surface_points
+        Cap on fit observations when ``auto_thin`` is True.
+
     ```{versionadded} 1.8.1
+    ```
+
+    ```{versionadded} 1.9.9
+    Added *auto_thin* and *max_surface_points*.
     ```
     """
     from matplotlib import ticker
@@ -418,6 +432,8 @@ def render_single_ended_landscape(
         label_mode="optimization",
         energy_unit=energy_unit,
         z_label=z_label,
+        auto_thin=auto_thin,
+        max_surface_points=max_surface_points,
     )
     if cb is not None:
         cb.ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
