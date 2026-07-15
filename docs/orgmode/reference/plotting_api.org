@@ -76,9 +76,21 @@ Plots a 1D eigenvalue profile with cubic spline interpolation.
 
 ** 2D Landscape Functions
 
-*** =plot_landscape_surface(ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data, step_data=None, method="grad_matern", rbf_smooth=None, cmap="viridis", show_pts=True, variance_threshold=0.05, project_path=True, extra_points=None, n_inducing=None)=
+*** =plot_landscape_surface(...)=
 
 Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
+
+Signature (core args abbreviated)::
+
+  plot_landscape_surface(
+      ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+      step_data=None, method="grad_matern", rbf_smooth=None,
+      cmap="viridis", show_pts=True, variance_threshold=0.05,
+      project_path=True, extra_points=None, n_inducing=None,
+      xlim=None, ylim=None, basis=None,
+      auto_thin=False, max_surface_points=64,
+      surface_fit=None,
+  )
 
 **** Parameters
 
@@ -99,6 +111,29 @@ Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
 | =project_path= | =bool= | =True= | Project to reaction valley coordinates |
 | =extra_points= | =np.ndarray= or =None= | =None= | Shape =(N, 2)= array of extra points for grid extent |
 | =n_inducing= | =int= or =None= | =None= | Inducing points for Nystrom approximation |
+| =auto_thin= | =bool= | =False= | Opt-in: subsample dense clouds for the *fit* only |
+| =max_surface_points= | =int= | =64= | Cap when =auto_thin= is true |
+| =surface_fit= | =SurfaceFitConfig= / mapping / =None= | =None= | TOML-friendly config; overrides the two keys above when set |
+
+**** =SurfaceFitConfig= (v1.9.10+)
+
+Prefer a small config object over growing kwargs. Key names match rgpycrumbs
+eOn plot TOML (~auto_thin~, ~max_surface_points~):
+
+#+begin_src python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+cfg = SurfaceFitConfig.from_mapping({"auto_thin": True, "max_surface_points": 64})
+# or: SurfaceFitConfig(auto_thin=True, max_surface_points=64)
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=cfg,
+)
+#+end_src
+
+Defaults keep historical behaviour (~auto_thin=False=).
 
 **** Interpolation Methods
 
@@ -106,7 +141,8 @@ Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
 |--------+-------------|
 | ="grad_matern"= | Gradient-enhanced Matern kernel (default) |
 | ="grad_imq"= | Gradient-enhanced Inverse MultiQuadric |
-| ="grad_imq_ny"= | Nystrom-approximated =grad_imq= (auto for >500 points) |
+| ="grad_imq_ny"= | Nystrom-approximated =grad_imq= (auto for large N) |
+| ="rbf"= | Value-only RBF (no gradients) |
 
 **** Notes
 
@@ -115,6 +151,8 @@ Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
 - When Nystrom is active, non-inducing points are drawn with reduced opacity (alpha=0.15)
 - Reaction valley projection rotates (RMSD-R, RMSD-P) into (progress =s=, deviation =d=) along the R-to-P line
 - Surface models come from =rgpycrumbs.surfaces=
+- With =auto_thin=, the GP trains on a thinned set; scatter and viewport still use the full cloud
+- Dense force-eval movies can yield non-finite =grad_imq= grids without thinning; opt in explicitly
 
 *** =plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True)=
 
@@ -363,7 +401,14 @@ Wraps =plot_landscape_surface()= and =plot_landscape_path_overlay()= with semant
 |-----------+------+---------+-------------|
 | =label_mode= | =str= | ="optimization"= | ="optimization"= or ="reaction"= for axis labels |
 
-All other parameters are passed through to the underlying NEB plot functions.
+All other parameters (including =auto_thin=, =max_surface_points=, =surface_fit=)
+are passed through to =plot_landscape_surface()=.
+
+** =render_single_ended_landscape(...)=
+
+Full single-ended pipeline (min/saddle CLIs). Accepts the same surface-fit
+knobs (=auto_thin= default false, =max_surface_points= 64, =surface_fit=).
+See =plot_landscape_surface= above.
 
 ** =plot_optimization_profile(ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color="#004D40", eigen_color="#FF655D")=
 

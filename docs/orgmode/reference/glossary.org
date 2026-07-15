@@ -162,3 +162,16 @@ Pint object that handles unit conversions. chemparseplot uses =ureg= for unit-aw
 - [[file:../tutorials/index.org][Tutorials]] - Learn how to use these concepts
 - [[file:../howto/index.org][How-to Guides]] - Solve problems with these concepts
 - [[file:../explanation/index.org][Explanation]] - Understand these concepts in depth
+
+* auto_thin
+
+Optional surface-fit switch (default false). When true,
+=plot_landscape_surface= evenly subsamples dense observation clouds for the
+GP *fit* only (endpoints kept). Prefer =SurfaceFitConfig= or a mapping with
+the same keys as rgpycrumbs plot TOML.
+
+* SurfaceFitConfig
+
+Frozen dataclass (=chemparseplot.plot.neb=) holding =auto_thin= and
+=max_surface_points=. Construct with kwargs or =from_mapping=; pass as
+=surface_fit= to landscape APIs (v1.9.10+).

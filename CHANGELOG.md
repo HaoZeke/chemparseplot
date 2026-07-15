@@ -2,6 +2,15 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.11](https://github.com/HaoZeke/chemparseplot/tree/1.9.11) - 2026-07-15
+
+### Documentation
+
+- Full orgmode pass for dense landscape fits: ``SurfaceFitConfig`` /
+  ``auto_thin`` (default off) in reference plotting API, create-NEB-figures
+  howto, FAQ, troubleshooting, and glossary.
+
+
 ## [1.9.10](https://github.com/HaoZeke/chemparseplot/tree/1.9.10) - 2026-07-15
 
 ### Added

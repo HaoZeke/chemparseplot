@@ -103,7 +103,9 @@ plot_landscape_path_overlay(
 
 ** Gradient-Enhanced IMQ
 
-For datasets over 500 points, =grad_imq= switches automatically to Nystrom approximation:
+For very large NEB histories, =grad_imq= can switch to Nystrom approximation
+above the suite threshold. Dense *single-ended* force-eval movies are a
+different problem: prefer opt-in thinning (below) rather than always thinning.
 
 #+begin_src python
 plot_landscape_surface(
@@ -111,6 +113,41 @@ plot_landscape_surface(
     method="grad_imq",
     n_inducing=200,          # number of inducing points for Nystrom
 )
+#+end_src
+
+** Dense clouds: =SurfaceFitConfig= / =auto_thin= (default off)
+
+eOn ~write_movies~ can dump every force evaluation. On ~100+~ nearly collinear
+points, GradientIMQ may raise
+~ValueError: Surface prediction produced no finite values for contourf~.
+Thinning is *opt-in* so historical calls stay unchanged.
+
+#+begin_src python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+# TOML-friendly mapping (same keys as rgpycrumbs plot.toml)
+cfg = SurfaceFitConfig.from_mapping({
+    "auto_thin": True,
+    "max_surface_points": 64,
+})
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=cfg,
+)
+# Equivalent kwargs: auto_thin=True, max_surface_points=64
+#+end_src
+
+When enabled, only the GP *training* set is subsampled (first/last + evenly
+spaced intermediates). Path scatter and viewport still use the full cloud.
+
+From the CLI suite, set the same keys in plot TOML (not CLI flags):
+
+#+begin_src toml
+[shared]
+auto_thin = true
+max_surface_points = 64
 #+end_src
 
 ** Standard RMSD Axes (No Projection)

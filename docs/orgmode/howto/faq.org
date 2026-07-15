@@ -135,8 +135,21 @@ The =-j 4= flag uses 4 parallel workers.
 
 Surface fitting is computationally expensive. Options:
 - Use fewer points (downsample)
+- Opt-in =auto_thin= / =SurfaceFitConfig= (default off) to cap fit size
 - Use simpler interpolation method (RBF instead of GP)
 - Use Nystrom approximation for large datasets
+
+*** How do I thin dense minimization movies without changing defaults?
+
+Use =SurfaceFitConfig= (TOML key names match rgpycrumbs plot config):
+
+#+begin_src python
+from chemparseplot.plot.neb import SurfaceFitConfig
+
+cfg = SurfaceFitConfig.from_mapping({"auto_thin": True, "max_surface_points": 64})
+#+end_src
+
+Default =auto_thin= is =False= so existing scripts keep full-cloud fits.
 
 ** Compatibility
 

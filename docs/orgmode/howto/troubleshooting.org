@@ -75,6 +75,27 @@ end
 2. Verify NEB calculation completed
 3. Check .interp file exists (for legacy parser)
 
+*** Problem: "ValueError: Surface prediction produced no finite values for contourf"
+
+**Cause:** Gradient surface models (often ~grad_imq~) returned a non-finite
+grid—common on very dense single-ended movies (e.g. eOn LBFGS force-eval dumps).
+
+**Solution:** Opt in to fit thinning (default remains off):
+
+#+begin_src python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=SurfaceFitConfig(auto_thin=True, max_surface_points=64),
+)
+#+end_src
+
+Or pass ~auto_thin=True~ / ~max_surface_points=64~ kwargs. From rgpycrumbs CLIs,
+set the same keys in ~--config~ TOML under ~[shared]~ or ~[min]~ / ~[neb]~
+(not as CLI flags).
+
 *** Problem: "RMSD coordinates required for landscape plot"
 
 **Cause:** Geometry output not available.
