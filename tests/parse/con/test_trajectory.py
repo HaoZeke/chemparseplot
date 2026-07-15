@@ -116,3 +116,28 @@ def test_energy_from_metadata_string():
     fr = _fake_frame(energy=None, meta={"energy": "-3.5"})
     df = frames_to_table([fr])
     assert df["energy"][0] == pytest.approx(-3.5)
+
+
+def test_write_atoms_as_con_multiframe_roundtrip(tmp_path):
+    """Shipped write path must re-parse multi-frame CON (readcon-core)."""
+    pytest.importorskip("ase")
+    from ase.build import molecule
+
+    from chemparseplot.parse.con.io import write_atoms_as_con
+
+    base = molecule("H2O")
+    base.cell = [10, 10, 10]
+    base.pbc = True
+    atoms_list = []
+    energies = []
+    for i in range(4):
+        a = base.copy()
+        a.positions = a.positions * (1.0 + 0.01 * i)
+        atoms_list.append(a)
+        energies.append(-76.0 - 0.1 * i)
+    path = tmp_path / "movie.con"
+    write_atoms_as_con(path, atoms_list, energies=energies)
+    traj = load_con_trajectory(path)
+    assert traj.n_frames == 4
+    assert list(traj.energies) == pytest.approx(energies)
+    assert traj.frames[0].energy == pytest.approx(-76.0)
