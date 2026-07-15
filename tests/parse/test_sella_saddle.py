@@ -12,7 +12,7 @@ from chemparseplot.parse.sella.saddle_search import (
 )
 
 try:
-    from rgpycrumbs.basetypes import SpinID
+    from chemparseplot.basetypes import SpinID
 except ImportError:  # pragma: no cover - test env should provide rgpycrumbs
     SpinID = None
 

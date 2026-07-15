@@ -36,7 +36,7 @@ def extract_interp_points(text: str) -> list[int, Q_, Q_]:
     ```{versionadded} 0.0.2
     ```
     """
-    from rgpycrumbs.basetypes import nebiter, nebpath
+    from chemparseplot.basetypes import nebiter, nebpath
 
     data = []
     for match in re.finditer(INTERP_PAT, text, re.DOTALL):

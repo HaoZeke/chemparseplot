@@ -53,8 +53,7 @@ Energy:    -123.445000 Eh
 
 def test_tutorial_eon_saddle_parse():
     pytest.importorskip("rgpycrumbs")
-    from rgpycrumbs.basetypes import SpinID
-
+    from chemparseplot.basetypes import SpinID
     from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
 
     with tempfile.TemporaryDirectory() as tmpdir:
