@@ -59,17 +59,22 @@ How parsers, plot helpers, and the CLI suite relate:
        ORCA[ORCA]
        SELLA[Sella]
      end
+     subgraph io["I/O"]
+       RC["readcon-core<br/>CON / convel"]
+     end
      subgraph cpp["chemparseplot"]
-       PARSE[parse.*]
-       PLOT[plot.neb / plot.optimization]
+       PARSE[parse.* / parse.con]
+       PLOT[plot.neb / plot.con]
        SFC[SurfaceFitConfig]
      end
      subgraph rgp["rgpycrumbs"]
        SURF[surfaces GP]
-       CLI[eon plt-neb / plt-min]
+       CLI[eon plt-neb / plt-min / plt-con]
        TOML["plot.toml --config"]
      end
      engines --> PARSE
+     EON --> RC
+     RC --> PARSE
      PARSE --> PLOT
      PLOT --> SURF
      SFC --> PLOT

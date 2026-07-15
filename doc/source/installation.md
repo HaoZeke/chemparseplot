@@ -16,6 +16,12 @@ as a dependency, which provides the computational modules used by `chemparseplot
 # Plotting support (matplotlib, cmcrameri colormaps)
 pip install "chemparseplot[plot]"
 
+For eOn CON/convel trajectories (via [readcon-core](https://github.com/lode-org/readcon-core)):
+
+```bash
+pip install "chemparseplot[neb]"   # includes readcon
+```
+
 # NEB analysis (ase, h5py, polars)
 pip install "chemparseplot[neb]"
 

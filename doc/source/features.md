@@ -25,6 +25,11 @@ Gradient-enhanced GPs via `rgpycrumbs.surfaces`, optional `SurfaceFitConfig`.
 :class-card: sd-shadow-sm
 
 Call from `rgpycrumbs eon plt-*` with TOML `--config` for dense option sets.
+
+::::{grid-item-card} CON I/O
+:class-card: sd-shadow-sm
+
+[readcon-core](https://github.com/lode-org/readcon-core) (PyPI: [readcon](https://pypi.org/project/readcon/)) via `chemparseplot.parse.con`.
 :::
 ::::
 
