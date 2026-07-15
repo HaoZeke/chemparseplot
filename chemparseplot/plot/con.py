@@ -283,3 +283,107 @@ def plot_con_force_profile(
     if label:
         ax.legend(frameon=False)
     return ax
+
+
+def select_structure_indices(
+    n_frames: int,
+    mode: str = "endpoints",
+    *,
+    max_structs: int = 8,
+    energies: np.ndarray | None = None,
+) -> list[int]:
+    """Pick frame indices for a structure strip.
+
+    ``endpoints`` is the first and last frame, plus the highest energy
+    between them when *energies* is given. ``linspace`` and ``all`` are
+    evenly spaced, and ``all`` returns every frame when it fits in
+    *max_structs*. ``none`` is empty.
+    """
+    if n_frames <= 0 or mode == "none":
+        return []
+    if mode == "all" and n_frames <= max_structs:
+        return list(range(n_frames))
+    if mode in {"linspace", "all"}:
+        count = min(max_structs, n_frames)
+        idx = np.unique(np.linspace(0, n_frames - 1, num=count, dtype=int))
+        return idx.tolist()
+    if n_frames == 1:
+        return [0]
+    chosen = {0, n_frames - 1}
+    if energies is not None and n_frames > 2:
+        values = np.asarray(energies, dtype=float)
+        middle = values[1:-1]
+        if middle.size and np.any(np.isfinite(middle)):
+            chosen.add(int(np.nanargmax(middle)) + 1)
+    return sorted(chosen)
+
+
+def plot_con_structure_strip(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    mode: str = "endpoints",
+    max_structs: int = 8,
+    renderer: str = "ase",
+    rotation: str = "0x,90y,0z",
+    xyzrender_config: str = "paton",
+    title: str | None = None,
+) -> Axes:
+    """Draw selected frames of *traj* with ``plot_structure_strip``.
+
+    The default renderer is ``ase``.
+    """
+    from chemparseplot.plot.neb import plot_structure_strip
+
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 1.8), constrained_layout=True)
+    indices = select_structure_indices(
+        int(traj.n_frames), mode, max_structs=max_structs, energies=traj.energies
+    )
+    if not indices:
+        ax.axis("off")
+        ax.text(
+            0.5,
+            0.5,
+            "no structures",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        return ax
+    atoms_list = []
+    labels = []
+    for index in indices:
+        atoms = traj.atoms_list[index]
+        if atoms is None:
+            continue
+        atoms_list.append(atoms)
+        if index == 0:
+            labels.append("start")
+        elif index == int(traj.n_frames) - 1:
+            labels.append("end")
+        else:
+            labels.append(str(index))
+    if not atoms_list:
+        ax.axis("off")
+        ax.text(
+            0.5,
+            0.5,
+            "no ASE atoms",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        return ax
+    plot_structure_strip(
+        ax,
+        atoms_list,
+        labels=labels,
+        renderer=renderer,
+        rotation=rotation,
+        xyzrender_config=xyzrender_config,
+        prefer_single_row=True,
+    )
+    if title:
+        ax.set_title(title, fontsize=10)
+    return ax

@@ -45,6 +45,7 @@ __all__ = [
     "ENERGY_UNITS",
     "Q_",
     "SurfaceFitConfig",
+    "chemfiles_available",
     "convert_energy_magnitude",
     "energy_quantity",
     "extract_orca_geomscan_energy",
@@ -62,6 +63,7 @@ __all__ = [
     "plot_con_energy_profile",
     "plot_con_overlay",
     "plot_con_overview",
+    "plot_con_structure_strip",
     "plot_landscape_surface",
     "suite_pins",
     "ureg",
@@ -227,5 +229,13 @@ def __getattr__(name: str) -> Any:
         from chemparseplot.plot.con import plot_con_overview
 
         return plot_con_overview
+    if name == "plot_con_structure_strip":
+        from chemparseplot.plot.con import plot_con_structure_strip
+
+        return plot_con_structure_strip
+    if name == "chemfiles_available":
+        from chemparseplot.parse.con import chemfiles_available
+
+        return chemfiles_available
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)

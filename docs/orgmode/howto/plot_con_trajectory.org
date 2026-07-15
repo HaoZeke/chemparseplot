@@ -3,34 +3,47 @@
 
 * Goal
 
-Load any CON/convel (readcon-core) and plot energy / force profiles without an
-eOn job directory or sidecar =.dat= files.
+Load any CON/convel (readcon-core) — or chemfiles-supported XYZ/PDB/GRO when
+the readcon build links chemfiles — and plot energy / force profiles, overlays,
+and structure strips without an eOn job directory.
 
 * Library
 
 #+begin_src python
-from chemparseplot.api import load_con_trajectory, plot_con_overview
+from chemparseplot.api import (
+    load_trajectory,
+    plot_con_overview,
+    plot_con_overlay,
+)
 
-traj = load_con_trajectory("movie.con")
-print(traj.n_frames, traj.table.columns)
-fig = plot_con_overview(traj, energy_unit="eV", relative=True)
+traj = load_trajectory("movie.con")  # also .xyz/.pdb if chemfiles-enabled
+fig = plot_con_overview(
+    traj,
+    energy_unit="eV",
+    relative=True,
+    structures="endpoints",  # none|endpoints|linspace|all
+    strip_renderer="ase",    # or xyzrender
+)
 fig.savefig("movie_profile.pdf")
-#+end_src
 
-Attach energies if the CON has structures only:
-
-#+begin_src python
-traj = traj.with_energies(list_of_eV)
+# overlay several movies
+from chemparseplot.api import load_con_trajectory
+t1 = load_con_trajectory("run_a.con")
+t2 = load_con_trajectory("run_b.con")
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+plot_con_overlay([t1, t2], labels=["A", "B"], ax=ax)
 #+end_src
 
 * CLI
 
 #+begin_src bash
-rgpycrumbs eon plt-con path/to/movie.con -o profile.pdf
-rgpycrumbs eon plt-con path/to/movie.con --absolute --no-forces
+rgpycrumbs eon plt-con movie.con --structures endpoints -o profile.pdf
+rgpycrumbs eon plt-con a.con b.con --label A --label B -o overlay.pdf
+rgpycrumbs eon plt-con traj.xyz -o xyz_profile.pdf
 #+end_src
 
 * Related
 
 - eOn job-dir landscapes: =rgpycrumbs eon plt-min= / =plt-neb=
-- I/O only: =chemparseplot.parse.con=
+- I/O: =chemparseplot.parse.con=
