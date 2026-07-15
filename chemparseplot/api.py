@@ -51,6 +51,10 @@ __all__ = [
     "grammar_available",
     "normalize_energy_unit",
     "parse_orca_final_energy",
+    "parse_orca_ir_spectrum",
+    "parse_orca_populations",
+    "parse_orca_vibrational_frequencies",
+    "parse_orca_vpt2_fundamentals",
     "parse_xyz",
     "plot_landscape_surface",
     "suite_pins",
@@ -119,15 +123,20 @@ def extract_orca_geomscan_energy(
 
 def suite_pins() -> dict[str, str]:
     """Return suite package pins from rgpkgs config + env (soft on old hub)."""
-    try:
-        from rgpycrumbs.api import suite_pins as _suite_pins
+    import importlib
 
-        return _suite_pins()
+    try:
+        mod = importlib.import_module("rgpycrumbs.api")
+        fn = getattr(mod, "suite_pins", None)
+        if callable(fn):
+            return fn()
     except ImportError:
         pass
     try:
-        from rgpycrumbs.api import load_config, pins_from_env
-    except ImportError:
+        mod = importlib.import_module("rgpycrumbs.api")
+        pins_from_env = getattr(mod, "pins_from_env")
+        load_config = getattr(mod, "load_config")
+    except (ImportError, AttributeError):
         return {}
     pins = dict(pins_from_env())
     try:
@@ -138,7 +147,7 @@ def suite_pins() -> dict[str, str]:
 
 
 def __getattr__(name: str) -> Any:
-    """Lazy optional re-exports (plot stack / units)."""
+    """Lazy optional re-exports (plot stack / units / ORCA analysis)."""
     if name in {"ureg", "Q_"}:
         from chemparseplot import units as _units
 
@@ -151,4 +160,20 @@ def __getattr__(name: str) -> Any:
         from chemparseplot.plot.neb import plot_landscape_surface
 
         return plot_landscape_surface
+    if name == "parse_orca_vibrational_frequencies":
+        from chemparseplot.parse.orca.freq import parse_orca_vibrational_frequencies
+
+        return parse_orca_vibrational_frequencies
+    if name == "parse_orca_ir_spectrum":
+        from chemparseplot.parse.orca.freq import parse_orca_ir_spectrum
+
+        return parse_orca_ir_spectrum
+    if name == "parse_orca_vpt2_fundamentals":
+        from chemparseplot.parse.orca.vpt2 import parse_orca_vpt2_fundamentals
+
+        return parse_orca_vpt2_fundamentals
+    if name == "parse_orca_populations":
+        from chemparseplot.parse.orca.populations import parse_orca_populations
+
+        return parse_orca_populations
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
