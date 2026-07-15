@@ -2,6 +2,16 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.10](https://github.com/HaoZeke/chemparseplot/tree/1.9.10) - 2026-07-15
+
+### Added
+
+- ``SurfaceFitConfig`` dataclass (``from_mapping`` for TOML tables) and
+``surface_fit=`` on ``plot_landscape_surface`` /
+``render_single_ended_landscape``. Prefer this over growing keyword lists;
+``auto_thin`` still defaults to off. ([#surface_fit_config](https://github.com/HaoZeke/chemparseplot/issues/surface_fit_config))
+
+
 ## [1.9.9](https://github.com/HaoZeke/chemparseplot/tree/1.9.9) - 2026-07-15
 
 ### Added
