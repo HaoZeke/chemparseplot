@@ -128,16 +128,22 @@ def extract_orca_geomscan_energy(
 def suite_pins() -> dict[str, str]:
     """Return suite package pins from rgpkgs config + env (soft on old hub).
 
-    Empty dict if rgpycrumbs is missing or too old.
+    Prefer the hub implementation when present; fall back to a local merge for
+    older rgpycrumbs. Empty dict if the hub is missing entirely.
     """
+    try:
+        from rgpycrumbs.api import suite_pins as _suite_pins
+
+        return _suite_pins()
+    except ImportError:
+        pass
     try:
         from rgpycrumbs.api import load_config, pins_from_env
     except ImportError:
         return {}
     pins = dict(pins_from_env())
     try:
-        cfg = load_config()
-        pins.update(cfg.merged_package_pins_normalized())
+        pins.update(load_config().merged_package_pins_normalized())
     except Exception:  # noqa: BLE001 — soft fail for consumers
         pass
     return pins
