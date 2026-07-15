@@ -1,0 +1,36 @@
+#+TITLE: Plot a general readcon CON trajectory
+#+STATUS: Active
+
+* Goal
+
+Load any CON/convel (readcon-core) and plot energy / force profiles without an
+eOn job directory or sidecar =.dat= files.
+
+* Library
+
+#+begin_src python
+from chemparseplot.api import load_con_trajectory, plot_con_overview
+
+traj = load_con_trajectory("movie.con")
+print(traj.n_frames, traj.table.columns)
+fig = plot_con_overview(traj, energy_unit="eV", relative=True)
+fig.savefig("movie_profile.pdf")
+#+end_src
+
+Attach energies if the CON has structures only:
+
+#+begin_src python
+traj = traj.with_energies(list_of_eV)
+#+end_src
+
+* CLI
+
+#+begin_src bash
+rgpycrumbs eon plt-con path/to/movie.con -o profile.pdf
+rgpycrumbs eon plt-con path/to/movie.con --absolute --no-forces
+#+end_src
+
+* Related
+
+- eOn job-dir landscapes: =rgpycrumbs eon plt-min= / =plt-neb=
+- I/O only: =chemparseplot.parse.con=

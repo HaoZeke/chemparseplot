@@ -56,6 +56,10 @@ __all__ = [
     "parse_orca_vibrational_frequencies",
     "parse_orca_vpt2_fundamentals",
     "parse_xyz",
+    "load_con_trajectory",
+    "frames_to_table",
+    "plot_con_energy_profile",
+    "plot_con_overview",
     "plot_landscape_surface",
     "suite_pins",
     "ureg",
@@ -176,4 +180,20 @@ def __getattr__(name: str) -> Any:
         from chemparseplot.parse.orca.populations import parse_orca_populations
 
         return parse_orca_populations
+    if name == "load_con_trajectory":
+        from chemparseplot.parse.con import load_con_trajectory
+
+        return load_con_trajectory
+    if name == "frames_to_table":
+        from chemparseplot.parse.con import frames_to_table
+
+        return frames_to_table
+    if name == "plot_con_energy_profile":
+        from chemparseplot.plot.con import plot_con_energy_profile
+
+        return plot_con_energy_profile
+    if name == "plot_con_overview":
+        from chemparseplot.plot.con import plot_con_overview
+
+        return plot_con_overview
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
