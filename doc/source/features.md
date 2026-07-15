@@ -1,5 +1,53 @@
 # Features
 
+::::{grid} 1 2 2 4
+:gutter: 2
+
+:::{grid-item-card} Parse
+:class-card: sd-shadow-sm
+
+Extract structured tables and ASE structures from engine outputs.
+:::
+
+:::{grid-item-card} Units
+:class-card: sd-shadow-sm
+
+`pint` quantities end-to-end — no silent eV/kcal mix-ups.
+:::
+
+:::{grid-item-card} Surfaces
+:class-card: sd-shadow-sm
+
+Gradient-enhanced GPs via `rgpycrumbs.surfaces`, optional `SurfaceFitConfig`.
+:::
+
+:::{grid-item-card} CLI suite
+:class-card: sd-shadow-sm
+
+Call from `rgpycrumbs eon plt-*` with TOML `--config` for dense option sets.
+:::
+::::
+
+## Data flow
+
+```{mermaid}
+flowchart LR
+  OUT[Engine outputs] --> PARSE[chemparseplot.parse]
+  PARSE --> COORDS[RMSD / energy arrays]
+  COORDS --> FIT{SurfaceFitConfig auto_thin?}
+  FIT -->|default off| FULL[Full cloud fit]
+  FIT -->|opt-in| THIN[Even subsample + endpoints]
+  FULL --> GP[rgpycrumbs.surfaces]
+  THIN --> GP
+  GP --> FIG[Publication figure]
+```
+
+```{important}
+`auto_thin` defaults to **false**. Enable via `SurfaceFitConfig` or the
+matching keys in rgpycrumbs plot TOML when dense force-eval movies make
+`grad_imq` non-finite.
+```
+
 - **Parsing** computational chemistry output files into structured data
 - **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
   (camera-ready)
@@ -9,6 +57,7 @@
 - **Concurrent** RMSD landscape calculations via `ThreadPoolExecutor`
 
 ## Supported Engines
+
 
 ### ORCA (5.x)
 

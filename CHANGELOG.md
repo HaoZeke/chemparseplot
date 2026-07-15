@@ -2,6 +2,16 @@
 
 <!-- towncrier release notes start -->
 
+## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/1.9.12) - 2026-07-15
+
+### Documentation
+
+- Switch Sphinx theme from library to **Shibuya** with ``sphinx-design``
+  (grids, cards) and ``sphinxcontrib-mermaid`` diagrams.
+- Index / features / quickstart: ecosystem mermaid, card grids, auto_thin tip.
+- Org howto/architecture: mermaid data-flow for landscape fits and suite stack.
+
+
 ## [1.9.11](https://github.com/HaoZeke/chemparseplot/tree/1.9.11) - 2026-07-15
 
 ### Documentation

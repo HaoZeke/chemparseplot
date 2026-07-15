@@ -69,6 +69,26 @@ plot_eigenvalue_path(
 
 * 2D Landscape Surfaces
 
+#+begin_export rst
+.. mermaid::
+
+   flowchart LR
+     RMSD[RMSD-A / RMSD-B] --> PROJ{project_path?}
+     PROJ -->|true| SD["(s, d) valley"]
+     PROJ -->|false| RAW["raw RMSD axes"]
+     SD --> FIT[Surface fit]
+     RAW --> FIT
+     CFG[SurfaceFitConfig] --> FIT
+     FIT --> CONT[contourf + variance]
+     CONT --> STRIP[optional structure strip]
+
+.. tip::
+
+   Prefer ``SurfaceFitConfig`` / TOML keys over ad-hoc kwargs when wiring
+   suite plots. ``auto_thin`` stays **off** unless dense movies force it.
+#+end_export
+
+
 ** Gradient-Enhanced Matern (Default)
 
 #+begin_src python

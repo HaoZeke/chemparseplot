@@ -3,6 +3,34 @@
 #+EMAIL: rgoswami@ieee.org
 #+OPTIONS: toc:t num:nil
 
+
+* Ecosystem position
+
+#+begin_export rst
+.. mermaid::
+
+   flowchart TB
+     subgraph rgpkgs["rgpkgs suite"]
+       RGP[rgpycrumbs]
+       CPP[chemparseplot]
+       PYC[pychum]
+     end
+     ENG[eOn / ORCA / Sella] --> CPP
+     CPP -->|parse + plot APIs| USER[Notebooks / docs recipes]
+     RGP -->|CLI plt-* + surfaces| USER
+     RGP -->|plot.toml config| CPP
+     PYC -->|inputs| ENG
+
+.. grid:: 2
+   :gutter: 2
+
+   .. grid-item-card:: chemparseplot
+      Library: parsers, landscape APIs, ``SurfaceFitConfig``.
+
+   .. grid-item-card:: rgpycrumbs
+      CLI dispatch, GP surfaces, TOML plot config.
+#+end_export
+
 * Architecture Overview
 
 This document explains the high-level architecture of chemparseplot.

@@ -3,6 +3,30 @@
 This guide walks through installing `chemparseplot` and running a minimal
 parsing and plotting example.
 
+```{mermaid}
+flowchart LR
+  A[Install extras] --> B[Parse engine output]
+  B --> C[Build RMSD / energy arrays]
+  C --> D[plot_landscape_surface]
+  D --> E[PDF / PNG]
+```
+
+::::{grid} 2
+:gutter: 2
+
+:::{grid-item-card} Library path
+:class-card: sd-shadow-sm
+
+`chemparseplot.plot` + optional `SurfaceFitConfig` for dense clouds.
+:::
+
+:::{grid-item-card} CLI suite path
+:class-card: sd-shadow-sm
+
+`rgpycrumbs eon plt-* --config plot.toml` for multi-knob runs.
+:::
+::::
+
 ## Installation
 
 The simplest route is via `pip`:
