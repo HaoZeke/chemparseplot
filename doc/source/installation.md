@@ -10,21 +10,22 @@ This will automatically install [`rgpycrumbs`](https://github.com/HaoZeke/rgpycr
 as a dependency, which provides the computational modules used by `chemparseplot`
 (surface fitting, interpolation, data types, etc.).
 
-## Optional extras
+## Optional extras (transitional)
 
 ```bash
 # Plotting support (matplotlib, cmcrameri colormaps)
 pip install "chemparseplot[plot]"
 
-# NEB analysis (ase, h5py, polars)
+# NEB analysis (ase, h5py, polars, readcon)
 pip install "chemparseplot[neb]"
 
-# 3D structure rendering
-pip install "chemparseplot[xyzrender]"
-
-# Everything
+# Everything transitional
 pip install "chemparseplot[all]"
 ```
+
+Structure strips use **xyzrender** via the Python API
+(`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
+`[xyzrender]` extra. Prefer bare install + AUTO_DEPS / suite pins for new work.
 
 ## Development install
 
