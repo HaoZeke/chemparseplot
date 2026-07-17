@@ -185,3 +185,12 @@ class TestSurfaceFitConfig:
         )
         assert seen["n"] <= 20
         plt.close(fig)
+
+
+def test_surface_fit_config_importable():
+    """Regression: class body return annotations need future annotations (Py3.11+)."""
+    from chemparseplot.plot.neb import SurfaceFitConfig
+
+    cfg = SurfaceFitConfig.from_mapping({"auto_thin": True, "max_surface_points": 32})
+    assert cfg.auto_thin is True
+    assert cfg.max_surface_points == 32

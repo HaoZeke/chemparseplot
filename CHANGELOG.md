@@ -1,5 +1,13 @@
 # Changelog
 
+
+## 1.9.13
+
+### Fixed
+
+- `plot/neb.py`: add `from __future__ import annotations` so `SurfaceFitConfig`
+  return annotations do not raise `NameError` on Python 3.11+ (broke 1.9.10–1.9.12).
+
 <!-- towncrier release notes start -->
 
 ## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/1.9.12) - 2026-07-15
