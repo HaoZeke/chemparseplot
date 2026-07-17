@@ -91,3 +91,56 @@ class TestPlotStructureStripRendererParam:
             assert mock_render.call_count == len(atoms_list)
 
         plt.close("all")
+
+
+class TestXyzrenderCliApiParity:
+    """CLI and Python API must match for the same xyzrender version."""
+
+    def test_cli_python_api_parity(self, water, tmp_path):
+        import importlib.util
+        import subprocess
+
+        pytest.importorskip("xyzrender")
+        cli = shutil.which("xyzrender")
+        if cli is None:
+            pytest.skip("xyzrender console script not on PATH")
+        # same package as importable xyzrender
+        import xyzrender
+
+        # write shared geometry
+        from ase.io import write as ase_write
+
+        xyz = tmp_path / "w.xyz"
+        png_cli = tmp_path / "cli.png"
+        ase_write(str(xyz), water, format="xyz")
+        subprocess.run(
+            [
+                cli,
+                str(xyz),
+                "-o",
+                str(png_cli),
+                "-S",
+                "200",
+                "--config",
+                "paton",
+                "--hy",
+                "-t",
+            ],
+            check=True,
+            capture_output=True,
+        )
+        img_cli = plt.imread(png_cli)
+        img_api = _render_xyzrender(water, canvas_size=200, config="paton")
+        a = np.asarray(img_cli, dtype=float)
+        b = np.asarray(img_api, dtype=float)
+        if a.max() > 1.5:
+            a = a / 255.0
+        if b.max() > 1.5:
+            b = b / 255.0
+        if a.shape[-1] == 3:
+            a = np.concatenate([a, np.ones(a.shape[:2] + (1,))], axis=-1)
+        if b.shape[-1] == 3:
+            b = np.concatenate([b, np.ones(b.shape[:2] + (1,))], axis=-1)
+        assert a.shape == b.shape, (a.shape, b.shape)
+        # bit-identical for same xyzrender version
+        np.testing.assert_allclose(a, b, atol=1e-5, rtol=0)
