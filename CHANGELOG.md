@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.9.16
+
+### Fixed
+
+- Test: CLI vs Python API xyzrender strip images must be pixel-identical
+  (same package version).
+
 ## 1.9.15
 
 ### Fixed
