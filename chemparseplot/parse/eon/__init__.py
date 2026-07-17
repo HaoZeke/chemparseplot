@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: MIT
 """eOn trajectory parsers."""
 
-from chemparseplot.parse.eon import con_io
+from chemparseplot.parse.eon import con_io, frame_series
 
-__all__ = ["con_io"]
+__all__ = ["con_io", "frame_series"]

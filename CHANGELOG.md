@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.9.14
+
+### Added
+
+- ``parse.eon.frame_series``: ConFrame sequence → energies / NEB path arrays /
+  ``MinTrajectoryData`` / ``DimerTrajectoryData`` for object-plot adapters.
+
 ## 1.9.13
 
 ### Fixed
