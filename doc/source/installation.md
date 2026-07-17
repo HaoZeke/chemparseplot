@@ -48,3 +48,12 @@ codes which is required, not the codes themselves.
 - `ORCA` can be obtained (freely) after [registering on their forum](https://orcaforum.kofo.mpg.de/app.php/portal)
 - `ASE`, the [atomic simulation environment](https://wiki.fysik.dtu.dk/ase/), is also on PyPI and can be installed via `pip`
 - `eON` is [freely available](https://eondocs.org/) and on `conda-forge`.
+
+
+## Plot stack and lazy deps
+
+Structure strips use the **xyzrender Python API** via
+`rgpycrumbs.ensure_import` when `RGPYCRUMBS_AUTO_DEPS=1` (no PATH binary).
+Feature extras (`plot`, `neb`, …) remain transitional; prefer bare install +
+suite pins / AUTO_DEPS for new work. ConFrame series helpers live in
+`chemparseplot.parse.eon.frame_series` (v1.9.14+).

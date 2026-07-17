@@ -90,3 +90,5 @@ GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp
   coordinates)
 - Generic ASE-readable formats (extxyz, `.traj`) for NEB analysis with
   tangent force computation and RMSD landscape coordinates
+
+- **eOn ConFrame series** (`parse.eon.frame_series`): energies and trajectory DTOs from stamped frames for object-plot adapters.

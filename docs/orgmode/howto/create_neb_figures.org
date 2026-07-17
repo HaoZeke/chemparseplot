@@ -251,7 +251,8 @@ plot_structure_inset(
 For ray-traced structure images, use the xyzrender renderer:
 
 #+begin_src python
-# Requires: pip install 'xyzrender>=0.1.3'
+# xyzrender stages via rgpycrumbs ensure_import when AUTO_DEPS is on
+# (or: pip install 'xyzrender>=0.1.3'). Uses the Python API, not a PATH binary.
 plot_structure_strip(
     ax, atoms_list, labels,
     renderer="xyzrender",

@@ -168,3 +168,31 @@ The aggregated DataFrame uses this schema:
 - [[file:../reference/eon_neb_api.org][eOn NEB API Reference]]
 - [[file:create_neb_figures.org][How-to: Create Publication NEB Figures]]
 - [[file:parse_orca_neb.org][How-to: Parse ORCA NEB Calculations]]
+
+** In-memory ConFrame sequences (object plot)
+
+When frames already exist as =readcon.ConFrame= (for example
+=neb.path_frames()= from pyeonclient, or a multi-frame CON read with
+=readcon=), build plot series without re-reading job directories:
+
+#+begin_src python
+from chemparseplot.parse.eon.frame_series import (
+    energies_from_frames,
+    neb_path_arrays,
+    min_trajectory_from_frames,
+    dimer_trajectory_from_frames,
+)
+
+energies = energies_from_frames(frames)
+path = neb_path_arrays(frames)  # atoms_list, energies, optional NEB stamps
+# min_traj = min_trajectory_from_frames(frames)
+# dimer_traj = dimer_trajectory_from_frames(frames)
+#+end_src
+
+Wire into rgpycrumbs with:
+
+#+begin_src python
+from rgpycrumbs.eon import plot
+
+plot(frames, kind="neb", plot_type="profile", output_file="1d.pdf")
+#+end_src

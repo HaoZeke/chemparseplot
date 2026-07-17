@@ -115,3 +115,12 @@ The ORCA parser converts OPI geometry data to ASE Atoms for RMSD calculation. If
 - [[file:orca_neb_design.org][ORCA NEB Integration Design]]
 - [[file:neb_parsing_design.org][NEB Parsing Design]]
 - [[file:architecture.org][Architecture Overview]]
+
+* Plot stack (structure strips and surfaces)
+
+Structure strips use the =xyzrender= *Python API* via =ensure_import("xyzrender")=
+when =RGPYCRUMBS_AUTO_DEPS=1= (rgpycrumbs library plot entry points enable that
+by default). Gradient surfaces (=grad_imq=, …) call =ensure_import("jax")=
+through =rgpycrumbs.surfaces=. Feature extras such as =chemparseplot[neb,plot]=
+remain transitional install convenience; prefer bare install + suite pins /
+AUTO_DEPS for new work.
