@@ -44,26 +44,33 @@ class TestRenderStructureToImage:
 
 
 class TestCheckXyzrender:
-    """Binary availability check."""
+    """Package importability (ensure_import / site-packages), not PATH binary."""
 
-    def test_missing_binary_raises(self):
-        with patch.object(shutil, "which", return_value=None):
-            with pytest.raises(RuntimeError, match="xyzrender binary not found"):
+    def test_missing_package_raises(self):
+        import builtins
+        real_import = builtins.__import__
+
+        def fake_import(name, *a, **k):
+            if name == "xyzrender" or name.startswith("xyzrender."):
+                raise ImportError("blocked")
+            if name == "rgpycrumbs" or name.startswith("rgpycrumbs."):
+                raise ImportError("blocked")
+            return real_import(name, *a, **k)
+
+        with patch.object(builtins, "__import__", side_effect=fake_import):
+            with pytest.raises(RuntimeError, match="xyzrender is required"):
                 _check_xyzrender()
 
-    def test_present_binary_passes(self):
-        with patch.object(shutil, "which", return_value="/usr/bin/xyzrender"):
-            _check_xyzrender()
+    def test_present_package_passes(self):
+        pytest.importorskip("xyzrender")
+        _check_xyzrender()
 
 
 class TestRenderXyzrender:
-    """xyzrender subprocess renderer."""
+    """xyzrender Python API renderer."""
 
-    @pytest.mark.skipif(
-        shutil.which("xyzrender") is None,
-        reason="xyzrender not installed",
-    )
     def test_produces_image(self, water):
+        pytest.importorskip("xyzrender")
         img = _render_xyzrender(water, canvas_size=200)
         assert isinstance(img, np.ndarray)
         assert img.ndim == 3

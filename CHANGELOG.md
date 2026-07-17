@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.9.15
+
+### Fixed
+
+- Structure strips: use xyzrender **Python API** via ``ensure_import`` /
+  ``RGPYCRUMBS_AUTO_DEPS`` (no PATH binary / hard env pin).
+
 ## 1.9.14
 
 ### Added

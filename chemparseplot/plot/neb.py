@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 import logging
 import shutil
-import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -198,20 +197,40 @@ def render_structure_to_image(atoms, zoom, rotation):  # noqa: ARG001
     return img_data
 
 
+def _import_xyzrender():
+    """Import xyzrender via ensure_import (AUTO_DEPS) or a normal import.
+
+    Prefer the Python API over a PATH binary. Matches the suite lazy-dep model
+    (rgpycrumbs ``ensure_import`` / ``RGPYCRUMBS_AUTO_DEPS``).
+    """
+    try:
+        from rgpycrumbs._aux import enable_library_auto_deps, ensure_import
+
+        enable_library_auto_deps()
+        return ensure_import("xyzrender")
+    except ImportError:
+        pass
+    try:
+        import xyzrender
+    except ImportError as exc:
+        msg = (
+            "xyzrender is required for strip_renderer='xyzrender'. "
+            "Install with: pip install 'xyzrender>=0.1.3' "
+            "(or set RGPYCRUMBS_AUTO_DEPS=1 so ensure_import can stage it)"
+        )
+        raise RuntimeError(msg) from exc
+    return xyzrender
+
+
 def _check_xyzrender():
-    """Verify that the ``xyzrender`` binary is on PATH.
+    """Verify xyzrender is importable (package or ensure_import cache).
 
     Raises
     ------
     RuntimeError
-        If xyzrender is not found, with install instructions.
+        If xyzrender cannot be imported, with install instructions.
     """
-    if shutil.which("xyzrender") is None:
-        msg = (
-            "xyzrender binary not found on PATH. "
-            "Install with: pip install 'xyzrender>=0.1.3'"
-        )
-        raise RuntimeError(msg)
+    _import_xyzrender()
 
 
 def _apply_perspective_tilt(atoms, tilt_deg=8.0):
@@ -267,9 +286,8 @@ def _parse_rotation_angles(rotation_str):
 def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
     """Render an ASE Atoms object to a numpy RGBA array via xyzrender.
 
-    Uses the specified config preset (default: ``paton`` for ball-and-stick).
-    Other useful presets: ``bubble`` (space-filling, good for surfaces),
-    ``flat``, ``tube``, ``wire``, ``skeletal``.
+    Uses the **Python API** (``xyzrender.render``), staged through
+    ``ensure_import`` when ``RGPYCRUMBS_AUTO_DEPS=1`` — not a PATH binary.
 
     Parameters
     ----------
@@ -280,15 +298,18 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
         Any ASE-style string (e.g. ``"0x,90y,0z"``) disables auto-orient
         and pre-rotates the atoms.
     canvas_size : int
-        Output image width/height in pixels (passed as ``-S``).
+        Output image width/height in pixels.
 
     Returns
     -------
     numpy.ndarray
         RGBA image array with shape ``(H, W, 4)`` and float dtype.
     """
+    import os
+
     from ase.io import write as _ase_write
 
+    xr = _import_xyzrender()
     with tempfile.NamedTemporaryFile(suffix=".xyz", delete=False) as xyz_fh:
         xyz_path = xyz_fh.name
     png_path = xyz_path.rsplit(".", 1)[0] + ".png"
@@ -299,31 +320,23 @@ def _render_xyzrender(atoms, rotation="auto", canvas_size=400, config="paton"):
 
         if has_custom_rotation:
             rx, ry, rz = _parse_rotation_angles(rotation)
-            # Pre-rotate and disable auto-orient
             atoms.rotate(rx, "x", center="COP")
             atoms.rotate(ry, "y", center="COP")
             atoms.rotate(rz, "z", center="COP")
 
         _ase_write(xyz_path, atoms, format="xyz")
-        cmd = [
-            "xyzrender",
+        # Python API: same knobs as CLI --hy -t -S --config
+        xr.render(
             xyz_path,
-            "-o",
-            png_path,
-            "-S",
-            str(canvas_size),
-            "--config",
-            config,
-            "--hy",
-            "-t",
-        ]
-        if has_custom_rotation:
-            cmd.append("--no-orient")
-        subprocess.run(cmd, check=True, capture_output=True)  # noqa: S603
+            config=config,
+            canvas_size=canvas_size,
+            hy=True,
+            transparent=True,
+            orient=not has_custom_rotation,
+            output=png_path,
+        )
         img_data = plt.imread(png_path)
     finally:
-        import os
-
         for p in (xyz_path, png_path):
             try:
                 os.unlink(p)
