@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
 
-from chemparseplot.plot.structs import AxisUnits, BasePlotter, EnergyPath, axis_label, to_magnitude
+from chemparseplot.plot.structs import (
+    AxisUnits,
+    BasePlotter,
+    EnergyPath,
+    axis_label,
+    to_magnitude,
+)
 
 
 def plot_energy_paths(

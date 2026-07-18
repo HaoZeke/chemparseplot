@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 1.9.17
+
+### Fixed
+
+- Lazy ``parse.eon.frame_series`` so bare ``import chemparseplot.parse`` no
+  longer requires the ``neb`` / ``readcon`` extra (tutorial + pure imports).
+- Tests: xyzrender missing-package checks use import blocking (Python API),
+  not ``shutil.which``; landscape save / strip height expectations match
+  current tight-crop layout.
+
 ## 1.9.16
 
 ### Fixed

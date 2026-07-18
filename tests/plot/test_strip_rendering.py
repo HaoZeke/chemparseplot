@@ -165,7 +165,9 @@ class TestPlotStructureStrip:
         fig, ax = plt.subplots(figsize=(6, 2))
         entries = [
             StructurePlacement(atoms=atoms, x=float(i), label=label)
-            for i, (atoms, label) in enumerate(zip(small_molecules, ["A", "B", "C"]))
+            for i, (atoms, label) in enumerate(
+                zip(small_molecules, ["A", "B", "C"], strict=False)
+            )
         ]
         plot_structure_strip(ax, entries)
         assert not ax.axison

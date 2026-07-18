@@ -9,8 +9,8 @@ from unittest.mock import patch
 
 import pytest
 
-from chemparseplot.parse.grammar import grammar_available, reset_grammar_cache
 from chemparseplot.parse.grammar import _deps as deps
+from chemparseplot.parse.grammar import grammar_available, reset_grammar_cache
 
 
 def test_grammar_available_true_when_installed():

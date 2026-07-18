@@ -415,9 +415,7 @@ def render_single_ended_landscape(
         cap = float(np.min(display_e)) + energy_cap_window
     if cap is not None:
         factor = float(convert_energy(np.array([1.0]), energy_unit)[0])
-        energies_plot = np.minimum(
-            energies_plot, cap / factor if factor else cap
-        )
+        energies_plot = np.minimum(energies_plot, cap / factor if factor else cap)
         display_e = convert_energy(energies_plot, energy_unit)
 
     f_para = -np.gradient(energies_plot)
@@ -466,9 +464,7 @@ def render_single_ended_landscape(
         )
         m = min(len(ra), len(atoms_ov))
         ra, rb = ra[:m], rb[:m]
-        px, py, _ = project_landscape_path(
-            ra, rb, project_path=project_path, basis=basis
-        )
+        px, py, _ = project_landscape_path(ra, rb, project_path=project_path, basis=basis)
         color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
         if len(overlays) > 1:
             ax.plot(

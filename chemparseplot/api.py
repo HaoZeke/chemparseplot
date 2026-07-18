@@ -101,7 +101,6 @@ def parse_orca_final_energy(path_or_text: str):
     return summary.final_energy
 
 
-
 def extract_orca_geomscan_energy(
     data: str, energy_type: str = "Actual Energy"
 ) -> tuple[Q_, Q_]:
@@ -138,6 +137,6 @@ def suite_pins() -> dict[str, str]:
     try:
         cfg = load_config()
         pins.update(cfg.merged_package_pins_normalized())
-    except Exception:  # noqa: BLE001 — soft fail for consumers
+    except Exception:
         pass
     return pins

@@ -22,6 +22,7 @@ HDF5 Layout
 from typing import Any
 
 import numpy as np
+
 from chemparseplot.parse.types import ArrayGroup, ParserAttrs
 
 

@@ -1237,8 +1237,8 @@ class TestNebPlotSurface:
         assert pos.x == 1.0
 
     def test_plot_orca_neb_profile(self, tmp_path):
-        from chemparseplot.plot.neb import plot_orca_neb_profile
         from chemparseplot.parse.types import OrcaNebResult
+        from chemparseplot.plot.neb import plot_orca_neb_profile
 
         neb_data = OrcaNebResult(
             energies=np.array([0.0, 0.5, 1.0, 0.5, 0.0]),
@@ -1310,9 +1310,23 @@ class TestNebPlotSurface:
         assert img.ndim >= 2
 
     def test_check_xyzrender_missing(self):
+        """Package missing → RuntimeError (Python API, not PATH binary)."""
+        import builtins
+
         from chemparseplot.plot.neb import _check_xyzrender
 
-        with patch("shutil.which", return_value=None):
+        real_import = builtins.__import__
+
+        def fake_import(name, *a, **k):
+            if name == "xyzrender" or name.startswith("xyzrender."):
+                msg = "blocked"
+                raise ImportError(msg)
+            if name == "rgpycrumbs" or name.startswith("rgpycrumbs."):
+                msg = "blocked"
+                raise ImportError(msg)
+            return real_import(name, *a, **k)
+
+        with patch.object(builtins, "__import__", side_effect=fake_import):
             with pytest.raises(RuntimeError, match="xyzrender"):
                 _check_xyzrender()
 
@@ -1326,13 +1340,26 @@ class TestNebPlotSurface:
         assert img.ndim >= 2
 
     def test_render_atoms_xyzrender_not_installed(self):
-        """xyzrender raises RuntimeError if binary not on PATH."""
+        """xyzrender raises RuntimeError when the package cannot be imported."""
+        import builtins
+
         from ase.build import molecule
 
         from chemparseplot.plot.neb import _render_atoms
 
         atoms = molecule("H2O")
-        with patch("shutil.which", return_value=None):
+        real_import = builtins.__import__
+
+        def fake_import(name, *a, **k):
+            if name == "xyzrender" or name.startswith("xyzrender."):
+                msg = "blocked"
+                raise ImportError(msg)
+            if name == "rgpycrumbs" or name.startswith("rgpycrumbs."):
+                msg = "blocked"
+                raise ImportError(msg)
+            return real_import(name, *a, **k)
+
+        with patch.object(builtins, "__import__", side_effect=fake_import):
             with pytest.raises(RuntimeError, match="xyzrender"):
                 _render_atoms(atoms, "xyzrender", 0.3, "0x,0y,0z")
 
@@ -1721,8 +1748,8 @@ class TestTwoDimPlotMethods:
 # ============================================================
 class TestOrcaNebHighLevel:
     def test_plot_orca_neb_profile(self, tmp_path):
-        from chemparseplot.plot.neb import plot_orca_neb_profile
         from chemparseplot.parse.types import OrcaNebResult
+        from chemparseplot.plot.neb import plot_orca_neb_profile
 
         data = OrcaNebResult(
             energies=np.array([0.0, 0.5, 1.0, 0.8, 0.2]),

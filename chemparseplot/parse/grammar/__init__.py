@@ -30,7 +30,13 @@ __all__ = [
 
 
 def __getattr__(name: str):
-    if name in ("parse_xyz_text", "parse_xyz_file", "XyzFrame", "XyzAtom", "write_xyz_text"):
+    if name in (
+        "parse_xyz_text",
+        "parse_xyz_file",
+        "XyzFrame",
+        "XyzAtom",
+        "write_xyz_text",
+    ):
         from chemparseplot.parse.grammar import xyz as _xyz
 
         return getattr(_xyz, name)

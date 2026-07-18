@@ -31,7 +31,9 @@ def _h_frame(energy: float, z: float, *, frame_index: int, **scalars):
     frame.set_energy(float(energy))
     frame.set_frame_index(int(frame_index))
     for key, value in scalars.items():
-        frame.set_scalar_metadata(key, float(value) if isinstance(value, float) else value)
+        frame.set_scalar_metadata(
+            key, float(value) if isinstance(value, float) else value
+        )
     return frame
 
 

@@ -8,7 +8,9 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def band_text(frames: list[tuple[float, float]], *, extra_meta: dict | None = None) -> str:
+def band_text(
+    frames: list[tuple[float, float]], *, extra_meta: dict | None = None
+) -> str:
     """Build multi-frame CON text. Each item is ``(energy_eV, z)`` for a single H."""
     blocks = []
     for idx, (energy, z) in enumerate(frames):
@@ -17,8 +19,7 @@ def band_text(frames: list[tuple[float, float]], *, extra_meta: dict | None = No
             meta.update(extra_meta)
         meta_json = (
             '{"con_spec_version":%(con_spec_version)d,'
-            '"energy":%(energy)r,"frame_index":%(frame_index)d'
-            % meta
+            '"energy":%(energy)r,"frame_index":%(frame_index)d' % meta
         )
         for key, value in meta.items():
             if key in {"con_spec_version", "energy", "frame_index"}:
@@ -51,9 +52,7 @@ def write_band(path: Path, frames: list[tuple[float, float]], **kwargs) -> Path:
     return path
 
 
-def min_metadata_band(
-    path: Path, rows: list[tuple[float, float, float]]
-) -> Path:
+def min_metadata_band(path: Path, rows: list[tuple[float, float, float]]) -> Path:
     """Write minimization movie frames.
 
     Each row is ``(energy, step_size, convergence)`` with sequential frame_index.

@@ -29,8 +29,8 @@ _XYZ_GRAMMAR_SRC = r"""
 meta          = natoms newline comment_line newline coord_block ws?
 natoms        = ~r"\d+"
 comment_line  = ~r"[^\n]*"
-coord_block   = (aline newline?)+
-aline         = ws? atype ws float_ ws float_ ws float_ ws?
+coord_block   = (atom_line newline?)+
+atom_line     = ws? atype ws float_ ws float_ ws float_ ws?
 atype         = ~r"[A-Za-z][a-zA-Z0-9]{0,2}"
 float_        = ~r"[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?"
 newline       = ~r"\n"
@@ -107,26 +107,29 @@ def _make_visitor() -> Any:
             self.comment: str = ""
             self.atoms: list[XyzAtom] = []
 
-        def visit_natoms(self, node: Any, visited_children: Any) -> int:
+        def visit_natoms(self, node: Any, _visited_children: Any) -> int:
             self.natoms = int(node.text)
             return self.natoms
 
-        def visit_comment_line(self, node: Any, visited_children: Any) -> str:
+        def visit_comment_line(self, node: Any, _visited_children: Any) -> str:
             self.comment = node.text
             return self.comment
 
-        def visit_aline(self, node: Any, visited_children: Any) -> XyzAtom:
+        def visit_atom_line(self, node: Any, visited_children: Any) -> XyzAtom:
+            del node  # structure from visited_children
             flat = _flatten(visited_children)
-            symbol = next(x for x in flat if isinstance(x, str) and x.strip() and x[0].isalpha())
+            symbol = next(
+                x for x in flat if isinstance(x, str) and x.strip() and x[0].isalpha()
+            )
             nums = [x for x in flat if isinstance(x, float)]
             atom = XyzAtom(symbol=symbol, x=nums[0], y=nums[1], z=nums[2])
             self.atoms.append(atom)
             return atom
 
-        def visit_atype(self, node: Any, visited_children: Any) -> str:
+        def visit_atype(self, node: Any, _visited_children: Any) -> str:
             return node.text
 
-        def visit_float_(self, node: Any, visited_children: Any) -> float:
+        def visit_float_(self, node: Any, _visited_children: Any) -> float:
             return float(node.text)
 
         def generic_visit(self, node: Any, visited_children: Any) -> Any:

@@ -43,7 +43,9 @@ def test_stitch_and_trajectory_import_con_io():
     stitch = (EON_PARSE / "stitch.py").read_text()
     common = (EON_PARSE / "_trajectory_common.py").read_text()
     assert "chemparseplot.parse.eon.con_io" in stitch
-    assert "chemparseplot.parse.eon import con_io" in common or "parse.eon.con_io" in common
+    assert (
+        "chemparseplot.parse.eon import con_io" in common or "parse.eon.con_io" in common
+    )
     assert "ase.io" not in stitch
 
 

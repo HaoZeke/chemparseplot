@@ -151,7 +151,7 @@ def extract_final_energies_hartree(text: str) -> list[float]:
         line = m.group(0).strip()
         try:
             tree = g.parse(line)
-        except Exception:  # noqa: BLE001 — skip non-conforming noise
+        except Exception:
             continue
         v = EnergyVisitor()
         v.visit(tree)
@@ -192,14 +192,13 @@ def extract_cartesian_angstrom_blocks(text: str) -> list[list[OrcaAtomCoord]]:
     for m in _CART_BLOCK_RE.finditer(text):
         chunk = (
             "CARTESIAN COORDINATES (ANGSTROEM)\n"
-            "---------------------------------\n"
-            + m.group(1)
+            "---------------------------------\n" + m.group(1)
         )
         if not chunk.endswith("\n"):
             chunk += "\n"
         try:
             tree = g.parse(chunk)
-        except Exception:  # noqa: BLE001
+        except Exception:
             continue
         v = CartVisitor()
         v.visit(tree)

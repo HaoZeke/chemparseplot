@@ -18,7 +18,8 @@ from chemparseplot.parse.types import OrcaNebResult
 def test_public_exports_from_parse_orca():
     from chemparseplot.parse import orca
     from chemparseplot.parse.orca import parse_orca_neb, parse_orca_neb_fallback
-    from chemparseplot.parse.orca.neb import opi_available, parse_orca_neb as neb_parse
+    from chemparseplot.parse.orca.neb import opi_available
+    from chemparseplot.parse.orca.neb import parse_orca_neb as neb_parse
 
     assert parse_orca_neb is neb_parse
     assert callable(parse_orca_neb_fallback)
@@ -63,7 +64,9 @@ def test_get_opi_output_class_import_error_message():
     with patch.object(_opi, "_opi_output_cls", None):
         with patch("importlib.import_module", side_effect=ImportError("no opi")):
             _opi.reset_opi_cache()
-            with pytest.raises(ImportError, match="chemparseplot\\[opi\\]|parse_orca_neb"):
+            with pytest.raises(
+                ImportError, match="chemparseplot\\[opi\\]|parse_orca_neb"
+            ):
                 _opi.get_opi_output_class()
     _opi.reset_opi_cache()
 
@@ -160,8 +163,10 @@ def test_no_top_level_opi_import_in_parse_orca_tree():
                 for alias in node.names:
                     if alias.name == "opi" or alias.name.startswith("opi."):
                         offenders.append(f"{path.name}: import {alias.name}")
-            if isinstance(node, ast.ImportFrom) and node.module and (
-                node.module == "opi" or node.module.startswith("opi.")
+            if (
+                isinstance(node, ast.ImportFrom)
+                and node.module
+                and (node.module == "opi" or node.module.startswith("opi."))
             ):
                 offenders.append(f"{path.name}: from {node.module}")
     # Only _opi.py may load opi via importlib (string), not top-level import

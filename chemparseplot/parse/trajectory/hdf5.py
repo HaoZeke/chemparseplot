@@ -20,16 +20,16 @@ import numpy as np
 from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 
+from chemparseplot.parse.neb_utils import (
+    calculate_landscape_coords,
+    compute_synthetic_gradients,
+    create_landscape_dataframe,
+)
 from chemparseplot.parse.types import (
     ArrayGroup,
     ParserAttrs,
     TrajectoryNebPath,
     TrajectoryNebResult,
-)
-from chemparseplot.parse.neb_utils import (
-    calculate_landscape_coords,
-    compute_synthetic_gradients,
-    create_landscape_dataframe,
 )
 
 log = logging.getLogger(__name__)

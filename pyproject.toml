@@ -55,15 +55,11 @@ opi = ["orca-pi>=0.1.0"]
 # Grammar/AST track (parsimonious) for XYZ and text-heavy ORCA sections.
 grammar = ["parsimonious>=0.10.0"]
 all = ["chemparseplot[plot,neb,xyzrender,opi,grammar]"]
-release = [
-  "build>=0.10",
-  "towncrier>=24.8.0",
-  "twine>=4.0",
-  "wheel>=0.40",
-]
+release = ["build>=0.10", "towncrier>=24.8.0", "twine>=4.0", "wheel>=0.40"]
 test = [
   "ase>=3.22",
   "h5py>=3.0",
+  "jax[cpu]>=0.4",
   "matplotlib>=3.8.2",
   "parsimonious>=0.10.0",
   "polars>=0.20",
@@ -72,6 +68,7 @@ test = [
   "readcon>=0.13.1",
   "rgpycrumbs",
   "scipy>=1.11",
+  "xyzrender>=0.1.3",
 ]
 lint = ["ruff>=0.1.6"]
 [project.urls]
@@ -172,9 +169,6 @@ ban-relative-imports = "all"
   "S603",
   "T201",
 ] # doctest scripts
-"chemparseplot/parse/**/*" = [
-  "PLC0415",
-] # deferred imports for optional deps (h5py, pandas, polars)
 "tests/**/*" = [
   "ARG001",
   "ARG002",
@@ -182,6 +176,8 @@ ban-relative-imports = "all"
   "B007",
   "B017",
   "E402",
+  "EM101",
+  "EM102",
   "F401",
   "ICN001",
   "N806",
@@ -193,8 +189,13 @@ ban-relative-imports = "all"
   "S101",
   "S108",
   "S110",
+  "S603",
   "T201",
   "TID252",
+  "UP031",
+  "RUF007",
+  "F841",
+  "RUF043",
 ]
 # __init__.py can import without use and use lazy __getattr__
 "__init__.py" = ["F401", "PLC0415"]
@@ -209,9 +210,38 @@ ban-relative-imports = "all"
   "FBT002",
   "PLW2901",
 ]
-"chemparseplot/plot/structs.py" = ["PLC0415"]
 "chemparseplot/plot/geomscan.py" = ["PLC0415"]
-"chemparseplot/plot/neb.py" = ["PLR2004", "PLC0415", "C408"]
+"chemparseplot/units.py" = [
+  "F822",    # lazy Q_/ureg via __getattr__
+  "EM102",
+  "N806",    # pint Quantity alias Q
+  "PLW0603",
+  "PLC0415", # lazy pint import
+  "RUF059",
+]
+"chemparseplot/__init__.py" = ["PLC0414", "EM102", "F401"]
+"chemparseplot/api.py" = ["PLR2004", "S110", "PLC0415"]
+"chemparseplot/util.py" = ["PLC0415"]
+"chemparseplot/parse/**/*" = [
+  "PLC0415",
+  "EM102",
+  "N806",
+  "ARG002",  # NodeVisitor signatures
+  "S112",
+  "PLW0603",
+  "UP047",
+]
+"chemparseplot/plot/neb.py" = [
+  "PLR2004",
+  "PLC0415",
+  "C408",
+  "RUF046",
+  "FBT001",
+  "FBT002",
+]
+"chemparseplot/plot/optimization.py" = ["N803", "PLC0415"]
+"chemparseplot/plot/structs.py" = ["PLC0415", "F401", "N806"]
+"chemparseplot/parse/orca/**/*" = ["PLW0603", "PLC0415", "N806"]
 "chemparseplot/parse/orca/neb/opi_parser.py" = [
   "PLC0415", # late imports for optional deps (ase)
   "PLW0603", # global for lazy-loaded OPI module

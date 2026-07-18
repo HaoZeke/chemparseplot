@@ -25,12 +25,10 @@ from chemparseplot.parse.eon._trajectory_common import (
     metadata_value,
 )
 from chemparseplot.parse.eon.dimer_trajectory import (
-    DIMER_METADATA_COLUMNS,
     DimerTrajectoryData,
     table_from_dimer_metadata,
 )
 from chemparseplot.parse.eon.min_trajectory import (
-    MIN_METADATA_COLUMNS,
     MinTrajectoryData,
     table_from_min_metadata,
 )
@@ -121,7 +119,11 @@ def neb_path_arrays(frames: Sequence[Any]) -> dict[str, Any]:
         ok = True
         for frame in frames:
             v = metadata_value(frame, key)
-            if v is None and key in ("reaction_coordinate", "relative_energy", "parallel_force"):
+            if v is None and key in (
+                "reaction_coordinate",
+                "relative_energy",
+                "parallel_force",
+            ):
                 # optional NEB stamps
                 ok = False
                 break

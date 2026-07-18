@@ -53,8 +53,9 @@ Energy:    -123.445000 Eh
 
 def test_tutorial_eon_saddle_parse():
     pytest.importorskip("rgpycrumbs")
-    from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
     from rgpycrumbs.basetypes import SpinID
+
+    from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
@@ -126,7 +127,7 @@ if __name__ == "__main__":
                 print(f"Running {name}...")
                 fn()
                 print(f"  ok {name}")
-            except Exception as exc:  # noqa: BLE001 — script mode
+            except Exception as exc:
                 failed += 1
                 print(f"  FAIL {name}: {exc}", file=sys.stderr)
     sys.exit(failed)

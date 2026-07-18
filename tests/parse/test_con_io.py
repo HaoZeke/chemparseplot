@@ -117,7 +117,7 @@ def test_frame_with_energy_scalar_metadata_fallback(tmp_path: Path):
             return self._energy
 
     fake_readcon = SimpleNamespace(ConFrame=_RecordingConFrame)
-    monkey_mod = SimpleNamespace(
+    SimpleNamespace(
         _readcon=lambda: fake_readcon,
         frame_with_energy=con_io_mod.frame_with_energy,
     )

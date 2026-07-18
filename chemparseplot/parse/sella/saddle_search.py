@@ -18,13 +18,14 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
 @dataclass(frozen=True, slots=True)
 class SellaLog:
     """Typed record for a single Sella geometry-step log entry.
 
-```{versionadded} 0.0.3
-```
-"""
+    ```{versionadded} 0.0.3
+    ```
+    """
 
     step_id: int
     time_float: float

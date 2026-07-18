@@ -306,6 +306,9 @@ class TestSingleEndedHelpers:
             def tight_layout(self):
                 self.tight_layout_calls += 1
 
+            def get_facecolor(self):
+                return "white"
+
             def savefig(self, *args, **kwargs):
                 self.saved.append((args, kwargs))
 
@@ -316,7 +319,8 @@ class TestSingleEndedHelpers:
 
         save_landscape_figure(fake_fig, tmp_path / "strip.pdf", dpi=100, has_strip=True)
         assert fake_fig.tight_layout_calls == 0
-        assert "bbox_inches" not in fake_fig.saved[0][1]
+        # Always tight-crop (strip layouts included)
+        assert fake_fig.saved[0][1]["bbox_inches"] == "tight"
 
         fake_fig = _FakeFigure()
         monkeypatch.setattr(
@@ -415,7 +419,8 @@ class TestSingleEndedHelpers:
         fig, ax, ax_strip = create_landscape_axes(dpi=100, has_strip=True, theme=None)
         assert ax is not None
         assert ax_strip is not None
-        assert fig.get_size_inches()[1] == pytest.approx(5.37 + 1.20)
+        # base_size=6.0 + 2.15 strip room (x-label clearance)
+        assert fig.get_size_inches()[1] == pytest.approx(6.0 + 2.15)
         plt.close(fig)
 
     def test_enforce_strip_clearance_uses_measured_text_extents(self):

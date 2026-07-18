@@ -135,9 +135,7 @@ class BasePlotter:
     ```
     """
 
-    def __init__(
-        self, figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=None, style="bmh"
-    ):
+    def __init__(self, figsize=(3.2, 2.5), dpi=200, pad=0.2, colormap=None, style="bmh"):
         if colormap is None:
             from cmcrameri import cm  # optional plot extra
 

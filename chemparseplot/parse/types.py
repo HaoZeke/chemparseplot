@@ -84,7 +84,7 @@ class OrcaNebResult(DataclassMapping):
 
     def __post_init__(self) -> None:
         if self.n_images is None:
-            object.__setattr__(self, "n_images", int(len(self.energies)))
+            object.__setattr__(self, "n_images", len(self.energies))
 
     @classmethod
     def from_mapping(cls, data: Mapping[str, Any]) -> OrcaNebResult:

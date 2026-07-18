@@ -9,11 +9,11 @@ matplotlib.use("Agg")
 
 import importlib
 
-from tests._optional_imports import has_module_spec, optional_import_available
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
+from tests._optional_imports import has_module_spec, optional_import_available
 
 
 # ============================================================

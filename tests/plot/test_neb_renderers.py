@@ -48,13 +48,16 @@ class TestCheckXyzrender:
 
     def test_missing_package_raises(self):
         import builtins
+
         real_import = builtins.__import__
 
         def fake_import(name, *a, **k):
             if name == "xyzrender" or name.startswith("xyzrender."):
-                raise ImportError("blocked")
+                msg = "blocked"
+                raise ImportError(msg)
             if name == "rgpycrumbs" or name.startswith("rgpycrumbs."):
-                raise ImportError("blocked")
+                msg = "blocked"
+                raise ImportError(msg)
             return real_import(name, *a, **k)
 
         with patch.object(builtins, "__import__", side_effect=fake_import):
@@ -97,16 +100,12 @@ class TestXyzrenderCliApiParity:
     """CLI and Python API must match for the same xyzrender version."""
 
     def test_cli_python_api_parity(self, water, tmp_path):
-        import importlib.util
         import subprocess
 
         pytest.importorskip("xyzrender")
         cli = shutil.which("xyzrender")
         if cli is None:
             pytest.skip("xyzrender console script not on PATH")
-        # same package as importable xyzrender
-        import xyzrender
-
         # write shared geometry
         from ase.io import write as ase_write
 
@@ -138,9 +137,9 @@ class TestXyzrenderCliApiParity:
         if b.max() > 1.5:
             b = b / 255.0
         if a.shape[-1] == 3:
-            a = np.concatenate([a, np.ones(a.shape[:2] + (1,))], axis=-1)
+            a = np.concatenate([a, np.ones((*a.shape[:2], 1))], axis=-1)
         if b.shape[-1] == 3:
-            b = np.concatenate([b, np.ones(b.shape[:2] + (1,))], axis=-1)
+            b = np.concatenate([b, np.ones((*b.shape[:2], 1))], axis=-1)
         assert a.shape == b.shape, (a.shape, b.shape)
         # bit-identical for same xyzrender version
         np.testing.assert_allclose(a, b, atol=1e-5, rtol=0)

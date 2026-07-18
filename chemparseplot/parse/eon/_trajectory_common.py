@@ -141,7 +141,10 @@ def frame_rows_to_table(
     rows: list[dict[str, Any]] = []
     saw_complete_row = False
     for frame in frames:
-        row = {column: coerce_metadata_value(column, metadata_value(frame, column)) for column in columns}
+        row = {
+            column: coerce_metadata_value(column, metadata_value(frame, column))
+            for column in columns
+        }
         if any(value is None for value in row.values()):
             if saw_complete_row or not allow_leading_incomplete:
                 return pl.DataFrame()

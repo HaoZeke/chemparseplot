@@ -11,7 +11,7 @@ import pytest
 
 pytest.importorskip("parsimonious")
 
-from chemparseplot.parse.grammar.xyz import (  # noqa: E402
+from chemparseplot.parse.grammar.xyz import (
     parse_xyz_file,
     parse_xyz_text,
     write_xyz_text,

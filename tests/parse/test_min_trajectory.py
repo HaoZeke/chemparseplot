@@ -234,8 +234,7 @@ class TestLoadMinTrajectory:
 
         (tmp_path / "minimization").write_text("dummy movie")
         (tmp_path / "minimization.dat").write_text(
-            "iteration\tstep_size\tconvergence\tenergy\n"
-            "0\t9.9\t9.9\t9.9\n"
+            "iteration\tstep_size\tconvergence\tenergy\n0\t9.9\t9.9\t9.9\n"
         )
 
         frames = [

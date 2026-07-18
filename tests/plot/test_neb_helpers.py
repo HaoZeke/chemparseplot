@@ -60,7 +60,8 @@ class TestNebPlotHelpers:
         assert half_span == pytest.approx(2.3)
         assert recompute_calls == []
 
-    def test_save_plot_skips_tight_bbox_for_strip(self, monkeypatch, tmp_path):
+    def test_save_plot_always_uses_tight_bbox(self, monkeypatch, tmp_path):
+        """Strip and plain saves both tight-crop (has_strip kept for API only)."""
         from chemparseplot.plot import neb as neb_plot
 
         saved = {}
@@ -76,7 +77,7 @@ class TestNebPlotHelpers:
         neb_plot.save_plot(strip_out, 150, has_strip=True)
         neb_plot.save_plot(plain_out, 150, has_strip=False)
 
-        assert "bbox_inches" not in saved[str(strip_out)]
+        assert saved[str(strip_out)]["bbox_inches"] == "tight"
         assert saved[str(plain_out)]["bbox_inches"] == "tight"
 
     def test_plot_mmf_peaks_overlay_draws_outer_and_inner_markers(self):

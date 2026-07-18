@@ -16,11 +16,10 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 import readcon
-
-from chemparseplot.parse.eon import con_io
 from ase import Atoms
 
-from ._trajectory_common import (
+from chemparseplot.parse.eon import con_io
+from chemparseplot.parse.eon._trajectory_common import (
     frame_rows_to_table,
     load_movie_and_table,
     load_optional_payload,

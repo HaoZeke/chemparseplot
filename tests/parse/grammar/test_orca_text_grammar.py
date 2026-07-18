@@ -11,8 +11,8 @@ import pytest
 
 pytest.importorskip("parsimonious")
 
-from chemparseplot.api import parse_orca_final_energy  # noqa: E402
-from chemparseplot.parse.grammar.orca_text import (  # noqa: E402
+from chemparseplot.api import parse_orca_final_energy
+from chemparseplot.parse.grammar.orca_text import (
     extract_cartesian_angstrom_blocks,
     extract_final_energies_hartree,
     parse_orca_text_summary,

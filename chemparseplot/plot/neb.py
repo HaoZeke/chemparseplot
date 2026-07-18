@@ -2,16 +2,14 @@ from __future__ import annotations
 
 import io
 import logging
-import shutil
 import tempfile
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from collections.abc import Mapping
-
-import matplotlib.pyplot as plt
 import matplotlib.patheffects as path_effects
+import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib import tri
@@ -554,7 +552,7 @@ def plot_structure_strip(
     max_cols=6,
     renderer="xyzrender",
     col_spacing=1.5,
-    show_dividers=False,  # noqa: FBT002
+    show_dividers=False,
     xyzrender_config="paton",
     divider_color="gray",
     divider_style="--",
@@ -1044,15 +1042,15 @@ def plot_landscape_surface(
     method="grad_matern",
     rbf_smooth=None,
     cmap="viridis",
-    show_pts=True,  # noqa: FBT002
+    show_pts=True,
     variance_threshold=0.05,
-    project_path=True,  # noqa: FBT002
+    project_path=True,
     extra_points=None,
     n_inducing=None,
     xlim=None,
     ylim=None,
     basis=None,
-    auto_thin: bool = False,  # noqa: FBT001, FBT002
+    auto_thin: bool = False,
     max_surface_points: int = 64,
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
 ) -> Any:
@@ -1130,8 +1128,7 @@ def plot_landscape_surface(
     if auto_thin and n_obs > max_surface_points:
         fit_idx = surface_fit_indices(n_obs, max_surface_points)
         log.warning(
-            "auto_thin: fitting surface on %d of %d points "
-            "(max_surface_points=%d)",
+            "auto_thin: fitting surface on %d of %d points (max_surface_points=%d)",
             len(fit_idx),
             n_obs,
             max_surface_points,
@@ -1428,7 +1425,7 @@ def plot_landscape_path_overlay(
     z,
     cmap,
     z_label,
-    project_path=True,  # noqa: FBT002
+    project_path=True,
     all_r=None,
     all_p=None,
     all_z=None,
@@ -1539,7 +1536,7 @@ def plot_mmf_peaks_overlay(
     peak_rmsd_r,
     peak_rmsd_p,
     peak_energies,
-    project_path=True,  # noqa: FBT002
+    project_path=True,
     path_rmsd_r=None,
     path_rmsd_p=None,
 ) -> None:
@@ -1613,7 +1610,7 @@ def plot_phase_points_overlay(
     rmsd_r,
     rmsd_p,
     *,
-    project_path=True,  # noqa: FBT002
+    project_path=True,
     path_rmsd_r=None,
     path_rmsd_p=None,
     phase_color="#FF8F00",
@@ -1667,7 +1664,7 @@ def plot_neb_evolution(
     ax,
     step_rmsd_r_list: list[np.ndarray],
     step_rmsd_p_list: list[np.ndarray],
-    project_path=True,  # noqa: FBT002
+    project_path=True,
     cmap="Blues",
 ) -> None:
     """Show NEB band evolution across optimization iterations.
@@ -1767,9 +1764,7 @@ def landscape_half_span(
     _s, _d = project_to_sd(np.asarray(final_r), np.asarray(final_p), basis)
     half_span = max(abs(float(_d.max())), abs(float(_d.min())), min_half) * path_pad
     for overlay in additional_atoms_data or []:
-        _, add_d = project_to_sd(
-            np.array([overlay.r]), np.array([overlay.p]), basis
-        )
+        _, add_d = project_to_sd(np.array([overlay.r]), np.array([overlay.p]), basis)
         half_span = max(half_span, abs(float(add_d[0])) * path_pad)
     if equal_metric and x_limits is not None:
         s_half = 0.5 * max(float(x_limits[1] - x_limits[0]), 1e-9)
@@ -1934,7 +1929,7 @@ def plot_orca_neb_profile(
     image_indices = list(range(n_images))
     ax.plot(image_indices, energies, "o-", linewidth=2, markersize=8)
 
-    saddle_idx = _plot_orca_profile_keypoints(
+    _plot_orca_profile_keypoints(
         ax,
         x_values=np.asarray(image_indices, dtype=float),
         energies=energies,

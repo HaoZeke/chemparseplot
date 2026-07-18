@@ -84,10 +84,20 @@ class TestMetadataHelpers:
 
     def test_frame_rows_to_table_coerces_numeric_strings(self):
         frames = [
-            DummyFrame(frame_index="0", energy="-1.25", metadata={"step_size": "0.0", "convergence": "0.5"}),
-            DummyFrame(frame_index="1", energy="-1.50", metadata={"step_size": "0.2", "convergence": "0.1"}),
+            DummyFrame(
+                frame_index="0",
+                energy="-1.25",
+                metadata={"step_size": "0.0", "convergence": "0.5"},
+            ),
+            DummyFrame(
+                frame_index="1",
+                energy="-1.50",
+                metadata={"step_size": "0.2", "convergence": "0.1"},
+            ),
         ]
-        df = frame_rows_to_table(frames, ("frame_index", "step_size", "convergence", "energy"))
+        df = frame_rows_to_table(
+            frames, ("frame_index", "step_size", "convergence", "energy")
+        )
         assert df.dtypes == [pl.Int64, pl.Float64, pl.Float64, pl.Float64]
         assert df["convergence"].to_list() == [0.5, 0.1]
 
@@ -120,19 +130,19 @@ class TestMetadataHelpers:
 @pytest.mark.neb
 class TestTrajectoryCommonReadcon:
     def test_read_first_structure_uses_con_io(self, tmp_path):
-        from tests.parse._con_fixtures import write_band
         from chemparseplot.parse.eon._trajectory_common import read_first_structure
         from chemparseplot.parse.eon.con_io import read_first_atoms
+        from tests.parse._con_fixtures import write_band
 
-        path = write_band(tmp_path / "reactant.con", [( -1.5, 0.3)])
+        path = write_band(tmp_path / "reactant.con", [(-1.5, 0.3)])
         atoms = read_first_structure(path)
         direct = read_first_atoms(path)
         assert atoms.get_chemical_symbols() == direct.get_chemical_symbols() == ["H"]
         assert atoms.get_positions()[0, 2] == pytest.approx(0.3)
 
     def test_read_optional_first_prefers_existing(self, tmp_path):
-        from tests.parse._con_fixtures import write_band
         from chemparseplot.parse.eon._trajectory_common import read_optional_first
+        from tests.parse._con_fixtures import write_band
 
         write_band(tmp_path / "saddle.con", [(2.0, 0.8)])
         atoms = read_optional_first(tmp_path, ["missing.con", "saddle.con"])
@@ -141,14 +151,13 @@ class TestTrajectoryCommonReadcon:
         assert read_optional_first(tmp_path, ["nope.con"]) is None
 
     def test_load_movie_and_table_from_metadata(self, tmp_path):
-        from tests.parse._con_fixtures import write_band
-
         from chemparseplot.parse.eon import con_io
         from chemparseplot.parse.eon._trajectory_common import (
             frame_rows_to_table,
             load_movie_and_table,
             metadata_value,
         )
+        from tests.parse._con_fixtures import write_band
 
         src = write_band(
             tmp_path / "minimization.con",

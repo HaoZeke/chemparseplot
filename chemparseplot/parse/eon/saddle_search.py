@@ -369,9 +369,7 @@ def parse_eon_saddle(eresp: Path, rloc: "SpinID") -> "SaddleMeasure":
         dimer_trans=meth.trans,
         init_energy=init_energy,
         barrier=(
-            results_data.saddle_energy - init_energy
-            if init_energy is not None
-            else None
+            results_data.saddle_energy - init_energy if init_energy is not None else None
         ),
         mol_id=getattr(rloc, "mol_id", None),
         spin=getattr(rloc, "spin", None),
