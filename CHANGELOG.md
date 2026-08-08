@@ -41,6 +41,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.10.0](https://github.com/HaoZeke/chemparseplot/tree/1.10.0) - 2026-08-08
+
+### Added
+
+- Sketch-map landscape figures (``chemparseplot.plot.landscape``: coordination-number and SOAP descriptors, the published dimlandmark/dimred schedule, ruhi contour surfaces, margin structure insets) and approximate disconnectivity graphs (``chemparseplot.plot.disconnectivity``: superbasin merge trees over descriptor k-NN graphs with spectral basin colouring) for global-optimization minima databases.
+
+
 ## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/1.9.12) - 2026-07-15
 
 ### Documentation
