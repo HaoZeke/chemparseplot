@@ -25,7 +25,14 @@ __all__ = [
 def __getattr__(name):
     import importlib
 
-    lazy_submodules = {"geomscan", "structs", "chemgp", "optimization"}
+    lazy_submodules = {
+        "geomscan",
+        "structs",
+        "chemgp",
+        "optimization",
+        "landscape",
+        "disconnectivity",
+    }
     if name in lazy_submodules:
         return importlib.import_module(f".{name}", __name__)
     if name == "ureg":
