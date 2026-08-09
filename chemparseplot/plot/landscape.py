@@ -170,9 +170,19 @@ def run_sketchmap(
         for line in lm_raw.splitlines()
         if line.strip() and not line.startswith("#")
     ]
-    idx = np.array([int(r[0]) for r in rows])
+    idx = [int(r[0]) for r in rows]
+    # Guarantee the pinned rows: dimlandmark's -ifirst only seeds the greedy
+    # walk, and farthest-point sampling skips anything near an already-kept
+    # point, which is exactly where a pinned reference's twin sits.
+    selected = [i for i in idx if i >= n_pinned]
+    keep = list(range(n_pinned)) + selected
+    keep = keep[:max(n_landmark, n_pinned)]
+    idx = np.array(keep)
     (workdir / "landmarks.dat").write_text(
-        "\n".join(" ".join(r[1:]) for r in rows) + "\n"
+        "\n".join(
+            " ".join(f"{v:.8f}" for v in matrix[i]) for i in keep
+        )
+        + "\n"
     )
     proj = subprocess.run(  # noqa: S603
         [
