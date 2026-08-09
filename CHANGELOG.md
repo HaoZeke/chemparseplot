@@ -41,6 +41,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.10.1](https://github.com/HaoZeke/chemparseplot/tree/1.10.1) - 2026-08-09
+
+### Fixed
+
+- Structure-strip label bands size to the tallest multiline label, so two-line gallery captions no longer overlap the rendered structures.
+
+
 ## [1.10.0](https://github.com/HaoZeke/chemparseplot/tree/1.10.0) - 2026-08-08
 
 ### Added
