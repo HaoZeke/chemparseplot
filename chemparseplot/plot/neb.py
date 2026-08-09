@@ -624,7 +624,12 @@ def plot_structure_strip(
     ax.set_ylim(0, ax_h_px)
 
     per_col_px = ax_w_px / max(n_cols, 1)
-    label_band_px = label_fontsize * fig.dpi / 72 * 1.8
+    # The band must hold the tallest label: multiline labels previously
+    # overflowed a fixed 1.8-line reservation into the structure images.
+    max_label_lines = max(
+        (str(lbl).count("\n") + 1 for lbl in labels), default=1
+    ) if labels else 1
+    label_band_px = label_fontsize * fig.dpi / 72 * (0.9 + 1.35 * max_label_lines)
     top_padding_px = 6.0
     bottom_padding_px = 6.0
     row_gap_px = 10.0
