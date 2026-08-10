@@ -28,7 +28,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from chemparseplot.plot.theme import RUHI_COLORS, RUHI_THEME
+from chemparseplot.plot.theme import RUHI_THEME
 
 ARM_MARKERS = ["o", "^", "s", "P", "X"]
 

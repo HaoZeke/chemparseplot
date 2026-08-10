@@ -147,7 +147,7 @@ class Node:
     ```
     """
 
-    __slots__ = ("level", "children", "leaf", "x", "emin", "argmin")
+    __slots__ = ("argmin", "children", "emin", "leaf", "level", "x")
 
     def __init__(self, level, children=None, leaf=None):
         self.level = level
