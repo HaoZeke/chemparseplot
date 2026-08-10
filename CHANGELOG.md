@@ -41,14 +41,6 @@
 
 <!-- towncrier release notes start -->
 
-## Unreleased
-
-### Changed
-
-- Documentation uses the full Shibuya theme shared with rgpycrumbs and pychum:
-  Ecosystem nav, intersphinx, org-mode RST export into ``doc/source``, logo,
-  copybutton, and TurtleTech extra-head / site-foot partials.
-
 ## [1.11.0](https://github.com/HaoZeke/chemparseplot/tree/1.11.0) - 2026-08-10
 
 ### Added

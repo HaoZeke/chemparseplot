@@ -53,25 +53,6 @@ test = { features = ["test"], solve-group = "default" }
 plot = { features = ["test", "plot"], solve-group = "default" }
 chemgp = { features = ["test", "chemgp"], solve-group = "default" }
 plumed = { features = ["test", "plumed"], solve-group = "default" }
-docs = { features = ["docs"] }
-
-[feature.docs.dependencies]
-emacs = ">=30.2,<31"
-python = "==3.12"
-
-[feature.docs.pypi-dependencies]
-chemparseplot = { path = ".", editable = true, extras = ["doc"] }
-
-[feature.docs.tasks.mkrst]
-cmd = "emacs --batch --load export.el"
-cwd = "docs"
-
-[feature.docs.tasks.sphinxbld]
-cmd = "sphinx-build doc/source doc/build/html"
-depends-on = ["mkrst"]
-
-[feature.docs.tasks.docs]
-depends-on = ["sphinxbld"]
 
 # --- Tasks ---
 

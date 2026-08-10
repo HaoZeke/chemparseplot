@@ -1,7 +1,7 @@
 ;; Batch export org-mode files to RST for Sphinx.
 ;; Usage (cwd = docs/): emacs --batch --load export.el
-;; Publishes into doc/source/ (existing Sphinx root) without clobbering
-;; the hand-tuned landing page or the myst tutorial index.
+;; Org under orgmode/ is the source. RST under ../doc/source/ is generated.
+;; Exclude only the myst tutorial index (notebooks live in doc/source/tutorials/).
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
@@ -26,7 +26,7 @@
          :publishing-directory "../doc/source/"
          :publishing-function org-rst-publish-to-rst
          :recursive t
-         :exclude "^index\\.org$\\|^tutorials/index\\.org$"
+         :exclude "^tutorials/index\\.org$"
          :headline-levels 4
          :with-toc nil
          :section-numbers nil
