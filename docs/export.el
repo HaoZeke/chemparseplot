@@ -20,7 +20,7 @@
 (setq org-rst-headline-underline ?-)
 
 (setq org-publish-project-alist
-      '(("sphinx-rst"
+      '(("chemparseplot-rst"
          :base-directory "./orgmode/"
          :base-extension "org"
          :publishing-directory "../doc/source/"
@@ -32,4 +32,4 @@
          :section-numbers nil
          :with-author nil)))
 
-(org-publish "sphinx-rst" t)
+(org-publish "chemparseplot-rst" t)
