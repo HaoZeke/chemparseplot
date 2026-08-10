@@ -24,7 +24,7 @@ be edited separately.
 
 #+begin_src bash
 # 1. Run the same checks the tag workflow expects
-uv sync --extra test --extra plot --extra release
+uv sync --extra test --extra plot --extra lint --extra doc --extra release
 uv run pytest --cov=chemparseplot tests
 uv run ruff check .
 uv run ruff format --check .
