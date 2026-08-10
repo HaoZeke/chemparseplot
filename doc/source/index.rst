@@ -103,7 +103,7 @@ How parsers, plot helpers, and the CLI suite relate:
 
    tutorials/index
    tutorials/orca_neb
-   contributing
+   dev/contributing
 
 .. toctree::
    :maxdepth: 2
