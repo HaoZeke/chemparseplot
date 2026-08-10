@@ -197,6 +197,43 @@ class TestPlotStructureStrip:
         assert len(ax.artists) == 0
         plt.close(fig)
 
+    def test_separate_label_axis_keeps_text_out_of_image_band(
+        self, monkeypatch, small_molecules
+    ):
+        fig = plt.figure(figsize=(6, 2.4))
+        grid = fig.add_gridspec(2, 1, height_ratios=(4, 1), hspace=0.08)
+        image_ax = fig.add_subplot(grid[0])
+        label_ax = fig.add_subplot(grid[1])
+
+        def _fake_render(*_args, **_kwargs):
+            img = np.zeros((60, 80, 4), dtype=np.float32)
+            img[10:50, 20:60, :3] = 1.0
+            img[10:50, 20:60, 3] = 1.0
+            return img
+
+        labels = ["Cage\n0.00 eV", "Prism\n0.10 eV", "Book\n0.20 eV"]
+        monkeypatch.setattr("chemparseplot.plot.neb._render_atoms", _fake_render)
+        plot_structure_strip(
+            image_ax,
+            small_molecules,
+            labels,
+            label_ax=label_ax,
+        )
+
+        fig.canvas.draw()
+        mpl_renderer = fig.canvas.get_renderer()
+        image_bbox = image_ax.get_window_extent(mpl_renderer)
+        label_bbox = label_ax.get_window_extent(mpl_renderer)
+
+        assert image_ax.texts == []
+        assert [text.get_text() for text in label_ax.texts] == labels
+        for text in label_ax.texts:
+            text_bbox = text.get_window_extent(mpl_renderer)
+            assert label_bbox.contains(text_bbox.x0, text_bbox.y0)
+            assert label_bbox.contains(text_bbox.x1, text_bbox.y1)
+            assert text_bbox.y1 <= image_bbox.y0
+        plt.close(fig)
+
 
 class TestPlotStructureInset:
     def test_basic_inset(self, h2o):
