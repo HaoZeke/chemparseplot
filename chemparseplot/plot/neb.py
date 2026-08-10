@@ -642,9 +642,9 @@ def plot_structure_strip(
     per_col_px = ax_w_px / max(n_cols, 1)
     # The band must hold the tallest label: multiline labels previously
     # overflowed a fixed 1.8-line reservation into the structure images.
-    max_label_lines = max(
-        (str(lbl).count("\n") + 1 for lbl in labels), default=1
-    ) if labels else 1
+    max_label_lines = (
+        max((str(lbl).count("\n") + 1 for lbl in labels), default=1) if labels else 1
+    )
     label_band_px = (
         0.0
         if label_ax is not None

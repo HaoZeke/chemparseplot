@@ -176,13 +176,10 @@ def run_sketchmap(
     # point, which is exactly where a pinned reference's twin sits.
     selected = [i for i in idx if i >= n_pinned]
     keep = list(range(n_pinned)) + selected
-    keep = keep[:max(n_landmark, n_pinned)]
+    keep = keep[: max(n_landmark, n_pinned)]
     idx = np.array(keep)
     (workdir / "landmarks.dat").write_text(
-        "\n".join(
-            " ".join(f"{v:.8f}" for v in matrix[i]) for i in keep
-        )
-        + "\n"
+        "\n".join(" ".join(f"{v:.8f}" for v in matrix[i]) for i in keep) + "\n"
     )
     proj = subprocess.run(  # noqa: S603
         [
@@ -242,14 +239,12 @@ def plot_landscape_surface(ax, coords, energies, cmap=None, levels=20):
         np.linspace(coords[:, 0].min(), coords[:, 0].max(), 240),
         np.linspace(coords[:, 1].min(), coords[:, 1].max(), 240),
     )
-    surface = griddata(
-        coords, np.clip(energies, vmin, vmax), (gx, gy), method="linear"
-    )
+    surface = griddata(coords, np.clip(energies, vmin, vmax), (gx, gy), method="linear")
     lv = np.linspace(vmin, vmax, levels)
-    cf = ax.contourf(gx, gy, surface, levels=lv, cmap=cmap, vmin=vmin, vmax=vmax,
-                     alpha=0.85)
-    ax.contour(gx, gy, surface, levels=lv, colors="black", linewidths=0.3,
-               alpha=0.45)
+    cf = ax.contourf(
+        gx, gy, surface, levels=lv, cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.85
+    )
+    ax.contour(gx, gy, surface, levels=lv, colors="black", linewidths=0.3, alpha=0.45)
     ax.set_facecolor(RUHI_THEME.gridcolor)
     return cf
 
@@ -260,8 +255,14 @@ def margin_inset_slots(n):
     ```{versionadded} 1.10.0
     ```
     """
-    slots = [(-0.26, 0.82), (-0.26, 0.22), (1.30, 0.82), (1.30, 0.22),
-             (-0.26, 0.52), (1.30, 0.52)]
+    slots = [
+        (-0.26, 0.82),
+        (-0.26, 0.22),
+        (1.30, 0.82),
+        (1.30, 0.22),
+        (-0.26, 0.52),
+        (1.30, 0.52),
+    ]
     return slots[:n]
 
 
@@ -306,8 +307,16 @@ def place_margin_insets(fig, ax, entries, zoom=0.14, renderer="xyzrender"):
             renderer=renderer,
             xyzrender_config="paton",
         )
-        ax.scatter([x], [y], marker="o", s=120, facecolors="none",
-                   edgecolors="black", linewidths=1.4, zorder=7)
+        ax.scatter(
+            [x],
+            [y],
+            marker="o",
+            s=120,
+            facecolors="none",
+            edgecolors="black",
+            linewidths=1.4,
+            zorder=7,
+        )
         if entry.get("label"):
             ax.annotate(
                 entry["label"],

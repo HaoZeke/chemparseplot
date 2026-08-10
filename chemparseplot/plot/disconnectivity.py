@@ -27,9 +27,7 @@ from scipy.sparse.csgraph import connected_components, laplacian
 
 from chemparseplot.plot.theme import RUHI_COLORS
 
-BASIN_PALETTE = [
-    RUHI_COLORS[c] for c in ["teal", "sky", "magenta", "coral", "sunshine"]
-]
+BASIN_PALETTE = [RUHI_COLORS[c] for c in ["teal", "sky", "magenta", "coral", "sunshine"]]
 
 
 def dedup(matrix, energies, tol):
@@ -86,9 +84,7 @@ def bridge_components(adjacency, matrix, weight=0.1):
         for b in range(a + 1, n_comp):
             ia = np.where(labels == a)[0]
             ib = np.where(labels == b)[0]
-            d = np.linalg.norm(
-                matrix[ia][:, None, :] - matrix[ib][None, :, :], axis=-1
-            )
+            d = np.linalg.norm(matrix[ia][:, None, :] - matrix[ib][None, :, :], axis=-1)
             i, j = np.unravel_index(int(np.argmin(d)), d.shape)
             adjacency[ia[i], ib[j]] = weight
             adjacency[ib[j], ia[i]] = weight
@@ -119,9 +115,7 @@ def spectral_basins(adjacency, n_basins, rng, matrix=None):
     first = int(rng.integers(len(x)))
     centers = [x[first]]
     while len(centers) < k:
-        d = np.min(
-            [np.linalg.norm(x - c, axis=1) for c in centers], axis=0
-        )
+        d = np.min([np.linalg.norm(x - c, axis=1) for c in centers], axis=0)
         centers.append(x[int(np.argmax(d))])
     centers = np.array(centers)
     for _ in range(60):
@@ -177,9 +171,7 @@ def merge_tree(adjacency, energies, levels):
         if not mask.any():
             continue
         sub = np.where(mask)[0]
-        _, labels = connected_components(
-            adjacency[sub][:, sub], directed=False
-        )
+        _, labels = connected_components(adjacency[sub][:, sub], directed=False)
         comps = {}
         for local, g in enumerate(sub):
             comps.setdefault(labels[local], []).append(g)
@@ -196,9 +188,7 @@ def merge_tree(adjacency, energies, levels):
             if not merged:
                 node = leaves[extra[0]]
                 for m in extra[1:]:
-                    node = Node(
-                        max(energies[m], node.level), children=[node, leaves[m]]
-                    )
+                    node = Node(max(energies[m], node.level), children=[node, leaves[m]])
             else:
                 node = merged[0] if len(merged) == 1 else Node(lev, children=merged)
                 for m in extra:

@@ -48,9 +48,7 @@ def test_cn_matrix_species_restriction():
     pos = np.zeros((4, 3))
     pos[:, 0] = [0.0, 1.0, 5.0, 6.0]
     full = cn_matrix([pos.ravel()], ["O", "H", "O", "H"], cutoff=1.5)
-    only_o = cn_matrix(
-        [pos.ravel()], ["O", "H", "O", "H"], cutoff=1.5, cn_species="O"
-    )
+    only_o = cn_matrix([pos.ravel()], ["O", "H", "O", "H"], cutoff=1.5, cn_species="O")
     assert full.shape[1] == 4
     assert only_o.shape[1] == 2
 
@@ -106,9 +104,7 @@ def test_merge_tree_deep_chain_no_recursion():
 
 def test_spectral_basins_shapes():
     rng = np.random.default_rng(7)
-    m = np.vstack(
-        [rng.normal(0, 0.1, size=(10, 2)), rng.normal(5, 0.1, size=(10, 2))]
-    )
+    m = np.vstack([rng.normal(0, 0.1, size=(10, 2)), rng.normal(5, 0.1, size=(10, 2))])
     adjacency = knn_graph(m, k=3)
     assign = spectral_basins(adjacency, 2, rng, matrix=m)
     assert assign.shape == (20,)
@@ -119,12 +115,8 @@ def test_spectral_basins_shapes():
 
 def test_plot_disconnectivity_end_to_end():
     rng = np.random.default_rng(9)
-    m = np.vstack(
-        [rng.normal(0, 0.2, size=(15, 3)), rng.normal(4, 0.2, size=(15, 3))]
-    )
-    es = np.concatenate(
-        [rng.uniform(-10, -8, size=15), rng.uniform(-9, -7, size=15)]
-    )
+    m = np.vstack([rng.normal(0, 0.2, size=(15, 3)), rng.normal(4, 0.2, size=(15, 3))])
+    es = np.concatenate([rng.uniform(-10, -8, size=15), rng.uniform(-9, -7, size=15)])
     fig, ax = plt.subplots()
     reps, root = plot_disconnectivity(ax, m, es, dedup_tol=0.01, knn=3)
     assert len(reps) <= 30
