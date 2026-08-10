@@ -16,7 +16,7 @@ file:branding/logo/chemparseplot_logo.png
 [![Python](https://img.shields.io/pypi/pyversions/chemparseplot)](https://pypi.org/project/chemparseplot/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![One Good Tutorial docs checklist v1: adopted](https://onegoodtutorial.org/badge/adopted-v1.svg)](https://onegoodtutorial.org/about/badge/?v=1)
-[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-blueviolet.svg)](https://github.com/pypa/hatch)
 [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 #+end_export
 A *pure-python*[fn:butwhy] parsing and plotting library for computational
@@ -110,7 +110,7 @@ uv run ruff format --check .
 uv run sphinx-build doc/source/ doc/build
 
 # 2. Preview the next semantic version from Conventional Commits
-uvx cocogitto cog bump --dry-run --auto
+cog bump --dry-run --auto
 
 # 3. Aggregate towncrier fragments into the changelog
 #    towncrier headings use X.Y.Z, while the git tag stays vX.Y.Z
@@ -121,7 +121,7 @@ git add CHANGELOG.md doc/release/upcoming_changes
 git commit -m "release: v1.7.1"
 
 # 5. Apply the release tag (hatch-vcs reads the version from tags)
-uvx cocogitto cog bump --auto
+cog bump --auto
 
 # 6. Push main and tags; CI publishes from the tag
 git push origin main --tags

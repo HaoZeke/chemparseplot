@@ -31,7 +31,7 @@ uv run ruff format --check .
 uv run sphinx-build doc/source/ doc/build
 
 # 2. Preview the next semantic version
-uvx cocogitto cog bump --dry-run --auto
+cog bump --dry-run --auto
 
 # 3. Aggregate towncrier fragments into CHANGELOG.md
 uvx towncrier build --version "1.7.1"
@@ -41,7 +41,7 @@ git add CHANGELOG.md doc/release/upcoming_changes
 git commit -m "release: v1.7.1"
 
 # 5. Tag the release and push
-uvx cocogitto cog bump --auto
+cog bump --auto
 git push origin main --tags
 
 # 6. GitHub Actions publishes from the pushed tag
