@@ -560,6 +560,7 @@ def plot_structure_strip(
     max_display_height_px: float | None = None,
     width_fill_fraction=0.82,
     prefer_single_row: bool = True,
+    label_ax=None,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -580,6 +581,10 @@ def plot_structure_strip(
         If True (default), pack up to 16 structures in one row. If False,
         honour ``max_cols`` so e.g. 12 images with ``max_cols=6`` become two
         rows of larger molecules.
+    label_ax : matplotlib.axes.Axes or None
+        Optional caption-only axis. When supplied, structure images use the
+        full height of ``ax`` and labels are placed in ``label_ax`` at matching
+        normalized column and row positions.
 
     ```{versionadded} 0.1.0
     ```
@@ -601,6 +606,8 @@ def plot_structure_strip(
         labels = []
 
     ax.axis("off")
+    if label_ax is not None:
+        label_ax.axis("off")
     n_plot = len(atoms_list)
     # Single-row packing is optional: landscape strips with many images often
     # want max_cols=6 → two rows of larger structures.
@@ -623,13 +630,26 @@ def plot_structure_strip(
     ax.set_xlim(0, ax_w_px)
     ax.set_ylim(0, ax_h_px)
 
+    label_w_px = 0
+    label_h_px = 0
+    if label_ax is not None:
+        label_bbox = label_ax.get_window_extent(mpl_renderer)
+        label_w_px = max(1, int(round(label_bbox.width)))
+        label_h_px = max(1, int(round(label_bbox.height)))
+        label_ax.set_xlim(0, label_w_px)
+        label_ax.set_ylim(0, label_h_px)
+
     per_col_px = ax_w_px / max(n_cols, 1)
     # The band must hold the tallest label: multiline labels previously
     # overflowed a fixed 1.8-line reservation into the structure images.
     max_label_lines = max(
         (str(lbl).count("\n") + 1 for lbl in labels), default=1
     ) if labels else 1
-    label_band_px = label_fontsize * fig.dpi / 72 * (0.9 + 1.35 * max_label_lines)
+    label_band_px = (
+        0.0
+        if label_ax is not None
+        else label_fontsize * fig.dpi / 72 * (0.9 + 1.35 * max_label_lines)
+    )
     top_padding_px = 6.0
     bottom_padding_px = 6.0
     row_gap_px = 10.0
@@ -689,16 +709,25 @@ def plot_structure_strip(
         _alpha_blit_rgba(canvas, resized, x0, y0)
 
         if labels and i < len(labels):
-            # Label under *this* cell (not a shared strip baseline). Multi-row
-            # layouts previously wrote every label at y=4, so column mates from
-            # different rows stacked on top of each other.
-            cell_label_y = max(2.0, slot_bottom_y + 3.0)
-            ax.text(
-                x=slot_center_x,
-                y=cell_label_y,
+            text_ax = label_ax if label_ax is not None else ax
+            if label_ax is not None:
+                label_slot_width = label_w_px / max(n_cols, 1)
+                label_row_height = label_h_px / max(n_rows, 1)
+                label_x = (col + 0.5) * label_slot_width
+                label_y = label_h_px - (row + 0.5) * label_row_height
+                label_va = "center"
+            else:
+                # Each row owns its caption baseline so column mates cannot
+                # occupy the same text position.
+                label_x = slot_center_x
+                label_y = max(2.0, slot_bottom_y + 3.0)
+                label_va = "bottom"
+            text_ax.text(
+                x=label_x,
+                y=label_y,
                 s=labels[i],
                 ha="center",
-                va="bottom",
+                va=label_va,
                 fontsize=label_fontsize,
                 color=theme_color,
                 fontweight="bold",
