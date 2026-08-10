@@ -211,6 +211,7 @@ ban-relative-imports = "all"
   "PLW2901",
 ]
 "chemparseplot/plot/geomscan.py" = ["PLC0415"]
+"chemparseplot/plot/landscape.py" = ["PLC0415"] # optional plotting deps stay lazy
 "chemparseplot/units.py" = [
   "F822",    # lazy Q_/ureg via __getattr__
   "EM102",
