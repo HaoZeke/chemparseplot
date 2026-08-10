@@ -7,9 +7,12 @@
 project = "chemparseplot"
 project_copyright = "2023-2026, Rohit Goswami"
 author = "Rohit Goswami"
-# The short X.Y version.
-version = "1.9.11"
-# The full version, including alpha/beta/rc tags.
+try:
+    from importlib.metadata import version as pkg_version
+
+    version = pkg_version("chemparseplot")
+except Exception:
+    version = "1.11.0"
 release = version
 
 # -- General configuration ---------------------------------------------------
@@ -36,15 +39,15 @@ myst_enable_extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    # Link to other rgpkgs packages
     "rgpycrumbs": ("https://rgpycrumbs.rgoswami.me", None),
     "pychum": ("https://pychum.rgoswami.me", None),
+    "eon": ("https://eondocs.org", None),
 }
 templates_path = ["_templates"]
 exclude_patterns = []
 
 # Sitemap Config
-html_baseurl = "https://chemparseplot.rgoswami.me"
+html_baseurl = "https://chemparseplot.rgoswami.me/"
 
 # MathJax Configuration
 mathjax_config = {
@@ -62,11 +65,16 @@ autodoc2_packages = [
 mermaid_version = "11.4.0"
 mermaid_init_js = "mermaid.initialize({startOnLoad:true, theme:'neutral'});"
 
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+copybutton_exclude = ".linenos, .gp, .go"
+
 # -- Options for HTML output -------------------------------------------------
 html_theme = "shibuya"
 html_static_path = ["_static"]
 html_css_files = []
 html_js_files = []
+html_logo = "../../branding/logo/chemparseplot_logo.png"
 
 html_context = {
     "source_type": "github",

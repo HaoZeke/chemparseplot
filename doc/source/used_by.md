@@ -4,8 +4,11 @@ The following projects use `chemparseplot` as a dependency or tool.
 
 ## Libraries
 
-- [pychum](https://github.com/HaoZeke/pychum) — Input file generators for
-  computational chemistry. Companion project to `chemparseplot` for chemical input
+- [rgpycrumbs](https://rgpycrumbs.rgoswami.me) — Core types, surfaces, and
+  CLI dispatcher. `chemparseplot` imports `rgpycrumbs` for GP landscapes and
+  interpolation; rgpycrumbs CLI dispatches back here for plotting.
+- [pychum](https://pychum.rgoswami.me) — Input file generators for
+  computational chemistry. Companion project for ORCA / NWChem input
   preparation.
 
 ## Reproducibility Packages

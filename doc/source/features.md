@@ -52,8 +52,9 @@ matching keys in rgpycrumbs plot TOML when dense force-eval movies make
 - **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
   (camera-ready)
 - **Unit preserving** throughout via `pint`
-- **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+- **Computation** delegated to [`rgpycrumbs`](https://rgpycrumbs.rgoswami.me)
   for surface fitting, interpolation, and structure analysis
+- **Inputs** for the same engines come from [`pychum`](https://pychum.rgoswami.me)
 - **Concurrent** RMSD landscape calculations via `ThreadPoolExecutor`
 
 ## Supported Engines

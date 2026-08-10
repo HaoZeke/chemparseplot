@@ -43,7 +43,9 @@ visualizations with `scientific color maps
 
 Computational tasks (surface fitting, interpolation, structure analysis) are
 delegated to `rgpycrumbs <https://rgpycrumbs.rgoswami.me>`_, which is a
-required dependency for landscape GPs. For more information see the
+required dependency for landscape GPs. Input files for the same engines are
+written by `pychum <https://pychum.rgoswami.me>`_. The header **Ecosystem**
+menu jumps between the three Shibuya sites. For more information see the
 :doc:`features` page.
 
 Suite stack
@@ -69,6 +71,10 @@ How parsers, plot helpers, and the CLI suite relate:
        CLI[eon plt-neb / plt-min]
        TOML["plot.toml --config"]
      end
+     subgraph pch["pychum"]
+       INP[ORCA / NWChem inputs]
+     end
+     INP --> engines
      engines --> PARSE
      PARSE --> PLOT
      PLOT --> SURF
@@ -96,7 +102,43 @@ How parsers, plot helpers, and the CLI suite relate:
    :caption: Guides
 
    tutorials/index
+   tutorials/orca_neb
    contributing
+
+.. toctree::
+   :maxdepth: 2
+   :caption: How-to
+
+   howto/index
+   howto/install
+   howto/parse_orca_neb
+   howto/parse_eon_neb
+   howto/create_neb_figures
+   howto/faq
+   howto/troubleshooting
+   howto/dev_testing
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Explanation
+
+   explanation/index
+   explanation/architecture
+   explanation/lazy_imports
+   explanation/neb_parsing_design
+   explanation/orca_neb_design
+   explanation/citation
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference guides
+
+   reference/index
+   reference/glossary
+   reference/orca_neb_api
+   reference/eon_neb_api
+   reference/plotting_api
+   release
 
 .. toctree::
    :maxdepth: 2
