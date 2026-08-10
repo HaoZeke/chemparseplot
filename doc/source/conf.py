@@ -44,7 +44,7 @@ intersphinx_mapping = {
     "eon": ("https://eondocs.org", None),
 }
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ["contributing.md"]
 
 # Sitemap Config
 html_baseurl = "https://chemparseplot.rgoswami.me/"

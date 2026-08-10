@@ -103,7 +103,7 @@ How parsers, plot helpers, and the CLI suite relate:
 
    tutorials/index
    tutorials/orca_neb
-   dev/contributing
+   tutorials/contribdoc
 
 .. toctree::
    :maxdepth: 2
@@ -147,6 +147,14 @@ How parsers, plot helpers, and the CLI suite relate:
    apidocs/index
    used_by
    worklog/graphTrials
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Development
+
+   dev/index
+   dev/contributing
+   dev/best_practices
 
 License
 -------
