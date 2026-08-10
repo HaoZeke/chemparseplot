@@ -225,7 +225,7 @@ class TestPlotStructureStrip:
         image_bbox = image_ax.get_window_extent(mpl_renderer)
         label_bbox = label_ax.get_window_extent(mpl_renderer)
 
-        assert image_ax.texts == []
+        assert len(image_ax.texts) == 0
         assert [text.get_text() for text in label_ax.texts] == labels
         for text in label_ax.texts:
             text_bbox = text.get_window_extent(mpl_renderer)
