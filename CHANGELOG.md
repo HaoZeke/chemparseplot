@@ -41,6 +41,14 @@
 
 <!-- towncrier release notes start -->
 
+## [1.11.0](https://github.com/HaoZeke/chemparseplot/tree/1.11.0) - 2026-08-10
+
+### Added
+
+- ``plot_structure_strip`` accepts a separate caption axis so multiline gallery
+labels cannot overlap rendered structures.
+
+
 ## [1.10.2](https://github.com/HaoZeke/chemparseplot/tree/1.10.2) - 2026-08-09
 
 ### Fixed
