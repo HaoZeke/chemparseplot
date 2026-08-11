@@ -26,6 +26,11 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
       - name: Install dependencies
         run: uv sync --extra doc
+      - name: Install Emacs
+        run: sudo apt-get update && sudo apt-get install -y -qq emacs-nox
+      - name: Export org to RST
+        run: emacs --batch --load export.el
+        working-directory: docs
       - name: Build docs
         run: uv run sphinx-build doc/source doc/build/html
       - name: Deploy to Cloudflare Pages
