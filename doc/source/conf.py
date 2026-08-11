@@ -72,6 +72,7 @@ copybutton_exclude = ".linenos, .gp, .go"
 # -- Options for HTML output -------------------------------------------------
 html_theme = "shibuya"
 html_static_path = ["_static"]
+html_extra_path = ["llms.txt"]
 html_css_files = []
 html_js_files = []
 html_logo = "../../branding/logo/chemparseplot_logo.png"

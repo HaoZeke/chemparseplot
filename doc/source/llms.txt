@@ -1,0 +1,32 @@
+# chemparseplot
+
+> Pure-Python parsers and unit-aware plotters for computational chemistry outputs (eOn, ORCA, ChemGP, PLUMED).
+
+Docs: https://chemparseplot.rgoswami.me/
+Repo: https://github.com/HaoZeke/chemparseplot
+PyPI / conda-forge: chemparseplot
+Context7: /haozeke/chemparseplot
+
+Import the public `chemparseplot` parse and plot API. Do not import private `_` modules.
+
+## Docs
+
+- [Quickstart](https://chemparseplot.rgoswami.me/quickstart.html)
+- [Install](https://chemparseplot.rgoswami.me/installation.html)
+- [Features](https://chemparseplot.rgoswami.me/features.html)
+- [eOn NEB howto](https://chemparseplot.rgoswami.me/howto/parse_eon_neb.html)
+- [ORCA NEB howto](https://chemparseplot.rgoswami.me/howto/parse_orca_neb.html)
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html)
+
+## Siblings
+
+- [rgpycrumbs](https://rgpycrumbs.rgoswami.me/): CLI, surfaces, viz dispatch
+- [pychum](https://pychum.rgoswami.me/): ORCA / eOn input generation
+
+## Install
+
+```sh
+uv add chemparseplot
+# or
+pip install chemparseplot
+```

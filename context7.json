@@ -1,4 +1,22 @@
 {
+  "$schema": "https://context7.com/schema/context7.json",
   "url": "https://context7.com/haozeke/chemparseplot",
-  "public_key": "pk_AJ7U5Y56IXKa8IgfEfaSl"
+  "public_key": "pk_AJ7U5Y56IXKa8IgfEfaSl",
+  "projectTitle": "chemparseplot",
+  "description": "Pure-Python parsers and unit-aware plotters for computational chemistry outputs: eOn NEB/min/saddle, ORCA, ChemGP, PLUMED. Sibling of rgpycrumbs and pychum.",
+  "excludeFolders": [
+    "tests",
+    "branding",
+    "scripts"
+  ],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md"
+  ],
+  "rules": [
+    "Import from chemparseplot (parse and plot public API). Do not reach into private _modules.",
+    "Parsers return structured objects; plotters are unit-aware. See https://chemparseplot.rgoswami.me/ .",
+    "Sibling packages: rgpycrumbs (CLI / surfaces / viz dispatch) and pychum (input generation).",
+    "Org prose lives under docs/orgmode/; committed Markdown tutorials under doc/source/tutorials/."
+  ]
 }
