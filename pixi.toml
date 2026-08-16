@@ -27,7 +27,7 @@ polars = ">=0.20"
 scipy = ">=1.11"
 matplotlib = ">=3.8"
 xyzrender = ">=0.1.2"
-readcon = ">=0.7.0"
+readcon = ">=0.14.5"
 
 [feature.test.dependencies]
 ase = ">=3.23,<4"
