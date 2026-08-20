@@ -4,7 +4,7 @@
 """Public readcon-backed CON/convel helpers for eOn parsers.
 
 All ``.con`` / ``.convel`` I/O in chemparseplot should go through this module so
-metadata-native energies (``readcon>=0.7``) stay on one code path. ``readcon``
+metadata-native energies (``readcon>=0.14.5``) stay on one code path. ``readcon``
 remains an optional extra (``chemparseplot[neb]``); import errors surface only
 when these helpers are called.
 
@@ -43,7 +43,7 @@ def _readcon():
     except ImportError as exc:  # pragma: no cover - exercised when extra missing
         msg = (
             "readcon is required for CON I/O. Install with: "
-            "pip install 'chemparseplot[neb]' (readcon>=0.7.0)"
+            "pip install 'chemparseplot[neb]' (readcon>=0.14.5)"
         )
         raise ImportError(msg) from exc
     return readcon
@@ -69,7 +69,7 @@ def read_first_atoms(path: str | Path):
 def frame_with_energy(frame: Any, energy: float) -> Any:
     """Return a ``ConFrame`` copy with per-frame total ``energy`` set (eV).
 
-    Uses ``ConFrame.set_energy`` when available (readcon>=0.7) so metadata stays
+    Uses ``ConFrame.set_energy`` when available (readcon>=0.14.5) so metadata stays
     schema-valid; falls back to reconstructing the frame with string metadata.
     """
     readcon = _readcon()
