@@ -47,9 +47,11 @@ fig = plot_fes(
 fig.savefig("fes.png", dpi=170, facecolor="white")
 #+end_src
 
-=method="grad_imq"= matches the eOn NEB plot TOML. =project_path= stays
-false inside =plot_fes=: =(s1, s2)= is already the sketch-map.
-Slopes are =np.gradient= on the regular FES grid.
+Default =on="density"= fits unclipped log-density, not the clipped
+=F= histogram (that plateau is a bad GP target). Pass
+=cloud=(s1, s2, energies)= to fit minima or frame energies on the
+same map. =method="grad_imq"= matches the eOn NEB plot TOML.
+=project_path= stays false.
 
 * Length scale
 
