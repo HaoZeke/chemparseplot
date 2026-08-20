@@ -14,13 +14,13 @@ python = "==3.12"
 
 [pypi-dependencies]
 chemparseplot = { path = ".", editable = true }
-rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", rev = "b1fdb6ac2b6c20ee9bac80b6fee1d919d4d0b895" }
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", rev = "ff5faef978cee1e0e682ca0295053581deb510c3" }
 
 # --- Test features ---
 
 [feature.test.pypi-dependencies]
 chemparseplot = { path = ".", editable = true }
-rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", rev = "b1fdb6ac2b6c20ee9bac80b6fee1d919d4d0b895" }
+rgpycrumbs = { git = "https://github.com/HaoZeke/rgpycrumbs", rev = "ff5faef978cee1e0e682ca0295053581deb510c3" }
 pytest = ">=7.4"
 pytest-cov = ">=4.1"
 polars = ">=0.20"
