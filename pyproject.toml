@@ -45,9 +45,9 @@ doc = [
   "sphinxcontrib-apidoc>=0.4",
 ]
 plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
-# readcon>=0.14.5 required for eOn 3.2+ con_spec_version=3 output; the
+# readcon>=0.14.7 required for eOn 3.2+ con_spec_version=3 output; the
 # 0.13 parser rejects those files with UnsupportedSpecVersion.
-neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.14.5"]
+neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.14.7"]
 xyzrender = ["xyzrender>=0.1.2"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
 # internal backend for parse.orca.neb — consumers use parse_orca_neb.
@@ -65,7 +65,7 @@ test = [
   "polars>=0.20",
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
-  "readcon>=0.14.5",
+  "readcon>=0.14.7",
   "rgpycrumbs",
   "scipy>=1.11",
   "xyzrender>=0.1.3",
