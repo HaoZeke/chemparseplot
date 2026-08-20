@@ -107,7 +107,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/2c/c37ab38cd92b862ebddcc8748ae47eeb16a0bc28ab2e9b79a152f1a47e45/readcon-0.14.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -203,7 +203,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2025.8.3-hbd8a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
@@ -315,7 +315,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/2c/c37ab38cd92b862ebddcc8748ae47eeb16a0bc28ab2e9b79a152f1a47e45/readcon-0.14.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -477,7 +477,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/2c/c37ab38cd92b862ebddcc8748ae47eeb16a0bc28ab2e9b79a152f1a47e45/readcon-0.14.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -636,7 +636,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/08/2c/c37ab38cd92b862ebddcc8748ae47eeb16a0bc28ab2e9b79a152f1a47e45/readcon-0.14.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -2208,9 +2208,9 @@ packages:
   - xyzrender>=0.1.3 ; extra == 'test'
   - xyzrender>=0.1.2 ; extra == 'xyzrender'
   requires_python: '>=3.11'
-- pypi: git+https://github.com/HaoZeke/rgpycrumbs#ff5faef978cee1e0e682ca0295053581deb510c3
+- pypi: git+https://github.com/HaoZeke/rgpycrumbs#c12373f56330e26931ffb1261c1cffec79ba5654
   name: rgpycrumbs
-  version: 1.4.2.dev1+gff5faef9
+  version: 1.4.2.dev1+gc12373f5
   requires_dist:
   - click>=8.1
   - numpy>=1.24
