@@ -11,6 +11,7 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv build
+      - run: uv run python scripts/check_release_metadata.py dist/*.whl
       - uses: actions/upload-artifact@v4
         with:
           name: dist
