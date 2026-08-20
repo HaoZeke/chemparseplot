@@ -1,0 +1,5 @@
+name = "LandfoldFes"
+defaultTargets = ["LandfoldFes"]
+
+[[lean_lib]]
+name = "LandfoldFes"

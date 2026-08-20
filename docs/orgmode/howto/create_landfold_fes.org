@@ -53,6 +53,16 @@ Default =on="density"= fits unclipped log-density, not the clipped
 same map. =method="grad_imq"= matches the eOn NEB plot TOML.
 =project_path= stays false.
 
+* Why unclipped log-density
+
+A GP posterior mean is linear in the observations. Clipping =F= to
+=fmax= before the fit sends every tail cell to the same value, so the
+interpolant cannot recover occupancy contrast there (Lean:
+=clip_not_injective_on_tail=, =clip_erases_tail_contrast=,
+=clipped_tail_lerp_is_ceiling= in =proofs/lean/LandfoldFes/Clip.lean=;
+=lake build= in that directory). =fmax= as a membership cut
+(=z < fmax=) does not identify those values.
+
 * Length scale
 
 NEB RMSD planes span a few angstrom. A sketch-map plane spans tens of
