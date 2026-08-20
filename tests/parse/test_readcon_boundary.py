@@ -75,6 +75,6 @@ def test_eon_modules_do_not_import_readcon_at_module_level_except_typed_files():
 @pytest.mark.pure
 def test_con_io_is_single_readcon_entry_point():
     text = (EON_PARSE / "con_io.py").read_text()
-    assert "readcon>=0.14.5" in text
+    assert "readcon>=0.14.7" in text
     assert "def read_con_frames" in text
     assert "def write_con_frames" in text

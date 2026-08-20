@@ -45,7 +45,7 @@ doc = [
   "sphinxcontrib-apidoc>=0.4",
 ]
 plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
-# readcon>=0.14.5 required for eOn 3.2+ con_spec_version=3 output; the
+# readcon>=0.14.7 required for eOn 3.2+ con_spec_version=3 output; the
 # 0.13 parser rejects those files with UnsupportedSpecVersion.
 neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.14.7"]
 xyzrender = ["xyzrender>=0.1.2"]
