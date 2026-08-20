@@ -74,7 +74,31 @@ Plots a 1D eigenvalue profile with cubic spline interpolation.
 - Adds a horizontal dashed line at eigenvalue = 0
 - Uses square markers (="s"=)
 
-** Landfold FES
+** Energy representation (MethodsX)
+
+*** =chemparseplot.plot.representation.plot_energy(rep, ...)=
+
+Potential energy on a metric 2D plane. =rep= is
+=chemparseplot.energy.v1= / =EnergyRepresentation=: =(x, y, energy)=
+plus optional =f_para= (synthetic path-tangent gradients, Savitzky-Golay
+on the coordinates) or explicit =(grad_x, grad_y)=. Occupancy FES
+results are rejected.
+
+=frame="rmsd"= rotates =(r, p)= to =(s, d)= (=project_path= true).
+=frame="landfold"= or ="progress"= keeps the given plane. Default
+kernel =grad_imq=. Colorbar is =E=. Variance contours come from
+=plot_landscape_surface=.
+
+Build a path representation with
+=chemparseplot.parse.representation.from_path_forces= or load
+=# x y energy [f_para] [step]= via =load_energy_table=.
+
+Dispatch::
+
+  rgpycrumbs landfold plot-energy --input cloud.energy.csv \
+      --output energy.png --frame rmsd --method grad_imq
+
+** Landfold occupancy FES
 
 *** =chemparseplot.plot.landfold.plot_fes(fes_result, ...)=
 

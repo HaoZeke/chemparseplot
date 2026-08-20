@@ -34,6 +34,7 @@ def __getattr__(name):
         "disconnectivity",
         "landfold",
         "representer",
+        "representation",
     }
     if name in lazy_submodules:
         return importlib.import_module(f".{name}", __name__)

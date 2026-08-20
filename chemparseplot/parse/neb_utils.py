@@ -81,7 +81,13 @@ def calculate_landscape_coords(
 
 
 def compute_synthetic_gradients(
-    rmsd_r: np.ndarray, rmsd_p: np.ndarray, f_para: np.ndarray
+    rmsd_r: np.ndarray,
+    rmsd_p: np.ndarray,
+    f_para: np.ndarray,
+    *,
+    smooth: bool = True,
+    window_length: int = 5,
+    polyorder: int = 2,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Project parallel force onto the 2D RMSD coordinate system.
 
@@ -90,14 +96,29 @@ def compute_synthetic_gradients(
 
     Computes synthetic gradients by projecting the NEB parallel force
     component along the tangent direction in (RMSD-R, RMSD-P) space.
+    When ``smooth`` is true and the path is long enough, the coordinates
+    are Savitzky-Golay filtered (window 5, polynomial 2) before the
+    tangent, matching the MethodsX construction.
 
     :param rmsd_r: RMSD from reactant for each image.
     :param rmsd_p: RMSD from product for each image.
     :param f_para: Force component parallel to the path for each image.
+    :param smooth: Apply Savitzky-Golay to ``(r, p)`` before the tangent.
+    :param window_length: Savitzky-Golay window (odd).
+    :param polyorder: Savitzky-Golay polynomial order.
     :return: (grad_r, grad_p) arrays.
     """
-    dr = np.gradient(rmsd_r)
-    dp = np.gradient(rmsd_p)
+    rmsd_r = np.asarray(rmsd_r, dtype=float).reshape(-1)
+    rmsd_p = np.asarray(rmsd_p, dtype=float).reshape(-1)
+    f_para = np.asarray(f_para, dtype=float).reshape(-1)
+    r_use, p_use = rmsd_r, rmsd_p
+    if smooth and rmsd_r.size >= window_length and window_length > polyorder:
+        from scipy.signal import savgol_filter
+
+        r_use = savgol_filter(rmsd_r, window_length, polyorder)
+        p_use = savgol_filter(rmsd_p, window_length, polyorder)
+    dr = np.gradient(r_use)
+    dp = np.gradient(p_use)
     norm_ds = np.sqrt(dr**2 + dp**2)
     norm_ds[norm_ds == 0] = 1.0
     tr = dr / norm_ds

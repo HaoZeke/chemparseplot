@@ -55,6 +55,26 @@ class TestComputeSyntheticGradients:
         assert not np.any(np.isnan(grad_r))
         assert not np.any(np.isnan(grad_p))
 
+    def test_savgol_tangent_on_noisy_path(self):
+        """MethodsX: SavGol(window=5, poly=2) on (r,p) before the tangent."""
+        t = np.linspace(0.0, 1.0, 21)
+        rng = np.random.default_rng(0)
+        rmsd_r = t + 0.08 * rng.standard_normal(t.size)
+        rmsd_p = 1.0 - t + 0.08 * rng.standard_normal(t.size)
+        f_para = np.ones_like(t)
+        raw_r, raw_p = compute_synthetic_gradients(
+            rmsd_r, rmsd_p, f_para, smooth=False
+        )
+        sm_r, sm_p = compute_synthetic_gradients(
+            rmsd_r, rmsd_p, f_para, smooth=True
+        )
+        # Unit tangent: |grad| = |F| = 1 after normalization.
+        np.testing.assert_allclose(np.hypot(sm_r, sm_p), 1.0, atol=1e-12)
+        # Smoothing reduces high-frequency tangent jitter.
+        jitter_raw = np.std(np.diff(raw_r))
+        jitter_sm = np.std(np.diff(sm_r))
+        assert jitter_sm < jitter_raw
+
 
 class TestCreateLandscapeDataframe:
     """Tests for the landscape DataFrame factory."""

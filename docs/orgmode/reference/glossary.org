@@ -79,6 +79,12 @@ See: [[https://jax.readthedocs.io/][JAX Documentation]]
 *** Landscape
 2D plot of energy surface in RMSD coordinates (RMSD from reactant vs RMSD from product).
 
+*** Energy representation
+MethodsX 2D landscape: a metric plane (RMSD =(r, p)=, rotated =(s, d)=,
+or landfold =(s1, s2)=) plus potential energy and optional synthetic
+gradients from =F_parallel=. Fitted by =plot.representation.plot_energy=.
+Not occupancy invert.
+
 *** landfold.fes.v1
 Versioned landfold free-energy result: bin centres =x= / =y=, arrays
 =free_energy= and =density= shaped =(ny, nx)=, plus =kt=.

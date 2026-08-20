@@ -1,0 +1,56 @@
+#+TITLE: How-to: Plot energy on the representation plane
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You have structures with energies (and, for a path, parallel forces)
+and want the MethodsX landscape: a metric 2D plane plus a
+gradient-enhanced IMQ-GP of the energy, with posterior variance as
+reliability. Occupancy invert is a histogram diagnostic, not this
+field.
+
+* Representation
+
+The plane is either RMSD to the endpoints =(r, p)=, rotated to
+reaction progress and orthogonal deviation =(s, d)=, or a landfold
+=(s1, s2)= map that is already 2D. The field is potential energy.
+Synthetic gradients come from =F_parallel= along the Savitzky-Golay
+path tangent.
+
+#+begin_src python
+from chemparseplot.parse.representation import from_path_forces, load_energy_table
+from chemparseplot.plot.representation import plot_energy
+
+# NEB / TSE path: (r, p, E, F_parallel) -> E(s, d)
+rep = from_path_forces(rmsd_r, rmsd_p, energies, f_para, frame="rmsd")
+fig = plot_energy(rep, method="grad_imq")
+fig.savefig("energy_sd.png", dpi=170, facecolor="white")
+
+# Landfold plane that already carries energy
+rep = load_energy_table("cloud.energy.csv", frame="landfold")
+fig = plot_energy(rep, method="grad_imq")
+#+end_src
+
+The table is =chemparseplot.energy.v1=::
+
+  # x y energy [f_para] [step]
+  0.0 2.1 -173.9 0.02 0
+
+Dispatch::
+
+  rgpycrumbs landfold plot-energy --input cloud.energy.csv \
+      --output energy.png --frame rmsd --method grad_imq
+
+* What this is not
+
+=plot_fes= / =rgpycrumbs landfold plot-fes= fit occupancy
+(=-kT ln(rho/rhomax)=). That is a sampling diagnostic. It is not the
+energy representation.
+
+* See also
+
+- [[file:create_neb_figures.org][Create publication NEB figures]]
+- [[file:create_landfold_fes.org][Draw a landfold occupancy FES]]
+- [[file:../reference/plotting_api.org][Plotting API]] (=plot_energy=, =plot_landscape_surface=)

@@ -5,9 +5,9 @@
 
 * Problem
 
-You have a landfold embedding or out-of-sample projection and want the
-same publication landscape used for NEB (=plot_landscape_surface= /
-=rgpycrumbs.surfaces=), not a raw histogram heatmap.
+You have a landfold embedding or out-of-sample projection and want an
+occupancy free-energy diagnostic on that plane. For potential energy
+on the same plane (MethodsX), use [[file:create_energy_representation.org][plot energy on the representation plane]].
 
 * Split of work
 

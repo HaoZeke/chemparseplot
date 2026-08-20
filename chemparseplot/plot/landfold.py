@@ -24,6 +24,7 @@ import numpy as np
 from chemparseplot.parse.landfold import load_fes_result
 from chemparseplot.parse.types import LandfoldFesResult
 from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+from chemparseplot.plot.representation import plot_energy
 from chemparseplot.plot.representer import (
     coalesce_sites,
     farthest_indices,
@@ -31,7 +32,7 @@ from chemparseplot.plot.representer import (
 )
 from chemparseplot.plot.theme import RUHI_THEME, get_theme, setup_publication_theme
 
-__all__ = ["cloud_observations", "fes_observations", "plot_fes"]
+__all__ = ["cloud_observations", "fes_observations", "plot_energy", "plot_fes"]
 
 _ON = ("density", "free-energy")
 

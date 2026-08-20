@@ -157,6 +157,8 @@ class PlumedMinimaResult(DataclassMapping):
 
 
 LANDFOLD_FES_SCHEMA = "landfold.fes.v1"
+ENERGY_SCHEMA = "chemparseplot.energy.v1"
+_ENERGY_FRAMES = ("plane", "rmsd", "progress", "landfold")
 
 
 @dataclass(frozen=True, slots=True)
@@ -220,6 +222,88 @@ class LandfoldFesResult(DataclassMapping):
             free_energy=fes,
             density=rho,
             kt=kt,
+            schema=schema,
+            metadata=dict(metadata),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class EnergyRepresentation(DataclassMapping):
+    """Metric 2D plane plus a physical energy field.
+
+    The plane is RMSD ``(r, p)``, the rotated ``(s, d)`` frame, or a
+    landfold ``(s1, s2)`` map. ``energy`` is potential energy, not
+    occupancy invert. Optional ``f_para`` builds synthetic gradients
+    along the path tangent (MethodsX).
+    """
+
+    x: np.ndarray
+    y: np.ndarray
+    energy: np.ndarray
+    grad_x: np.ndarray | None = None
+    grad_y: np.ndarray | None = None
+    f_para: np.ndarray | None = None
+    step: np.ndarray | None = None
+    frame: str = "plane"
+    xlabel: str = r"$s_1$"
+    ylabel: str = r"$s_2$"
+    schema: str = ENERGY_SCHEMA
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> EnergyRepresentation:
+        """Coerce a ``chemparseplot.energy.v1`` mapping."""
+        schema = str(data.get("schema", ENERGY_SCHEMA))
+        if schema != ENERGY_SCHEMA:
+            msg = f"expected schema {ENERGY_SCHEMA}, got {schema!r}"
+            raise ValueError(msg)
+        if "energy" not in data:
+            msg = "energy representation needs energy"
+            raise ValueError(msg)
+        x = np.asarray(data["x"], dtype=float).reshape(-1)
+        y = np.asarray(data["y"], dtype=float).reshape(-1)
+        energy = np.asarray(data["energy"], dtype=float).reshape(-1)
+        if x.shape != y.shape or x.shape != energy.shape:
+            msg = "energy representation x, y, and energy must have the same length"
+            raise ValueError(msg)
+        frame = str(data.get("frame", "plane"))
+        if frame not in _ENERGY_FRAMES:
+            msg = f"frame must be one of {_ENERGY_FRAMES}, got {frame!r}"
+            raise ValueError(msg)
+
+        def _opt(key: str) -> np.ndarray | None:
+            values = data.get(key)
+            if values is None:
+                return None
+            arr = np.asarray(values, dtype=float).reshape(-1)
+            if arr.shape != x.shape:
+                msg = f"{key} must match x/y/energy"
+                raise ValueError(msg)
+            return arr
+
+        metadata = data.get("metadata") or {}
+        if not isinstance(metadata, dict):
+            msg = "energy representation metadata must be a dict"
+            raise TypeError(msg)
+        xlabel = str(data.get("xlabel", r"$s_1$"))
+        ylabel = str(data.get("ylabel", r"$s_2$"))
+        if frame == "rmsd":
+            xlabel = str(data.get("xlabel", r"RMSD-R"))
+            ylabel = str(data.get("ylabel", r"RMSD-P"))
+        elif frame == "progress":
+            xlabel = str(data.get("xlabel", r"$s$"))
+            ylabel = str(data.get("ylabel", r"$d$"))
+        return cls(
+            x=x,
+            y=y,
+            energy=energy,
+            grad_x=_opt("grad_x"),
+            grad_y=_opt("grad_y"),
+            f_para=_opt("f_para"),
+            step=_opt("step"),
+            frame=frame,
+            xlabel=xlabel,
+            ylabel=ylabel,
             schema=schema,
             metadata=dict(metadata),
         )
