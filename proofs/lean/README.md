@@ -27,4 +27,7 @@ Declarations match the Lea-marked theorem blocks in
 | `representer_interpolates`, `representer_interpolates_one` | Eq. (interp) |
 | `representer_linear`, `representer_smul` | Eq. (linear) |
 | `representer_unique_one` | Eq. (unique-one) |
-| `gram_adjugate` | Eq. (gram-adj) |
+| `gram_adjugate`, `adjugate_gram` | Eq. (gram-adj) |
+| `obs_linear` | Eq. (obs-linear) |
+| `gram_unique` | Eq. (unique-two) |
+| `kernel2_det_pos` | Eq. (spd-two) |

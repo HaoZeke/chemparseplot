@@ -24,6 +24,11 @@ import numpy as np
 from chemparseplot.parse.landfold import load_fes_result
 from chemparseplot.parse.types import LandfoldFesResult
 from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+from chemparseplot.plot.representer import (
+    coalesce_sites,
+    farthest_indices,
+    training_residual,
+)
 from chemparseplot.plot.theme import RUHI_THEME, get_theme, setup_publication_theme
 
 __all__ = ["cloud_observations", "fes_observations", "plot_fes"]
@@ -184,12 +189,35 @@ def plot_fes(
     else:
         msg = "plot_fes needs fes_result or cloud"
         raise ValueError(msg)
-    fit = surface_fit or SurfaceFitConfig(auto_thin=True, max_surface_points=300)
-    # NEB RMSD planes are a few angstrom; sketch-map s spans tens of units.
-    # Default IMQ length 0.5 then predicts NaNs off the thinned cloud.
+    s1, s2, g1, g2, z, _ = coalesce_sites(s1, s2, z, g1, g2)
+    if s1.size < 2:
+        msg = "representer needs at least two distinct sites"
+        raise ValueError(msg)
+    fit = (
+        surface_fit
+        if isinstance(surface_fit, SurfaceFitConfig)
+        else SurfaceFitConfig.from_mapping(surface_fit)
+        if surface_fit is not None
+        else SurfaceFitConfig(auto_thin=False, max_surface_points=300)
+    )
+    max_pts = fit.max_surface_points
+    if s1.size > max_pts:
+        idx = farthest_indices(np.column_stack([s1, s2]), max_pts)
+        s1, s2, z = s1[idx], s2[idx], z[idx]
+        if g1 is not None and g2 is not None:
+            g1, g2 = g1[idx], g2[idx]
     if rbf_smooth is None:
         span = float(max(np.ptp(s1), np.ptp(s2)))
         rbf_smooth = max(0.1 * span, 1e-3)
+    xy = np.column_stack([s1, s2])
+    resid = training_residual(xy, z, rbf_smooth)
+    scale = max(float(np.ptp(z)), 1.0)
+    if float(np.max(np.abs(resid))) > 1e-4 * scale:
+        msg = (
+            "observation table is not a section of the IMQ Gram "
+            f"(max |Kα − z| = {float(np.max(np.abs(resid)))})"
+        )
+        raise ValueError(msg)
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi, facecolor="white")
     plot_landscape_surface(
         ax,
@@ -203,7 +231,7 @@ def plot_fes(
         project_path=False,
         cmap=RUHI_THEME.cmap_landscape,
         show_pts=show_pts,
-        surface_fit=fit,
+        surface_fit=SurfaceFitConfig(auto_thin=False, max_surface_points=max_pts),
         n_inducing=n_inducing,
         variance_threshold=0.5,
     )

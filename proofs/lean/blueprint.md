@@ -19,6 +19,10 @@ statement and a Lean 4 declaration that `lake build` accepts.
 - [x] `representer_smul`
 - [x] `representer_unique_one`
 - [x] `gram_adjugate` (Eq. gram-adj)
+- [x] `adjugate_gram`
+- [x] `obs_linear` (Eq. obs-linear)
+- [x] `gram_unique` (Eq. unique-two)
+- [x] `kernel2_det_pos` (Eq. spd-two)
 
 Org statements live in `../org/supplement.org`. Validate with
 `python3 ../scripts/validate_lea.py`.

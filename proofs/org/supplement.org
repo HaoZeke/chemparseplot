@@ -149,4 +149,28 @@ The two-site Gram matrix applied to the Cramer adjugate recovers
 $(\det K)y$. The noise-free GP mean at the training sites is that
 table whenever $\det K\neq 0$.
 \end{theorem}
+
+\begin{theorem}[Adjugate from the left]\label{thm:adj-gram}
+% lea: formalize label=adjugate_gram uses={gram_adjugate}
+% lea: context={Expand $\mathrm{adj}(K)\,K$.}
+$\mathrm{adj}(K)\,K\alpha=(\det K)\alpha$.
+\end{theorem}
+
+\begin{theorem}[Observation linearity]\label{thm:obs-linear}
+% lea: formalize label=obs_linear
+% lea: context={adjK2 is linear in y.}
+Cramer coefficients of $y+z$ are the sum of the coefficients.
+\end{theorem}
+
+\begin{theorem}[Two-site uniqueness]\label{thm:unique-two}
+% lea: formalize label=gram_unique uses={adjugate_gram}
+% lea: context={$K(\alpha-\beta)=0$, apply adj, $\det\neq 0$.}
+A 2-site kernel with nonzero determinant has at most one coefficient pair.
+\end{theorem}
+
+\begin{theorem}[Two-site positive determinant]\label{thm:spd-two}
+% lea: formalize label=kernel2_det_pos
+% lea: context={$b^2 < ac$ rearranges to $\det K>0$.}
+If $a>0$, $c>0$ and $b^2<ac$ then $\det K>0$.
+\end{theorem}
 #+END_EXPORT

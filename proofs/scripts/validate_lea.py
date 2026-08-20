@@ -33,7 +33,12 @@ def main() -> int:
     extra = []
     for m in re.finditer(r"^theorem ([A-Za-z0-9_]+)\b", lean_src, re.M):
         name = m.group(1)
-        if name not in labels and name not in {"lerp_const"}:
+        if name not in labels and name not in {
+            "lerp_const",
+            "applyK2_add",
+            "adjK2_add",
+            "applyK2_sub",
+        }:
             extra.append(name)
     if missing:
         print("lea labels missing Lean theorems:", *missing, sep="\n  ", file=sys.stderr)

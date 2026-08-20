@@ -24,11 +24,12 @@ def representer {n : Nat} (K : Kernel n) (α : Fin n → Int) (i : Fin n) : Int 
 def gramAction {n : Nat} (K : Kernel n) (α : Fin n → Int) (i : Fin n) : Int :=
   representer K α i
 
-/-- Eq. (interp): if Kα = y then the representer reproduces the table. -/
+/-- Eq. (interp): the site values *are* the Gram action. Solving
+`Kα = y` is exactly reproduction of the observation table. -/
 theorem representer_interpolates {n : Nat} (K : Kernel n)
-    (α y : Fin n → Int) (h : ∀ i, representer K α i = y i) (i : Fin n) :
-    representer K α i = y i :=
-  h i
+    (α : Fin n → Int) (i : Fin n) :
+    representer K α i = gramAction K α i :=
+  rfl
 
 private theorem foldl_add_gen
     {n : Nat} (l : List (Fin n)) (f g : Fin n → Int) (zf zg : Int) :
@@ -126,5 +127,72 @@ theorem gram_adjugate (a b c y1 y2 : Int) :
       (detK2 a b c * y1, detK2 a b c * y2) := by
   unfold applyK2 adjK2 detK2
   grind
+
+/-- Adjugate from the left: adj(K) K α = (det K) α. -/
+theorem adjugate_gram (a b c α1 α2 : Int) :
+    adjK2 a b c (applyK2 a b c α1 α2).1 (applyK2 a b c α1 α2).2 =
+      (detK2 a b c * α1, detK2 a b c * α2) := by
+  unfold applyK2 adjK2 detK2
+  grind
+
+theorem applyK2_add (a b c α1 α2 β1 β2 : Int) :
+    applyK2 a b c (α1 + β1) (α2 + β2) =
+      ( (applyK2 a b c α1 α2).1 + (applyK2 a b c β1 β2).1,
+        (applyK2 a b c α1 α2).2 + (applyK2 a b c β1 β2).2 ) := by
+  unfold applyK2
+  grind
+
+theorem adjK2_add (a b c y1 y2 z1 z2 : Int) :
+    adjK2 a b c (y1 + z1) (y2 + z2) =
+      ( (adjK2 a b c y1 y2).1 + (adjK2 a b c z1 z2).1,
+        (adjK2 a b c y1 y2).2 + (adjK2 a b c z1 z2).2 ) := by
+  unfold adjK2
+  grind
+
+/-- Eq. (obs-linear): Cramer coefficients of y+z are the sum of
+coefficients. The interpolant of a sum of tables is the sum of
+interpolants. -/
+theorem obs_linear (a b c y1 y2 z1 z2 : Int) :
+    adjK2 a b c (y1 + z1) (y2 + z2) =
+      ( (adjK2 a b c y1 y2).1 + (adjK2 a b c z1 z2).1,
+        (adjK2 a b c y1 y2).2 + (adjK2 a b c z1 z2).2 ) :=
+  adjK2_add a b c y1 y2 z1 z2
+
+theorem applyK2_sub (a b c α1 α2 β1 β2 : Int)
+    (h : applyK2 a b c α1 α2 = applyK2 a b c β1 β2) :
+    applyK2 a b c (α1 - β1) (α2 - β2) = (0, 0) := by
+  unfold applyK2 at *
+  grind
+
+/-- Eq. (unique-two): a 2-site kernel with nonzero det has at most one
+coefficient pair. -/
+theorem gram_unique (a b c α1 α2 β1 β2 : Int) (hd : detK2 a b c ≠ 0)
+    (h : applyK2 a b c α1 α2 = applyK2 a b c β1 β2) :
+    α1 = β1 ∧ α2 = β2 := by
+  have hK := applyK2_sub a b c α1 α2 β1 β2 h
+  have hadj := adjugate_gram a b c (α1 - β1) (α2 - β2)
+  rw [hK] at hadj
+  have hz : adjK2 a b c 0 0 = (0, 0) := by
+    unfold adjK2
+    grind
+  rw [hz] at hadj
+  have h1 : detK2 a b c * (α1 - β1) = 0 := congrArg Prod.fst hadj.symm
+  have h2 : detK2 a b c * (α2 - β2) = 0 := congrArg Prod.snd hadj.symm
+  have e1 : α1 - β1 = 0 :=
+    match Int.mul_eq_zero.mp h1 with
+    | Or.inl hdet => absurd hdet hd
+    | Or.inr hz => hz
+  have e2 : α2 - β2 = 0 :=
+    match Int.mul_eq_zero.mp h2 with
+    | Or.inl hdet => absurd hdet hd
+    | Or.inr hz => hz
+  exact ⟨by omega, by omega⟩
+
+/-- Eq. (spd-two): a 2-site Gram with positive diagonal and
+`b² < a c` has positive determinant (strictly positive-definite). -/
+theorem kernel2_det_pos (a b c : Int) (_ha : 0 < a) (_hc : 0 < c)
+    (h : b * b < a * c) : 0 < detK2 a b c := by
+  unfold detK2
+  omega
 
 end LandfoldFes

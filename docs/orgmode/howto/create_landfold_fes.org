@@ -66,10 +66,10 @@ names match the labels (d-SEAMS 2.0 / VIDA-NYU Lea contract).
 =python3 proofs/scripts/validate_lea.py=.
 
 The GP itself is the finite representer $\mu=K\alpha$ with $K\alpha=y$
-(Eqs. representer, interp, linear, gram-adj). That is the validity of
-the representation: the field at the observation sites is a section of
-the Gram matrix, linear in the table, unique on one site when
-$K_{00}\neq 0$, and reproduced on two sites by the Cramer adjugate.
+(Eqs. representer, interp, linear, gram-adj, unique-two, spd-two).
+=plot_fes= coalesces coincident sites, takes a Gonzalez subset, and
+checks that the IMQ Gram section reproduces that table
+(=training_residual=) before calling =plot_landscape_surface=.
 
 * Length scale
 
