@@ -74,6 +74,32 @@ Plots a 1D eigenvalue profile with cubic spline interpolation.
 - Adds a horizontal dashed line at eigenvalue = 0
 - Uses square markers (="s"=)
 
+** Landfold FES
+
+*** =chemparseplot.plot.landfold.plot_fes(fes_result, ...)=
+
+Draw a landfold free-energy surface. Landfold owns
+=F = -kT ln(rho/rhomax)=; this function only consumes
+=landfold.fes.v1= (from =fes_xy_result=) or the CSV from
+=landfold fes --csv= (via =chemparseplot.parse.landfold.load_fes_csv=).
+
+Signature::
+
+  plot_fes(
+      fes_result,
+      xlabel=r"$s_1$", ylabel=r"$s_2$",
+      clabel=None, fmax=None, points=None,
+      figsize=(5.6, 4.8), dpi=170,
+  )
+
+=fmax= clips finite =F= to =[0, fmax]= (JCTC 2013 panel uses 2).
+=points= is an optional ={label: (xs, ys)}= overlay. The Ruhi
+filled-contour style matches =plot_surface_contour=.
+
+Dispatch from the suite CLI::
+
+  rgpycrumbs landfold plot-fes --input fes.csv --output fes.png --kt 0.168 --fmax 2
+
 ** 2D Landscape Functions
 
 *** =plot_landscape_surface(...)=

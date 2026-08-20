@@ -154,3 +154,72 @@ class PlumedMinimaResult(DataclassMapping):
 
     minima: Any
     fes_result: PlumedFesResult
+
+
+LANDFOLD_FES_SCHEMA = "landfold.fes.v1"
+
+
+@dataclass(frozen=True, slots=True)
+class LandfoldFesResult(DataclassMapping):
+    """Structured landfold free-energy-surface result.
+
+    Matches the ``landfold.fes.v1`` Python binding: ``x`` and ``y`` are
+    bin centres, ``free_energy`` and ``density`` are ``(ny, nx)``.
+    """
+
+    x: np.ndarray
+    y: np.ndarray
+    free_energy: np.ndarray
+    density: np.ndarray
+    kt: float = 1.0
+    schema: str = LANDFOLD_FES_SCHEMA
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, Any]) -> LandfoldFesResult:
+        """Coerce a ``landfold.fes.v1`` dict (or a FES CSV load) into a typed result."""
+        schema = str(data.get("schema", LANDFOLD_FES_SCHEMA))
+        if schema != LANDFOLD_FES_SCHEMA:
+            msg = f"expected schema {LANDFOLD_FES_SCHEMA}, got {schema!r}"
+            raise ValueError(msg)
+        energy = data.get("free_energy", data.get("fes"))
+        if energy is None:
+            msg = "landfold FES mapping needs free_energy (or fes)"
+            raise ValueError(msg)
+        x = np.asarray(data["x"], dtype=float)
+        y = np.asarray(data["y"], dtype=float)
+        fes = np.asarray(energy, dtype=float)
+        if x.ndim != 1 or y.ndim != 1:
+            msg = "landfold FES x and y must be 1-D bin centres"
+            raise ValueError(msg)
+        if fes.shape != (y.size, x.size):
+            msg = (
+                f"free_energy shape {fes.shape} does not match "
+                f"(len(y), len(x)) = {(y.size, x.size)}"
+            )
+            raise ValueError(msg)
+        density = data.get("density")
+        if density is None:
+            rho = np.zeros_like(fes)
+        else:
+            rho = np.asarray(density, dtype=float)
+            if rho.shape != fes.shape:
+                msg = f"density shape {rho.shape} does not match {fes.shape}"
+                raise ValueError(msg)
+        kt = float(data.get("kt", 1.0))
+        if not np.isfinite(kt) or kt <= 0.0:
+            msg = "landfold FES kt must be finite and > 0"
+            raise ValueError(msg)
+        metadata = data.get("metadata") or {}
+        if not isinstance(metadata, dict):
+            msg = "landfold FES metadata must be a dict"
+            raise TypeError(msg)
+        return cls(
+            x=x,
+            y=y,
+            free_energy=fes,
+            density=rho,
+            kt=kt,
+            schema=schema,
+            metadata=dict(metadata),
+        )
