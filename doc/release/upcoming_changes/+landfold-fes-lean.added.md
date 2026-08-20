@@ -1,3 +1,4 @@
-Sorry-free Lean 4 proofs (no Mathlib, ``grind``) that clipping ``F``
-before a linear interpolant collapses tail occupancy; ``fmax`` is a
-membership cut. ``proofs/lean``, ``lake build``.
+Lea-tagged observation identities (d-SEAMS 2.0 contract): clip is not
+injective on the tail; a discrete interpolant of the plateau is the
+ceiling; ``fmax`` is a membership cut. ``proofs/lean`` +
+``proofs/org/supplement.org``, ``lake build``.

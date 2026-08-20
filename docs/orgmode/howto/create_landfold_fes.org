@@ -56,12 +56,14 @@ same map. =method="grad_imq"= matches the eOn NEB plot TOML.
 * Why unclipped log-density
 
 A GP posterior mean is linear in the observations. Clipping =F= to
-=fmax= before the fit sends every tail cell to the same value, so the
-interpolant cannot recover occupancy contrast there (Lean:
-=clip_not_injective_on_tail=, =clip_erases_tail_contrast=,
-=clipped_tail_lerp_is_ceiling= in =proofs/lean/LandfoldFes/Clip.lean=;
-=lake build= in that directory). =fmax= as a membership cut
-(=z < fmax=) does not identify those values.
+=fmax= before the fit sends every tail cell to the same value
+(Eqs. clip, tail, lerp-ceil). The membership cut (Eq. cut) does not
+identify those values.
+
+The statements are Lea-tagged in =proofs/org/supplement.org=; Lean
+names match the labels (d-SEAMS 2.0 / VIDA-NYU Lea contract).
+=lake build= in =proofs/lean= and
+=python3 proofs/scripts/validate_lea.py=.
 
 * Length scale
 

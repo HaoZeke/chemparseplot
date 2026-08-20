@@ -1,0 +1,73 @@
+#+TITLE: Landfold FES observation identities
+#+OPTIONS: toc:nil num:nil
+
+A GP posterior mean is linear in the observations, so the field we
+fit is the scientific object. These statements are the Lea-tagged
+identities; Lean names match the =label= keys.
+
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \mathrm{clip}(F,M)=\min(F,M).
+  \label{eq:clip}
+\end{equation}
+
+\begin{theorem}[Low branch of the value-clip]\label{thm:clip-low}
+% lea: formalize label=clip_of_low
+% lea: context={Nat.min_eq_left after le_of_lt.}
+If $F<M$ then $\mathrm{clip}(F,M)=F$.
+\end{theorem}
+
+\begin{theorem}[High branch of the value-clip]\label{thm:clip-high}
+% lea: formalize label=clip_of_high
+% lea: context={Nat.min_eq_right on InTail.}
+If $M\le F$ then $\mathrm{clip}(F,M)=M$.
+\end{theorem}
+
+\begin{equation}
+  M\le F_1 \;\wedge\; M\le F_2
+  \;\implies\;
+  \mathrm{clip}(F_1,M)=\mathrm{clip}(F_2,M).
+  \label{eq:tail}
+\end{equation}
+
+\begin{theorem}[Clip erases tail contrast]\label{thm:tail}
+% lea: formalize label=clip_erases_tail_contrast uses={clip_of_high}
+% lea: context={Rewrite both sides with clip_of_high.}
+If both cells sit in the tail, their clipped values are equal.
+\end{theorem}
+
+\begin{theorem}[Clip is not injective on the tail]\label{thm:tail-inj}
+% lea: formalize label=clip_not_injective_on_tail uses={clip_erases_tail_contrast}
+% lea: context={Witness F1=M and F2=M+1.}
+There exist distinct tail ranks that clip identifies.
+\end{theorem}
+
+\begin{equation}
+  \mathrm{keep}(F,M)\;\iff\; F<M.
+  \label{eq:cut}
+\end{equation}
+
+\begin{theorem}[Membership cut on the tail]\label{thm:cut}
+% lea: formalize label=below_ceiling_of_tail
+% lea: context={Nat.not_lt.mpr.}
+A tail cell fails the membership cut.
+\end{theorem}
+
+\begin{equation}
+  \mathrm{lerp}_{n/d}(\mathrm{clip}(F_1,M),\mathrm{clip}(F_2,M))=M
+  \quad\text{when both cells are in the tail.}
+  \label{eq:lerp-ceil}
+\end{equation}
+
+\begin{theorem}[Clipped tail interpolates to the ceiling]\label{thm:lerp-ceil}
+% lea: formalize label=clipped_tail_lerp_is_ceiling uses={clip_of_high,lerp_const}
+% lea: context={Rewrite clips then lerp_const. Denominator d>0.}
+The convex hull of a value-clipped tail is the ceiling.
+\end{theorem}
+
+\begin{theorem}[Dropping the ceiling keeps contrast]\label{thm:cut-keep}
+% lea: formalize label=drop_ceiling_keeps_contrast uses={below_ceiling_of_tail}
+% lea: context={Both cells fail BelowCeiling and remain unequal.}
+The membership cut does not identify two distinct tail ranks.
+\end{theorem}
+#+END_EXPORT
