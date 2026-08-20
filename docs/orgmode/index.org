@@ -66,7 +66,7 @@ How parsers, plot helpers, and the CLI suite relate:
      end
      subgraph cpp["chemparseplot"]
        PARSE[parse.*]
-       PLOT[plot.neb / plot.optimization]
+       PLOT[plot.neb / plot.landfold]
        SFC[SurfaceFitConfig]
      end
      subgraph rgp["rgpycrumbs"]
@@ -123,6 +123,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
    howto/parse_orca_neb
    howto/parse_eon_neb
    howto/create_neb_figures
+   howto/create_landfold_fes
    howto/faq
    howto/troubleshooting
    howto/dev_testing

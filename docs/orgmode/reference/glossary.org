@@ -79,6 +79,13 @@ See: [[https://jax.readthedocs.io/][JAX Documentation]]
 *** Landscape
 2D plot of energy surface in RMSD coordinates (RMSD from reactant vs RMSD from product).
 
+*** landfold.fes.v1
+Versioned landfold free-energy result: bin centres =x= / =y=, arrays
+=free_energy= and =density= shaped =(ny, nx)=, plus =kt=.
+=parse.landfold= loads the dict or the =landfold fes --csv= grid;
+=plot.landfold.plot_fes= fits the NEB GP landscape
+(=plot_landscape_surface=, default =grad_imq=).
+
 *** Lazy Import
 Pattern that defers module import until first use. Reduces startup time and optional dependencies.
 

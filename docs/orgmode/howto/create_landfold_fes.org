@@ -1,0 +1,66 @@
+#+TITLE: How-to: Draw a landfold FES
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+You have a landfold embedding or out-of-sample projection and want the
+same publication landscape used for NEB (=plot_landscape_surface= /
+=rgpycrumbs.surfaces=), not a raw histogram heatmap.
+
+* Split of work
+
+- *landfold* inverts =F = -kT ln(rho/rhomax)= (=landfold fes --csv= or
+  =fes_xy_result= / =landfold.fes.v1=).
+- *chemparseplot* turns finite cells into GP observations and draws
+  the Ruhi landscape.
+- *rgpycrumbs* dispatches (=rgpycrumbs landfold plot-fes=).
+
+Do not shell out to =dimred= / =dimlandmark= for this figure.
+
+* Invert, then plot
+
+#+begin_src sh
+landfold fes --input colvar.ld --nx 280 --ny 280 --kt 1.0 \
+    --blur 4 --floor 0.004 --fmax 4 --csv fes.csv
+rgpycrumbs landfold plot-fes --input fes.csv --output fes.png \
+    --kt 1 --fmax 4 --method grad_imq
+#+end_src
+
+* Library
+
+#+begin_src python
+from chemparseplot.parse.landfold import load_fes_csv, load_fes_result
+from chemparseplot.plot.landfold import plot_fes
+from chemparseplot.plot.neb import SurfaceFitConfig
+
+fes = load_fes_csv("fes.csv", kt=1.0)
+# or: fes = load_fes_result(fes_xy_result_dict)
+fig = plot_fes(
+    fes,
+    fmax=4.0,
+    method="grad_imq",
+    surface_fit=SurfaceFitConfig(auto_thin=True, max_surface_points=300),
+    clabel=r"$F/kT$",
+)
+fig.savefig("fes.png", dpi=170, facecolor="white")
+#+end_src
+
+=method="grad_imq"= matches the eOn NEB plot TOML. =project_path= stays
+false inside =plot_fes=: =(s1, s2)= is already the sketch-map.
+Slopes are =np.gradient= on the regular FES grid.
+
+* Length scale
+
+NEB RMSD planes span a few angstrom. A sketch-map plane spans tens of
+units. =plot_fes= sets the IMQ length hint to one-tenth of the
+=(s1, s2)= span. If hyperparameter optimization returns a missing
+=ls=, =plot_landscape_surface= keeps that hint (otherwise the grid is
+all-NaN). Override with =rbf_smooth= / ~--rbf-smooth~.
+
+* See also
+
+- [[file:../reference/plotting_api.org][Plotting API]] (=plot_fes=, =plot_landscape_surface=)
+- [[file:create_neb_figures.org][Create publication NEB figures]]
+- [[file:troubleshooting.org][Troubleshooting]] (non-finite GP grids)

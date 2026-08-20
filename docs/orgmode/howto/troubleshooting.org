@@ -96,6 +96,13 @@ Or pass ~auto_thin=True~ / ~max_surface_points=64~ kwargs. From rgpycrumbs CLIs,
 set the same keys in ~--config~ TOML under ~[shared]~ or ~[min]~ / ~[neb]~
 (not as CLI flags).
 
+On a landfold sketch-map FES the same error is usually a missing IMQ
+length scale (the plane spans tens of units, not a few angstrom of
+RMSD). =plot_fes= supplies a span-based hint; =plot_landscape_surface=
+keeps that hint when optimization returns a missing =ls=. Override with
+=rbf_smooth= / ~rgpycrumbs landfold plot-fes --rbf-smooth~. See
+[[file:create_landfold_fes.org][Draw a landfold FES]].
+
 *** Problem: "RMSD coordinates required for landscape plot"
 
 **Cause:** Geometry output not available.
