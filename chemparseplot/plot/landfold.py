@@ -68,6 +68,7 @@ def plot_fes(
     points: dict[str, tuple] | None = None,
     method: str = "grad_imq",
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
+    rbf_smooth: float | None = None,
     n_inducing: int | None = None,
     show_pts: bool = False,
     figsize: tuple[float, float] = (5.6, 4.8),
@@ -102,6 +103,11 @@ def plot_fes(
     )
     s1, s2, g1, g2, z = fes_observations(result, fmax=fmax)
     fit = surface_fit or SurfaceFitConfig(auto_thin=True, max_surface_points=300)
+    # NEB RMSD planes are a few angstrom; sketch-map s spans tens of units.
+    # Default IMQ length 0.5 then predicts NaNs off the thinned cloud.
+    if rbf_smooth is None:
+        span = float(max(np.ptp(s1), np.ptp(s2)))
+        rbf_smooth = max(0.1 * span, 1e-3)
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi, facecolor="white")
     plot_landscape_surface(
         ax,
@@ -111,6 +117,7 @@ def plot_fes(
         g2,
         z,
         method=method,
+        rbf_smooth=rbf_smooth,
         project_path=False,
         cmap=RUHI_THEME.cmap_landscape,
         show_pts=show_pts,

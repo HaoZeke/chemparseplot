@@ -53,6 +53,7 @@ def test_plot_fes_uses_landscape_surface(monkeypatch) -> None:
     def fake_surface(ax, r, p, gr, gp, z, **kwargs):
         called["project_path"] = kwargs.get("project_path")
         called["method"] = kwargs.get("method")
+        called["rbf_smooth"] = kwargs.get("rbf_smooth")
         called["n"] = len(r)
         called["has_grad"] = gr is not None and gp is not None
         ax.contourf([[0.0, 1.0], [0.0, 1.0]], [[0.0, 0.0], [1.0, 1.0]], [[0.0, 1.0], [1.0, 2.0]])
@@ -64,6 +65,7 @@ def test_plot_fes_uses_landscape_surface(monkeypatch) -> None:
     assert called["project_path"] is False
     assert called["method"] == "grad_imq"
     assert called["has_grad"] is True
+    assert called["rbf_smooth"] > 0.0
     assert called["n"] > 0
     assert fig.axes[0].get_xlabel() == r"$s_1$"
     assert fig.axes[0].get_ylabel() == r"$s_2$"

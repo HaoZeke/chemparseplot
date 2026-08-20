@@ -1285,6 +1285,11 @@ def plot_landscape_surface(
         )
         best_ls = getattr(learner, "ls", getattr(learner, "epsilon", h_ls))
         best_noise = getattr(learner, "noise", getattr(learner, "sm", h_noise))
+        if best_ls is None or not np.isfinite(best_ls) or float(best_ls) <= 0.0:
+            log.warning("Optimization returned invalid length scale; using hint %s", h_ls)
+            best_ls = h_ls
+        if best_noise is None or not np.isfinite(best_noise) or float(best_noise) < 0.0:
+            best_noise = h_noise
     except Exception as e:
         log.warning(f"Optimization failed: {e}")
         best_ls, best_noise = h_ls, h_noise
