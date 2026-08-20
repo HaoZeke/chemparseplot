@@ -105,3 +105,37 @@ def test_rotate_to_progress_is_isometry_at_endpoints() -> None:
         atol=1e-12,
     )
     np.testing.assert_array_equal(sd.energy, e)
+
+
+def test_basin_coordinate_is_zero_at_ref_a_one_at_ref_b() -> None:
+    from chemparseplot.parse.representation import basin_coordinate
+
+    ref_a = np.array([0.0, 0.0, 1.0])
+    ref_b = np.array([2.0, 0.0, 1.0])
+    desc = np.vstack([ref_a, 0.5 * (ref_a + ref_b), ref_b])
+    xi = basin_coordinate(desc, ref_a, ref_b)
+    np.testing.assert_allclose(xi, [0.0, 0.5, 1.0], atol=1e-12)
+
+
+def test_basin_coordinate_rejects_identical_refs() -> None:
+    from chemparseplot.parse.representation import basin_coordinate
+
+    ref = np.ones(4)
+    with pytest.raises(ValueError, match="differ"):
+        basin_coordinate(np.zeros((3, 4)), ref, ref)
+
+
+def test_from_descriptor_cloud_is_landfold_field() -> None:
+    from chemparseplot.parse.representation import from_descriptor_cloud
+
+    s1 = np.array([0.0, 1.0, 2.0])
+    s2 = np.array([1.0, 0.0, -1.0])
+    desc = np.array([[1.0, 0.0], [0.5, 0.5], [0.0, 1.0]])
+    rep = from_descriptor_cloud(
+        s1, s2, desc, ref_a=[1.0, 0.0], ref_b=[0.0, 1.0]
+    )
+    assert rep.frame == "landfold"
+    np.testing.assert_allclose(rep.energy[0], 0.0, atol=1e-12)
+    np.testing.assert_allclose(rep.energy[-1], 1.0, atol=1e-12)
+    assert rep.xlabel == r"$s_1$"
+    assert rep.ylabel == r"$s_2$"

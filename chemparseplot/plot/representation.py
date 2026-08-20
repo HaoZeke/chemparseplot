@@ -135,9 +135,13 @@ def plot_energy(
         ax.collections[0] if ax.collections else None,
     )
     if filled is not None:
-        fig.colorbar(filled, ax=ax, fraction=0.046, pad=0.04).set_label(
-            clabel if clabel is not None else r"$E$"
-        )
+        if clabel is None:
+            clabel = (
+                r"$\xi$"
+                if rep.metadata.get("field") == "basin_coordinate"
+                else r"$E$"
+            )
+        fig.colorbar(filled, ax=ax, fraction=0.046, pad=0.04).set_label(clabel)
     ax.set_aspect("equal", adjustable="box")
     fig.tight_layout()
     return fig

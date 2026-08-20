@@ -1,4 +1,4 @@
-``parse.representation`` / ``plot.representation.plot_energy`` take a
-metric 2D plane plus potential energy (optional ``F_parallel`` synthetic
-gradients, Savitzky-Golay tangent) and draw the MethodsX ``E(s,d)``
-landscape. Occupancy FES is not an energy field.
+``basin_coordinate`` / ``from_descriptor_cloud`` put a structural
+order parameter (fcc/ico in CN space) on the landfold χ plane.
+``from_path_forces`` remains the MethodsX energy path. Occupancy FES
+is not the field.

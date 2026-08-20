@@ -5,19 +5,20 @@
 
 * Problem
 
-You have structures with energies (and, for a path, parallel forces)
-and want the MethodsX landscape: a metric 2D plane plus a
-gradient-enhanced IMQ-GP of the energy, with posterior variance as
-reliability. Occupancy invert is a histogram diagnostic, not this
-field.
+The GP has to interpolate a field the figure can be read by. Occupancy
+invert is a histogram diagnostic, not that field.
+
+For a NEB path the field is potential energy on RMSD =(r, p)= /
+=(s, d)= (MethodsX). For a landfold χ map the field is a structural
+order parameter on the high-D descriptors that built the map: the
+fcc/ico basin coordinate of the n4..n13 coordination counts for LJ38.
 
 * Representation
 
-The plane is either RMSD to the endpoints =(r, p)=, rotated to
-reaction progress and orthogonal deviation =(s, d)=, or a landfold
-=(s1, s2)= map that is already 2D. The field is potential energy.
-Synthetic gradients come from =F_parallel= along the Savitzky-Golay
-path tangent.
+The plane is RMSD =(r, p)= / =(s, d)=, or a landfold =(s1, s2)= map.
+The field is potential energy on a path, or the basin coordinate
+=ξ = d(x,a)/(d(x,a)+d(x,b))= of high-D descriptors on a χ map.
+Path gradients come from =F_parallel= along the Savitzky-Golay tangent.
 
 #+begin_src python
 from chemparseplot.parse.representation import from_path_forces, load_energy_table
@@ -28,9 +29,11 @@ rep = from_path_forces(rmsd_r, rmsd_p, energies, f_para, frame="rmsd")
 fig = plot_energy(rep, method="grad_imq")
 fig.savefig("energy_sd.png", dpi=170, facecolor="white")
 
-# Landfold plane that already carries energy
-rep = load_energy_table("cloud.energy.csv", frame="landfold")
-fig = plot_energy(rep, method="grad_imq")
+# Landfold χ plane: basin coordinate of high-D descriptors
+from chemparseplot.parse.representation import from_descriptor_cloud
+
+rep = from_descriptor_cloud(s1, s2, cn_counts, ref_a=cn_fcc, ref_b=cn_ico)
+fig = plot_energy(rep, method="rbf")
 #+end_src
 
 The table is =chemparseplot.energy.v1=::
@@ -38,10 +41,10 @@ The table is =chemparseplot.energy.v1=::
   # x y energy [f_para] [step]
   0.0 2.1 -173.9 0.02 0
 
-Dispatch::
+Dispatch a precomputed field table::
 
   rgpycrumbs landfold plot-energy --input cloud.energy.csv \
-      --output energy.png --frame rmsd --method grad_imq
+      --output xi.png --frame landfold --method rbf --clabel '$\\xi$'
 
 * What this is not
 

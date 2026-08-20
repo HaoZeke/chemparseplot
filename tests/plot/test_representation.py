@@ -106,3 +106,33 @@ def test_plot_energy_landfold_plane_stays_unrotated(monkeypatch) -> None:
     assert called["project_path"] is False
     assert fig.axes[0].get_xlabel() == r"$s_1$"
     assert fig.axes[0].get_ylabel() == r"$s_2$"
+
+
+def test_plot_energy_basin_coordinate_labels_xi(monkeypatch) -> None:
+    called = {}
+
+    def fake_surface(ax, r, p, gr, gp, z, **kwargs):
+        called["z"] = np.asarray(z)
+        ax.contourf(
+            [[0.0, 1.0], [0.0, 1.0]],
+            [[0.0, 0.0], [1.0, 1.0]],
+            [[0.0, 0.5], [0.5, 1.0]],
+        )
+
+    monkeypatch.setattr(
+        "chemparseplot.plot.representation.plot_landscape_surface", fake_surface
+    )
+    from chemparseplot.parse.representation import from_descriptor_cloud
+
+    fig = plot_energy(
+        from_descriptor_cloud(
+            [0.0, 1.0, 2.0],
+            [0.0, 0.5, 1.0],
+            [[1.0, 0.0], [0.5, 0.5], [0.0, 1.0]],
+            ref_a=[1.0, 0.0],
+            ref_b=[0.0, 1.0],
+        )
+    )
+    np.testing.assert_allclose(called["z"][0], 0.0, atol=1e-12)
+    np.testing.assert_allclose(called["z"][-1], 1.0, atol=1e-12)
+    assert fig.axes[-1].get_ylabel() == r"$\xi$"
