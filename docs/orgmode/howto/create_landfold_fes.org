@@ -65,6 +65,12 @@ names match the labels (d-SEAMS 2.0 / VIDA-NYU Lea contract).
 =lake build= in =proofs/lean= and
 =python3 proofs/scripts/validate_lea.py=.
 
+The GP itself is the finite representer $\mu=K\alpha$ with $K\alpha=y$
+(Eqs. representer, interp, linear, gram-adj). That is the validity of
+the representation: the field at the observation sites is a section of
+the Gram matrix, linear in the table, unique on one site when
+$K_{00}\neq 0$, and reproduced on two sites by the Cramer adjugate.
+
 * Length scale
 
 NEB RMSD planes span a few angstrom. A sketch-map plane spans tens of

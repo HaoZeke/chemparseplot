@@ -23,3 +23,8 @@ Declarations match the Lea-marked theorem blocks in
 | `below_ceiling_of_tail` | Eq. (cut) |
 | `clipped_tail_lerp_is_ceiling` | Eq. (lerp-ceil) |
 | `drop_ceiling_keeps_contrast` | Eq. (cut-keep) |
+| `kernel_symmetric`, `kernel_diag_nonneg` | Eq. (kernel) |
+| `representer_interpolates`, `representer_interpolates_one` | Eq. (interp) |
+| `representer_linear`, `representer_smul` | Eq. (linear) |
+| `representer_unique_one` | Eq. (unique-one) |
+| `gram_adjugate` | Eq. (gram-adj) |

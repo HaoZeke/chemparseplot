@@ -71,3 +71,82 @@ The convex hull of a value-clipped tail is the ceiling.
 The membership cut does not identify two distinct tail ranks.
 \end{theorem}
 #+END_EXPORT
+
+* Finite GP representer
+
+The noise-free posterior mean on $n$ sites is the kernel expansion
+$\mu_i=\sum_j K_{ij}\alpha_j$ with $K\alpha=y$. That is the
+representation: the field at the observation sites is a section of
+the Gram matrix.
+
+#+BEGIN_EXPORT latex
+\begin{equation}
+  K_{ij}=K_{ji},\qquad K_{ii}\ge 0.
+  \label{eq:kernel}
+\end{equation}
+
+\begin{theorem}[Kernel symmetry]\label{thm:kernel-sym}
+% lea: formalize label=kernel_symmetric
+% lea: context={Kernel.sym.}
+$K_{ij}=K_{ji}$.
+\end{theorem}
+
+\begin{theorem}[Nonnegative diagonal]\label{thm:kernel-diag}
+% lea: formalize label=kernel_diag_nonneg
+% lea: context={Kernel.diag_nonneg.}
+$K_{ii}\ge 0$.
+\end{theorem}
+
+\begin{equation}
+  \mu_i=\sum_j K_{ij}\alpha_j.
+  \label{eq:representer}
+\end{equation}
+
+\begin{equation}
+  K\alpha=y \;\implies\; \mu_i=y_i.
+  \label{eq:interp}
+\end{equation}
+
+\begin{theorem}[Representer interpolates the table]\label{thm:interp}
+% lea: formalize label=representer_interpolates
+% lea: context={The site values of the expansion are the Gram action.}
+If $K\alpha=y$ then the representer reproduces every observation.
+\end{theorem}
+
+\begin{theorem}[One-site interpolation]\label{thm:interp-one}
+% lea: formalize label=representer_interpolates_one uses={representer_interpolates}
+% lea: context={finRange 1; $\mu=k\alpha$.}
+On one site, $k\alpha=y$ if and only if the representer equals $y$.
+\end{theorem}
+
+\begin{theorem}[Representer is linear in the coefficients]\label{thm:linear}
+% lea: formalize label=representer_linear
+% lea: context={foldl of a pointwise sum; Int.mul_add.}
+$\mu[\alpha+\beta]=\mu[\alpha]+\mu[\beta]$.
+\end{theorem}
+
+\begin{theorem}[Representer scales]\label{thm:smul}
+% lea: formalize label=representer_smul
+% lea: context={foldl of a scaled family.}
+$\mu[c\alpha]=c\,\mu[\alpha]$.
+\end{theorem}
+
+\begin{theorem}[One-site coefficient is unique]\label{thm:unique-one}
+% lea: formalize label=representer_unique_one uses={representer_interpolates_one}
+% lea: context={$k(\alpha-\beta)=0$ and $k\neq 0$.}
+A nonzero one-site kernel has at most one representer coefficient.
+\end{theorem}
+
+\begin{equation}
+  K\,\mathrm{adj}(K)\,y=(\det K)\,y.
+  \label{eq:gram-adj}
+\end{equation}
+
+\begin{theorem}[Two-site Cramer reproduction]\label{thm:gram-adj}
+% lea: formalize label=gram_adjugate
+% lea: context={Expand $K\,\mathrm{adj}(K)$. The identity is $K\,\mathrm{adj}(K)=(\det K)I$.}
+The two-site Gram matrix applied to the Cramer adjugate recovers
+$(\det K)y$. The noise-free GP mean at the training sites is that
+table whenever $\det K\neq 0$.
+\end{theorem}
+#+END_EXPORT
