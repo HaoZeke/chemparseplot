@@ -207,7 +207,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/ca-certificates-2025.8.3-hbd8a1cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/HaoZeke/rgpycrumbs#7788ebcad0910853116fd38dbf80a8d84e513e18
+      - pypi: git+https://github.com/HaoZeke/rgpycrumbs?rev=355231d2c6f29b0d4f6678e676573a963b831a73#355231d2c6f29b0d4f6678e676573a963b831a73
       - pypi: https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/27/cd/c883e1a7c447479d6e13985565080e3fea88ab5a107c21684c813dba1875/flexcache-0.3-py3-none-any.whl
@@ -2179,7 +2179,7 @@ packages:
   - orca-pi>=0.1.0 ; extra == 'all'
   - parsimonious>=0.10.0 ; extra == 'all'
   - polars>=0.20 ; extra == 'all'
-  - readcon>=0.14.5 ; extra == 'all'
+  - readcon>=0.14.7 ; extra == 'all'
   - xyzrender>=0.1.2 ; extra == 'all'
   - mdit-py-plugins>=0.3.4 ; extra == 'doc'
   - myst-nb>=1 ; extra == 'doc'
@@ -2198,7 +2198,7 @@ packages:
   - ase>=3.22 ; extra == 'neb'
   - h5py>=3.0 ; extra == 'neb'
   - polars>=0.20 ; extra == 'neb'
-  - readcon>=0.14.5 ; extra == 'neb'
+  - readcon>=0.14.7 ; extra == 'neb'
   - orca-pi>=0.1.0 ; extra == 'opi'
   - cmcrameri>=1.7 ; extra == 'plot'
   - matplotlib>=3.8.2 ; extra == 'plot'
@@ -2214,32 +2214,12 @@ packages:
   - polars>=0.20 ; extra == 'test'
   - pytest-cov>=4.1.0 ; extra == 'test'
   - pytest>=7.4.3 ; extra == 'test'
-  - readcon>=0.14.5 ; extra == 'test'
+  - readcon>=0.14.7 ; extra == 'test'
   - rgpycrumbs ; extra == 'test'
   - scipy>=1.11 ; extra == 'test'
   - xyzrender>=0.1.3 ; extra == 'test'
   - xyzrender>=0.1.2 ; extra == 'xyzrender'
   requires_python: '>=3.11'
-- pypi: git+https://github.com/HaoZeke/rgpycrumbs#7788ebcad0910853116fd38dbf80a8d84e513e18
-  name: rgpycrumbs
-  version: 1.4.2.dev1+g7788ebca
-  requires_dist:
-  - click>=8.1
-  - numpy>=1.24
-  - rich>=13.0
-  - ase>=3.22 ; extra == 'all'
-  - jax[cpu]>=0.4 ; extra == 'all'
-  - scipy>=1.11 ; extra == 'all'
-  - ase>=3.22 ; extra == 'analysis'
-  - scipy>=1.11 ; extra == 'analysis'
-  - scipy>=1.11 ; extra == 'interpolation'
-  - ruff>=0.1.6 ; extra == 'lint'
-  - jax>=0.4 ; extra == 'surfaces'
-  - chemparseplot ; extra == 'test'
-  - pychum ; extra == 'test'
-  - pytest-cov>=4.1.0 ; extra == 'test'
-  - pytest>=9.0 ; extra == 'test'
-  requires_python: '>=3.10'
 - pypi: git+https://github.com/HaoZeke/rgpycrumbs?rev=355231d2c6f29b0d4f6678e676573a963b831a73#355231d2c6f29b0d4f6678e676573a963b831a73
   name: rgpycrumbs
   version: 1.10.11.dev24+g355231d2c
