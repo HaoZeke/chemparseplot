@@ -19,21 +19,21 @@ jobs:
       - name: Run test env
         shell: bash -el {0}
         run: |
-          pixi r -e test -- python -m coverage run --data-file=.coverage.test --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+          pixi r -e test -- python -m coverage run --data-file=.coverage.test --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q
       - name: Run plot env
         shell: bash -el {0}
         run: |
-          pixi r -e plot -- python -m coverage run --data-file=.coverage.plot --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+          pixi r -e plot -- python -m coverage run --data-file=.coverage.plot --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q
       - name: Run chemgp env
         shell: bash -el {0}
         run: |
-          pixi r -e chemgp -- python -m coverage run --data-file=.coverage.chemgp --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q || true
+          pixi r -e chemgp -- python -m coverage run --data-file=.coverage.chemgp --source=chemparseplot -m pytest tests/ --ignore=tests/tutorials -q
       - name: Run plumed env
         shell: bash -el {0}
         run: |
-          pixi r -e plumed -- python -m coverage run --data-file=.coverage.plumed --source=chemparseplot -m pytest tests/parse/test_plumed.py -q || true
+          pixi r -e plumed -- python -m coverage run --data-file=.coverage.plumed --source=chemparseplot -m pytest tests/parse/test_plumed.py -q
       - name: Combine and report
         shell: bash -el {0}
         run: |
-          pixi r -e test -- python -m coverage combine .coverage.test .coverage.plot .coverage.chemgp .coverage.plumed || true
+          pixi r -e test -- python -m coverage combine .coverage.test .coverage.plot .coverage.chemgp .coverage.plumed
           pixi r -e test -- python -m coverage report --fail-under=70
