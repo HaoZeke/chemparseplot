@@ -143,7 +143,7 @@ chemparseplot/
 | matplotlib | Plotting backend | optional (`[plot]`) |
 | polars | DataFrames for NEB / trajectory tables | optional (`[neb]`) |
 | ase | Atoms object handling | optional (`[neb]`) |
-| readcon (>=0.14.5) | CON/convel I/O and metadata-native energies | optional (`[neb]`) |
+| readcon (>=0.14.7) | CON/convel I/O and metadata-native energies | optional (`[neb]`) |
 | rgpycrumbs | Interpolation, surfaces, RMSD alignment | optional (compute delegation; install alongside or via tests/pixi) |
 | h5py | ChemGP / trajectory HDF5 | optional (`[neb]`) |
 | parsimonious | Grammar/AST text parsers (XYZ, ORCA energy/coords) | optional (`[grammar]`) |
