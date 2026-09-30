@@ -32,6 +32,7 @@ def __getattr__(name):
         "optimization",
         "landscape",
         "disconnectivity",
+        "rings",
     }
     if name in lazy_submodules:
         return importlib.import_module(f".{name}", __name__)
