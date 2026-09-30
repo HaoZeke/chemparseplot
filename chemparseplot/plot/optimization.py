@@ -323,7 +323,7 @@ def render_single_ended_landscape(
     overlay_atom_lists: Sequence[Sequence[Any]] | None = None,
     overlay_labels: Sequence[str] | None = None,
     ira_instance: Any | None = None,
-    ira_kmax: float = 14.0,
+    ira_kmax: float = 1.8,
     project_path: bool = True,
     surface_type: str = "grad_matern",
     energy_unit: str = "eV",
@@ -418,7 +418,12 @@ def render_single_ended_landscape(
         energies_plot = np.minimum(energies_plot, cap / factor if factor else cap)
         display_e = convert_energy(energies_plot, energy_unit)
 
-    f_para = -np.gradient(energies_plot)
+    # One sample has no path tangent, so a numerical gradient is undefined.
+    short_series = energies_plot.size < 2
+    if short_series:
+        f_para = np.zeros_like(energies_plot, dtype=float)
+    else:
+        f_para = -np.gradient(energies_plot)
     grad_a, grad_b = compute_synthetic_gradients(rmsd_a, rmsd_b, f_para)
 
     z_label = (
@@ -426,29 +431,35 @@ def render_single_ended_landscape(
         if relative_energy
         else energy_axis_label(energy_unit)
     )
-    cb = plot_optimization_landscape(
-        ax,
-        rmsd_a,
-        rmsd_b,
-        grad_a,
-        grad_b,
-        energies_plot,
-        project_path=project_path,
-        method=surface_type,
-        cmap=cmap,
-        label_mode="optimization",
-        energy_unit=energy_unit,
-        z_label=z_label,
-        auto_thin=auto_thin,
-        max_surface_points=max_surface_points,
-        surface_fit=surface_fit,
-    )
+    if short_series:
+        ax.scatter(rmsd_a, rmsd_b, c=display_e, s=36, zorder=40)
+        cb = None
+    else:
+        cb = plot_optimization_landscape(
+            ax,
+            rmsd_a,
+            rmsd_b,
+            grad_a,
+            grad_b,
+            energies_plot,
+            project_path=project_path,
+            method=surface_type,
+            cmap=cmap,
+            label_mode="optimization",
+            energy_unit=energy_unit,
+            z_label=z_label,
+            auto_thin=auto_thin,
+            max_surface_points=max_surface_points,
+            surface_fit=surface_fit,
+        )
     if cb is not None:
         cb.ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
         cb.set_label(z_label, rotation=270, labelpad=18)
 
+    # A single sample has no direction, so the valley basis is undefined.
+    draw_projection = bool(project_path) and not short_series
     basis = None
-    if project_path:
+    if draw_projection:
         _, _, basis = project_landscape_path(rmsd_a, rmsd_b, project_path=True)
 
     overlays = overlay_atom_lists or ()
@@ -464,7 +475,9 @@ def render_single_ended_landscape(
         )
         m = min(len(ra), len(atoms_ov))
         ra, rb = ra[:m], rb[:m]
-        px, py, _ = project_landscape_path(ra, rb, project_path=project_path, basis=basis)
+        px, py, _ = project_landscape_path(
+            ra, rb, project_path=draw_projection, basis=basis
+        )
         color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
         if len(overlays) > 1:
             ax.plot(
@@ -484,7 +497,7 @@ def render_single_ended_landscape(
             )
 
     plot_x, plot_y, _ = project_landscape_path(
-        rmsd_a, rmsd_b, project_path=project_path, basis=basis
+        rmsd_a, rmsd_b, project_path=draw_projection, basis=basis
     )
     annotate_endpoint(
         ax,
@@ -502,7 +515,7 @@ def render_single_ended_landscape(
     )
 
     # True 1:1 Å panel: Δd window matches Δs (same RMSD metric).
-    if project_path and len(plot_x) > 1:
+    if draw_projection and len(plot_x) > 1:
         x0, x1 = float(np.min(plot_x)), float(np.max(plot_x))
         y0, y1 = float(np.min(plot_y)), float(np.max(plot_y))
         s_pad = max((x1 - x0) * 0.06, 0.01)
@@ -514,7 +527,7 @@ def render_single_ended_landscape(
         ax.set_aspect("equal", adjustable="box")
 
     # Re-assert axis labels after surface/path (bold, large enough to read).
-    if project_path:
+    if draw_projection:
         ax.set_xlabel(_LABELS["optimization"]["x"], fontweight="bold", fontsize=12)
         ax.set_ylabel(_LABELS["optimization"]["y"], fontweight="bold", fontsize=12)
     else:

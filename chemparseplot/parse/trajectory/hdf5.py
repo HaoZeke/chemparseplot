@@ -250,7 +250,7 @@ def history_to_profile_dats(h5_file: str) -> list[np.ndarray]:
     return [_path_to_profile_dat(step_data) for step_data in steps]
 
 
-def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
+def history_to_landscape_df(h5_file: str, ira_kmax: float = 1.8):
     """Convert a history HDF5 to a landscape DataFrame.
 
     ```{versionadded} 1.2.0
@@ -260,7 +260,7 @@ def history_to_landscape_df(h5_file: str, ira_kmax: float = 14.0):
     ``f_para`` for synthetic gradients.
 
     :param h5_file: Path to ``neb_history.h5``.
-    :param ira_kmax: kmax factor for IRA alignment.
+    :param ira_kmax: Factor on the IRA basis cutoff.
     :return: Polars DataFrame with columns
         ``[r, p, grad_r, grad_p, z, step]``.
     """

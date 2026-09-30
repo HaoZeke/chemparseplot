@@ -219,7 +219,7 @@ def aggregate_neb_landscape_data(
     *,
     cache_file: Path | None = None,
     force_recompute: bool = False,
-    ira_kmax: float = 14.0,
+    ira_kmax: float = 1.8,
     # Caching augmentation
     augment_dat: str | None = None,
     augment_con: str | None = None,

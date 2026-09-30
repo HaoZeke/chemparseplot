@@ -43,7 +43,7 @@ Loads the main NEB trajectory and calculates RMSD for additional comparison stru
 - =p=: RMSD to the product
 - =label=: legend / annotation label
 
-** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=14.0, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
+** =aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=1.8, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)=
 
 Aggregates data from multiple NEB optimization steps for 2D landscape visualization.
 
@@ -57,7 +57,7 @@ Aggregates data from multiple NEB optimization steps for 2D landscape visualizat
 | =ira_instance= | object or =None= | - | IRA instance. Landscape coordinate generation requires a real IRA backend. |
 | =cache_file= | =Path= or =None= | =None= | Parquet file for caching results |
 | =force_recompute= | =bool= | =False= | Bypass cache and recompute |
-| =ira_kmax= | =float= | =14.0= | kmax factor for IRA alignment |
+| =ira_kmax= | =float= | =1.8= | Factor on the IRA basis cutoff |
 | =augment_dat= | =str= or =None= | =None= | Glob pattern for augmentation DAT files |
 | =augment_con= | =str= or =None= | =None= | Glob pattern for augmentation CON files |
 | =ref_atoms= | =Atoms= or =None= | =None= | Reference reactant for augmentation projection |

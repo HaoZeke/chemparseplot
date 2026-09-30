@@ -37,7 +37,7 @@ def calculate_landscape_coords(
 
     :param atoms_list: List of ASE Atoms objects representing the path.
     :param ira_instance: An instantiated IRA object.
-    :param ira_kmax: kmax factor for IRA.
+    :param ira_kmax: Factor on the IRA basis cutoff.
     :param ref_a: Reference structure A. Defaults to ``atoms_list[0]``.
     :param ref_b: Reference structure B. Defaults to ``atoms_list[-1]``.
     :return: A tuple of (rmsd_a, rmsd_b) arrays.
@@ -96,6 +96,10 @@ def compute_synthetic_gradients(
     :param f_para: Force component parallel to the path for each image.
     :return: (grad_r, grad_p) arrays.
     """
+    if min(np.size(rmsd_r), np.size(rmsd_p), np.size(f_para)) < 2:
+        n = min(np.size(rmsd_r), np.size(rmsd_p), np.size(f_para))
+        zeros = np.zeros(n, dtype=float)
+        return zeros, zeros
     dr = np.gradient(rmsd_r)
     dp = np.gradient(rmsd_p)
     norm_ds = np.sqrt(dr**2 + dp**2)

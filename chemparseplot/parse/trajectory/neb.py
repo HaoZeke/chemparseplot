@@ -176,7 +176,7 @@ def trajectory_to_profile_dat(atoms_list: list[Atoms]) -> np.ndarray:
 
 def trajectory_to_landscape_df(
     atoms_list: list[Atoms],
-    ira_kmax: float = 14.0,
+    ira_kmax: float = 1.8,
     step: int = 0,
 ):
     """Convert trajectory to a polars DataFrame for plot_landscape_surface.

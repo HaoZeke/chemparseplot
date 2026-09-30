@@ -551,3 +551,39 @@ def test_render_single_ended_landscape_writes_pdf(tmp_path, monkeypatch):
         plot_structures="none",
     )
     assert out.is_file() and out.stat().st_size > 0
+
+
+def test_render_single_ended_landscape_one_sample(tmp_path, monkeypatch):
+    """A single frame has no tangent, so the landscape still writes."""
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg")
+    import numpy as np
+    from ase import Atoms
+
+    from chemparseplot.plot.optimization import render_single_ended_landscape
+
+    def _fake_coords(atoms_list, ira_instance, ira_kmax, *, ref_a=None, ref_b=None):
+        n = len(atoms_list)
+        return np.full(n, 0.2), np.full(n, 1.4)
+
+    monkeypatch.setattr(
+        "chemparseplot.parse.neb_utils.calculate_landscape_coords",
+        _fake_coords,
+    )
+
+    atoms_list = [Atoms("H", positions=[[0.0, 0.0, 0.0]])]
+    out = tmp_path / "one.pdf"
+    render_single_ended_landscape(
+        atoms_list=atoms_list,
+        energies_eV=np.array([0.0]),
+        ref_a=atoms_list[0],
+        ref_b=atoms_list[0],
+        ira_instance=None,
+        project_path=True,
+        surface_type="rbf",
+        energy_unit="eV",
+        output=out,
+        dpi=80,
+        plot_structures="none",
+    )
+    assert out.is_file() and out.stat().st_size > 0

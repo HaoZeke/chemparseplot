@@ -46,6 +46,14 @@ class TestComputeSyntheticGradients:
         assert grad_r[1] < 0
         assert grad_p[1] > 0  # rmsd_p decreases, so dp < 0, so -f*t_p > 0
 
+    def test_single_sample_returns_zero(self):
+        rmsd_r = np.array([0.2])
+        rmsd_p = np.array([1.4])
+        f_para = np.array([0.5])
+        grad_r, grad_p = compute_synthetic_gradients(rmsd_r, rmsd_p, f_para)
+        np.testing.assert_array_equal(grad_r, np.zeros(1))
+        np.testing.assert_array_equal(grad_p, np.zeros(1))
+
     def test_constant_rmsd_no_division_by_zero(self):
         """When all RMSD values are identical, norm_ds=0 is handled."""
         rmsd_r = np.ones(5)
