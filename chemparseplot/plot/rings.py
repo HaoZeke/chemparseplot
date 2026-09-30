@@ -13,11 +13,17 @@ The neighbour list is not periodic. A distance cutoff is a number the caller
 measures between the longest bond and the shortest nonbonded contact. Passing
 the ice default of 3.5 angstrom builds a different graph. The command is
 ``rgpycrumbs geom plt-rings``, a PEP 723 script the rgpycrumbs dispatcher
-runs under ``uv``.
+runs under ``uv``. ``rgpycrumbs geom plt-rings-track`` applies the same
+census to every frame of a trajectory. A hop is a change of terminal ring,
+identified by its atom set. The integer ``ringNetwork`` returns for one
+frame is not that identity. A query coordinate is the caller's Wannier
+centre. The label is not the coordinate that enters a mean square
+displacement.
 """
 
 from __future__ import annotations
 
+import csv
 import math
 import tempfile
 from collections import deque
@@ -489,6 +495,424 @@ def format_report(report: RingReport, assignments: Sequence[Assignment] = ()) ->
             f"d {item.distance:.4f} margin {item.margin:.4f}"
         )
     return "\n".join(lines) + "\n"
+
+
+@dataclass(frozen=True)
+class Sample:
+    """One query on one frame, after rings have been matched by atom set."""
+
+    frame: int
+    query: int
+    kind: str
+    owner: int
+    atoms: tuple[int, ...]
+    chain: float
+    terminal_atoms: tuple[int, ...] | None
+    terminal_chain: float | None
+    distance: float
+    margin: float
+    label_hop: bool
+    block_hop: bool
+    hop_length: int | None
+
+
+@dataclass(frozen=True)
+class Trajectory:
+    """Labels, junction visits, and terminal-ring hops for every query."""
+
+    samples: tuple[Sample, ...]
+    n_frames: int
+    n_queries: int
+
+    def label_hops(self, query: int | None = None) -> int:
+        """Owner changes, including a visit to a junction."""
+        return sum(
+            1
+            for sample in self.samples
+            if sample.label_hop and (query is None or sample.query == query)
+        )
+
+    def block_hops(self, query: int | None = None) -> int:
+        """Changes of the terminal ring. A junction frame keeps that ring."""
+        return sum(
+            1
+            for sample in self.samples
+            if sample.block_hop and (query is None or sample.query == query)
+        )
+
+    def neighbor_hops(self, query: int | None = None) -> int:
+        """Block hops whose rings share an atom or a junction in that frame."""
+        return sum(
+            1
+            for sample in self.samples
+            if sample.block_hop
+            and sample.hop_length == 1
+            and (query is None or sample.query == query)
+        )
+
+    def junction_frames(self, query: int | None = None) -> int:
+        """Frames whose nearest owner is a bridge between rings."""
+        return sum(
+            1
+            for sample in self.samples
+            if sample.kind == "junction" and (query is None or sample.query == query)
+        )
+
+
+def _owner_atoms(report: RingReport, kind: str, owner: int) -> tuple[int, ...]:
+    if kind == "ring":
+        return tuple(sorted(report.rings[owner]))
+    if kind == "junction":
+        a, b = report.junctions[owner]
+        return tuple(sorted((a, b)))
+    return ()
+
+
+def _backbone_ranks(
+    coords: np.ndarray,
+    report: RingReport,
+    previous_axis: np.ndarray | None = None,
+) -> tuple[dict[int, int], np.ndarray | None]:
+    """Order ring centroids along their leading axis.
+
+    The stored axis keeps its sign from the previous frame, so a rigid
+    molecule does not reverse the chain coordinate. The rank is still not
+    the identity of a ring. The atom set is.
+    """
+    n_rings = len(report.rings)
+    if n_rings == 0:
+        return {}, previous_axis
+    if n_rings == 1:
+        return {0: 0}, previous_axis
+    centroids = np.stack([coords[list(ring)].mean(axis=0) for ring in report.rings])
+    centered = centroids - centroids.mean(axis=0)
+    _, _, vt = np.linalg.svd(centered, full_matrices=False)
+    axis = np.asarray(vt[0], dtype=float)
+    if previous_axis is not None and float(np.dot(axis, previous_axis)) < 0.0:
+        axis = -axis
+    projection = centroids @ axis
+    order = np.argsort(projection, kind="mergesort")
+    ranks = {int(ring_index): rank for rank, ring_index in enumerate(order)}
+    return ranks, axis
+
+
+def _ring_adjacency(report: RingReport) -> list[set[int]]:
+    """Rings that share an atom, or that a junction joins."""
+    sets = [set(ring) for ring in report.rings]
+    adj: list[set[int]] = [set() for _ in sets]
+    for i, left in enumerate(sets):
+        for j in range(i + 1, len(sets)):
+            if left & sets[j]:
+                adj[i].add(j)
+                adj[j].add(i)
+    members: dict[int, list[int]] = {}
+    for index, ring in enumerate(report.rings):
+        for atom in ring:
+            members.setdefault(atom, []).append(index)
+    for a, b in report.junctions:
+        for i in members.get(a, []):
+            for j in members.get(b, []):
+                if i != j:
+                    adj[i].add(j)
+                    adj[j].add(i)
+    return adj
+
+
+def _ring_distance(adj: Sequence[set[int]], src: int, dst: int) -> int | None:
+    if src == dst:
+        return 0
+    seen = {src}
+    queue: deque[tuple[int, int]] = deque([(src, 0)])
+    while queue:
+        node, dist = queue.popleft()
+        for nbr in adj[node]:
+            if nbr in seen:
+                continue
+            if nbr == dst:
+                return dist + 1
+            seen.add(nbr)
+            queue.append((nbr, dist + 1))
+    return None
+
+
+def _chain_value(
+    report: RingReport,
+    ranks: dict[int, int],
+    kind: str,
+    owner: int,
+) -> float:
+    if kind == "ring":
+        return float(ranks[owner])
+    a, b = report.junctions[owner]
+    ends = []
+    for atom in (a, b):
+        on_atom = [ranks[i] for i, ring in enumerate(report.rings) if atom in ring]
+        if not on_atom:
+            msg = f"junction atom {atom} lies on no returned ring"
+            raise ValueError(msg)
+        ends.append(sum(on_atom) / len(on_atom))
+    return float(sum(ends) / len(ends))
+
+
+def align_trajectory(
+    frames: Sequence[tuple[RingReport, tuple[Assignment, ...], np.ndarray]],
+) -> Trajectory:
+    """Match each frame's labels by atom set and count terminal-ring hops.
+
+    ``owner`` on an :class:`Assignment` is the position of that ring in one
+    call. The same atoms can come back at another position. The canonical
+    owner is the atom set, first seen in frame order.
+    """
+    registry: dict[tuple[str, tuple[int, ...]], int] = {}
+    previous: dict[int, tuple[str, tuple[int, ...]]] = {}
+    terminal: dict[int, tuple[int, ...] | None] = {}
+    samples: list[Sample] = []
+    n_frames = len(frames)
+    n_queries = 0
+    axis: np.ndarray | None = None
+    for frame_index, (report, assigned, coords) in enumerate(frames):
+        xyz = np.asarray(coords, dtype=float)
+        ranks, axis = _backbone_ranks(xyz, report, axis)
+        by_atoms = {tuple(sorted(ring)): index for index, ring in enumerate(report.rings)}
+        adjacency = _ring_adjacency(report)
+        n_queries = max(n_queries, len(assigned))
+        for item in assigned:
+            atoms = _owner_atoms(report, item.kind, item.owner)
+            key = (item.kind, atoms)
+            if key not in registry:
+                registry[key] = len(registry)
+            label_hop = item.query in previous and previous[item.query] != key
+            current = terminal.get(item.query)
+            block_hop = False
+            hop_length: int | None = None
+            if item.kind == "ring":
+                if current is not None and current != atoms:
+                    block_hop = True
+                    src = by_atoms.get(current)
+                    dst = by_atoms.get(atoms)
+                    if src is not None and dst is not None:
+                        hop_length = _ring_distance(adjacency, src, dst)
+                current = atoms
+            chain = _chain_value(report, ranks, item.kind, item.owner)
+            terminal_chain = None
+            if current is not None:
+                src_ring = by_atoms.get(current)
+                if src_ring is not None:
+                    terminal_chain = float(ranks[src_ring])
+            samples.append(
+                Sample(
+                    frame=frame_index,
+                    query=item.query,
+                    kind=item.kind,
+                    owner=registry[key],
+                    atoms=atoms,
+                    chain=chain,
+                    terminal_atoms=current,
+                    terminal_chain=terminal_chain,
+                    distance=item.distance,
+                    margin=item.margin,
+                    label_hop=label_hop,
+                    block_hop=block_hop,
+                    hop_length=hop_length,
+                )
+            )
+            previous[item.query] = key
+            terminal[item.query] = current
+    return Trajectory(tuple(samples), n_frames, n_queries)
+
+
+def track_queries(
+    frames: Sequence[
+        tuple[Sequence[str], np.ndarray, Sequence[tuple[int, int]] | None]
+    ],
+    queries: np.ndarray,
+    *,
+    cutoff: float | None = None,
+    max_depth: int = 6,
+) -> Trajectory:
+    """Label query points on each frame and count terminal-ring hops.
+
+    ``frames`` is ``(symbols, coordinates, bonds)``. Bonds and ``cutoff``
+    follow the same rule as :func:`ring_report`: one of them, not both.
+    ``queries`` has shape ``(frame, point, 3)``. A single point per frame
+    may be ``(frame, 3)``.
+    """
+    points = np.asarray(queries, dtype=float)
+    if points.ndim == 2:
+        points = points[:, None, :]
+    if points.ndim != 3 or points.shape[-1] != 3:
+        msg = "queries must have shape (frames, points, 3)"
+        raise ValueError(msg)
+    if len(frames) != points.shape[0]:
+        msg = f"{len(frames)} molecule frames and {points.shape[0]} query frames"
+        raise ValueError(msg)
+    packed: list[tuple[RingReport, tuple[Assignment, ...], np.ndarray]] = []
+    for frame_index, ((symbols, coords, bonds), pts) in enumerate(
+        zip(frames, points, strict=True)
+    ):
+        report = ring_report(
+            symbols,
+            coords,
+            bonds=bonds,
+            cutoff=cutoff,
+            max_depth=max_depth,
+        )
+        n_owners = len(report.rings) + len(report.junctions)
+        if n_owners < 2:
+            msg = (
+                f"frame {frame_index} has {n_owners} ring or junction owners; "
+                "ringNetwork returned nothing to track"
+            )
+            raise ValueError(msg)
+        packed.append(
+            (report, assign_points(coords, report, pts), np.asarray(coords, dtype=float))
+        )
+    return align_trajectory(packed)
+
+
+def read_xyz_frames(text: str) -> list[tuple[list[str], np.ndarray]]:
+    """Every frame of a multi-structure XYZ. Columns past x, y, z are ignored."""
+    lines = text.splitlines()
+    frames: list[tuple[list[str], np.ndarray]] = []
+    index = 0
+    while index < len(lines):
+        if not lines[index].strip():
+            index += 1
+            continue
+        n_atoms = int(lines[index].split()[0])
+        body = lines[index + 2 : index + 2 + n_atoms]
+        if len(body) != n_atoms:
+            msg = f"XYZ count {n_atoms} but read {len(body)} atoms"
+            raise ValueError(msg)
+        symbols: list[str] = []
+        coords: list[list[float]] = []
+        for line in body:
+            parts = line.split()
+            symbols.append(parts[0])
+            coords.append([float(parts[1]), float(parts[2]), float(parts[3])])
+        frames.append((symbols, np.asarray(coords, dtype=float)))
+        index += 2 + n_atoms
+    if not frames:
+        msg = "XYZ file has no frames"
+        raise ValueError(msg)
+    return frames
+
+
+def read_frames(
+    path: str | PathLike[str],
+) -> list[tuple[list[str], np.ndarray, tuple[tuple[int, int], ...] | None]]:
+    """One SDF frame with its bonds, or every frame of an XYZ without bonds."""
+    text = Path(path).read_text()
+    suffix = Path(path).suffix.lower()
+    if suffix == ".sdf" or "V2000" in text.splitlines()[3:4]:
+        symbols, coords, bonds = _read_sdf(text)
+        return [(symbols, coords, bonds)]
+    return [(symbols, coords, None) for symbols, coords in read_xyz_frames(text)]
+
+
+def read_query_frames(path: str | PathLike[str]) -> np.ndarray:
+    """Query coordinates with shape ``(frame, point, 3)``."""
+    frames = read_xyz_frames(Path(path).read_text())
+    width = len(frames[0][0])
+    points: list[np.ndarray] = []
+    for symbols, coords in frames:
+        if len(symbols) != width:
+            msg = f"query frames mix {width} and {len(symbols)} points"
+            raise ValueError(msg)
+        points.append(coords)
+    return np.stack(points)
+
+
+def load_trajectory(
+    molecule: str | PathLike[str],
+    queries: str | PathLike[str],
+    *,
+    cutoff: float | None = None,
+    max_depth: int = 6,
+) -> Trajectory:
+    """Track query frames on a molecule file.
+
+    One molecule frame is reused for every query frame. That is a fixed
+    bond graph with a moving centre. Several molecule frames pair with
+    the query frames one to one, and an XYZ molecule then needs ``cutoff``.
+    """
+    frames = read_frames(molecule)
+    points = read_query_frames(queries)
+    if len(frames) == 1 and points.shape[0] != 1:
+        frames = frames * points.shape[0]
+    return track_queries(frames, points, cutoff=cutoff, max_depth=max_depth)
+
+
+def format_trajectory(track: Trajectory) -> str:
+    """Hop counts and the terminal-ring coordinate of each query."""
+    lines = [
+        f"frames {track.n_frames}",
+        f"queries {track.n_queries}",
+        f"label_hops {track.label_hops()}",
+        f"block_hops {track.block_hops()}",
+        f"neighbor_hops {track.neighbor_hops()}",
+        f"junction_frames {track.junction_frames()}",
+    ]
+    for query in range(track.n_queries):
+        rows = [sample for sample in track.samples if sample.query == query]
+        chain = " ".join(
+            "none" if sample.terminal_chain is None else f"{sample.terminal_chain:.0f}"
+            for sample in rows
+        )
+        lines.append(
+            f"query {query} label_hops {track.label_hops(query)} "
+            f"block_hops {track.block_hops(query)} "
+            f"neighbor_hops {track.neighbor_hops(query)} "
+            f"junction_frames {track.junction_frames(query)}"
+        )
+        lines.append(f"query {query} terminal {chain}")
+    return "\n".join(lines) + "\n"
+
+
+def write_trajectory_csv(path: str | PathLike[str], track: Trajectory) -> None:
+    """One row per query per frame."""
+    fieldnames = [
+        "frame",
+        "query",
+        "kind",
+        "owner",
+        "atoms",
+        "chain",
+        "terminal_atoms",
+        "terminal_chain",
+        "distance",
+        "margin",
+        "label_hop",
+        "block_hop",
+        "hop_length",
+    ]
+    with Path(path).open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for sample in track.samples:
+            writer.writerow(
+                {
+                    "frame": sample.frame,
+                    "query": sample.query,
+                    "kind": sample.kind,
+                    "owner": sample.owner,
+                    "atoms": " ".join(str(atom) for atom in sample.atoms),
+                    "chain": f"{sample.chain:.4f}",
+                    "terminal_atoms": " ".join(
+                        str(atom) for atom in (sample.terminal_atoms or ())
+                    ),
+                    "terminal_chain": (
+                        ""
+                        if sample.terminal_chain is None
+                        else f"{sample.terminal_chain:.4f}"
+                    ),
+                    "distance": f"{sample.distance:.6f}",
+                    "margin": f"{sample.margin:.6f}",
+                    "label_hop": int(sample.label_hop),
+                    "block_hop": int(sample.block_hop),
+                    "hop_length": "" if sample.hop_length is None else sample.hop_length,
+                }
+            )
 
 
 def chain_of_pentagons(n_rings: int, side: float = 1.40, gap: float = 1.45):

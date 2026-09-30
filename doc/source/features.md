@@ -30,7 +30,7 @@ Call from `rgpycrumbs eon plt-*` with TOML `--config` for dense option sets.
 :::{grid-item-card} Primitive rings
 :class-card: sd-shadow-sm
 
-`rgpycrumbs geom plt-rings` draws the faces `ringNetwork` returns, and the bridges between them, through `chemparseplot.plot.rings` and xyzrender.
+`rgpycrumbs geom plt-rings` draws the faces `ringNetwork` returns, and the bridges between them, through `chemparseplot.plot.rings` and xyzrender. `rgpycrumbs geom plt-rings-track` labels a centre on each frame and counts hops of the terminal ring.
 :::
 ::::
 
