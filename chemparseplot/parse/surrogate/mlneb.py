@@ -97,6 +97,7 @@ def parse_mlneb_run(
     ev_pos = np.array([a.positions.ravel() for a in ev])
     ev_e = np.array([a.get_potential_energy() for a in ev])
     ev_f = np.array([_fmax(a.get_forces()) for a in ev])
+    ev_g = np.array([a.get_forces().ravel() for a in ev])
     snapshots: list[BandSnapshot] = []
     events: list[AcquisitionEvent] = []
     surrogate_force, picked = [], []
@@ -172,6 +173,7 @@ def parse_mlneb_run(
         positions=ev_pos,
         coordinate=pc,
         distance=pd,
+        gradients=-ev_g,
         n_calls=len(ev),
     )
     fmax_last = float(series["true_force"][-1])

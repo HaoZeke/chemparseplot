@@ -81,6 +81,8 @@ class EvaluatedPoints:
     coordinate: np.ndarray | None = None
     # Cartesian distance (A) of each observation from the final path.
     distance: np.ndarray | None = None
+    # Cartesian energy gradients (eV/A), one row per observation.
+    gradients: np.ndarray | None = None
     n_calls: int | None = None
 
     def __post_init__(self):
@@ -110,6 +112,10 @@ class BandHistory:
     points: EvaluatedPoints | None = None
     reference: BandSnapshot | None = None
     events: list[AcquisitionEvent] = field(default_factory=list)
+    # Geometry the search reports as its saddle (flat Cartesian, A) and whether
+    # it passed the producer's acceptance checks.
+    saddle: np.ndarray | None = None
+    saddle_certified: bool | None = None
 
 
 @dataclass

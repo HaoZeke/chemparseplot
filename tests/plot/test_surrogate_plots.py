@@ -226,21 +226,6 @@ def test_plots_accept_mlneb_snapshots():
     assert surr.plot_search_convergence(s.search).axes[0].get_yscale() == "log"
 
 
-def test_reduced_landscape_projects_band_and_observations(baker):
-    s, d = surr.reduced_coordinates(baker.band)[0]
-    assert s[0] == pytest.approx(0.0) and s[-1] > 0 and d[0] == pytest.approx(0.0)
-    fig = surr.plot_reduced_landscape(baker.band)
-    ax = fig.axes[0]
-    assert ax.get_xlabel().startswith("progress")
-    assert len(fig.axes) == 2  # colorbar
-    first = [
-        c
-        for c in ax.collections
-        if hasattr(c, "get_offsets") and len(c.get_offsets()) == 13
-    ]
-    assert first, "one marker per measured observation"
-
-
 def test_reduced_landscape_needs_geometries():
     snap = BandSnapshot(np.arange(3.0), np.zeros(3))
     with pytest.raises(ValueError, match="no geometries"):
@@ -559,14 +544,90 @@ def test_profile_observation_modes_state_distance_honestly(baker):
     assert none.axes[0].get_ylabel() == "energy relative to reactant (eV)"
 
 
-def test_landscape_legend_names_evaluations_path_and_climbing_image(baker):
+def _jax_surfaces():
+    pytest.importorskip("jax")
+    pytest.importorskip("rgpycrumbs.surfaces")
+
+
+def test_landscape_uses_the_shared_neb_functions_and_labels(baker, monkeypatch):
+    _jax_surfaces()
+    from chemparseplot.plot import neb as neb_plot
+
+    calls = []
+    for name in (
+        "plot_landscape_surface",
+        "plot_landscape_path_overlay",
+        "mark_saddle_point",
+    ):
+        orig = getattr(neb_plot, name)
+
+        def wrap(*a, _o=orig, _n=name, **k):
+            calls.append(_n)
+            return _o(*a, **k)
+
+        monkeypatch.setattr(neb_plot, name, wrap)
     fig = surr.plot_reduced_landscape(baker.band)
-    assert [t.get_text() for t in fig.legends[0].get_texts()] == [
-        "oracle evaluations (numbered in order of evaluation)",
-        "final path",
-        "climbing image",
+    assert calls == [
+        "plot_landscape_surface",
+        "plot_landscape_path_overlay",
+        "mark_saddle_point",
     ]
-    assert any(t.get_text().isdigit() for t in fig.axes[0].texts)
-    plain = surr.plot_reduced_landscape(baker.band, label_numbers=False)
-    assert [t.get_text() for t in plain.legends[0].get_texts()][0] == "oracle evaluations"
-    assert not plain.axes[0].texts
+    ax = fig.axes[0]
+    # the same axis labels and equal-metric square window as plt-neb
+    assert ax.get_xlabel() == r"Reaction progress $s$ ($\AA$)"
+    assert ax.get_ylabel() == r"Orthogonal deviation $d$ ($\AA$)"
+    xs, ys = ax.get_xlim(), ax.get_ylim()
+    assert xs[1] - xs[0] == pytest.approx(ys[1] - ys[0])
+    assert [t.get_text() for t in fig.legends[0].get_texts()] == [
+        "energy surface (GP fit to the oracle evaluations)",
+        r"GP variance contours ($\sigma^2$, relative)",
+        "final path (coloured by surrogate energy)",
+        "oracle evaluations (fill: true energy, as the colourbar)",
+        "climbing image",
+        "certified saddle",
+    ]
+    assert fig.axes[1].get_ylabel() == "energy relative to reactant (eV)"
+
+
+def test_landscape_has_no_unexplained_marks(baker):
+    _jax_surfaces()
+    fig = surr.plot_reduced_landscape(baker.band)
+    # without label_every the only text on the axes is the variance contour labels
+    assert all("sigma^2" in t.get_text() for t in fig.axes[0].texts)
+    numbered = surr.plot_reduced_landscape(baker.band, label_every=3)
+    texts = [
+        t.get_text() for t in numbered.axes[0].texts if "sigma^2" not in t.get_text()
+    ]
+    assert texts and all(t.isdigit() for t in texts)
+    entry = numbered.legends[0].get_texts()[3].get_text()
+    assert "numbers: order of evaluation" in entry
+
+
+def test_landscape_colouring_surface_and_saddle_options(baker):
+    _jax_surfaces()
+    by_iter = surr.plot_reduced_landscape(baker.band, color_by="iteration")
+    assert by_iter.axes[-1].get_ylabel() == "order of evaluation"
+    entry = by_iter.legends[0].get_texts()[3].get_text()
+    assert "shade: order of evaluation" in entry
+    flat = surr.plot_reduced_landscape(baker.band, surface=None)
+    assert not any("surface" in t.get_text() for t in flat.legends[0].get_texts())
+    saved = baker.band.saddle_certified
+    baker.band.saddle_certified = False
+    try:
+        un = surr.plot_reduced_landscape(baker.band, surface=None)
+        names = [t.get_text() for t in un.legends[0].get_texts()]
+        assert "reported saddle (not certified)" in names
+    finally:
+        baker.band.saddle_certified = saved
+
+
+def test_landscape_rmsd_gradients_recover_a_known_plane():
+    ref_a, ref_b = np.zeros(6), np.array([2.0, 0, 0, 0, 0, 0])
+    x = np.array([[1.0, 0.5, 0, 0, 0, 0], [0.5, 1.0, 0, 0, 0, 0]])
+    root = np.sqrt(2)  # E = 3 a + b through the chain rule: the fit returns (3, 1)
+    g = []
+    for xi in x:
+        da, db = xi - ref_a, xi - ref_b
+        g.append(3 * da / (root * np.linalg.norm(da)) + db / (root * np.linalg.norm(db)))
+    ea, eb = surr.rmsd_gradients(x, np.array(g), ref_a, ref_b)
+    assert ea == pytest.approx([3, 3]) and eb == pytest.approx([1, 1])

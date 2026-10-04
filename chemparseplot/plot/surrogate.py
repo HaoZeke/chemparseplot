@@ -478,23 +478,14 @@ def plot_band_evolution(
 # ----------------------------------------------------------- (d) reduced landscape
 
 
-def _sequential_cmap():
-    try:
-        import cmcrameri.cm  # noqa: F401, PLC0415
-
-        return plt.get_cmap("cmc.batlow")
-    except ImportError:  # pragma: no cover - cmcrameri is a plot extra
-        return plt.get_cmap("viridis")
-
-
 def reduced_coordinates(band: BandHistory):
-    """(s, d) coordinates of the band and of the measured observations.
+    """(s, d) coordinates of the band and of the oracle evaluations.
 
     ``a`` and ``b`` are the RMSD (A) of a geometry to the reactant and to the
-    product image of the final band; ``s`` is the progress along the straight
-    reactant-to-product line in the (a, b) plane and ``d`` the deviation from
-    it, the same reaction-valley projection :mod:`chemparseplot.parse.projection`
-    gives the NEB landscape.
+    product image of the final band; ``s`` and ``d`` are the progress along and
+    the deviation from the straight reactant-to-product line in the (a, b)
+    plane, the reaction-valley projection of
+    :mod:`chemparseplot.parse.projection` that ``rgpycrumbs eon plt-neb`` uses.
     """
     from chemparseplot.parse.projection import (  # noqa: PLC0415
         compute_projection_basis,
@@ -523,122 +514,229 @@ def reduced_coordinates(band: BandHistory):
     return path, pts
 
 
+def rmsd_gradients(positions, grads, ref_a, ref_b):
+    """Energy gradients in the (RMSD to a, RMSD to b) plane.
+
+    Solves ``g = E_a * grad(a) + E_b * grad(b)`` in least squares for each
+    Cartesian gradient ``g``, with ``a = |x - x_a| / sqrt(N)`` and the same for
+    ``b``: the part of the true gradient that lies in the plane the landscape
+    is drawn in. Returns ``(E_a, E_b)`` in energy per angstrom of RMSD.
+    """
+    n = positions.shape[1] // 3
+    root_n = np.sqrt(n)
+    out = np.zeros((len(positions), 2))
+    for i, (x, g) in enumerate(zip(positions, grads, strict=True)):
+        cols = []
+        for ref in (ref_a, ref_b):
+            d = x - ref
+            norm = np.linalg.norm(d)
+            cols.append(d / (root_n * norm) if norm > 0 else np.zeros_like(d))
+        out[i] = np.linalg.lstsq(np.column_stack(cols), g, rcond=1e-6)[0]
+    return out[:, 0], out[:, 1]
+
+
 def plot_reduced_landscape(
     band: BandHistory,
     *,
     energy_unit: str = "eV",
+    surface: str | None = "grad_matern",
+    color_by: str = "energy",
     label_every: int | None = None,
-    label_numbers: bool = True,
-    contours: bool = True,
     ax=None,
     title: str | None = None,
 ) -> Figure:
-    """Oracle evaluations and the band in the (s, d) reaction-valley plane.
+    """Reaction-valley landscape of a surrogate-assisted NEB.
 
-    Points are the oracle observations, coloured by true energy above the
-    reactant, joined in acquisition order by a thin grey line and numbered at
-    the first, the last and every ``label_every``-th. The black line is the
-    final band (circle size grows with the predictive sigma where recorded)
-    with the climbing image ringed. A legend names the evaluations, the final
-    path and the climbing image; the small numbers (first, last and every
-    ``label_every``-th) count the evaluations in the order they were made, and
-    ``label_numbers=False`` leaves them out. Thin contours are a piecewise-linear
-    interpolation of the observed energies, which is the observed landscape,
-    not the surrogate surface.
+    The same plot ``rgpycrumbs eon plt-neb`` draws, through the same functions
+    (:func:`chemparseplot.plot.neb.plot_landscape_surface`,
+    :func:`~chemparseplot.plot.neb.plot_landscape_path_overlay`,
+    :func:`~chemparseplot.plot.neb.mark_saddle_point`): axes are the progress
+    ``s`` and the orthogonal deviation ``d`` (RMSD, angstrom) relative to the
+    straight reactant-to-product line, with the theme's landscape colour map.
+
+    What this version adds, each with a legend entry:
+
+    - the GP energy surface is fitted here to the oracle evaluations (energy
+      and the part of the true gradient in the plane), with dashed relative
+      variance contours; it is the surface of those evaluations, not the
+      producer's own model. ``surface=None`` omits it;
+    - the oracle evaluations as dots, coloured by true energy
+      (``color_by="energy"``) or by order of evaluation
+      (``"iteration"``); ``label_every=k`` also numbers every k-th one, and the
+      legend then says the numbers are the order of evaluation;
+    - the final path (its colour is the surrogate mean energy);
+    - the climbing image (ringed) and the saddle the search reports (gold
+      star), certified when the producer says the cell passed.
+
+    Needs ``rgpycrumbs`` (surface models, via JAX).
     """
+    from chemparseplot.parse.projection import (  # noqa: PLC0415
+        compute_projection_basis,
+        project_to_sd,
+    )
+    from chemparseplot.plot import neb as neb_plot  # noqa: PLC0415
+
     _style()
     if band.points is None or band.points.positions is None:
-        msg = "the band holds no measured observation geometries"
+        msg = "the band holds no oracle-evaluation geometries"
         raise ValueError(msg)
+    final = band.final
     (s_p, d_p), (s_o, d_o) = reduced_coordinates(band)
-    e = convert_energy(band.points.energy - band.final.energy[0], energy_unit)
+    n_atoms = final.positions.shape[1] // 3
+    ref_a, ref_b = final.positions[0], final.positions[-1]
+    root_n = np.sqrt(n_atoms)
+
+    def rmsd(x, ref):
+        return np.linalg.norm(x - ref, axis=-1) / root_n
+
+    pts = band.points
+    z_obs = convert_energy(pts.energy - final.energy[0], energy_unit)
+    z_path = convert_energy(final.energy - final.energy[0], energy_unit)
+    r_obs, p_obs = rmsd(pts.positions, ref_a), rmsd(pts.positions, ref_b)
+    r_path, p_path = rmsd(final.positions, ref_a), rmsd(final.positions, ref_b)
+    basis = compute_projection_basis(r_path, p_path)
+    theme = get_theme("ruhi")
     own_axes = ax is None
     if own_axes:
-        fig, ax = plt.subplots(figsize=(6.2, 4.6), layout="constrained")
+        fig, ax = plt.subplots(figsize=(6.2, 5.6), layout="constrained")
     else:
         fig = ax.figure
-    if contours and len(e) >= 4:  # noqa: PLR2004
-        import matplotlib.tri as mtri  # noqa: PLC0415
-
-        try:
-            tri = mtri.Triangulation(s_o, d_o)
-            ax.tricontour(tri, e, levels=8, colors="#9a9a9a", linewidths=0.5, alpha=0.8)
-        except (ValueError, RuntimeError):  # collinear points: no triangulation
-            pass
-    ax.plot(s_o, d_o, "-", color="#bdbdbd", lw=0.6, zorder=1)
-    sc = ax.scatter(
-        s_o, d_o, c=e, cmap=_sequential_cmap(), s=26, edgecolor="black", lw=0.4, zorder=3
+    half = neb_plot.landscape_half_span(
+        (min(s_p.min(), s_o.min()), max(s_p.max(), s_o.max())),
+        r_path,
+        p_path,
+        [],
+        basis,
     )
-    fig.colorbar(
-        sc,
-        ax=ax,
-        label=energy_axis_label(energy_unit, label="energy relative to reactant"),
+    s_mid = 0.5 * (min(s_p.min(), s_o.min()) + max(s_p.max(), s_o.max()))
+    handles = []
+    if surface and pts.gradients is not None:
+        gr, gp = rmsd_gradients(pts.positions, pts.gradients, ref_a, ref_b)
+        neb_plot.plot_landscape_surface(
+            ax,
+            r_obs,
+            p_obs,
+            convert_energy(gr, energy_unit),
+            convert_energy(gp, energy_unit),
+            z_obs,
+            method=surface,
+            cmap=theme.cmap_landscape,
+            show_pts=False,
+            project_path=True,
+            xlim=(s_mid - half, s_mid + half),
+            ylim=(-half, half),
+            basis=basis,
+        )
+        handles.append(
+            Patch(
+                facecolor="#9aa7b0",
+                alpha=0.6,
+                label="energy surface (GP fit to the oracle evaluations)",
+            )
+        )
+        handles.append(
+            Line2D(
+                [],
+                [],
+                color="black",
+                ls="--",
+                lw=1.0,
+                label=r"GP variance contours ($\sigma^2$, relative)",
+            )
+        )
+    neb_plot.plot_landscape_path_overlay(
+        ax,
+        r_path,
+        p_path,
+        z_path,
+        theme.cmap_landscape,
+        energy_axis_label(energy_unit, label="energy relative to reactant"),
+        project_path=True,
+        basis=basis,
     )
-    sig = band.final.sigma
-    size = (
-        22 + 10 * (np.nan_to_num(sig) / (np.nanmax(sig) or 1.0)) * 4
-        if sig is not None
-        else 22
+    handles.append(
+        Line2D(
+            [],
+            [],
+            color="black",
+            lw=3,
+            marker="o",
+            ms=5,
+            mfc="white",
+            label="final path (coloured by surrogate energy)",
+        )
     )
-    ax.plot(s_p, d_p, "-", color="black", lw=1.4, zorder=4)
-    ax.scatter(s_p, d_p, s=size, color="white", edgecolor="black", lw=1.0, zorder=5)
-    ci = band.final.climbing
+    if color_by == "iteration":
+        c, cmap, cbar_label = (
+            np.arange(1, len(z_obs) + 1),
+            plt.get_cmap("Greys"),
+            "order of evaluation",
+        )
+        sc = ax.scatter(
+            s_o, d_o, c=c, cmap=cmap, s=16, edgecolor="black", lw=0.4, zorder=45
+        )
+        fig.colorbar(sc, ax=ax, fraction=0.046, pad=0.02, label=cbar_label)
+        handles.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="o",
+                ms=5,
+                mfc="#888888",
+                mec="black",
+                label="oracle evaluations (shade: order of evaluation)",
+            )
+        )
+    else:
+        norm = plt.Normalize(z_obs.min(), z_obs.max())
+        ax.scatter(
+            s_o,
+            d_o,
+            c=z_obs,
+            cmap=theme.cmap_landscape,
+            norm=norm,
+            s=16,
+            edgecolor="black",
+            lw=0.5,
+            zorder=45,
+        )
+        handles.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="o",
+                ms=5,
+                mfc="white",
+                mec="black",
+                label="oracle evaluations (fill: true energy, as the colourbar)",
+            )
+        )
+    if label_every:
+        for k in range(0, len(z_obs), label_every):
+            ax.annotate(
+                str(k + 1),
+                (s_o[k], d_o[k]),
+                xytext=(3, 3),
+                textcoords="offset points",
+                fontsize=7,
+                zorder=60,
+            )
+        handles[-1].set_label(handles[-1].get_label() + "; numbers: order of evaluation")
+    ci = final.climbing
     if ci is not None:
         ax.plot(
             s_p[ci],
             d_p[ci],
             marker="o",
-            ms=13,
+            ms=22,
             mfc="none",
             mec=ACQUISITION,
             mew=2.0,
             ls="none",
-            zorder=6,
+            zorder=70,
         )
-    order = np.arange(len(e))
-    mark = {0, len(e) - 1} | (set(order[:: label_every or max(1, len(e) // 8)].tolist()))
-    for k in sorted(mark if label_numbers else ()):
-        ax.annotate(
-            str(k + 1),
-            (s_o[k], d_o[k]),
-            xytext=(3, 3),
-            textcoords="offset points",
-            fontsize=7,
-        )
-    ax.set_xlabel(r"progress $s$ ($\mathrm{\AA}$ RMSD)")
-    ax.set_ylabel(r"deviation $d$ ($\mathrm{\AA}$ RMSD)")
-    ax.margins(0.06)
-    span_s = np.ptp(np.concatenate([s_p, s_o]))
-    span_d = np.ptp(np.concatenate([d_p, d_o]))
-    if span_d > _EQUAL_ASPECT_MIN * span_s:
-        ax.set_aspect("equal", adjustable="datalim")
-    if title:
-        ax.set_title(title, loc="left")
-    handles = [
-        Line2D(
-            [],
-            [],
-            ls="none",
-            marker="o",
-            ms=5,
-            mfc=NEUTRAL,
-            mec="black",
-            label="oracle evaluations"
-            + (" (numbered in order of evaluation)" if label_numbers else ""),
-        ),
-        Line2D(
-            [],
-            [],
-            color="black",
-            lw=1.4,
-            marker="o",
-            ms=5,
-            mfc="white",
-            mec="black",
-            label="final path",
-        ),
-    ]
-    if ci is not None:
         handles.append(
             Line2D(
                 [],
@@ -652,6 +750,38 @@ def plot_reduced_landscape(
                 label="climbing image",
             )
         )
+    if band.saddle is not None:
+        s_sd = project_to_sd(
+            np.array([rmsd(band.saddle, ref_a)]),
+            np.array([rmsd(band.saddle, ref_b)]),
+            basis,
+        )
+        neb_plot.mark_saddle_point(ax, s_sd[0][0], s_sd[1][0], annotate=False)
+        what = (
+            "certified saddle"
+            if band.saddle_certified
+            else "reported saddle (not certified)"
+        )
+        handles.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="*",
+                ms=13,
+                mfc="#FFD700",
+                mec="black",
+                label=what,
+            )
+        )
+    ax.set_xlabel(r"Reaction progress $s$ ($\AA$)")
+    ax.set_ylabel(r"Orthogonal deviation $d$ ($\AA$)")
+    ax.set_xlim(s_mid - half, s_mid + half)
+    ax.set_ylim(-half, half)
+    ax.set_aspect("equal", adjustable="box")
+    ax.minorticks_on()
+    if title:
+        ax.set_title(title, loc="left")
     if own_axes:
         fig.legend(
             handles=handles,

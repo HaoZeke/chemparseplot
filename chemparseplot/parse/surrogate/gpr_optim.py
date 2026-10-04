@@ -320,6 +320,18 @@ def _projection(points: np.ndarray, path: np.ndarray, coord: np.ndarray) -> np.n
     return project_on_path(points, path, coord)[0]
 
 
+def _read_saddle(path: Path) -> np.ndarray | None:
+    """Flat Cartesian positions (A) of an eOn ``.con`` file; None when unreadable."""
+    if not path.is_file():
+        return None
+    try:
+        from ase.io import read
+
+        return np.asarray(read(path, format="eon").positions, dtype=float).ravel()
+    except Exception:
+        return None
+
+
 def _band_from_h5(h5_path: Path, events) -> BandHistory:
     import h5py
 
@@ -356,7 +368,12 @@ def _band_from_h5(h5_path: Path, events) -> BandHistory:
         true_f[hit] = fmax[nearest[hit]]
         pc, pd = project_on_path(tp, pos, coord)
         points = EvaluatedPoints(
-            energy=te, max_force=fmax, positions=tp, coordinate=pc, distance=pd
+            energy=te,
+            max_force=fmax,
+            positions=tp,
+            coordinate=pc,
+            distance=pd,
+            gradients=tg,
         )
     final = BandSnapshot(
         coordinate=coord,
@@ -445,6 +462,12 @@ def parse_gpr_optim_cell(
         if h5.is_file():
             band = _band_from_h5(h5, search.events if search else [])
             prov["band/band.h5"] = sha256_file(h5)
+            pos_con = cell / "saddle" / "pos.con"
+            saddle = _read_saddle(pos_con)
+            if saddle is not None:
+                band.saddle = saddle
+                band.saddle_certified = rec.passed
+                prov["saddle/pos.con"] = sha256_file(pos_con)
     run = _locate_run(cell, "saddle", mlruns)
     if run is not None:
         single = _dimer_from_mlflow(run, tol, rec.converged)
