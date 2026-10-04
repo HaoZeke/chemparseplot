@@ -4,6 +4,12 @@
 
 """Parsers for surrogate-assisted saddle searches and the shared record types."""
 
+from chemparseplot.parse.surrogate.cases import (
+    CaseBoard,
+    CaseRow,
+    attach_baselines,
+    parse_cases_csv,
+)
 from chemparseplot.parse.surrogate.model import (
     AcquisitionEvent,
     BandHistory,
@@ -22,12 +28,16 @@ __all__ = [
     "BandHistory",
     "BandSnapshot",
     "CampaignTable",
+    "CaseBoard",
+    "CaseRow",
     "CellRecord",
     "EvaluatedPoints",
     "ScalingTable",
     "SearchHistory",
     "SingleEndedHistory",
     "SurrogateSearch",
+    "attach_baselines",
+    "parse_cases_csv",
     "read_search",
 ]
 

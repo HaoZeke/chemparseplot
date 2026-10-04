@@ -34,8 +34,10 @@ from matplotlib import font_manager
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 from matplotlib.ticker import FuncFormatter, LogLocator
 
+from chemparseplot.parse.surrogate.cases import CaseBoard
 from chemparseplot.parse.surrogate.model import (
     BandHistory,
     BandSnapshot,
@@ -62,6 +64,7 @@ NEUTRAL = "#6b6b6b"
 _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
+_WALL_INT_MIN = 10
 # Below this deviation/progress span ratio the landscape would be a sliver.
 _EQUAL_ASPECT_MIN = 0.35
 _EFFICIENCY_DARK = 0.45
@@ -1373,4 +1376,219 @@ def plot_time_breakdown(
     ax.legend(frameon=False, fontsize=8, ncols=2)
     if title:
         ax.set_title(title, loc="left")
+    return fig
+
+
+# -------------------------------------------------------------- per-case boards
+
+
+def _board_axes(boards, width_per_board=5.2):
+    n_rows = max(len(b.rows) for b in boards)
+    fig, axes = plt.subplots(
+        1,
+        len(boards),
+        figsize=(width_per_board * len(boards), 1.5 + 0.27 * n_rows),
+        squeeze=False,
+        layout="constrained",
+    )
+    return fig, axes.ravel(), n_rows
+
+
+def _board_title(b: CaseBoard) -> str:
+    return f"{b.name}: {b.n_certified}/{len(b.rows)} first-order saddles"
+
+
+def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
+    """Oracle evaluations per case: search and independent validation, stacked.
+
+    One panel per board, one horizontal bar per case in the order given. Teal:
+    search; coral: independent validation; the total sits at the bar end. A
+    case that is not certified is hatched. Baseline markers (``CaseBoard.baselines``)
+    sit on the case's row, open where the method did not converge.
+    """
+    _style()
+    fig, axes, n_rows = _board_axes(boards)
+    methods: dict[str, tuple[str, str]] = {}
+    any_uncert = False
+    for ax, b in zip(axes, boards, strict=True):
+        y = np.arange(len(b.rows))
+        s = np.array([r.search_calls for r in b.rows])
+        v = np.array([r.validation_calls for r in b.rows])
+        cert = np.array([r.certified for r in b.rows])
+        for sel, hatch in ((cert, ""), (~cert, "////")):
+            ax.barh(
+                y[sel],
+                s[sel],
+                color=SURROGATE,
+                hatch=hatch,
+                edgecolor="white",
+                lw=0.4,
+                height=0.7,
+            )
+            ax.barh(
+                y[sel],
+                v[sel],
+                left=s[sel],
+                color=ACQUISITION,
+                hatch=hatch,
+                edgecolor="white",
+                lw=0.4,
+                height=0.7,
+            )
+        any_uncert |= bool((~cert).any())
+        top = float((s + v).max()) if len(b.rows) else 1.0
+        for yi, tot in zip(y, s + v, strict=True):
+            ax.annotate(
+                f"{tot:.0f}",
+                (tot, yi),
+                xytext=(3, 0),
+                textcoords="offset points",
+                va="center",
+                fontsize=7,
+            )
+        for k, (name, per_case) in enumerate(b.baselines.items()):
+            mk, col = _BASE_STYLE[k % len(_BASE_STYLE)]
+            methods.setdefault(name, (mk, col))
+            for r_i, r in enumerate(b.rows):
+                if r.case in per_case:
+                    calls, conv = per_case[r.case]
+                    top = max(top, calls)
+                    ax.plot(
+                        calls,
+                        r_i,
+                        ls="none",
+                        marker=mk,
+                        ms=6,
+                        mec=col,
+                        mew=1.5,
+                        mfc=col if conv else "white",
+                        zorder=3,
+                    )
+        ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
+        ax.set_ylim(n_rows - 0.5, -0.5)
+        ax.set_xlim(0, top * 1.12)
+        ax.set_xlabel("Oracle evaluations")
+        ax.set_title(_board_title(b), loc="left", fontsize=10)
+        ax.grid(axis="x", color="#e6e6e6", lw=0.6)
+        ax.set_axisbelow(True)
+    handles = [
+        Patch(facecolor=SURROGATE, label="search"),
+        Patch(facecolor=ACQUISITION, label="independent validation"),
+    ]
+    if any_uncert:
+        handles.append(
+            Patch(
+                facecolor="#bdbdbd",
+                hatch="////",
+                edgecolor="white",
+                label="not certified",
+            )
+        )
+    handles += [
+        Line2D([], [], ls="none", marker=mk, mec=col, mfc=col, ms=6, label=name)
+        for name, (mk, col) in methods.items()
+    ]
+    fig.legend(
+        handles=handles,
+        frameon=False,
+        fontsize=8,
+        ncols=len(handles),
+        loc="outside lower center",
+    )
+    return fig
+
+
+def plot_cases_wall(
+    boards: Sequence[CaseBoard], *, reference_label: str = "reference"
+) -> Figure:
+    """Wall time per case on a log axis, one bar each, the value at the bar end.
+
+    A thin vertical tick on the case's row marks ``reference_wall_s`` when the
+    table has one; ``reference_label`` names it in the legend. Not-certified
+    cases are hatched.
+    """
+    _style()
+    fig, axes, n_rows = _board_axes(boards)
+    have_ref = False
+    have_uncert = False
+    lo_all = min(r.wall_s for b in boards for r in b.rows)
+    lo = 10 ** np.floor(np.log10(lo_all))
+    hi_all = max(max(r.wall_s, r.reference_wall_s or 0) for b in boards for r in b.rows)
+    for ax, b in zip(axes, boards, strict=True):
+        y = np.arange(len(b.rows))
+        w = np.array([r.wall_s for r in b.rows])
+        cert = np.array([r.certified for r in b.rows])
+        for sel, hatch in ((cert, ""), (~cert, "////")):
+            ax.barh(
+                y[sel],
+                w[sel] - lo,
+                left=lo,
+                color=SURROGATE,
+                hatch=hatch,
+                edgecolor="white",
+                lw=0.4,
+                height=0.7,
+            )
+        have_uncert |= bool((~cert).any())
+        for yi, wi in zip(y, w, strict=True):
+            txt = f"{wi:,.0f}" if wi >= _WALL_INT_MIN else f"{wi:.1f}"
+            ax.annotate(
+                txt,
+                (wi, yi),
+                xytext=(3, 0),
+                textcoords="offset points",
+                va="center",
+                fontsize=7,
+            )
+        for yi, r in zip(y, b.rows, strict=True):
+            if r.reference_wall_s:
+                have_ref = True
+                ax.vlines(
+                    r.reference_wall_s,
+                    yi - 0.4,
+                    yi + 0.4,
+                    color="black",
+                    lw=1.6,
+                    zorder=3,
+                )
+        ax.set_xscale("log")
+        ax.set_xlim(lo, hi_all * 3)
+        _plain_log_axis(ax.xaxis)
+        ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
+        ax.set_ylim(n_rows - 0.5, -0.5)
+        ax.set_xlabel("Wall time (s)")
+        ax.set_title(_board_title(b), loc="left", fontsize=10)
+        ax.grid(axis="x", color="#e6e6e6", lw=0.6)
+        ax.set_axisbelow(True)
+    handles = []
+    if have_ref:
+        handles.append(
+            Line2D(
+                [],
+                [],
+                color="black",
+                lw=0,
+                marker="|",
+                ms=10,
+                mew=1.6,
+                label=reference_label,
+            )
+        )
+    if have_uncert:
+        handles.append(
+            Patch(
+                facecolor="#bdbdbd",
+                hatch="////",
+                edgecolor="white",
+                label="not certified",
+            )
+        )
+    if handles:
+        fig.legend(
+            handles=handles,
+            frameon=False,
+            fontsize=8,
+            ncols=len(handles),
+            loc="outside lower center",
+        )
     return fig

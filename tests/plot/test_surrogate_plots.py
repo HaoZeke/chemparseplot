@@ -395,3 +395,73 @@ def test_time_breakdown_stacks_components_and_remainder():
     tops = [sum(heights[i::3]) for i in range(3)]
     assert tops == pytest.approx(list(total))
     assert ax.get_ylabel() == "wall time (s)"
+
+
+CASES = SCALING.parent / "cases"
+_BANNED = ("retained", "force point", "upper bound", "force threshold only")
+
+
+def _texts(fig):
+    out = [t.get_text() for t in fig.findobj(mpl.text.Text) if t.get_text()]
+    for ax in fig.axes:
+        out += [t.get_text() for t in ax.get_yticklabels()]
+    return out
+
+
+def test_cases_calls_stacked_bars_titles_and_legend():
+    from chemparseplot.parse.surrogate import attach_baselines, parse_cases_csv
+
+    boards = parse_cases_csv(CASES / "cases.csv")
+    attach_baselines(boards, CASES / "baselines.csv")
+    assert [b.name for b in boards] == ["Baker-Chan", "Birkholz-Schlegel"]
+    fig = surr.plot_cases_calls(boards)
+    a, b = fig.axes[:2]
+    assert a.get_title(loc="left") == "Baker-Chan: 3/3 first-order saddles"
+    assert b.get_title(loc="left") == "Birkholz-Schlegel: 1/2 first-order saddles"
+    assert [t.get_text() for t in a.get_yticklabels()] == ["HCCH", "HCN", "H2CO"]
+    assert a.get_xlabel() == "Oracle evaluations" and a.get_xlim()[0] == 0
+    assert a.get_xscale() == "linear"
+    legend = [t.get_text() for t in fig.legends[0].get_texts()]
+    assert legend == [
+        "search",
+        "independent validation",
+        "not certified",
+        "ASE ML-NEB",
+        "FSM + TS",
+    ]
+    assert "65" in [t.get_text() for t in a.texts]  # 39 + 26 printed at the bar end
+    # the unconverged baseline marker is open
+    open_markers = [ln for ln in a.lines if ln.get_markerfacecolor() == "white"]
+    assert len(open_markers) == 1
+    assert a.get_ylim()[0] > a.get_ylim()[1]  # file order, top to bottom
+    assert not [w for w in _BANNED if any(w in t for t in _texts(fig))]
+
+
+def test_cases_wall_log_axis_reference_tick_and_labels():
+    from chemparseplot.parse.surrogate import parse_cases_csv
+
+    boards = parse_cases_csv(CASES / "cases.csv")
+    fig = surr.plot_cases_wall(boards, reference_label="earlier record")
+    a, b = fig.axes[:2]
+    assert a.get_xscale() == "log" and a.get_xlabel() == "Wall time (s)"
+    assert len(a.collections) == 2  # two reference ticks on Baker rows with a value
+    assert [t.get_text() for t in fig.legends[0].get_texts()] == [
+        "earlier record",
+        "not certified",
+    ]
+    assert "26" in [t.get_text() for t in a.texts]
+    assert not [w for w in _BANNED if any(w in t for t in _texts(fig))]
+
+
+def test_cases_csv_errors(tmp_path):
+    from chemparseplot.parse.surrogate import attach_baselines, parse_cases_csv
+
+    bad = tmp_path / "b.csv"
+    bad.write_text("board,case\nx,y\n")
+    with pytest.raises(ValueError, match="lacks column"):
+        parse_cases_csv(bad)
+    boards = parse_cases_csv(CASES / "cases.csv")
+    base = tmp_path / "base.csv"
+    base.write_text("board,case,method,calls,converged\nBaker-Chan,99_nope,M,1,true\n")
+    with pytest.raises(ValueError, match="unknown case"):
+        attach_baselines(boards, base)
