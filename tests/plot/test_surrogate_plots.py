@@ -557,3 +557,16 @@ def test_profile_observation_modes_state_distance_honestly(baker):
     none = surr.plot_band_profile(baker.band, observations="none")
     assert not any(t.startswith("oracle evaluations") for t in _labels(none.axes[0]))
     assert none.axes[0].get_ylabel() == "energy relative to reactant (eV)"
+
+
+def test_landscape_legend_names_evaluations_path_and_climbing_image(baker):
+    fig = surr.plot_reduced_landscape(baker.band)
+    assert [t.get_text() for t in fig.legends[0].get_texts()] == [
+        "oracle evaluations (numbered in order of evaluation)",
+        "final path",
+        "climbing image",
+    ]
+    assert any(t.get_text().isdigit() for t in fig.axes[0].texts)
+    plain = surr.plot_reduced_landscape(baker.band, label_numbers=False)
+    assert [t.get_text() for t in plain.legends[0].get_texts()][0] == "oracle evaluations"
+    assert not plain.axes[0].texts

@@ -528,17 +528,21 @@ def plot_reduced_landscape(
     *,
     energy_unit: str = "eV",
     label_every: int | None = None,
+    label_numbers: bool = True,
     contours: bool = True,
     ax=None,
     title: str | None = None,
 ) -> Figure:
-    """Retained observations and the band in the (s, d) reaction-valley plane.
+    """Oracle evaluations and the band in the (s, d) reaction-valley plane.
 
     Points are the oracle observations, coloured by true energy above the
     reactant, joined in acquisition order by a thin grey line and numbered at
     the first, the last and every ``label_every``-th. The black line is the
     final band (circle size grows with the predictive sigma where recorded)
-    with the climbing image ringed. Thin contours are a piecewise-linear
+    with the climbing image ringed. A legend names the evaluations, the final
+    path and the climbing image; the small numbers (first, last and every
+    ``label_every``-th) count the evaluations in the order they were made, and
+    ``label_numbers=False`` leaves them out. Thin contours are a piecewise-linear
     interpolation of the observed energies, which is the observed landscape,
     not the surrogate surface.
     """
@@ -548,7 +552,8 @@ def plot_reduced_landscape(
         raise ValueError(msg)
     (s_p, d_p), (s_o, d_o) = reduced_coordinates(band)
     e = convert_energy(band.points.energy - band.final.energy[0], energy_unit)
-    if ax is None:
+    own_axes = ax is None
+    if own_axes:
         fig, ax = plt.subplots(figsize=(6.2, 4.6), layout="constrained")
     else:
         fig = ax.figure
@@ -592,7 +597,7 @@ def plot_reduced_landscape(
         )
     order = np.arange(len(e))
     mark = {0, len(e) - 1} | (set(order[:: label_every or max(1, len(e) // 8)].tolist()))
-    for k in sorted(mark):
+    for k in sorted(mark if label_numbers else ()):
         ax.annotate(
             str(k + 1),
             (s_o[k], d_o[k]),
@@ -609,6 +614,54 @@ def plot_reduced_landscape(
         ax.set_aspect("equal", adjustable="datalim")
     if title:
         ax.set_title(title, loc="left")
+    handles = [
+        Line2D(
+            [],
+            [],
+            ls="none",
+            marker="o",
+            ms=5,
+            mfc=NEUTRAL,
+            mec="black",
+            label="oracle evaluations"
+            + (" (numbered in order of evaluation)" if label_numbers else ""),
+        ),
+        Line2D(
+            [],
+            [],
+            color="black",
+            lw=1.4,
+            marker="o",
+            ms=5,
+            mfc="white",
+            mec="black",
+            label="final path",
+        ),
+    ]
+    if ci is not None:
+        handles.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="o",
+                ms=11,
+                mfc="none",
+                mec=ACQUISITION,
+                mew=2.0,
+                label="climbing image",
+            )
+        )
+    if own_axes:
+        fig.legend(
+            handles=handles,
+            frameon=False,
+            fontsize=8,
+            ncols=2,
+            loc="outside lower center",
+        )
+    else:
+        ax.legend(handles=handles, frameon=False, fontsize=8, loc="best")
     return fig
 
 
