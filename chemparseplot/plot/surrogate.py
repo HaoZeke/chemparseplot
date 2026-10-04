@@ -461,6 +461,7 @@ def plot_reduced_landscape(
         )
     ax.set_xlabel(r"progress $s$ ($\mathrm{\AA}$ RMSD)")
     ax.set_ylabel(r"deviation $d$ ($\mathrm{\AA}$ RMSD)")
+    ax.margins(0.06)
     span_s = np.ptp(np.concatenate([s_p, s_o]))
     span_d = np.ptp(np.concatenate([d_p, d_o]))
     if span_d > _EQUAL_ASPECT_MIN * span_s:
