@@ -945,16 +945,20 @@ def plot_reduced_landscape(
             return sd[0][0], sd[1][0]
 
         entries = _strip_entries(band, structures, n_structures, locate)
-    if own_axes and entries:
+    ax_strip = None
+    if own_axes:
         n_rows_strip = -(-len(entries) // _STRIP_MAX_COLS)
-        strip_h = _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
+        strip_h = (
+            _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
+            if entries
+            else 0.0
+        )
         fig_w = _Y_LABEL_IN + _MAP_IN + _CBAR_IN
         fig_h = _TOP_IN + _MAP_IN + _XLABEL_GAP_IN + strip_h + _GAP_IN + _LEGEND_IN
         fig = plt.figure(figsize=(fig_w, fig_h))
         ax = fig.add_axes((0.1, 0.5, 0.5, 0.4))
-        ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
-    elif own_axes:
-        fig, ax = plt.subplots(figsize=(6.8, 6.2), layout="constrained")
+        if entries:
+            ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
     else:
         fig = ax.figure
     half = neb_plot.landscape_half_span(
@@ -1213,6 +1217,7 @@ def plot_reduced_landscape(
                 ),
             )
         )
+    if own_axes:
         ncols_leg, legend_in = _legend_layout(
             [h.get_label() for h in handles], _lfs(8), fig_w
         )
@@ -1233,27 +1238,28 @@ def plot_reduced_landscape(
                     _MAP_IN / fig_h,
                 ]
             )
-        ax_strip.set_position(
-            [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
-        )
-        ax_strip.axis("off")
-        fig.canvas.draw()
-        neb_plot.plot_structure_strip(
-            ax_strip,
-            entries,
-            zoom=_STRIP_ZOOM,
-            rotation=rotation,
-            theme_color=theme.textcolor,
-            renderer=strip_renderer,
-            xyzrender_config=xyzrender_config,
-            col_spacing=_STRIP_SPACING,
-            width_fill_fraction=_STRIP_FILL,
-            max_cols=_STRIP_MAX_COLS,
-            prefer_single_row=False,
-        )
-        ax_strip.set_position(
-            [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
-        )
+        if entries:
+            ax_strip.set_position(
+                [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+            )
+            ax_strip.axis("off")
+            fig.canvas.draw()
+            neb_plot.plot_structure_strip(
+                ax_strip,
+                entries,
+                zoom=_STRIP_ZOOM,
+                rotation=rotation,
+                theme_color=theme.textcolor,
+                renderer=strip_renderer,
+                xyzrender_config=xyzrender_config,
+                col_spacing=_STRIP_SPACING,
+                width_fill_fraction=_STRIP_FILL,
+                max_cols=_STRIP_MAX_COLS,
+                prefer_single_row=False,
+            )
+            ax_strip.set_position(
+                [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+            )
         fig.legend(
             handles=handles,
             frameon=False,
@@ -1261,14 +1267,6 @@ def plot_reduced_landscape(
             ncols=ncols_leg,
             loc="lower center",
             bbox_to_anchor=(0.5, 0.0),
-        )
-    elif own_axes:
-        fig.legend(
-            handles=handles,
-            frameon=False,
-            fontsize=_lfs(8),
-            ncols=2,
-            loc="outside lower center",
         )
     else:
         ax.legend(handles=handles, frameon=False, fontsize=_lfs(8), loc="best")
