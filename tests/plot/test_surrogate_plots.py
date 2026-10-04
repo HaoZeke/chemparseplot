@@ -268,4 +268,45 @@ def test_scaling_bars_capped_markers_and_calls():
     assert lo[0] < 1.0 < hi[0]
     ax = surr.plot_scaling(t).axes[0]
     assert "c (capped)" in _labels(ax)
-    assert [x.get_text() for x in ax.texts] == ["100", "100", "140"]
+    assert not ax.texts  # call counts live in their own panel
+
+
+SCALING = REC.parent / "scaling"
+
+
+def test_strong_scaling_panels_from_csv():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_scaling_csv
+
+    t = parse_scaling_csv(SCALING / "wall.csv", SCALING / "counts.csv")
+    assert t.layouts["c1"] == ["1x1", "2x1", "1x2", "4x1", "2x2", "4x2"]
+    assert t.calls["c1"].tolist() == [50, 50, 50, 52, 52, 90]
+    assert t.capped["c1"].tolist() == [False] * 5 + [True]
+    fig = surr.plot_strong_scaling(t, "c1")
+    wall, speed, calls, per_call = fig.axes
+    assert wall.get_yscale() == "log" and calls.get_ylabel().startswith("oracle calls")
+    assert per_call.get_ylabel() == "seconds per call"
+    assert [x.get_text() for x in calls.get_xticklabels()] == t.layouts["c1"]
+    # seconds per call is wall over the search calls, so the call jump shows
+    y = per_call.lines[0].get_ydata()
+    assert y[-1] == pytest.approx(t.series["c1"][1][-1] / 90)
+
+
+def test_efficiency_table_has_a_row_per_layout():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_scaling_csv
+
+    t = parse_scaling_csv(SCALING / "wall.csv", SCALING / "counts.csv")
+    ax = surr.plot_efficiency_table(t).axes[0]
+    rows = [x.get_text() for x in ax.get_yticklabels()]
+    assert sorted(rows) == sorted(t.layouts["c1"]) and len(rows) == 6
+    assert "1.00" in [x.get_text() for x in ax.texts]
+    # the two 2-core layouts get different efficiencies
+    sp = surr.plot_scaling(t).axes[0]
+    assert "c1 (capped)" in _labels(sp)
+
+
+def test_pop_efficiencies():
+    fig = surr.plot_pop_efficiencies(
+        ["1x1", "2x2"], {"load balance": [1.0, 0.8], "communication": [1.0, 0.9]}
+    )
+    ax = fig.axes[0]
+    assert len(ax.lines) == 3 and ax.get_ylim()[0] == 0

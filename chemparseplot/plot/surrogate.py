@@ -998,39 +998,45 @@ def plot_campaign_walls(
 # ---------------------------------------------------------------------- (h) scaling
 
 
-def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
-    """Speedup against workers on log axes, with the ideal line.
+def _layout_axis(table: ScalingTable, name: str):
+    """Layout labels, cores and a dodge so layouts of one core count separate."""
+    w, _ = table.series[name]
+    w = np.asarray(w, dtype=float)
+    labels = table.layouts.get(name) or [f"{int(v)}" for v in w]
+    dodge = np.ones(len(w))
+    for v in np.unique(w):
+        idx = np.where(w == v)[0]
+        for k, j in enumerate(idx):
+            dodge[j] = 1.0 + 0.08 * (k - (len(idx) - 1) / 2)
+    return w, labels, dodge
 
-    Speedup is ``T_ref(w0) / T(w)`` with ``w0`` the first worker count of the
-    reference series, or of the series itself when the table names no
-    reference. Bars span the slowest to the fastest repetition when the table
-    holds them, open markers are runs that hit a cap, and the small numbers
-    are the oracle calls of the run.
-    """
-    _style()
-    fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
-    t = table
-    w0 = float(np.min(table.series[table.reference or next(iter(table.series))][0]))
+
+_SCALING_STYLES = [
+    ("-", "o", SURROGATE),
+    ("--", "s", ORACLE),
+    ("-.", "^", REFERENCE),
+    (":", "D", ACQUISITION),
+]
+
+
+def _draw_scaling(ax, table: ScalingTable, names, *, ylabel="speedup") -> None:
     allw = np.unique(
-        np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
+        np.concatenate(
+            [np.asarray(table.series[n][0], dtype=float) for n in table.series]
+        )
     )
+    w0 = float(np.min(table.series[table.reference or next(iter(table.series))][0]))
     ax.plot(allw, allw / w0, ":", color="black", lw=1.0, label="ideal")
-    styles = [
-        ("-", "o", SURROGATE),
-        ("--", "s", ORACLE),
-        ("-.", "^", REFERENCE),
-        (":", "D", ACQUISITION),
-    ]
-    for name, (ls, mk, col) in zip(table.series, styles, strict=False):
-        w, sp = t.speedup(name)
-        # One line through the fastest layout at each worker count; the other
-        # layouts of the same count show as markers.
+    for name, (ls, mk, col) in zip(names, _SCALING_STYLES * 4, strict=False):
+        w, _labels, dodge = _layout_axis(table, name)
+        _, sp = table.speedup(name)
+        x = w * dodge
         best = np.array([sp[w == v].max() for v in np.unique(w)])
         ax.plot(np.unique(w), best, ls=ls, color=col, lw=1.0, alpha=0.6)
-        rng = t.speedup_range(name)
+        rng = table.speedup_range(name)
         if rng is not None:
             ax.errorbar(
-                w,
+                x,
                 sp,
                 yerr=[sp - rng[0], rng[1] - sp],
                 fmt="none",
@@ -1039,10 +1045,10 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
                 capsize=2,
             )
         cap = np.asarray(table.capped.get(name, np.zeros(len(w), bool)))
-        ax.plot(w[~cap], sp[~cap], ls="none", marker=mk, color=col, ms=5, label=name)
+        ax.plot(x[~cap], sp[~cap], ls="none", marker=mk, color=col, ms=5, label=name)
         if cap.any():
             ax.plot(
-                w[cap],
+                x[cap],
                 sp[cap],
                 ls="none",
                 marker=mk,
@@ -1052,50 +1058,125 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
                 ms=6,
                 label=f"{name} (capped)",
             )
-        if name in table.calls:
-            for wi, si, ci in zip(w, sp, table.calls[name], strict=True):
-                if np.isfinite(ci):
-                    ax.annotate(
-                        f"{int(ci)}",
-                        (wi, si),
-                        xytext=(0, 6),
-                        textcoords="offset points",
-                        ha="center",
-                        fontsize=6,
-                        color=col,
-                    )
     ax.set_xscale("log", base=2)
     ax.set_yscale("log", base=2)
     ax.set_xticks(allw, [f"{int(v)}" for v in allw])
-    ax.set_xlabel("workers")
+    ax.set_xlabel("cores (ranks x threads)")
     ax.set_ylabel(ylabel)
+
+
+def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
+    """Speedup against cores on log axes, with the ideal line.
+
+    Speedup is ``T_ref(w0) / T(w)`` with ``w0`` the first worker count of the
+    reference series, or of the series itself when the table names no
+    reference. Layouts that share a core count are dodged sideways; one line
+    joins the fastest layout per core count. Bars span the slowest to the
+    fastest repetition and open markers are runs that hit a cap.
+    """
+    _style()
+    fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
+    _draw_scaling(ax, table, list(table.series), ylabel=ylabel)
     ax.legend(frameon=False, fontsize=8)
     return fig
 
 
-def plot_efficiency_table(table: ScalingTable) -> Figure:
-    """Parallel efficiency (speedup per ideal speedup) as an annotated heat table."""
+def plot_strong_scaling(table: ScalingTable, name: str) -> Figure:
+    """Four panels for one series (a cell), one tick per ranks x threads layout.
+
+    Wall time with the slowest and fastest repetition; speedup against the
+    ideal line; oracle calls of the search; seconds per call. The last two
+    show when the search path changes with the layout, which wall time alone
+    hides. Open markers are runs that hit a cap.
+    """
     _style()
-    t = table
-    allw = np.unique(
-        np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
+    w, labels, _ = _layout_axis(table, name)
+    t = np.asarray(table.series[name][1], dtype=float)
+    x = np.arange(len(w))
+    cap = np.asarray(table.capped.get(name, np.zeros(len(w), bool)))
+    fig, axes = plt.subplots(2, 2, figsize=(8.0, 6.0), layout="constrained")
+    (a1, a2), (a3, a4) = axes
+
+    def pts(ax, y, color, marker, yerr=None):
+        if yerr is not None:
+            ax.errorbar(x, y, yerr=yerr, fmt="none", ecolor=color, capsize=2, lw=1.0)
+        ax.plot(x, y, "-", color=color, lw=0.8, alpha=0.5)
+        ax.plot(x[~cap], y[~cap], ls="none", marker=marker, color=color, ms=5)
+        ax.plot(
+            x[cap],
+            y[cap],
+            ls="none",
+            marker=marker,
+            mfc="white",
+            mec=color,
+            mew=1.4,
+            ms=6,
+        )
+
+    lo = t - np.asarray(table.time_min.get(name, t))
+    hi = np.asarray(table.time_max.get(name, t)) - t
+    pts(a1, t, SURROGATE, "o", [lo, hi])
+    a1.set_yscale("log")
+    a1.set_ylabel("wall time (s)")
+    sp = table.speedup(name)[1]
+    rng = table.speedup_range(name)
+    pts(a2, sp, ORACLE, "s", None if rng is None else [sp - rng[0], rng[1] - sp])
+    a2.plot(
+        x,
+        w / w.min() * (sp[np.argmin(w)] if len(sp) else 1.0),
+        ":",
+        color="black",
+        lw=1.0,
+        label="ideal",
     )
+    a2.set_yscale("log", base=2)
+    a2.set_ylabel("speedup")
+    a2.legend(frameon=False, fontsize=8)
+    calls = np.asarray(table.calls.get(name, np.full(len(w), np.nan)), dtype=float)
+    pts(a3, calls, REFERENCE, "^")
+    a3.set_ylabel("oracle calls in the search")
+    pts(a4, t / calls, ACQUISITION, "D")
+    a4.set_ylabel("seconds per call")
+    for ax in (a3, a4):
+        if not np.isfinite(calls).any():
+            ax.text(0.5, 0.5, "no call counts", transform=ax.transAxes, ha="center")
+    for ax in axes.ravel():
+        ax.set_xticks(x, labels, rotation=45, ha="right", fontsize=8)
+        ax.set_xlabel("ranks x threads")
+    fig.suptitle(name, x=0.02, ha="left", fontsize=11)
+    return fig
+
+
+def plot_efficiency_table(table: ScalingTable) -> Figure:
+    """Parallel efficiency (speedup per ideal speedup) as an annotated heat table.
+
+    One row per ranks x threads layout, one column per series; a cell without
+    that layout stays blank. Efficiency is against each series' first point.
+    """
+    _style()
     names = list(table.series)
-    grid = np.full((len(names), len(allw)), np.nan)
-    for i, nm in enumerate(names):
-        w, sp = t.speedup(nm)
-        w0 = float(np.min(table.series[table.reference or nm][0]))
-        for wk, s in zip(w, sp, strict=True):
-            grid[i, int(np.where(allw == wk)[0][0])] = s / (wk / w0)
+    order: dict[tuple, str] = {}
+    for n in names:
+        w, labels, _ = _layout_axis(table, n)
+        for wv, lab in zip(w, labels, strict=True):
+            order[(wv, lab)] = lab
+    rows = sorted(order, key=lambda k: (k[0], k[1]))
+    grid = np.full((len(rows), len(names)), np.nan)
+    for j, n in enumerate(names):
+        w, labels, _ = _layout_axis(table, n)
+        sp = table.speedup(n)[1]
+        w0 = float(np.min(table.series[table.reference or n][0]))
+        for wv, lab, s_ in zip(w, labels, sp, strict=True):
+            grid[rows.index((wv, lab)), j] = s_ / (wv / w0)
     cmap = LinearSegmentedColormap.from_list(
         "eff", ["#ffffff", RUHI_COLORS["sky"], SURROGATE]
     )
     fig, ax = plt.subplots(
-        figsize=(1.2 + 0.8 * len(allw), 0.9 + 0.5 * len(names)), layout="constrained"
+        figsize=(1.6 + 1.0 * len(names), 0.9 + 0.3 * len(rows)), layout="constrained"
     )
     ax.imshow(grid, cmap=cmap, vmin=0, vmax=1.0, aspect="auto")
-    for i in range(len(names)):
-        for j in range(len(allw)):
+    for i in range(len(rows)):
+        for j in range(len(names)):
             if np.isfinite(grid[i, j]):
                 ax.text(
                     j,
@@ -1103,13 +1184,50 @@ def plot_efficiency_table(table: ScalingTable) -> Figure:
                     f"{grid[i, j]:.2f}",
                     ha="center",
                     va="center",
+                    fontsize=8,
                     color="white" if grid[i, j] > _EFFICIENCY_DARK else "black",
-                    fontsize=9,
                 )
-    ax.set_xticks(range(len(allw)), [f"{int(v)}" for v in allw])
-    ax.set_yticks(range(len(names)), names)
-    ax.set_xlabel("workers")
+    ax.set_xticks(range(len(names)), names, rotation=30, ha="right", fontsize=8)
+    ax.set_yticks(range(len(rows)), [r[1] for r in rows], fontsize=8)
+    ax.set_ylabel("ranks x threads")
     ax.set_title("parallel efficiency", loc="left", fontsize=10)
-    for s in ax.spines.values():
-        s.set_visible(False)
+    for sp_ in ax.spines.values():
+        sp_.set_visible(False)
+    return fig
+
+
+def plot_pop_efficiencies(
+    layouts: Sequence[str],
+    metrics: dict[str, Sequence[float]],
+    *,
+    title: str | None = None,
+) -> Figure:
+    """Fixed-work efficiencies per layout (load balance, communication, ...).
+
+    ``metrics`` maps a name to one value in [0, 1] per layout; each name is a
+    line with its own marker so the panel reads without colour.
+    """
+    _style()
+    fig, ax = plt.subplots(figsize=(6.0, 3.6), layout="constrained")
+    x = np.arange(len(layouts))
+    for (name, vals), (ls, mk, col) in zip(
+        metrics.items(), _SCALING_STYLES * 4, strict=False
+    ):
+        ax.plot(
+            x,
+            np.asarray(vals, dtype=float),
+            ls=ls,
+            marker=mk,
+            color=col,
+            ms=5,
+            label=name,
+        )
+    ax.axhline(1.0, color="black", lw=0.8, ls=":")
+    ax.set_xticks(x, list(layouts), rotation=45, ha="right", fontsize=8)
+    ax.set_xlabel("ranks x threads")
+    ax.set_ylabel("efficiency")
+    ax.set_ylim(0, 1.1)
+    ax.legend(frameon=False, fontsize=8)
+    if title:
+        ax.set_title(title, loc="left")
     return fig

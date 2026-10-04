@@ -477,14 +477,19 @@ def parse_scaling_csv(
                 key = (r["cell"], int(r["ranks"]), int(r["threads"]))
                 passed[key] = passed.get(key, True) and r["passed"] == "True"
     pts: dict[str, dict[tuple, list]] = defaultdict(lambda: defaultdict(list))
+    search_calls: dict[tuple, list[float]] = defaultdict(list)
     with Path(wall_csv).open() as fh:
         for r in csv.DictReader(fh):
-            if r["stage"] != stage or (cells and r["cell"] not in cells):
+            if cells and r["cell"] not in cells:
                 continue
             key = (int(r["ranks"]), int(r["threads"]))
+            if r["stage"] == "search" and r["calls"]:
+                search_calls[(r["cell"], *key)].append(float(r["calls"]))
+            if r["stage"] != stage:
+                continue
             calls = float(r["calls"]) if r["calls"] else np.nan
             pts[r["cell"]][key].append((float(r["seconds"]), calls))
-    series, tmin, tmax, calls_d, capped = {}, {}, {}, {}, {}
+    series, tmin, tmax, calls_d, capped, layouts = {}, {}, {}, {}, {}, {}
     for cell, layouts in sorted(pts.items()):
         keys = sorted(layouts, key=lambda k: (k[0] * k[1], k[1]))
         arr = [np.array(layouts[k]) for k in keys]
@@ -495,9 +500,56 @@ def parse_scaling_csv(
         tmin[cell] = np.array([a[:, 0].min() for a in arr])
         tmax[cell] = np.array([a[:, 0].max() for a in arr])
         calls_d[cell] = np.array(
-            [np.nanmedian(a[:, 1]) if np.isfinite(a[:, 1]).any() else np.nan for a in arr]
+            [
+                float(np.median(search_calls[(cell, *k)]))
+                if search_calls.get((cell, *k))
+                else np.nan
+                for k in keys
+            ]
         )
+        layouts[cell] = [f"{k[0]}x{k[1]}" for k in keys]
         capped[cell] = np.array([not passed.get((cell, *k), True) for k in keys])
     return ScalingTable(
-        series, time_min=tmin, time_max=tmax, calls=calls_d, capped=capped
+        series,
+        time_min=tmin,
+        time_max=tmax,
+        calls=calls_d,
+        capped=capped,
+        layouts=layouts,
+    )
+
+
+def parse_pop_csv(
+    path: str | Path, metrics: list[str], *, cell: str | None = None
+) -> tuple[list[str], dict[str, np.ndarray]]:
+    """Per-layout means of efficiency columns from a fixed-work CSV.
+
+    The file needs ``ranks`` and ``threads`` columns (and ``cell`` when
+    ``cell`` is given); each name in ``metrics`` is a column of fractions.
+    Rows of one layout are averaged; layouts sort by cores, then threads.
+    """
+    import csv
+    from collections import defaultdict
+
+    acc: dict[tuple, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    with Path(path).open() as fh:
+        reader = csv.DictReader(fh)
+        missing = [m for m in metrics if m not in (reader.fieldnames or [])]
+        if missing:
+            msg = f"{path} has no column(s) {missing}"
+            raise ValueError(msg)
+        for r in reader:
+            if cell is not None and r.get("cell") != cell:
+                continue
+            key = (int(r["ranks"]), int(r["threads"]))
+            for m in metrics:
+                if r[m] not in ("", "nan"):
+                    acc[key][m].append(float(r[m]))
+    keys = sorted(acc, key=lambda k: (k[0] * k[1], k[1]))
+    return (
+        [f"{k[0]}x{k[1]}" for k in keys],
+        {
+            m: np.array([np.mean(acc[k][m]) if acc[k][m] else np.nan for k in keys])
+            for m in metrics
+        },
     )

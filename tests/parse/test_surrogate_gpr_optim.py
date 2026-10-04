@@ -90,8 +90,9 @@ def test_scaling_csv(tmp_path):
     for r, (ranks, thr, secs, calls) in enumerate(
         [(1, 1, (10, 12, 11), 50), (2, 2, (4, 5, 4.5), 60)]
     ):
+        rows += [f"c,s,{ranks},{thr},{i + 1},pipeline,{v},,p" for i, v in enumerate(secs)]
         rows += [
-            f"c,s,{ranks},{thr},{i + 1},pipeline,{v},{calls},p"
+            f"c,s,{ranks},{thr},{i + 1},search,{v - 1},{calls},p"
             for i, v in enumerate(secs)
         ]
         rows += [f"c,s,{ranks},{thr},{i + 1},band,1,5,p" for i in range(3)]
@@ -105,3 +106,18 @@ def test_scaling_csv(tmp_path):
     assert w.tolist() == [1, 4] and tm.tolist() == [11, 4.5]
     assert t.time_min["c"].tolist() == [10, 4] and t.time_max["c"].tolist() == [12, 5]
     assert t.capped["c"].tolist() == [False, True] and t.calls["c"].tolist() == [50, 60]
+
+
+def test_pop_csv(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_csv
+
+    f = tmp_path / "p.csv"
+    f.write_text(
+        "cell,ranks,threads,repetition,lb,ce\n"
+        "a,2,2,1,0.8,0.9\na,2,2,2,0.6,0.9\na,1,1,1,1,1\nb,1,1,1,0.5,0.5\n"
+    )
+    layouts, m = parse_pop_csv(f, ["lb", "ce"], cell="a")
+    assert layouts == ["1x1", "2x2"]
+    assert m["lb"].tolist() == pytest.approx([1.0, 0.7])
+    with pytest.raises(ValueError, match="no column"):
+        parse_pop_csv(f, ["zz"])

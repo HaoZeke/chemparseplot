@@ -261,6 +261,8 @@ class ScalingTable:
     time_max: dict[str, np.ndarray] = field(default_factory=dict)
     calls: dict[str, np.ndarray] = field(default_factory=dict)
     capped: dict[str, np.ndarray] = field(default_factory=dict)
+    # ``ranks x threads`` label of each point, keyed like ``series``.
+    layouts: dict[str, list[str]] = field(default_factory=dict)
 
     def speedup(self, name: str) -> tuple[np.ndarray, np.ndarray]:
         """Speedup of ``name`` against its own first point.
