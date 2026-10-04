@@ -1310,3 +1310,67 @@ def plot_pop_efficiencies(
     if title:
         ax.set_title(title, loc="left")
     return fig
+
+
+def plot_time_breakdown(
+    layouts: Sequence[str],
+    parts: dict[str, Sequence[float]],
+    total: Sequence[float] | None = None,
+    *,
+    title: str | None = None,
+) -> Figure:
+    """Stacked wall time per component for each ranks x threads layout.
+
+    Bars stack the components in the order given; with ``total`` the rest of
+    the total is drawn as a grey ``other`` segment, and the total is printed
+    above the bar. Segments differ in hatch as well as colour. Components
+    that nest (a stage and its own sub-stage) must not both be passed.
+    """
+    _style()
+    fig, ax = plt.subplots(figsize=(1.6 + 0.7 * len(layouts), 4.2), layout="constrained")
+    x = np.arange(len(layouts))
+    bottom = np.zeros(len(layouts))
+    palette = [SURROGATE, ORACLE, REFERENCE, ACQUISITION, HIGHLIGHT, NEUTRAL]
+    hatches = ["", "//", "..", "xx", "\\\\", "++"]
+    for k, (name, vals) in enumerate(parts.items()):
+        v = np.nan_to_num(np.asarray(vals, dtype=float))
+        ax.bar(
+            x,
+            v,
+            bottom=bottom,
+            color=palette[k % len(palette)],
+            hatch=hatches[k % len(hatches)],
+            edgecolor="white",
+            lw=0.5,
+            label=name,
+        )
+        bottom += v
+    if total is not None:
+        t = np.asarray(total, dtype=float)
+        rest = np.clip(t - bottom, 0, None)
+        ax.bar(
+            x,
+            rest,
+            bottom=bottom,
+            color="#d0d0d0",
+            edgecolor="white",
+            lw=0.5,
+            label="other",
+        )
+        for xi, ti in zip(x, t, strict=True):
+            if np.isfinite(ti):
+                ax.annotate(
+                    f"{ti:.0f}",
+                    (xi, ti),
+                    xytext=(0, 2),
+                    textcoords="offset points",
+                    ha="center",
+                    fontsize=7,
+                )
+    ax.set_xticks(x, list(layouts), rotation=45, ha="right", fontsize=8)
+    ax.set_xlabel("ranks x threads")
+    ax.set_ylabel("wall time (s)")
+    ax.legend(frameon=False, fontsize=8, ncols=2)
+    if title:
+        ax.set_title(title, loc="left")
+    return fig

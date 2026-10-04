@@ -373,3 +373,25 @@ def test_missing_font_is_an_error_not_a_fallback():
     with pytest.raises(ValueError, match="No Such Family 123.*searched.*fonts"):
         surr.set_font("No Such Family 123", ["/nonexistent/dir"])
     assert surr._FONT[0] is None
+
+
+def test_time_breakdown_stacks_components_and_remainder():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_breakdown_csv
+
+    out = parse_breakdown_csv(SCALING / "breakdown.csv", ["band_oracle", "band_refit"])
+    layouts, parts, total = out["c1"]
+    assert layouts == ["1x1", "2x1", "4x2"]
+    assert parts["band_oracle"].tolist() == pytest.approx([20.15, 12.15, 8.15])
+    fig = surr.plot_time_breakdown(layouts, parts, total, title="c1")
+    ax = fig.axes[0]
+    assert [t.get_text() for t in ax.get_legend().get_texts()] == [
+        "band_oracle",
+        "band_refit",
+        "other",
+    ]
+    heights = [p.get_height() for p in ax.patches]
+    assert sum(heights[:3]) == pytest.approx(sum(parts["band_oracle"]))
+    # components plus remainder reach the total at every layout
+    tops = [sum(heights[i::3]) for i in range(3)]
+    assert tops == pytest.approx(list(total))
+    assert ax.get_ylabel() == "wall time (s)"

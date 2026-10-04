@@ -553,3 +553,51 @@ def parse_pop_csv(
             for m in metrics
         },
     )
+
+
+def parse_breakdown_csv(
+    wall_csv: str | Path,
+    components: list[str],
+    *,
+    total: str | None = "pipeline",
+    cells: list[str] | None = None,
+) -> dict[str, tuple[list[str], dict[str, np.ndarray], np.ndarray | None]]:
+    """Median seconds of each component stage per cell and layout.
+
+    Returns ``{cell: (layouts, {component: seconds}, total_seconds)}`` with
+    layouts sorted by cores then threads. ``total`` names the stage holding
+    the whole (``None`` for no total). The components should not nest.
+    """
+    import csv
+    from collections import defaultdict
+
+    wanted = {*components, *([total] if total else [])}
+    acc: dict[tuple, list[float]] = defaultdict(list)
+    keys: dict[str, set] = defaultdict(set)
+    with Path(wall_csv).open() as fh:
+        for r in csv.DictReader(fh):
+            if r["stage"] not in wanted or (cells and r["cell"] not in cells):
+                continue
+            lay = (int(r["ranks"]), int(r["threads"]))
+            keys[r["cell"]].add(lay)
+            acc[(r["cell"], lay, r["stage"])].append(float(r["seconds"]))
+    out = {}
+    for cell, lays in sorted(keys.items()):
+        order = sorted(lays, key=lambda k: (k[0] * k[1], k[1]))
+
+        def med(stage, cell=cell, order=order):
+            return np.array(
+                [
+                    float(np.median(acc[(cell, k, stage)]))
+                    if acc.get((cell, k, stage))
+                    else np.nan
+                    for k in order
+                ]
+            )
+
+        out[cell] = (
+            [f"{k[0]}x{k[1]}" for k in order],
+            {c: med(c) for c in components},
+            med(total) if total else None,
+        )
+    return out
