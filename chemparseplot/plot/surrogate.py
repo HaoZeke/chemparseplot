@@ -1,0 +1,937 @@
+# SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
+#
+# SPDX-License-Identifier: MIT
+
+"""Figures for surrogate-assisted saddle searches.
+
+Every function takes the records of :mod:`chemparseplot.parse.surrogate.model`
+and returns a :class:`matplotlib.figure.Figure`; none reads a file or knows the
+code that produced the data. Colour is never the only channel: each series
+also differs in marker or line style.
+
+Encodings shared by the figures:
+
+- teal, circles, solid: the surrogate (posterior mean, predicted force)
+- magenta, squares: the true potential (oracle evaluations, true force)
+- sky, triangles, dashed: a reference (true profile, climbing-image force)
+- coral ticks: decisions to call the oracle
+- dashed black: the force tolerance
+
+.. versionadded:: 1.10.0
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
+from matplotlib.ticker import FuncFormatter, LogLocator
+
+from chemparseplot.parse.surrogate.model import (
+    BandHistory,
+    BandSnapshot,
+    CampaignTable,
+    ScalingTable,
+    SearchHistory,
+    SingleEndedHistory,
+    SurrogateSearch,
+)
+from chemparseplot.plot.structs import (
+    convert_energy,
+    eigenvalue_axis_label,
+    energy_axis_label,
+)
+from chemparseplot.plot.theme import RUHI_COLORS, get_theme, setup_publication_theme
+
+SURROGATE = RUHI_COLORS["teal"]
+ORACLE = RUHI_COLORS["magenta"]
+REFERENCE = RUHI_COLORS["sky"]
+ACQUISITION = RUHI_COLORS["coral"]
+HIGHLIGHT = RUHI_COLORS["sunshine"]
+NEUTRAL = "#6b6b6b"
+
+_FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
+_MAX_EVOLUTION_PANELS = 8
+_MIN_SNAPSHOTS = 2
+_EFFICIENCY_DARK = 0.6
+_FORCE_LABEL_MIN_ROWS = 8
+_CI_ARMS = {"current_ci", "ci"}
+
+
+def _style() -> None:
+    setup_publication_theme(get_theme("ruhi"))
+    plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "path"})
+
+
+def _rel_energy(snap: BandSnapshot, values: np.ndarray, unit: str) -> np.ndarray:
+    e0 = snap.energy[0]
+    return convert_energy(np.asarray(values, dtype=float) - e0, unit)
+
+
+def _plain_log_axis(axis) -> None:
+    """Label a log axis with plain numbers at 1, 2 and 5 per decade."""
+    axis.set_major_locator(LogLocator(subs=(1.0, 2.0, 5.0)))
+    axis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    axis.set_minor_formatter(FuncFormatter(lambda _v, _p: ""))
+
+
+def _event_group(kind: str) -> str:
+    if kind in _CI_ARMS:
+        return "climbing-image acquisition"
+    if kind == "measured-step":
+        return "measured step"
+    if kind == "ceiling":
+        return "observation dropped at cap"
+    if kind == "spectrum":
+        return "spectrum batch"
+    return "band acquisition"
+
+
+_GROUP_MARKER = {
+    "climbing-image acquisition": ("|", ACQUISITION),
+    "band acquisition": ("|", NEUTRAL),
+    "measured step": ("x", ORACLE),
+    "observation dropped at cap": ("v", HIGHLIGHT),
+    "spectrum batch": ("|", ACQUISITION),
+}
+
+
+def _rug(ax, events, xkey: str, y: float, *, transform=None) -> list[Line2D]:
+    """Draw decision marks below ``ax``, one row per kind; return legend handles."""
+    handles = []
+    groups: dict[str, list[float]] = {}
+    for e in events:
+        x = e.oracle_calls if xkey == "oracle_calls" else e.outer
+        if x is None or x < 0:
+            continue
+        groups.setdefault(_event_group(e.kind), []).append(x)
+    for k, g in enumerate(g for g in _GROUP_MARKER if g in groups):
+        xs = groups[g]
+        marker, color = _GROUP_MARKER[g]
+        ax.plot(
+            xs,
+            [y - 0.045 * k] * len(xs),
+            ls="none",
+            marker=marker,
+            ms=7,
+            mew=1.2,
+            color=color,
+            transform=transform or ax.get_xaxis_transform(),
+            clip_on=False,
+        )
+        handles.append(
+            Line2D([], [], ls="none", marker=marker, ms=7, mew=1.2, color=color, label=g)
+        )
+    return handles
+
+
+# ---------------------------------------------------------------- (a) profile
+
+
+def plot_band_profile(
+    band: BandHistory,
+    *,
+    snapshot: BandSnapshot | None = None,
+    energy_unit: str = "eV",
+    sigma_scale: float = 2.0,
+    show_points: bool = True,
+    ax=None,
+    title: str | None = None,
+) -> Figure:
+    """Energy along the path: surrogate mean, uncertainty and true evaluations.
+
+    The curve is the posterior mean at the images; the ribbon is
+    ``+/- sigma_scale`` predictive standard deviations when the producer
+    recorded them. Magenta squares are images whose true energy is known,
+    grey diamonds the retained observations projected on the path (those
+    outside the view are counted in the legend), the dashed blue curve the
+    true profile when one was recomputed on the final path.
+    """
+    _style()
+    snap = snapshot or band.final
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(6.4, 4.0), layout="constrained")
+    else:
+        fig = ax.figure
+    x = snap.coordinate
+    y = _rel_energy(snap, snap.energy, energy_unit)
+    if snap.sigma is not None and np.isfinite(snap.sigma).any():
+        lo = _rel_energy(snap, snap.energy - sigma_scale * snap.sigma, energy_unit)
+        hi = _rel_energy(snap, snap.energy + sigma_scale * snap.sigma, energy_unit)
+        ax.fill_between(
+            x,
+            lo,
+            hi,
+            color=SURROGATE,
+            alpha=0.18,
+            lw=0,
+            label=rf"$\pm${sigma_scale:g}$\sigma$",
+        )
+    ax.plot(x, y, "-o", color=SURROGATE, ms=4, label="surrogate mean")
+    ymin, ymax = y.min(), y.max()
+    if band.reference is not None:
+        r = band.reference
+        ax.plot(
+            r.coordinate,
+            _rel_energy(snap, r.energy, energy_unit),
+            "--^",
+            color=REFERENCE,
+            ms=4,
+            lw=1.4,
+            label="true potential on path",
+        )
+    ev = snap.evaluated
+    if ev.any():
+        ye = _rel_energy(snap, snap.true_energy[ev], energy_unit)
+        ax.plot(
+            x[ev],
+            ye,
+            ls="none",
+            marker="s",
+            ms=7,
+            mfc="none",
+            mec=ORACLE,
+            mew=1.6,
+            label="true energy at image",
+        )
+        ymin, ymax = min(ymin, ye.min()), max(ymax, ye.max())
+    if snap.climbing is not None and 0 <= snap.climbing < len(x):
+        ax.plot(
+            x[snap.climbing],
+            y[snap.climbing],
+            ls="none",
+            marker="o",
+            ms=13,
+            mfc="none",
+            mec="black",
+            mew=1.2,
+            label="climbing image",
+        )
+    pad = 0.35 * (ymax - ymin or 1.0)
+    lo_v, hi_v = ymin - pad, ymax + pad
+    if show_points and band.points is not None and band.points.coordinate is not None:
+        pts = band.points
+        yp = convert_energy(pts.energy - snap.energy[0], energy_unit)
+        inside = (yp >= lo_v) & (yp <= hi_v)
+        ax.plot(
+            pts.coordinate[inside],
+            yp[inside],
+            ls="none",
+            marker="D",
+            ms=3.5,
+            color=NEUTRAL,
+            alpha=0.55,
+            label=f"retained observations ({int(inside.sum())} of {len(pts)} in view)",
+        )
+    ax.set_ylim(lo_v, hi_v)
+    ax.set_xlabel(r"path coordinate ($\mathrm{\AA}$)")
+    ax.set_ylabel(energy_axis_label(energy_unit, label="energy above reactant"))
+    if title:
+        ax.set_title(title)
+    ax.legend(frameon=False, fontsize=9, loc="best")
+    return fig
+
+
+# ------------------------------------------------------------- (b) evolution
+
+
+def plot_band_evolution(
+    band: BandHistory,
+    *,
+    energy_unit: str = "eV",
+    max_panels: int = _MAX_EVOLUTION_PANELS,
+) -> Figure:
+    """Small multiples of the band over outer iterations.
+
+    With two or more snapshots, one profile panel per snapshot (evenly spaced
+    in oracle calls, at most ``max_panels``) on shared axes. A producer that
+    stores only the final band gets the acquisition record instead: outer
+    iteration against the image the oracle was called on, one marker shape per
+    kind of decision.
+    """
+    _style()
+    snaps = band.snapshots
+    if len(snaps) >= _MIN_SNAPSHOTS:
+        pick = np.unique(
+            np.linspace(0, len(snaps) - 1, min(max_panels, len(snaps)))
+            .round()
+            .astype(int)
+        )
+        n = len(pick)
+        cols = min(4, n)
+        rows = -(-n // cols)
+        fig, axes = plt.subplots(
+            rows,
+            cols,
+            figsize=(2.6 * cols, 2.2 * rows),
+            sharex=True,
+            sharey=True,
+            layout="constrained",
+            squeeze=False,
+        )
+        for ax, k in zip(axes.ravel(), pick, strict=False):
+            s = snaps[k]
+            plot_band_profile(
+                BandHistory(final=s, reference=band.reference),
+                energy_unit=energy_unit,
+                show_points=False,
+                ax=ax,
+            )
+            leg = ax.get_legend()
+            if leg:
+                leg.remove()
+            ax.set_title(f"outer {s.outer}, {s.oracle_calls} calls", fontsize=9)
+            ax.set_xlabel("")
+            ax.set_ylabel("")
+        for ax in axes.ravel()[n:]:
+            ax.set_visible(False)
+        fig.supxlabel(r"path coordinate ($\mathrm{\AA}$)")
+        fig.supylabel(energy_axis_label(energy_unit, label="energy above reactant"))
+        return fig
+    fig, ax = plt.subplots(figsize=(7.0, 3.6), layout="constrained")
+    markers = {
+        "climbing-image acquisition": ("D", ACQUISITION),
+        "band acquisition": ("o", NEUTRAL),
+        "measured step": ("x", ORACLE),
+        "observation dropped at cap": ("v", HIGHLIGHT),
+    }
+    for g, (mk, col) in markers.items():
+        pts = [
+            (e.outer, e.image)
+            for e in band.events
+            if _event_group(e.kind) == g and e.image >= 0
+        ]
+        if not pts:
+            continue
+        xs, ys = zip(*pts, strict=True)
+        ax.plot(
+            xs,
+            ys,
+            ls="none",
+            marker=mk,
+            ms=5,
+            color=col,
+            mfc="none" if mk == "o" else col,
+            label=g,
+        )
+    n_img = band.final.n_images
+    ax.set_ylim(-0.5, n_img - 0.5)
+    ax.set_xlabel("outer iteration")
+    ax.set_ylabel("image the oracle was called on")
+    if band.final.climbing is not None:
+        ax.axhline(band.final.climbing, color=ACQUISITION, lw=0.8, ls=":")
+    ax.legend(
+        frameon=False,
+        fontsize=8,
+        ncols=2,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+    )
+    return fig
+
+
+# -------------------------------------------------------------- (c) convergence
+
+
+def plot_search_convergence(
+    search: SearchHistory,
+    *,
+    x: str = "oracle_calls",
+    show_training: bool = True,
+    ax=None,
+    title: str | None = None,
+) -> Figure:
+    """Max atomic force against oracle calls (or outer iterations).
+
+    Magenta squares: true force over the evaluated images; teal circles:
+    force the surrogate predicts; blue triangles: true force at the climbing
+    image. The dashed line is the tolerance; marks below the axis are
+    acquisition decisions. A lower panel gives the training-set size, with the
+    retention cap when the producer dropped observations.
+    """
+    _style()
+    two = show_training and "n_train" in search.series and ax is None
+    if ax is None:
+        if two:
+            fig, (ax, ax2) = plt.subplots(
+                2,
+                1,
+                figsize=(6.6, 5.2),
+                sharex=True,
+                height_ratios=(3, 1),
+                layout="constrained",
+            )
+        else:
+            fig, ax = plt.subplots(figsize=(6.6, 3.8), layout="constrained")
+            ax2 = None
+    else:
+        fig, ax2 = ax.figure, None
+    xs = search.series[x]
+    spec = (
+        ("surrogate_force", "surrogate prediction", SURROGATE, "-", "o"),
+        ("true_force", "true force, evaluated images", ORACLE, "-", "s"),
+        ("ci_true_force", "true force, climbing image", REFERENCE, "--", "^"),
+    )
+    for key, label, color, ls, mk in spec:
+        v = search.get(key)
+        if v is None or not np.isfinite(v).any():
+            continue
+        ax.plot(xs, v, ls=ls, marker=mk, ms=3.2, lw=1.3, color=color, label=label)
+        if key == "surrogate_force":
+            sg = search.get("surrogate_force_sigma")
+            if sg is not None:
+                ax.fill_between(
+                    xs, np.maximum(v - sg, 1e-12), v + sg, color=color, alpha=0.18, lw=0
+                )
+    if search.force_tolerance:
+        ax.axhline(
+            search.force_tolerance, color="black", ls="--", lw=1.0, label="tolerance"
+        )
+    ax.set_yscale("log")
+    ax.set_ylabel(_FORCE_LABEL)
+    handles, labels = ax.get_legend_handles_labels()
+    rug = _rug(ax, search.events, x, -0.04)
+    fig.legend(
+        handles + rug,
+        labels + [h.get_label() for h in rug],
+        frameon=False,
+        fontsize=8,
+        ncols=2,
+        loc="outside lower center",
+    )
+    total = search.meta.get("total_calls")
+    last = np.nanmax(search.oracle_calls) if "oracle_calls" in search.series else None
+    if total and last and total > last and x == "oracle_calls":
+        ax.annotate(
+            f"counter ends at {int(last)}; the run reports {int(total)} calls",
+            xy=(1.0, 1.0),
+            xycoords="axes fraction",
+            ha="right",
+            va="bottom",
+            fontsize=8,
+            color=ORACLE,
+        )
+    if title:
+        ax.set_title(title, loc="left")
+    xlabel = "oracle calls" if x == "oracle_calls" else "outer iteration"
+    if two and ax2 is not None:
+        ax2.plot(xs, search["n_train"], "-", color=SURROGATE, lw=1.3)
+        if search.retained_cap:
+            ax2.axhline(search.retained_cap, color=NEUTRAL, ls=":", lw=1.0)
+            ax2.annotate(
+                "cap",
+                xy=(0.01, search.retained_cap),
+                xycoords=("axes fraction", "data"),
+                fontsize=8,
+                va="bottom",
+                color=NEUTRAL,
+            )
+        ax2.set_ylabel("training rows")
+        ax2.set_xlabel(xlabel)
+    else:
+        ax.set_xlabel(xlabel)
+    return fig
+
+
+def plot_search_comparison(
+    searches: Sequence[SurrogateSearch],
+    labels: Sequence[str] | None = None,
+    *,
+    x: str = "outer",
+) -> Figure:
+    """Compare searches of the same reaction: forces per outer and a call ledger.
+
+    Top: true force over the evaluated images; middle: true force at the
+    climbing image (both log, with the tolerance); bottom: oracle calls by
+    phase (endpoints, initial band, outer loop, transition, dimer) as stacked
+    bars labelled with the total.
+    """
+    _style()
+    labels = list(labels or [s.label for s in searches])
+    styles = [
+        ("-", "s", ORACLE),
+        ("--", "o", SURROGATE),
+        (":", "^", REFERENCE),
+        ("-.", "D", ACQUISITION),
+    ]
+    fig, axes = plt.subplots(
+        3, 1, figsize=(6.8, 7.2), height_ratios=(3, 3, 1.6), layout="constrained"
+    )
+    tol = None
+    for s, lab, (ls, mk, col) in zip(searches, labels, styles, strict=False):
+        h = s.search
+        if h is None:
+            continue
+        tol = tol or h.force_tolerance
+        for ax, key in zip(axes[:2], ("true_force", "ci_true_force"), strict=True):
+            v = h.get(key)
+            if v is not None:
+                ax.plot(h[x], v, ls=ls, marker=mk, ms=2.8, lw=1.2, color=col, label=lab)
+    for ax, ttl in zip(axes[:2], ("evaluated images", "climbing image"), strict=True):
+        ax.set_yscale("log")
+        ax.set_ylabel(_FORCE_LABEL)
+        ax.set_title(f"true force, {ttl}", loc="left", fontsize=10)
+        if tol:
+            ax.axhline(tol, color="black", ls="--", lw=1.0)
+    axes[0].legend(frameon=False, fontsize=9)
+    axes[1].set_xlabel("outer iteration" if x == "outer" else "oracle calls")
+    phases = ["endpoints", "initial", "outer", "transition", "dimer", "certificate"]
+    pal = [NEUTRAL, REFERENCE, SURROGATE, ACQUISITION, ORACLE, HIGHLIGHT]
+    hatches = ["", "//", "", "xx", "..", "\\\\"]
+    ax = axes[2]
+    for i, s in enumerate(searches):
+        led = s.cell.ledger if s.cell else {}
+        left = 0
+        for ph, col, ht in zip(phases, pal, hatches, strict=True):
+            v = led.get(ph, 0)
+            if v:
+                ax.barh(
+                    i,
+                    v,
+                    left=left,
+                    color=col,
+                    hatch=ht,
+                    edgecolor="white",
+                    lw=0.5,
+                    label=ph
+                    if i == 0 or ph not in ax.get_legend_handles_labels()[1]
+                    else None,
+                )
+                left += v
+        ax.text(left, i, f"  {int(led.get('total', left))}", va="center", fontsize=9)
+    ax.set_yticks(range(len(searches)), labels)
+    ax.invert_yaxis()
+    ax.set_xlabel("oracle calls to convergence, by phase")
+    h, lb = ax.get_legend_handles_labels()
+    ax.legend(
+        dict(zip(lb, h, strict=True)).values(),
+        dict(zip(lb, h, strict=True)).keys(),
+        frameon=False,
+        fontsize=8,
+        ncols=5,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.45),
+    )
+    ax.set_xlim(right=ax.get_xlim()[1] * 1.12)
+    return fig
+
+
+# ------------------------------------------------------------- (e) diagnostics
+
+
+def plot_model_diagnostics(search: SearchHistory, *, x: str = "outer") -> Figure:
+    """Hyperparameters, training-set size and per-outer cost against ``x``.
+
+    Panels appear only for the quantities the producer recorded: kernel
+    amplitude and noise variance (log), length-scale extremes (log), training
+    rows with the retention cap, and stacked seconds per outer iteration for
+    refit, prediction and inner relaxation.
+    """
+    _style()
+    s = search.series
+    panels = []
+    if "magnitude_sigma2" in s or "noise_sigma2" in s:
+        panels.append("kernel")
+    if "length_scale_min" in s:
+        panels.append("length")
+    if "n_train" in s:
+        panels.append("train")
+    if any(k in s for k in ("time_refit", "time_predict", "time_inner")):
+        panels.append("time")
+    fig, axes = plt.subplots(
+        len(panels),
+        1,
+        figsize=(6.4, 1.9 * len(panels) + 0.8),
+        sharex=True,
+        layout="constrained",
+        squeeze=False,
+    )
+    xs = s[x]
+    for ax, kind in zip(axes.ravel(), panels, strict=True):
+        if kind == "kernel":
+            for key, lab, col, ls in (
+                ("magnitude_sigma2", r"amplitude $\sigma_f^2$", SURROGATE, "-"),
+                ("noise_sigma2", r"noise $\sigma_n^2$", ORACLE, "--"),
+            ):
+                if key in s and np.isfinite(s[key]).any():
+                    ax.plot(
+                        xs,
+                        np.where(s[key] > 0, s[key], np.nan),
+                        ls,
+                        color=col,
+                        lw=1.3,
+                        label=lab,
+                    )
+            ax.set_yscale("log")
+            ax.set_ylabel("kernel variance")
+            ax.legend(frameon=False, fontsize=8, ncols=2)
+        elif kind == "length":
+            ax.fill_between(
+                xs,
+                s["length_scale_min"],
+                s["length_scale_max"],
+                color=SURROGATE,
+                alpha=0.2,
+                lw=0,
+            )
+            ax.plot(
+                xs, s["length_scale_min"], "-", color=SURROGATE, lw=1.2, label="shortest"
+            )
+            ax.plot(
+                xs, s["length_scale_max"], "--", color=ORACLE, lw=1.2, label="longest"
+            )
+            ax.set_yscale("log")
+            ax.set_ylabel("length scale")
+            ax.legend(frameon=False, fontsize=8, ncols=2)
+        elif kind == "train":
+            ax.plot(xs, s["n_train"], "-", color=SURROGATE, lw=1.3)
+            if search.retained_cap:
+                ax.axhline(search.retained_cap, color=NEUTRAL, ls=":", lw=1.0)
+            ax.set_ylabel("training rows")
+        else:
+            bottom = np.zeros(len(xs))
+            width = 0.8 if x == "outer" else None
+            for key, lab, col, ht in (
+                ("time_refit", "refit", SURROGATE, ""),
+                ("time_predict", "predict", ORACLE, "//"),
+                ("time_inner", "inner", REFERENCE, ".."),
+            ):
+                if key in s:
+                    v = np.nan_to_num(s[key])
+                    ax.bar(
+                        xs,
+                        v,
+                        bottom=bottom,
+                        width=width,
+                        color=col,
+                        hatch=ht,
+                        edgecolor="white",
+                        lw=0.3,
+                        label=lab,
+                    )
+                    bottom += v
+            ax.set_ylabel("seconds per outer")
+            ax.legend(frameon=False, fontsize=8, ncols=3)
+    axes.ravel()[-1].set_xlabel("outer iteration" if x == "outer" else "oracle calls")
+    return fig
+
+
+# -------------------------------------------------------------- (f) single-ended
+
+
+def plot_single_ended(
+    history: SingleEndedHistory, *, energy_unit: str = "eV", title: str | None = None
+) -> Figure:
+    """Curvature along the dimer mode and true force against oracle calls.
+
+    Top: surrogate curvature per outer step (teal), the measured curvature as
+    open magenta diamonds joined to the surrogate value at the same step by a
+    thin segment; coral ticks mark batches of oracle calls spent on a spectrum.
+    Bottom: true force (log) against the tolerance.
+    """
+    _style()
+    fig, (a1, a2) = plt.subplots(
+        2, 1, figsize=(6.6, 5.4), sharex=True, height_ratios=(1, 1), layout="constrained"
+    )
+    x = history.oracle_calls
+    cur = convert_energy(history.curvature, energy_unit)
+    a1.plot(
+        x, cur, "-o", color=SURROGATE, ms=3.2, lw=1.2, label="surrogate mode curvature"
+    )
+    if history.curvature_measured is not None:
+        m = np.isfinite(history.curvature_measured)
+        if m.any():
+            cm = convert_energy(history.curvature_measured[m], energy_unit)
+            a1.plot(
+                x[m],
+                cm,
+                ls="none",
+                marker="D",
+                ms=7,
+                mfc="none",
+                mec=ORACLE,
+                mew=1.6,
+                label="measured curvature",
+            )
+            if history.curvature_surrogate is not None:
+                cs = convert_energy(history.curvature_surrogate[m], energy_unit)
+                a1.plot(
+                    x[m], cs, ls="none", marker="o", ms=5, color=SURROGATE, mec="black"
+                )
+                a1.vlines(x[m], cs, cm, color=NEUTRAL, lw=0.9)
+    a1.axhline(0, color="black", lw=0.8)
+    a1.set_ylabel(eigenvalue_axis_label(energy_unit, label="curvature"))
+    for i, e in enumerate(history.escape):
+        for a in (a1, a2):
+            a.axvline(
+                e.oracle_calls,
+                color=ACQUISITION,
+                lw=0.9,
+                ls=":",
+                alpha=0.9,
+                label="spectrum batch" if (a is a1 and i == 0) else None,
+            )
+    a1.legend(frameon=False, fontsize=8, loc="lower right")
+    a2.plot(x, history.force, "-s", color=ORACLE, ms=3.2, lw=1.2, label="true force")
+    if history.force_tolerance:
+        a2.axhline(
+            history.force_tolerance, color="black", ls="--", lw=1.0, label="tolerance"
+        )
+    a2.set_yscale("log")
+    a2.set_ylabel(_FORCE_LABEL)
+    a2.set_xlabel("oracle calls")
+    a2.legend(frameon=False, fontsize=8)
+    if title:
+        a1.set_title(title, loc="left")
+    return fig
+
+
+# ------------------------------------------------------------------ (g) campaign
+
+_BASE_STYLE = [
+    ("s", ORACLE),
+    ("^", REFERENCE),
+    ("D", ACQUISITION),
+    ("v", HIGHLIGHT),
+    ("P", NEUTRAL),
+]
+
+
+def plot_campaign_calls(
+    table: CampaignTable,
+    *,
+    calls: str = "search_calls",
+    log: bool = True,
+    label: str | None = None,
+) -> Figure:
+    """Oracle calls per reaction, ours against comparison methods (dumbbell).
+
+    One row per reaction, sorted by our calls. Filled teal circle: this
+    campaign (a coral X where it did not converge or pass); open markers: each
+    comparison method; a grey segment spans the smallest to the largest value.
+    """
+    _style()
+    cells = [c for c in table.cells if getattr(c, calls) is not None]
+    cells.sort(key=lambda c: getattr(c, calls))
+    n = len(cells)
+    fig, ax = plt.subplots(figsize=(6.4, 1.3 + 0.27 * n), layout="constrained")
+    y = np.arange(n)
+    for i, c in enumerate(cells):
+        vals = [getattr(c, calls)] + [
+            b[c.label] for b in table.baselines.values() if c.label in b
+        ]
+        ax.plot([min(vals), max(vals)], [i, i], color="#bdbdbd", lw=1.2, zorder=1)
+    for (name, base), (mk, col) in zip(
+        table.baselines.items(), _BASE_STYLE, strict=False
+    ):
+        pts = [(base[c.label], i) for i, c in enumerate(cells) if c.label in base]
+        if pts:
+            ax.plot(
+                *zip(*pts, strict=True),
+                ls="none",
+                marker=mk,
+                ms=6,
+                mfc="none",
+                mec=col,
+                mew=1.5,
+                label=name,
+                zorder=2,
+            )
+    ours = [getattr(c, calls) for c in cells]
+    ok = np.array([c.passed is not False and c.converged is not False for c in cells])
+    ax.plot(
+        np.array(ours)[ok],
+        y[ok],
+        ls="none",
+        marker="o",
+        ms=7,
+        color=SURROGATE,
+        label=label or table.name,
+        zorder=3,
+    )
+    if (~ok).any():
+        ax.plot(
+            np.array(ours)[~ok],
+            y[~ok],
+            ls="none",
+            marker="X",
+            ms=9,
+            color=ACQUISITION,
+            mec="black",
+            label="did not pass",
+            zorder=3,
+        )
+    ax.set_yticks(y, [c.label for c in cells], fontsize=8)
+    ax.invert_yaxis()
+    if log:
+        ax.set_xscale("log")
+        _plain_log_axis(ax.xaxis)
+    ax.set_xlabel(
+        "oracle calls" if calls != "search_calls" else "oracle calls in the search"
+    )
+    ax.grid(axis="x", color="#e6e6e6", lw=0.6)
+    ax.legend(
+        frameon=False,
+        fontsize=8,
+        ncols=3,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.12 if n > _FORCE_LABEL_MIN_ROWS else -0.3),
+    )
+    return fig
+
+
+def plot_campaign_matrix(
+    table: CampaignTable, *, identity_tolerance: float = 0.05
+) -> Figure:
+    """Pass matrix: reactions by criteria.
+
+    Filled teal circle: criterion met; coral X: not met; grey dash: not
+    recorded. Columns: converged, index one (one imaginary mode at the
+    located point), identity (|energy delta| within ``identity_tolerance``
+    eV of the reference), passed.
+    """
+    _style()
+    cols = ["converged", "index 1", "identity", "passed"]
+
+    def row(c):
+        ident = (
+            None if c.energy_delta is None else abs(c.energy_delta) <= identity_tolerance
+        )
+        idx = None if c.index is None else c.index == 1
+        return [c.converged, idx, ident, c.passed]
+
+    n = len(table.cells)
+    fig, ax = plt.subplots(figsize=(4.2, 1.1 + 0.25 * n), layout="constrained")
+    for i, c in enumerate(table.cells):
+        for j, v in enumerate(row(c)):
+            if v is None:
+                ax.plot(j, i, marker="_", color=NEUTRAL, ms=8)
+            elif v:
+                ax.plot(j, i, marker="o", color=SURROGATE, ms=7)
+            else:
+                ax.plot(j, i, marker="X", color=ACQUISITION, mec="black", ms=8)
+    ax.set_xticks(range(len(cols)), cols, rotation=30, ha="right")
+    ax.set_yticks(range(n), [c.label for c in table.cells], fontsize=8)
+    ax.invert_yaxis()
+    ax.set_xlim(-0.6, len(cols) - 0.4)
+    ax.xaxis.tick_top()
+    ax.grid(color="#eeeeee", lw=0.6)
+    ax.set_axisbelow(True)
+    return fig
+
+
+def plot_campaign_walls(
+    table: CampaignTable, *, stages: Sequence[str] = ("band", "dimer", "validation")
+) -> Figure:
+    """Wall time per reaction as stacked horizontal bars, one segment per stage."""
+    _style()
+    cells = sorted(table.cells, key=lambda c: sum(c.wall.get(s, 0.0) for s in stages))
+    n = len(cells)
+    fig, ax = plt.subplots(figsize=(6.4, 1.3 + 0.27 * n), layout="constrained")
+    left = np.zeros(n)
+    for stage, col, ht in zip(
+        stages,
+        (SURROGATE, ORACLE, REFERENCE, ACQUISITION),
+        ("", "//", "..", "xx"),
+        strict=False,
+    ):
+        v = np.array([c.wall.get(stage, 0.0) for c in cells])
+        if v.any():
+            ax.barh(
+                np.arange(n),
+                v,
+                left=left,
+                color=col,
+                hatch=ht,
+                edgecolor="white",
+                lw=0.4,
+                label=stage,
+            )
+            left += v
+    ax.set_yticks(range(n), [c.label for c in cells], fontsize=8)
+    ax.set_xlabel("wall time (s)")
+    ax.legend(frameon=False, fontsize=8, ncols=len(stages), loc="lower right")
+    return fig
+
+
+# ---------------------------------------------------------------------- (h) scaling
+
+
+def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
+    """Speedup against workers on log axes, with the ideal line.
+
+    Speedup is ``T_ref(w0) / T(w)`` where ``w0`` is the smallest worker count of
+    the reference series (the first series when none is named).
+    """
+    _style()
+    fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
+    ref = table.reference or next(iter(table.series))
+    t = ScalingTable(table.series, ref)
+    w0 = float(np.min(table.series[ref][0]))
+    allw = np.unique(
+        np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
+    )
+    ax.plot(allw, allw / w0, ":", color="black", lw=1.0, label="ideal")
+    styles = [
+        ("-", "o", SURROGATE),
+        ("--", "s", ORACLE),
+        ("-.", "^", REFERENCE),
+        (":", "D", ACQUISITION),
+    ]
+    for name, (ls, mk, col) in zip(table.series, styles, strict=False):
+        w, sp = t.speedup(name)
+        ax.plot(w, sp, ls=ls, marker=mk, color=col, ms=5, lw=1.4, label=name)
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log", base=2)
+    ax.set_xticks(allw, [f"{int(v)}" for v in allw])
+    ax.set_xlabel("workers")
+    ax.set_ylabel(ylabel)
+    ax.legend(frameon=False, fontsize=8)
+    return fig
+
+
+def plot_efficiency_table(table: ScalingTable) -> Figure:
+    """Parallel efficiency (speedup per ideal speedup) as an annotated heat table."""
+    _style()
+    ref = table.reference or next(iter(table.series))
+    t = ScalingTable(table.series, ref)
+    w0 = float(np.min(table.series[ref][0]))
+    allw = np.unique(
+        np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
+    )
+    names = list(table.series)
+    grid = np.full((len(names), len(allw)), np.nan)
+    for i, nm in enumerate(names):
+        w, sp = t.speedup(nm)
+        for wk, s in zip(w, sp, strict=True):
+            grid[i, int(np.where(allw == wk)[0][0])] = s / (wk / w0)
+    cmap = LinearSegmentedColormap.from_list(
+        "eff", ["#ffffff", RUHI_COLORS["sky"], SURROGATE]
+    )
+    fig, ax = plt.subplots(
+        figsize=(1.2 + 0.8 * len(allw), 0.9 + 0.5 * len(names)), layout="constrained"
+    )
+    ax.imshow(grid, cmap=cmap, vmin=0, vmax=1.0, aspect="auto")
+    for i in range(len(names)):
+        for j in range(len(allw)):
+            if np.isfinite(grid[i, j]):
+                ax.text(
+                    j,
+                    i,
+                    f"{grid[i, j]:.2f}",
+                    ha="center",
+                    va="center",
+                    color="white" if grid[i, j] > _EFFICIENCY_DARK else "black",
+                    fontsize=9,
+                )
+    ax.set_xticks(range(len(allw)), [f"{int(v)}" for v in allw])
+    ax.set_yticks(range(len(names)), names)
+    ax.set_xlabel("workers")
+    ax.set_title("parallel efficiency", loc="left", fontsize=10)
+    for s in ax.spines.values():
+        s.set_visible(False)
+    return fig
