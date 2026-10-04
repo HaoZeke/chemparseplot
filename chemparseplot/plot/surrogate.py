@@ -65,6 +65,8 @@ _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
 _WALL_INT_MIN = 10
+# Bars at least this many times the axis start hold their value inside.
+_WALL_INSIDE_MIN_RATIO = 3
 # Below this deviation/progress span ratio the landscape would be a sliver.
 _EQUAL_ASPECT_MIN = 0.35
 _EFFICIENCY_DARK = 0.45
@@ -1501,7 +1503,7 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
 def plot_cases_wall(
     boards: Sequence[CaseBoard], *, reference_label: str = "reference"
 ) -> Figure:
-    """Wall time per case on a log axis, one bar each, the value at the bar end.
+    """Wall time per case on a log axis, one bar each, the value inside the bar end.
 
     A thin vertical tick on the case's row marks ``reference_wall_s`` when the
     table has one; ``reference_label`` names it in the legend. Not-certified
@@ -1530,16 +1532,18 @@ def plot_cases_wall(
                 height=0.7,
             )
         have_uncert |= bool((~cert).any())
-        for yi, wi, r in zip(y, w, b.rows, strict=True):
+        for yi, wi in zip(y, w, strict=True):
             txt = f"{wi:,.0f}" if wi >= _WALL_INT_MIN else f"{wi:.1f}"
-            end = max(wi, r.reference_wall_s or 0.0)  # keep the value clear of the tick
+            inside = wi / lo >= _WALL_INSIDE_MIN_RATIO
             ax.annotate(
                 txt,
-                (end, yi),
-                xytext=(4, 0),
+                (wi, yi),
+                xytext=(-3 if inside else 3, 0),
                 textcoords="offset points",
+                ha="right" if inside else "left",
                 va="center",
                 fontsize=7,
+                color="white" if inside else "black",
             )
         for yi, r in zip(y, b.rows, strict=True):
             if r.reference_wall_s:
