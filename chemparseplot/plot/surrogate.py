@@ -605,6 +605,7 @@ _STRIP_FILL = 0.92
 _STRIP_ROW_IN = 2.0
 _MAP_IN, _Y_LABEL_IN, _CBAR_IN = 5.2, 0.95, 1.2
 _TOP_IN, _GAP_IN, _LEGEND_IN = 0.45, 0.2, 1.25
+_XLABEL_GAP_IN = 0.6  # room for the x label between the map and the strip
 _SAME_GEOMETRY = 1e-3
 
 
@@ -854,7 +855,7 @@ def plot_reduced_landscape(
         n_rows_strip = -(-len(entries) // _STRIP_MAX_COLS)
         strip_h = _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
         fig_w = _Y_LABEL_IN + _MAP_IN + _CBAR_IN
-        fig_h = _TOP_IN + _MAP_IN + _GAP_IN + strip_h + _GAP_IN + _LEGEND_IN
+        fig_h = _TOP_IN + _MAP_IN + _XLABEL_GAP_IN + strip_h + _GAP_IN + _LEGEND_IN
         fig = plt.figure(figsize=(fig_w, fig_h))
         ax = fig.add_axes((0.1, 0.5, 0.5, 0.4))
         ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
@@ -1098,7 +1099,7 @@ def plot_reduced_landscape(
         )
         fig.set_size_inches(fig_w, fig_h, forward=True)
         left = _Y_LABEL_IN / fig_w
-        map_bottom = (_GAP_IN + _LEGEND_IN + strip_h + _GAP_IN) / fig_h
+        map_bottom = (_GAP_IN + _LEGEND_IN + strip_h + _XLABEL_GAP_IN) / fig_h
         ax.set_position([left, map_bottom, _MAP_IN / fig_w, _MAP_IN / fig_h])
         ax.set_aspect("equal", adjustable="box", anchor="C")
         for other in list(fig.axes):
