@@ -237,7 +237,7 @@ def test_reduced_landscape_projects_band_and_observations(baker):
         for c in ax.collections
         if hasattr(c, "get_offsets") and len(c.get_offsets()) == 13
     ]
-    assert first, "one marker per retained observation"
+    assert first, "one marker per measured observation"
 
 
 def test_reduced_landscape_needs_geometries():
@@ -526,3 +526,11 @@ def test_calls_prints_search_counts_only_where_they_fit():
     a = surr.plot_cases_calls([CaseBoard("B", rows)]).axes[0]
     inside = {t.get_text() for t in a.texts if t.get_color() == "white"}
     assert inside == {"400"}  # the search segment of 4 cannot hold its number
+
+
+def test_profile_legend_says_measured_and_acquisition_legend_clears_the_axis(baker):
+    ax = surr.plot_band_profile(baker.band).axes[0]
+    assert any(t.startswith("measured observations (") for t in _labels(ax))
+    assert not any("retained" in t for t in _labels(ax))
+    fig = surr.plot_band_evolution(baker.band)
+    assert fig.legends and fig.axes[0].get_legend() is None

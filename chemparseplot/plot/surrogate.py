@@ -245,7 +245,7 @@ def plot_band_profile(
     The curve is the posterior mean at the images; the ribbon is
     ``+/- sigma_scale`` predictive standard deviations when the producer
     recorded them. Magenta squares are images whose true energy is known,
-    grey diamonds the retained observations projected on the path (those
+    grey diamonds the measured observations projected on the path (those
     outside the view are counted in the legend), the dashed blue curve the
     true profile when one was recomputed on the final path.
     """
@@ -323,7 +323,7 @@ def plot_band_profile(
             ms=3.5,
             color=NEUTRAL,
             alpha=0.55,
-            label=f"retained observations ({int(inside.sum())} of {len(pts)} in view)",
+            label=f"measured observations ({int(inside.sum())} of {len(pts)} in view)",
         )
     ax.set_ylim(lo_v, hi_v)
     ax.set_xlabel(r"path coordinate ($\mathrm{\AA}$)")
@@ -422,13 +422,7 @@ def plot_band_evolution(
     ax.set_ylabel("image the oracle was called on")
     if band.final.climbing is not None:
         ax.axhline(band.final.climbing, color=ACQUISITION, lw=0.8, ls=":")
-    ax.legend(
-        frameon=False,
-        fontsize=8,
-        ncols=2,
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.18),
-    )
+    fig.legend(frameon=False, fontsize=8, ncols=2, loc="outside lower center")
     return fig
 
 
@@ -445,7 +439,7 @@ def _sequential_cmap():
 
 
 def reduced_coordinates(band: BandHistory):
-    """(s, d) coordinates of the band and of the retained observations.
+    """(s, d) coordinates of the band and of the measured observations.
 
     ``a`` and ``b`` are the RMSD (A) of a geometry to the reactant and to the
     product image of the final band; ``s`` is the progress along the straight
@@ -501,7 +495,7 @@ def plot_reduced_landscape(
     """
     _style()
     if band.points is None or band.points.positions is None:
-        msg = "the band holds no retained observation geometries"
+        msg = "the band holds no measured observation geometries"
         raise ValueError(msg)
     (s_p, d_p), (s_o, d_o) = reduced_coordinates(band)
     e = convert_energy(band.points.energy - band.final.energy[0], energy_unit)
