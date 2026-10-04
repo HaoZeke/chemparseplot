@@ -126,6 +126,7 @@ class SearchHistory:
     converged: bool | None = None
     events: list[AcquisitionEvent] = field(default_factory=list)
     retained_cap: int | None = None
+    meta: dict = field(default_factory=dict)
 
     def __post_init__(self):
         self.series = {k: _arr(v) for k, v in self.series.items()}
@@ -142,7 +143,8 @@ class SearchHistory:
 
     def to_frame(self, method: str = "search"):
         """Long-form pandas frame (columns ``oracle_calls``, ``max_force``,
-        ``kind``, ``method``) for :func:`chemparseplot.plot.chemgp.plot_convergence_curve`.
+        ``kind``, ``method``) for
+        :func:`chemparseplot.plot.chemgp.plot_convergence_curve`.
         """
         import pandas as pd
 
@@ -204,6 +206,7 @@ class CellRecord:
     total_calls: int | None = None
     wall: dict[str, float] = field(default_factory=dict)
     energy_delta: float | None = None
+    ledger: dict[str, int] = field(default_factory=dict)
     extras: dict = field(default_factory=dict)
 
 
@@ -253,7 +256,7 @@ class ScalingTable:
         """Speedup relative to the first point of ``reference`` (or of ``name``)."""
         w, t = self.series[name]
         w, t = _arr(w), _arr(t)
-        rw, rt = self.series[self.reference or name]
+        _, rt = self.series[self.reference or name]
         rt = _arr(rt)
         return w, rt[0] / t
 

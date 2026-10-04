@@ -1,0 +1,34 @@
+{
+ "case": {
+  "label": "16_oxirane",
+  "set": "birkholz"
+ },
+ "status": "finished",
+ "passed": true,
+ "converged": true,
+ "method": "gprd",
+ "search_calls": 894,
+ "validation_calls": 171,
+ "total_oracle_calls": 1066,
+ "pipeline_wall_s": 390.4281052988954,
+ "identity": {
+  "reference_energy_eV": -17760.52432656368,
+  "delta_eV": 0.07892797894237447,
+  "tolerance_eV": 0.05
+ },
+ "validation": {
+  "n_imaginary": 1,
+  "n_imaginary_above_frequency_tolerance": 1
+ },
+ "settings": {
+  "force_tolerance": 0.0514221
+ },
+ "dimer": {
+  "calls": 846,
+  "wall_s": 358.36279981187545,
+  "validation_wall_s": 6.743896097
+ },
+ "band": {
+  "wall_s": 26.775413000024855
+ }
+}

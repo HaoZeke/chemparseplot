@@ -1,0 +1,35 @@
+{
+ "case": {
+  "label": "25_hcnh2",
+  "set": "baker"
+ },
+ "status": "finished",
+ "passed": true,
+ "converged": true,
+ "method": "gp-oie-cineb",
+ "search_calls": 58,
+ "validation_calls": 31,
+ "total_oracle_calls": 90,
+ "search_wall_s": 4.425336448955465,
+ "pipeline_wall_s": 6.3907156840432435,
+ "identity": {
+  "reference_energy_eV": -2569.8866902971954,
+  "delta_eV": -0.03654183096750785,
+  "tolerance_eV": 0.05
+ },
+ "acceptance_rule": "force_index",
+ "validation": {
+  "n_imaginary": 1,
+  "n_imaginary_above_frequency_tolerance": 1
+ },
+ "settings": {
+  "force_tolerance": 0.0514221
+ },
+ "runtime": {
+  "source_revision": "3ad8e8eb216811af78bc4a92c15205edc6d6fd3f"
+ },
+ "band": {
+  "wall_s": 4.525114472955465,
+  "validation_wall_s": 0.099778024
+ }
+}
