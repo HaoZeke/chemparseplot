@@ -166,6 +166,24 @@ def _lfs(default: float) -> float:
     return _LEGEND_PT[0] or default
 
 
+def _measured_legend_height(handles, labels, fontsize, ncols, fig_w):
+    """Height (inches) matplotlib gives a figure legend with these entries."""
+    tmp = plt.figure(figsize=(fig_w, 2.0))
+    try:
+        leg = tmp.legend(
+            handles,
+            labels,
+            frameon=False,
+            fontsize=fontsize,
+            ncols=ncols,
+            loc="lower center",
+        )
+        tmp.canvas.draw()
+        return leg.get_window_extent().height / tmp.dpi
+    finally:
+        plt.close(tmp)
+
+
 def _wrap_handle_labels(handles, fontsize, fig_w, handle_in=0.55):
     """Re-wrap legend labels so two columns fit the figure width."""
     import textwrap  # noqa: PLC0415
@@ -519,7 +537,7 @@ def plot_band_profile(
             )
         )
         lb.append(h[-1].get_label())
-        _, legend_in = _legend_layout(lb, _lfs(9), fig_w, max_cols=1)
+        legend_in = 0.1 + _measured_legend_height(h, lb, _lfs(9), 1, fig_w)
         fig_h = _TOP_IN + plot_h + 0.7 + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)
         left = _Y_LABEL_IN / fig_w
@@ -676,10 +694,10 @@ _STRIP_MAX_COLS = 6
 _STRIP_ZOOM = 0.5 * 3.15
 _STRIP_SPACING = 1.5
 _STRIP_FILL = 0.92
-_STRIP_ROW_IN = 2.0
+_STRIP_ROW_IN = 1.8
 _MAP_IN, _Y_LABEL_IN, _CBAR_IN = 5.2, 0.95, 1.2
 _TOP_IN, _GAP_IN, _LEGEND_IN = 0.45, 0.2, 1.25
-_XLABEL_GAP_IN = 0.6  # room for the x label between the map and the strip
+_XLABEL_GAP_IN = 0.5  # room for the x label between the map and the strip
 _SAME_GEOMETRY = 1e-3
 
 
@@ -1053,8 +1071,8 @@ def plot_reduced_landscape(
                 facecolor="#9aa7b0",
                 alpha=0.6,
                 label=(
-                    "energy surface: GP fitted afresh to the oracle\n"
-                    "energies and in-plane gradients, not the search's model"
+                    "energy surface: GP fitted afresh to the oracle energies and "
+                    "in-plane gradients, not the search's model"
                 ),
             )
         )
@@ -1294,8 +1312,9 @@ def plot_reduced_landscape(
         )
     if own_axes:
         _wrap_handle_labels(handles, _lfs(8), fig_w)
-        ncols_leg, legend_in = _legend_layout(
-            [h.get_label() for h in handles], _lfs(8), fig_w
+        ncols_leg, _ = _legend_layout([h.get_label() for h in handles], _lfs(8), fig_w)
+        legend_in = 0.1 + _measured_legend_height(
+            handles, [h.get_label() for h in handles], _lfs(8), ncols_leg, fig_w
         )
         fig_h = _TOP_IN + map_h_in + _XLABEL_GAP_IN + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)

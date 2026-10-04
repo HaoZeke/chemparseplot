@@ -877,3 +877,21 @@ def test_landscape_legend_wraps_into_two_columns_at_large_sizes(baker):
     box = legend.get_window_extent()
     assert box.x0 >= 0 and box.x1 <= fig.bbox.x1 and box.y0 >= 0
     assert legend._ncols == 2
+
+
+def test_landscape_with_strip_at_9pt_is_compact_and_two_column(baker):
+    _jax_surfaces()
+    surr.set_legend_fontsize(9)
+    try:
+        fig = surr.plot_reduced_landscape(
+            baker.band, structures="crit_points", strip_renderer="ase", window="fit"
+        )
+    finally:
+        surr.set_legend_fontsize(None)
+    assert fig.legends[0]._ncols == 2
+    fig.canvas.draw()
+    box = fig.legends[0].get_window_extent()
+    # the legend sits directly under the strip: no gap larger than a tenth of the figure
+    strip = next(a for a in fig.axes if a.images)
+    gap_in = (strip.get_window_extent().y0 - box.y1) / fig.dpi
+    assert 0 <= gap_in < 0.6
