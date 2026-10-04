@@ -79,7 +79,8 @@ def save_with_provenance(
     """Save ``fig`` deterministically and return the provenance record.
 
     The format follows the suffix (``.png``, ``.pdf``, ``.svg``). With
-    ``hashes`` adds digests computed elsewhere. With ``sidecar`` a ``<output>.provenance.json`` is written beside the figure.
+    ``hashes`` adds digests computed elsewhere. With ``sidecar`` a
+    ``<output>.provenance.json`` is written beside the figure.
     """
     out = Path(output)
     out.parent.mkdir(parents=True, exist_ok=True)

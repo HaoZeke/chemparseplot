@@ -1503,7 +1503,13 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
             txt = f"{si:.0f}"
             if si * pt_per_unit >= len(txt) * _CHAR_PT + 6:
                 ax.annotate(
-                    txt, (si / 2, yi), ha="center", va="center", fontsize=7, color="white"
+                    txt,
+                    (si / 2, yi),
+                    ha="center",
+                    va="center",
+                    fontsize=7,
+                    color="white",
+                    bbox={"facecolor": SURROGATE, "edgecolor": "none", "pad": 1.0},
                 )
         ax.set_title(_board_title(b), loc="left", fontsize=10)
         ax.grid(axis="x", color="#e6e6e6", lw=0.6)
@@ -1605,7 +1611,8 @@ def plot_cases_wall(
         ax.xaxis.set_major_locator(LogLocator(subs=(1.0,)))
         ax.xaxis.set_minor_locator(LogLocator(subs=(3.0,)))
         ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, _p: f"{v:g}"))
-        ax.tick_params(axis="x", which="minor", labelsize=8, length=3)
+        ax.tick_params(axis="x", which="both", length=4, pad=3)
+        ax.tick_params(axis="x", which="minor", labelsize=plt.rcParams["xtick.labelsize"])
         ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
         ax.set_ylim(len(b.rows) - 0.5, -0.5)
         ax.set_xlabel("Wall time (s)")
