@@ -768,3 +768,45 @@ def test_strip_captions_use_the_requested_font(baker, tmp_path):
         surr.set_font(None)
     names = _embedded(out)
     assert names and all(n.startswith("ZetaStrip") for n in names), names
+
+
+def test_legend_fontsize_option_reaches_every_legend_and_the_layout(baker):
+    _jax_surfaces()
+    base = surr.plot_reduced_landscape(
+        baker.band, structures="crit_points", strip_renderer="ase", surface=None
+    )
+    surr.set_legend_fontsize(10)
+    try:
+        big = surr.plot_reduced_landscape(
+            baker.band, structures="crit_points", strip_renderer="ase", surface=None
+        )
+        sizes = {t.get_fontsize() for t in big.legends[0].get_texts()}
+        prof = surr.plot_band_profile(baker.band)
+        conv = surr.plot_search_convergence(baker.search)
+    finally:
+        surr.set_legend_fontsize(None)
+    assert sizes == {10.0}
+    assert {t.get_fontsize() for t in prof.legends[0].get_texts()} == {10.0}
+    assert {t.get_fontsize() for t in conv.legends[0].get_texts()} == {10.0}
+    assert base.legends[0].get_texts()[0].get_fontsize() == 8.0
+    # the figure grows for the larger legend instead of cutting it off
+    assert big.get_figheight() > base.get_figheight()
+    fig = big
+    fig.canvas.draw()
+    box = fig.legends[0].get_window_extent()
+    assert box.y0 >= -1 and box.x1 <= fig.bbox.x1 + 1 and box.x0 >= -1
+
+
+def test_critical_points_are_labelled_without_the_strip(baker):
+    _jax_surfaces()
+    plain = surr.plot_band_profile(baker.band)
+    assert not {"R", "SP", "P"} & {t.get_text() for t in plain.axes[0].texts}
+    fig = surr.plot_band_profile(baker.band, label_critical_points=True)
+    assert {"R", "SP", "P"} <= {t.get_text() for t in fig.axes[0].texts}
+    assert not any(a.images for a in fig.axes)  # no strip drawn
+    assert "R, SP, P: reactant, saddle, product" in _labels(fig.axes[0])
+    land = surr.plot_reduced_landscape(
+        baker.band, surface=None, label_critical_points=True
+    )
+    assert {"R", "SP", "P"} <= {t.get_text() for t in land.axes[0].texts}
+    assert not any(a.images for a in land.axes)

@@ -66,6 +66,7 @@ _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
 _WALL_INT_MIN = 10
+_TWO = 2
 # Bars at least this many times the axis start hold their value inside.
 _WALL_INSIDE_MIN_RATIO = 3
 # Below this deviation/progress span ratio the landscape would be a sliver.
@@ -76,6 +77,7 @@ _CI_ARMS = {"current_ci", "ci"}
 
 
 _FONT: list[str | None] = [None]
+_LEGEND_PT: list[float | None] = [None]
 FONT_DIRS_ENV = "CHEMPARSEPLOT_FONT_DIRS"
 
 
@@ -147,6 +149,40 @@ def set_font(family: str | None, font_dirs: Sequence[str | Path] = ()) -> None:
         )
         raise ValueError(msg) from exc
     _FONT[0] = family
+
+
+def set_legend_fontsize(pt: float | None) -> None:
+    """Set the legend font size (points) of every figure of this module.
+
+    ``None`` keeps each figure's own size (8 or 9 pt). Layouts that size
+    themselves around the legend (the landscape and the profile with a strip)
+    make room for the larger text.
+    """
+    _LEGEND_PT[0] = pt
+
+
+def _lfs(default: float) -> float:
+    """Legend font size: the module setting, else the figure's own ``default``."""
+    return _LEGEND_PT[0] or default
+
+
+def _legend_layout(labels, fontsize, fig_w, handle_in=0.55, max_cols=2):
+    """Columns and height (inches) for a figure legend of ``labels``.
+
+    Two columns when two columns of the longest label fit the figure width,
+    else one; the height follows the number of text lines at ``fontsize``.
+    """
+    width = max(max(len(ln) for ln in lab.split("\n")) for lab in labels)
+    col_w = handle_in + width * fontsize * 0.52 / 72
+    ncols = _TWO if (max_cols >= _TWO and 2 * col_w <= fig_w) else 1
+    rows = -(-len(labels) // ncols)
+    per_row = []
+    for r in range(rows):
+        chunk = labels[r::rows] if ncols == _TWO else [labels[r]]
+        per_row.append(max(lab.count("\n") + 1 for lab in chunk))
+    line_in = fontsize * 1.35 / 72
+    height = sum(per_row) * line_in + rows * 0.12 + 0.2
+    return ncols, height
 
 
 def _style() -> None:
@@ -241,6 +277,7 @@ def plot_band_profile(
     observations: str = "fade",
     observation_distance: float = 0.1,
     structures: str | None = None,
+    label_critical_points: bool | None = None,
     n_structures: int | None = None,
     strip_renderer: str = "xyzrender",
     rotation: str = "auto",
@@ -262,6 +299,10 @@ def plot_band_profile(
     near); ``"near"`` draws only those within ``observation_distance`` (A) and
     says in the legend how many farther ones were omitted; ``"none"`` (or
     ``show_points=False``) draws none.
+
+    ``label_critical_points`` puts the letters R, SP (or CI) and P at their points
+    on the curve; it is on whenever a strip is drawn and selectable without one
+    (the structures can then be shown elsewhere, e.g. under the landscape).
 
     ``structures`` (``"crit_points"`` or ``"all"``, ``n_structures`` for evenly
     spaced images) adds the strip of structures that ``rgpycrumbs eon plt-neb``
@@ -408,6 +449,23 @@ def plot_band_profile(
     ax.set_ylabel(energy_axis_label(energy_unit, label="energy relative to reactant"))
     if title:
         ax.set_title(title)
+    if label_critical_points and not entries:
+        crit = _critical_labels(band, snap)
+        for lab, x, y in crit:
+            ax.annotate(
+                lab,
+                (x, _rel_energy(snap, np.array([y]), energy_unit)[0]),
+                xytext=(0, 9),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=10,
+                fontweight="bold",
+                zorder=102,
+                annotation_clip=False,
+                path_effects=[mpe.withStroke(linewidth=2.5, foreground="white")],
+            )
+        ax.plot([], [], ls="none", label=_critical_legend(crit, "")[0])
     if entries:
         for ent in entries:
             if ent.label in {"R", "SP", "CI", "P"}:
@@ -447,9 +505,11 @@ def plot_band_profile(
             )
         )
         lb.append(h[-1].get_label())
+        _, legend_in = _legend_layout(lb, _lfs(9), fig_w, max_cols=1)
+        fig_h = _TOP_IN + plot_h + 0.7 + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)
         left = _Y_LABEL_IN / fig_w
-        plot_bottom = (_GAP_IN + _LEGEND_IN + strip_h + 0.7) / fig_h
+        plot_bottom = (_GAP_IN + legend_in + strip_h + 0.7) / fig_h
         ax.set_position([left, plot_bottom, plot_w / fig_w, plot_h / fig_h])
         for other in list(fig.axes):
             if other is ax or other is ax_strip:
@@ -464,7 +524,7 @@ def plot_band_profile(
             )
         strip_pos = [
             left,
-            (_GAP_IN + _LEGEND_IN) / fig_h,
+            (_GAP_IN + legend_in) / fig_h,
             plot_w / fig_w,
             strip_h / fig_h,
         ]
@@ -489,16 +549,16 @@ def plot_band_profile(
             h,
             lb,
             frameon=False,
-            fontsize=9,
+            fontsize=_lfs(9),
             ncols=1,
             loc="lower center",
             bbox_to_anchor=(0.5, 0.0),
         )
     elif own_axes:
         # Below the axes: the observation label is long and must not cover data.
-        fig.legend(frameon=False, fontsize=9, ncols=2, loc="outside lower center")
+        fig.legend(frameon=False, fontsize=_lfs(9), ncols=2, loc="outside lower center")
     else:
-        ax.legend(frameon=False, fontsize=9, loc="best")
+        ax.legend(frameon=False, fontsize=_lfs(9), loc="best")
     return fig
 
 
@@ -590,7 +650,7 @@ def plot_band_evolution(
     ax.set_ylabel("image the oracle was called on")
     if band.final.climbing is not None:
         ax.axhline(band.final.climbing, color=ACQUISITION, lw=0.8, ls=":")
-    fig.legend(frameon=False, fontsize=8, ncols=2, loc="outside lower center")
+    fig.legend(frameon=False, fontsize=_lfs(8), ncols=2, loc="outside lower center")
     return fig
 
 
@@ -684,6 +744,35 @@ def _strip_entries(band, structures, n_structures, locate):
     return out
 
 
+def _critical_labels(band, snap):
+    """(label, path coordinate, energy) of R, the saddle (or climbing image) and P."""
+    n = snap.n_images
+    ci = snap.climbing if snap.climbing is not None else int(np.argmax(snap.energy))
+    saddle_is_ci = (
+        band.saddle is None
+        or snap.positions is None
+        or np.linalg.norm(band.saddle - snap.positions[ci]) < _SAME_GEOMETRY
+    )
+    out = [("R", snap.coordinate[0], snap.energy[0])]
+    out.append(
+        (
+            "SP" if (band.saddle is None or saddle_is_ci) else "CI",
+            snap.coordinate[ci],
+            snap.energy[ci],
+        )
+    )
+    if not saddle_is_ci:
+        out.append(("SP", snap.coordinate[ci], snap.energy[ci]))
+    out.append(("P", snap.coordinate[n - 1], snap.energy[n - 1]))
+    return out
+
+
+def _critical_legend(crit, tail):
+    shown = [lab for lab, _x, _y in crit]
+    meaning = {"R": "reactant", "SP": "saddle", "CI": "climbing image", "P": "product"}
+    return [", ".join(shown) + ": " + ", ".join(meaning[x] for x in shown) + tail]
+
+
 def reduced_coordinates(band: BandHistory):
     """(s, d) coordinates of the band and of the oracle evaluations.
 
@@ -767,6 +856,7 @@ def plot_reduced_landscape(
     fade_variance: float | None = 0.95,
     label_every: int | None = None,
     structures: str | None = None,
+    label_critical_points: bool | None = None,
     n_structures: int | None = None,
     strip_renderer: str = "xyzrender",
     rotation: str = "auto",
@@ -799,6 +889,10 @@ def plot_reduced_landscape(
     - the final path (its colour is the surrogate mean energy);
     - the climbing image (ringed) and the saddle the search reports (gold
       star), certified when the producer says the cell passed.
+
+    ``label_critical_points`` puts R, SP (or CI) and P on the path when no strip
+    is drawn (the structures can be shown elsewhere); with a strip they are
+    always labelled.
 
     ``structures`` adds the strip of structures ``rgpycrumbs eon plt-neb``
     draws under its landscapes (same renderer and layout constants):
@@ -1060,6 +1154,28 @@ def plot_reduced_landscape(
     ax.minorticks_on()
     if title:
         ax.set_title(title, loc="left")
+    if label_critical_points and not entries:
+        crit = _critical_labels(band, final)
+        for lab, _x, _y in crit:
+            idx = {"R": 0, "P": final.n_images - 1}.get(
+                lab, final.climbing if final.climbing is not None else 0
+            )
+            ax.text(
+                s_p[idx],
+                d_p[idx],
+                lab,
+                fontsize=11,
+                fontweight="bold",
+                color="white",
+                ha="center",
+                va="bottom",
+                zorder=102,
+                clip_on=False,
+                path_effects=[mpe.withStroke(linewidth=2.5, foreground="black")],
+            )
+        handles.append(
+            Line2D([], [], ls="none", marker="", label=_critical_legend(crit, "")[0])
+        )
     if entries:
         for ent in entries:
             if ent.label in {"R", "SP", "CI", "P"}:
@@ -1097,9 +1213,13 @@ def plot_reduced_landscape(
                 ),
             )
         )
+        ncols_leg, legend_in = _legend_layout(
+            [h.get_label() for h in handles], _lfs(8), fig_w
+        )
+        fig_h = _TOP_IN + _MAP_IN + _XLABEL_GAP_IN + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)
         left = _Y_LABEL_IN / fig_w
-        map_bottom = (_GAP_IN + _LEGEND_IN + strip_h + _XLABEL_GAP_IN) / fig_h
+        map_bottom = (_GAP_IN + legend_in + strip_h + _XLABEL_GAP_IN) / fig_h
         ax.set_position([left, map_bottom, _MAP_IN / fig_w, _MAP_IN / fig_h])
         ax.set_aspect("equal", adjustable="box", anchor="C")
         for other in list(fig.axes):
@@ -1114,7 +1234,7 @@ def plot_reduced_landscape(
                 ]
             )
         ax_strip.set_position(
-            [left, (_GAP_IN + _LEGEND_IN) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+            [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
         )
         ax_strip.axis("off")
         fig.canvas.draw()
@@ -1132,13 +1252,13 @@ def plot_reduced_landscape(
             prefer_single_row=False,
         )
         ax_strip.set_position(
-            [left, (_GAP_IN + _LEGEND_IN) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+            [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
         )
         fig.legend(
             handles=handles,
             frameon=False,
-            fontsize=8,
-            ncols=2,
+            fontsize=_lfs(8),
+            ncols=ncols_leg,
             loc="lower center",
             bbox_to_anchor=(0.5, 0.0),
         )
@@ -1146,12 +1266,12 @@ def plot_reduced_landscape(
         fig.legend(
             handles=handles,
             frameon=False,
-            fontsize=8,
+            fontsize=_lfs(8),
             ncols=2,
             loc="outside lower center",
         )
     else:
-        ax.legend(handles=handles, frameon=False, fontsize=8, loc="best")
+        ax.legend(handles=handles, frameon=False, fontsize=_lfs(8), loc="best")
     _drop_cut_labels(fig, ax)
     return fig
 
@@ -1221,7 +1341,7 @@ def plot_search_convergence(
         handles + rug,
         labels + [h.get_label() for h in rug],
         frameon=False,
-        fontsize=8,
+        fontsize=_lfs(8),
         ncols=2,
         loc="outside lower center",
     )
@@ -1299,7 +1419,7 @@ def plot_search_comparison(
         ax.set_title(f"true force, {ttl}", loc="left", fontsize=10)
         if tol:
             ax.axhline(tol, color="black", ls="--", lw=1.0)
-    axes[0].legend(frameon=False, fontsize=9)
+    axes[0].legend(frameon=False, fontsize=_lfs(9))
     axes[1].set_xlabel("outer iteration" if x == "outer" else "oracle calls")
     phases = ["endpoints", "initial", "outer", "transition", "dimer", "certificate"]
     pal = [NEUTRAL, REFERENCE, SURROGATE, ACQUISITION, ORACLE, HIGHLIGHT]
@@ -1333,7 +1453,7 @@ def plot_search_comparison(
         dict(zip(lb, h, strict=True)).values(),
         dict(zip(lb, h, strict=True)).keys(),
         frameon=False,
-        fontsize=8,
+        fontsize=_lfs(8),
         ncols=5,
         loc="upper center",
         bbox_to_anchor=(0.5, -0.45),
@@ -1390,7 +1510,7 @@ def plot_model_diagnostics(search: SearchHistory, *, x: str = "outer") -> Figure
                     )
             ax.set_yscale("log")
             ax.set_ylabel("kernel variance")
-            ax.legend(frameon=False, fontsize=8, ncols=2)
+            ax.legend(frameon=False, fontsize=_lfs(8), ncols=2)
         elif kind == "length":
             ax.fill_between(
                 xs,
@@ -1408,7 +1528,7 @@ def plot_model_diagnostics(search: SearchHistory, *, x: str = "outer") -> Figure
             )
             ax.set_yscale("log")
             ax.set_ylabel("length scale")
-            ax.legend(frameon=False, fontsize=8, ncols=2)
+            ax.legend(frameon=False, fontsize=_lfs(8), ncols=2)
         elif kind == "train":
             ax.plot(xs, s["n_train"], "-", color=SURROGATE, lw=1.3)
             if search.retained_cap:
@@ -1437,7 +1557,7 @@ def plot_model_diagnostics(search: SearchHistory, *, x: str = "outer") -> Figure
                     )
                     bottom += v
             ax.set_ylabel("seconds per outer")
-            ax.legend(frameon=False, fontsize=8, ncols=3)
+            ax.legend(frameon=False, fontsize=_lfs(8), ncols=3)
     axes.ravel()[-1].set_xlabel("outer iteration" if x == "outer" else "oracle calls")
     return fig
 
@@ -1497,7 +1617,7 @@ def plot_single_ended(
                 alpha=0.9,
                 label="spectrum batch" if (a is a1 and i == 0) else None,
             )
-    a1.legend(frameon=False, fontsize=8, loc="lower right")
+    a1.legend(frameon=False, fontsize=_lfs(8), loc="lower right")
     a2.plot(x, history.force, "-s", color=ORACLE, ms=3.2, lw=1.2, label="true force")
     if history.force_tolerance:
         a2.axhline(
@@ -1506,7 +1626,7 @@ def plot_single_ended(
     a2.set_yscale("log")
     a2.set_ylabel(_FORCE_LABEL)
     a2.set_xlabel("oracle calls")
-    a2.legend(frameon=False, fontsize=8)
+    a2.legend(frameon=False, fontsize=_lfs(8))
     if title:
         a1.set_title(title, loc="left")
     return fig
@@ -1598,7 +1718,7 @@ def plot_campaign_calls(
     ax.grid(axis="x", color="#e6e6e6", lw=0.6)
     ax.legend(
         frameon=False,
-        fontsize=8,
+        fontsize=_lfs(8),
         ncols=3,
         loc="upper center",
         bbox_to_anchor=(0.5, -0.12 if n > _FORCE_LABEL_MIN_ROWS else -0.3),
@@ -1676,7 +1796,7 @@ def plot_campaign_walls(
             left += v
     ax.set_yticks(range(n), [c.label for c in cells], fontsize=8)
     ax.set_xlabel("wall time (s)")
-    ax.legend(frameon=False, fontsize=8, ncols=len(stages), loc="lower right")
+    ax.legend(frameon=False, fontsize=_lfs(8), ncols=len(stages), loc="lower right")
     return fig
 
 
@@ -1762,7 +1882,7 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
     _style()
     fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
     _draw_scaling(ax, table, list(table.series), ylabel=ylabel)
-    ax.legend(frameon=False, fontsize=9, handlelength=2.4)
+    ax.legend(frameon=False, fontsize=_lfs(9), handlelength=2.4)
     return fig
 
 
@@ -1804,7 +1924,7 @@ def plot_strong_scaling(table: ScalingTable, name: str) -> Figure:
     a1.set_yscale("log")
     a1.set_ylabel("wall time (s)")
     _draw_scaling(a2, table, [name])
-    a2.legend(frameon=False, fontsize=9, handlelength=2.4)
+    a2.legend(frameon=False, fontsize=_lfs(9), handlelength=2.4)
     calls = np.asarray(table.calls.get(name, np.full(len(w), np.nan)), dtype=float)
     pts(a3, calls, REFERENCE, "^")
     a3.set_ylabel("oracle calls in the search")
@@ -1900,7 +2020,7 @@ def plot_pop_efficiencies(
     ax.set_xlabel("ranks x threads")
     ax.set_ylabel("efficiency")
     ax.set_ylim(0, 1.1)
-    ax.legend(frameon=False, fontsize=8)
+    ax.legend(frameon=False, fontsize=_lfs(8))
     if title:
         ax.set_title(title, loc="left")
     return fig
@@ -1964,7 +2084,7 @@ def plot_time_breakdown(
     ax.set_xticks(x, list(layouts), rotation=45, ha="right", fontsize=8)
     ax.set_xlabel("ranks x threads")
     ax.set_ylabel("wall time (s)")
-    ax.legend(frameon=False, fontsize=8, ncols=2)
+    ax.legend(frameon=False, fontsize=_lfs(8), ncols=2)
     if title:
         ax.set_title(title, loc="left")
     return fig
@@ -2123,7 +2243,7 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
     fig.legend(
         handles=handles,
         frameon=False,
-        fontsize=8,
+        fontsize=_lfs(8),
         ncols=len(handles),
         loc="lower center",
     )
@@ -2235,7 +2355,7 @@ def plot_cases_wall(
         fig.legend(
             handles=handles,
             frameon=False,
-            fontsize=8,
+            fontsize=_lfs(8),
             ncols=len(handles),
             loc="lower center",
         )
