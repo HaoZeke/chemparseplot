@@ -1023,7 +1023,10 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
     ]
     for name, (ls, mk, col) in zip(table.series, styles, strict=False):
         w, sp = t.speedup(name)
-        ax.plot(w, sp, ls=ls, color=col, lw=1.0, alpha=0.6)
+        # One line through the fastest layout at each worker count; the other
+        # layouts of the same count show as markers.
+        best = np.array([sp[w == v].max() for v in np.unique(w)])
+        ax.plot(np.unique(w), best, ls=ls, color=col, lw=1.0, alpha=0.6)
         rng = t.speedup_range(name)
         if rng is not None:
             ax.errorbar(
