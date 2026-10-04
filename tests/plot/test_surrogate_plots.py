@@ -468,3 +468,61 @@ def test_cases_csv_errors(tmp_path):
     base.write_text("board,case,method,calls,converged\nBaker-Chan,99_nope,M,1,true\n")
     with pytest.raises(ValueError, match="unknown case"):
         attach_baselines(boards, base)
+
+
+def test_board_panels_are_sized_by_rows_and_top_aligned():
+    from chemparseplot.parse.surrogate import parse_cases_csv
+
+    boards = parse_cases_csv(CASES / "cases.csv")  # 3 and 2 rows
+    for fig in (surr.plot_cases_calls(boards), surr.plot_cases_wall(boards)):
+        a, b = fig.axes[:2]
+        ha, hb = a.get_position().height, b.get_position().height
+        assert ha / hb == pytest.approx(3 / 2)
+        assert a.get_position().y1 == pytest.approx(b.get_position().y1)  # top-aligned
+        # same row pitch: bar thickness per row is identical in both panels
+        for ax in (a, b):
+            lo, hi = ax.get_ylim()
+            assert lo - hi == pytest.approx(len(ax.get_yticklabels()))
+
+
+def test_wall_axis_range_and_minor_decade_labels():
+    from chemparseplot.parse.surrogate import parse_cases_csv
+
+    boards = parse_cases_csv(CASES / "cases.csv")  # 6.0 s .. 1200 s (tick)
+    ax = surr.plot_cases_wall(boards).axes[0]
+    lo, hi = ax.get_xlim()
+    assert lo == pytest.approx(6.0 * 10**-0.5) and hi == pytest.approx(
+        1200 * 10 ** (1 / 3)
+    )
+    ax.figure.canvas.draw()
+    shown = {
+        t.get_text()
+        for t, v in zip(
+            ax.get_xticklabels(which="minor"), ax.get_xticks(minor=True), strict=True
+        )
+        if t.get_text() and lo <= v <= hi
+    }
+    assert shown == {"3", "30", "300"}
+
+
+def test_wall_value_follows_the_bar_without_a_reference():
+    from chemparseplot.parse.surrogate import parse_cases_csv
+
+    boards = parse_cases_csv(CASES / "cases.csv")
+    ax = surr.plot_cases_wall(boards).axes[0]
+    hcn = next(t for t in ax.texts if t.get_text() == "6.0")  # HCN has no reference
+    assert hcn.get_ha() == "left" and hcn.get_color() == "black"
+    h2co = next(t for t in ax.texts if t.get_text() == "26")
+    assert h2co.get_ha() == "right"
+
+
+def test_calls_prints_search_counts_only_where_they_fit():
+    from chemparseplot.parse.surrogate import CaseBoard, CaseRow
+
+    rows = [
+        CaseRow("a", "Wide", 400, 20, 5.0, True),
+        CaseRow("b", "Narrow", 4, 20, 5.0, True),
+    ]
+    a = surr.plot_cases_calls([CaseBoard("B", rows)]).axes[0]
+    inside = {t.get_text() for t in a.texts if t.get_color() == "white"}
+    assert inside == {"400"}  # the search segment of 4 cannot hold its number

@@ -1384,16 +1384,44 @@ def plot_time_breakdown(
 # -------------------------------------------------------------- per-case boards
 
 
-def _board_axes(boards, width_per_board=5.2):
-    n_rows = max(len(b.rows) for b in boards)
-    fig, axes = plt.subplots(
-        1,
-        len(boards),
-        figsize=(width_per_board * len(boards), 1.5 + 0.27 * n_rows),
-        squeeze=False,
-        layout="constrained",
-    )
-    return fig, axes.ravel(), n_rows
+_ROW_PITCH_IN = 0.27
+_PANEL_WIDTH_IN = 4.2
+_CHAR_PT = 3.9  # width of one digit at 7 pt, with a little slack
+
+
+def _board_axes(boards, labels_pad_in=None):
+    """One axes per board, top-aligned, with the same row pitch and bar size.
+
+    The height of a panel is its row count times a fixed pitch, so a board
+    with fewer rows leaves no empty rows in its frame.
+    """
+    n_max = max(len(b.rows) for b in boards)
+    left_in = [
+        0.25 + 0.075 * max((len(r.label) for r in b.rows), default=4) for b in boards
+    ]
+    if labels_pad_in is not None:
+        left_in = [labels_pad_in] * len(boards)
+    top_in, bottom_in, right_in, gap_in = 0.45, 1.1, 0.35, 0.15
+    width = sum(left_in) + _PANEL_WIDTH_IN * len(boards) + right_in * len(boards) + gap_in
+    height = top_in + n_max * _ROW_PITCH_IN + bottom_in
+    fig = plt.figure(figsize=(width, height))
+    axes = []
+    x_in = 0.0
+    for b, left in zip(boards, left_in, strict=True):
+        x_in += left
+        h_in = len(b.rows) * _ROW_PITCH_IN
+        axes.append(
+            fig.add_axes(
+                (
+                    x_in / width,
+                    (bottom_in + (n_max - len(b.rows)) * _ROW_PITCH_IN) / height,
+                    _PANEL_WIDTH_IN / width,
+                    h_in / height,
+                )
+            )
+        )
+        x_in += _PANEL_WIDTH_IN + right_in
+    return fig, axes, n_max
 
 
 def _board_title(b: CaseBoard) -> str:
@@ -1409,7 +1437,7 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
     sit on the case's row, open where the method did not converge.
     """
     _style()
-    fig, axes, n_rows = _board_axes(boards)
+    fig, axes, _ = _board_axes(boards)
     methods: dict[str, tuple[str, str]] = {}
     any_uncert = False
     for ax, b in zip(axes, boards, strict=True):
@@ -1467,9 +1495,16 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
                         zorder=3,
                     )
         ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
-        ax.set_ylim(n_rows - 0.5, -0.5)
+        ax.set_ylim(len(b.rows) - 0.5, -0.5)
         ax.set_xlim(0, top * 1.12)
         ax.set_xlabel("Oracle evaluations")
+        pt_per_unit = _PANEL_WIDTH_IN * 72 / (top * 1.12)
+        for yi, si in zip(y, s, strict=True):
+            txt = f"{si:.0f}"
+            if si * pt_per_unit >= len(txt) * _CHAR_PT + 6:
+                ax.annotate(
+                    txt, (si / 2, yi), ha="center", va="center", fontsize=7, color="white"
+                )
         ax.set_title(_board_title(b), loc="left", fontsize=10)
         ax.grid(axis="x", color="#e6e6e6", lw=0.6)
         ax.set_axisbelow(True)
@@ -1495,7 +1530,7 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
         frameon=False,
         fontsize=8,
         ncols=len(handles),
-        loc="outside lower center",
+        loc="lower center",
     )
     return fig
 
@@ -1503,19 +1538,22 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
 def plot_cases_wall(
     boards: Sequence[CaseBoard], *, reference_label: str = "reference"
 ) -> Figure:
-    """Wall time per case on a log axis, one bar each, the value inside the bar end.
+    """Wall time per case on a log axis, one bar each, with its value.
 
     A thin vertical tick on the case's row marks ``reference_wall_s`` when the
-    table has one; ``reference_label`` names it in the legend. Not-certified
+    table has one (the value then sits inside the bar end, off the tick);
+    ``reference_label`` names it in the legend. The axis spans half a decade
+    below the fastest and a third above the slowest case. Not-certified
     cases are hatched.
     """
     _style()
-    fig, axes, n_rows = _board_axes(boards)
+    fig, axes, _ = _board_axes(boards)
     have_ref = False
     have_uncert = False
     lo_all = min(r.wall_s for b in boards for r in b.rows)
-    lo = 10 ** np.floor(np.log10(lo_all))
+    lo = lo_all * 10**-0.5  # half a decade below the fastest case
     hi_all = max(max(r.wall_s, r.reference_wall_s or 0) for b in boards for r in b.rows)
+    hi = hi_all * 10 ** (1 / 3)  # a third of a decade above the slowest
     for ax, b in zip(axes, boards, strict=True):
         y = np.arange(len(b.rows))
         w = np.array([r.wall_s for r in b.rows])
@@ -1532,9 +1570,11 @@ def plot_cases_wall(
                 height=0.7,
             )
         have_uncert |= bool((~cert).any())
-        for yi, wi in zip(y, w, strict=True):
+        for yi, wi, row in zip(y, w, b.rows, strict=True):
             txt = f"{wi:,.0f}" if wi >= _WALL_INT_MIN else f"{wi:.1f}"
-            inside = wi / lo >= _WALL_INSIDE_MIN_RATIO
+            # With a reference tick the value goes inside the bar end so it
+            # never reads as the tick's value; without one it follows the bar.
+            inside = bool(row.reference_wall_s) and wi / lo >= _WALL_INSIDE_MIN_RATIO
             ax.annotate(
                 txt,
                 (wi, yi),
@@ -1560,11 +1600,14 @@ def plot_cases_wall(
                     zorder=3,
                 )
         ax.set_xscale("log")
-        ax.set_xlim(lo, hi_all * 3)
+        ax.set_xlim(lo, hi)
         _plain_log_axis(ax.xaxis)
         ax.xaxis.set_major_locator(LogLocator(subs=(1.0,)))
+        ax.xaxis.set_minor_locator(LogLocator(subs=(3.0,)))
+        ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, _p: f"{v:g}"))
+        ax.tick_params(axis="x", which="minor", labelsize=8, length=3)
         ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
-        ax.set_ylim(n_rows - 0.5, -0.5)
+        ax.set_ylim(len(b.rows) - 0.5, -0.5)
         ax.set_xlabel("Wall time (s)")
         ax.set_title(_board_title(b), loc="left", fontsize=10)
         ax.grid(axis="x", color="#e6e6e6", lw=0.6)
@@ -1598,6 +1641,6 @@ def plot_cases_wall(
             frameon=False,
             fontsize=8,
             ncols=len(handles),
-            loc="outside lower center",
+            loc="lower center",
         )
     return fig
