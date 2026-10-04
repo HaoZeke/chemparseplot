@@ -90,6 +90,22 @@ GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp
   progression panels, MAP-NLL landscape, variance overlay with hatching,
   trust region illustration, hyperparameter sensitivity grid
 
+### Surrogate-assisted searches
+
+Records and figures for searches that spend a counted number of oracle calls
+and answer the rest from a fitted surrogate
+(`chemparseplot.parse.surrogate`, `chemparseplot.plot.surrogate`):
+
+- **Records**: band history, search history by oracle call, single-ended
+  (dimer) history, campaign table; filled by a gpr_optim campaign parser and
+  an ASE/CatLearn ML-NEB parser
+- **Figures**: energy profile with posterior mean and true evaluations, band
+  evolution, convergence against oracle calls with acquisition events, model
+  diagnostics, reaction-valley view of the observations, dimer curvature and
+  force, campaign dumbbell, pass matrix and wall time, scaling and efficiency
+- **Output**: `chemparseplot.plot.provenance.save_with_provenance` writes
+  byte-reproducible PNG, PDF and SVG that embed the SHA-256 of the inputs
+
 ### Trajectory Formats
 
 - HDF5 trajectories from ChemGP output (pre-computed forces and reaction

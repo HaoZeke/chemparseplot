@@ -1,0 +1,65 @@
+#+TITLE: How-to: Draw Surrogate-assisted Searches
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil
+
+* Problem
+
+A saddle search answers most force calls from a Gaussian-process surrogate and
+spends a counted number of calls on the true potential (the oracle). You want
+to see where those calls went, from the output of a gpr_optim campaign or an
+ASE/CatLearn ML-NEB run.
+
+* Solution
+
+** Read a search into the neutral records
+
+#+begin_src python
+from chemparseplot.parse.surrogate import read_search
+
+cell = read_search("results/rec/baker/25_hcnh2")            # gpr_optim cell
+mlneb = read_search("run/", "ml-neb", force_tolerance=0.05)  # ASE ML-NEB run
+cell.band, cell.search, cell.single_ended, cell.cell
+#+end_src
+
+=band= holds the final band (and snapshots when the producer wrote them),
+=search= the per-iteration series keyed by oracle call, =single_ended= the
+dimer series and =cell= the row of the campaign table. A quantity the producer
+did not write is absent or NaN, never zero.
+
+** Draw it
+
+#+begin_src python
+from chemparseplot.plot import surrogate as sp
+from chemparseplot.plot.provenance import save_with_provenance
+
+fig = sp.plot_band_profile(cell.band)
+save_with_provenance(fig, "profile.svg", {}, hashes=cell.provenance)
+sp.plot_search_convergence(cell.search)
+sp.plot_search_comparison([old, new], ["625 calls", "58 calls"])
+#+end_src
+
+| Function                          | Shows                                                         |
+|-----------------------------------+---------------------------------------------------------------|
+| =plot_band_profile=                 | posterior mean along the path, sigma ribbon, true evaluations |
+| =plot_band_evolution=               | snapshots over outer iterations, or the acquisition record    |
+| =plot_search_convergence=           | force against oracle calls, acquisition events, training rows |
+| =plot_search_comparison=            | two runs of one reaction and their calls by phase             |
+| =plot_model_diagnostics=            | kernel variances, length scales, training rows, seconds       |
+| =plot_reduced_landscape=            | observations in the (s, d) reaction-valley plane              |
+| =plot_single_ended=                 | dimer curvature and force against oracle calls                |
+| =plot_campaign_calls=, =_matrix=, =_walls= | calls per reaction against baselines, pass matrix, wall time |
+| =plot_scaling=, =plot_efficiency_table= | speedup with the ideal line, efficiency as a heat table  |
+
+The same figures are available as commands: =rgpycrumbs surrogate plt-band=,
+=plt-history=, =plt-dimer=, =plt-campaign=, =plt-scaling=.
+
+** Add a producer
+
+Fill the dataclasses of =chemparseplot.parse.surrogate.model= from your code's
+output: a =BandHistory= (one =BandSnapshot= per iteration, with =sigma= when
+the model gives one), a =SearchHistory= with the standard series names, or a
+=SingleEndedHistory=. Every figure takes those records and nothing else.
+
+* See also
+- [[file:create_neb_figures.org][Create Publication-quality Figures]]
