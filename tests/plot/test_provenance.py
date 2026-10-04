@@ -46,3 +46,12 @@ def test_unknown_suffix_refused(tmp_path):
     with pytest.raises(ValueError, match="unsupported"):
         save_with_provenance(_fig(), tmp_path / "f.gif", {})
     plt.close("all")
+
+
+def test_precomputed_hashes_are_merged(tmp_path):
+    rec = save_with_provenance(
+        _fig(), tmp_path / "f.svg", {}, hashes={"band.h5": "ab" * 32}, sidecar=False
+    )
+    plt.close("all")
+    assert rec["inputs"] == {"band.h5": "ab" * 32}
+    assert not (tmp_path / "f.svg.provenance.json").exists()

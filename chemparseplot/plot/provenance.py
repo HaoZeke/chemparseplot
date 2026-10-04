@@ -46,10 +46,21 @@ def file_sha256(path: str | Path) -> str:
     return h.hexdigest()
 
 
-def describe(inputs: dict[str, str | Path], command: str = "") -> dict:
-    """Provenance record: input hashes (by name), command line, tool versions."""
+def describe(
+    inputs: dict[str, str | Path],
+    command: str = "",
+    hashes: dict[str, str] | None = None,
+) -> dict:
+    """Provenance record: input hashes (by name), command line, tool versions.
+
+    ``inputs`` are files to hash; ``hashes`` are digests already computed
+    (a parser's ``provenance``), merged under the same key space.
+    """
     return {
-        "inputs": {k: file_sha256(v) for k, v in sorted(inputs.items())},
+        "inputs": {
+            **{k: file_sha256(v) for k, v in inputs.items()},
+            **(hashes or {}),
+        },
         "command": command,
         "tools": tool_versions(),
     }
@@ -61,17 +72,18 @@ def save_with_provenance(
     inputs: dict[str, str | Path],
     *,
     command: str = "",
+    hashes: dict[str, str] | None = None,
     dpi: int = 200,
     sidecar: bool = True,
 ) -> dict:
     """Save ``fig`` deterministically and return the provenance record.
 
     The format follows the suffix (``.png``, ``.pdf``, ``.svg``). With
-    ``sidecar`` a ``<output>.provenance.json`` is written beside the figure.
+    ``hashes`` adds digests computed elsewhere. With ``sidecar`` a ``<output>.provenance.json`` is written beside the figure.
     """
     out = Path(output)
     out.parent.mkdir(parents=True, exist_ok=True)
-    rec = describe(inputs, command)
+    rec = describe(inputs, command, hashes)
     text = json.dumps(rec, sort_keys=True, separators=(",", ":"))
     fmt = out.suffix.lstrip(".").lower()
     meta: dict
