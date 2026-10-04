@@ -54,6 +54,15 @@ sp.plot_search_comparison([old, new], ["625 calls", "58 calls"])
 The same figures are available as commands: =rgpycrumbs surrogate plt-band=,
 =plt-history=, =plt-dimer=, =plt-campaign=, =plt-scaling=.
 
+** Add the structure strip
+
+=plot_band_profile= and =plot_reduced_landscape= take =structures="crit_points"=,
+="all"= or =n_structures=N= and draw the strip of =rgpycrumbs eon plt-neb=
+(R, SP or CI, P) beneath the plot. The atom types are =band.numbers=, read from
+=band/band.con= or =saddle/pos.con=, or from =read_atom_types(FILE)=; without
+them the call raises =ValueError= naming the files looked at. Elements are
+never guessed.
+
 ** Add a producer
 
 Fill the dataclasses of =chemparseplot.parse.surrogate.model= from your code's
