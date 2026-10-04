@@ -580,7 +580,7 @@ def test_landscape_uses_the_shared_neb_functions_and_labels(baker, monkeypatch):
     assert xs[1] - xs[0] == pytest.approx(ys[1] - ys[0])
     assert [t.get_text() for t in fig.legends[0].get_texts()] == [
         "energy surface (GP fit to the oracle evaluations)",
-        r"GP variance contours ($\sigma^2$, relative)",
+        "GP variance contours (relative, labelled)",
         "final path (coloured by surrogate energy)",
         "oracle evaluations (fill: true energy, as the colourbar)",
         "climbing image",
@@ -593,10 +593,12 @@ def test_landscape_has_no_unexplained_marks(baker):
     _jax_surfaces()
     fig = surr.plot_reduced_landscape(baker.band)
     # without label_every the only text on the axes is the variance contour labels
-    assert all("sigma^2" in t.get_text() for t in fig.axes[0].texts)
+    assert all(t.get_text().startswith("variance ") for t in fig.axes[0].texts)
     numbered = surr.plot_reduced_landscape(baker.band, label_every=3)
     texts = [
-        t.get_text() for t in numbered.axes[0].texts if "sigma^2" not in t.get_text()
+        t.get_text()
+        for t in numbered.axes[0].texts
+        if not t.get_text().startswith("variance ")
     ]
     assert texts and all(t.isdigit() for t in texts)
     entry = numbered.legends[0].get_texts()[3].get_text()
@@ -631,3 +633,19 @@ def test_landscape_rmsd_gradients_recover_a_known_plane():
         g.append(3 * da / (root * np.linalg.norm(da)) + db / (root * np.linalg.norm(db)))
     ea, eb = surr.rmsd_gradients(x, np.array(g), ref_a, ref_b)
     assert ea == pytest.approx([3, 3]) and eb == pytest.approx([1, 1])
+
+
+def test_landscape_pdf_embeds_only_the_requested_family(baker, tmp_path):
+    _jax_surfaces()
+    from chemparseplot.plot.provenance import save_with_provenance
+
+    fonts = _unknown_font(tmp_path, "ZetaLandscape")
+    surr.set_font("ZetaLandscape", [fonts])
+    try:
+        fig = surr.plot_reduced_landscape(baker.band, title="HCN", label_every=4)
+        out = tmp_path / "land.pdf"
+        save_with_provenance(fig, out, {}, sidecar=False)
+    finally:
+        surr.set_font(None)
+    names = _embedded(out)
+    assert names and all(n.startswith("ZetaLandscape") for n in names), names

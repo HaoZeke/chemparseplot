@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 import logging
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -1087,6 +1087,7 @@ def plot_landscape_surface(
     auto_thin: bool = False,
     max_surface_points: int = 64,
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
+    variance_label: Callable[[float], str] | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1113,6 +1114,10 @@ def plot_landscape_surface(
         opt in (dense eOn min movies can otherwise yield non-finite grids).
     max_surface_points : int, default 64
         Cap on fit observations when ``auto_thin`` is True.
+    variance_label : callable, optional
+        Text of a variance contour label from its level; default
+        ``$\\sigma^2 = $`` and the value (mathtext). Pass a plain-text
+        formatter when the figure must embed a single font family.
     surface_fit : SurfaceFitConfig or mapping, optional
         TOML-friendly config object. When given, overrides *auto_thin* and
         *max_surface_points* (prefer this over ad-hoc kwargs).
@@ -1406,7 +1411,7 @@ def plot_landscape_surface(
                 inline=True,
                 fontsize=8,
                 inline_spacing=50,
-                fmt=lambda x: r"$\sigma^2 = $" + f"{x:.2g}",
+                fmt=variance_label or (lambda x: r"$\sigma^2 = $" + f"{x:.2g}"),
             )
 
     if show_pts:

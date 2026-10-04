@@ -626,6 +626,7 @@ def plot_reduced_landscape(
             xlim=(s_mid - half, s_mid + half),
             ylim=(-half, half),
             basis=basis,
+            variance_label=lambda x: f"variance {x:.2g}",
         )
         handles.append(
             Patch(
@@ -641,7 +642,7 @@ def plot_reduced_landscape(
                 color="black",
                 ls="--",
                 lw=1.0,
-                label=r"GP variance contours ($\sigma^2$, relative)",
+                label="GP variance contours (relative, labelled)",
             )
         )
     neb_plot.plot_landscape_path_overlay(
