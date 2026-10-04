@@ -335,3 +335,9 @@ def test_font_override_reaches_the_figure():
         assert fig.axes[0].xaxis.label.get_fontfamily() == ["DejaVu Serif"]
     finally:
         surr.set_font(None)
+
+
+def test_missing_font_is_an_error_not_a_fallback():
+    with pytest.raises(ValueError, match="not installed"):
+        surr.set_font("No Such Family 123")
+    assert surr._FONT[0] is None

@@ -68,7 +68,19 @@ _FONT: list[str | None] = [None]
 
 
 def set_font(family: str | None) -> None:
-    """Draw every figure of this module in ``family`` (None: the theme font)."""
+    """Draw every figure of this module in ``family`` (None: the theme font).
+
+    Raises ``ValueError`` when matplotlib cannot find the family, so a figure
+    never silently embeds a fallback font.
+    """
+    if family:
+        from matplotlib import font_manager  # noqa: PLC0415
+
+        try:
+            font_manager.findfont(family, fallback_to_default=False)
+        except ValueError as exc:
+            msg = f"font family {family!r} is not installed for matplotlib"
+            raise ValueError(msg) from exc
     _FONT[0] = family
 
 
