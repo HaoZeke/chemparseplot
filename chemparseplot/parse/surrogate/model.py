@@ -247,18 +247,26 @@ class CampaignTable:
 
 @dataclass
 class ScalingTable:
-    """Time against worker count for several series."""
+    """Time against worker count for several series.
+
+    ``reference`` names the series whose first point defines speedup 1 for all
+    series; without it each series is measured against its own first point.
+    """
 
     series: dict[str, tuple[np.ndarray, np.ndarray]]
     reference: str | None = None
 
     def speedup(self, name: str) -> tuple[np.ndarray, np.ndarray]:
-        """Speedup relative to the first point of ``reference`` (or of ``name``)."""
+        """Speedup of ``name`` against its own first point.
+
+        With ``reference`` set, every series is measured against the first
+        point of that series instead, so series that split one total (search
+        and validation of a pipeline) share a baseline.
+        """
         w, t = self.series[name]
         w, t = _arr(w), _arr(t)
         _, rt = self.series[self.reference or name]
-        rt = _arr(rt)
-        return w, rt[0] / t
+        return w, _arr(rt)[0] / t
 
 
 @dataclass

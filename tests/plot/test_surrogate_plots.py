@@ -244,3 +244,13 @@ def test_reduced_landscape_needs_geometries():
     snap = BandSnapshot(np.arange(3.0), np.zeros(3))
     with pytest.raises(ValueError, match="no geometries"):
         surr.reduced_coordinates(BandHistory(final=snap))
+
+
+def test_speedup_defaults_to_each_series_own_baseline():
+    t = ScalingTable({"a": ([2, 4], [10.0, 6.0]), "b": ([1, 2], [3.0, 2.0])})
+    assert t.speedup("a")[1].tolist() == pytest.approx([1.0, 10 / 6])
+    assert t.speedup("b")[1].tolist() == pytest.approx([1.0, 1.5])
+    shared = ScalingTable(t.series, reference="a")
+    assert shared.speedup("b")[1].tolist() == pytest.approx([10 / 3, 5.0])
+    fig = surr.plot_efficiency_table(t)
+    assert "1.00" in [x.get_text() for x in fig.axes[0].texts]

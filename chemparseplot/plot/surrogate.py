@@ -59,7 +59,7 @@ _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
 # Below this deviation/progress span ratio the landscape would be a sliver.
 _EQUAL_ASPECT_MIN = 0.35
-_EFFICIENCY_DARK = 0.6
+_EFFICIENCY_DARK = 0.45
 _FORCE_LABEL_MIN_ROWS = 8
 _CI_ARMS = {"current_ci", "ci"}
 
@@ -950,7 +950,7 @@ def plot_campaign_matrix(
                 ax.plot(j, i, marker="o", color=SURROGATE, ms=7)
             else:
                 ax.plot(j, i, marker="X", color=ACQUISITION, mec="black", ms=8)
-    ax.set_xticks(range(len(cols)), cols, rotation=30, ha="right")
+    ax.set_xticks(range(len(cols)), cols, rotation=30, ha="left")
     ax.set_yticks(range(n), [c.label for c in table.cells], fontsize=8)
     ax.invert_yaxis()
     ax.set_xlim(-0.6, len(cols) - 0.4)
@@ -1000,14 +1000,14 @@ def plot_campaign_walls(
 def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
     """Speedup against workers on log axes, with the ideal line.
 
-    Speedup is ``T_ref(w0) / T(w)`` where ``w0`` is the smallest worker count of
-    the reference series (the first series when none is named).
+    Speedup is ``T_ref(w0) / T(w)`` with ``w0`` the first worker count of the
+    reference series, or of the series itself when the table names no
+    reference.
     """
     _style()
     fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
-    ref = table.reference or next(iter(table.series))
-    t = ScalingTable(table.series, ref)
-    w0 = float(np.min(table.series[ref][0]))
+    t = table
+    w0 = float(np.min(table.series[table.reference or next(iter(table.series))][0]))
     allw = np.unique(
         np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
     )
@@ -1033,9 +1033,7 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
 def plot_efficiency_table(table: ScalingTable) -> Figure:
     """Parallel efficiency (speedup per ideal speedup) as an annotated heat table."""
     _style()
-    ref = table.reference or next(iter(table.series))
-    t = ScalingTable(table.series, ref)
-    w0 = float(np.min(table.series[ref][0]))
+    t = table
     allw = np.unique(
         np.concatenate([np.asarray(w, dtype=float) for w, _ in table.series.values()])
     )
@@ -1043,6 +1041,7 @@ def plot_efficiency_table(table: ScalingTable) -> Figure:
     grid = np.full((len(names), len(allw)), np.nan)
     for i, nm in enumerate(names):
         w, sp = t.speedup(nm)
+        w0 = float(np.min(table.series[table.reference or nm][0]))
         for wk, s in zip(w, sp, strict=True):
             grid[i, int(np.where(allw == wk)[0][0])] = s / (wk / w0)
     cmap = LinearSegmentedColormap.from_list(
