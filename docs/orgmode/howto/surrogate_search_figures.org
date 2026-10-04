@@ -46,7 +46,7 @@ sp.plot_search_comparison([old, new], ["625 calls", "58 calls"])
 | =plot_search_convergence=           | force against oracle calls, acquisition events, training rows |
 | =plot_search_comparison=            | two runs of one reaction and their calls by phase             |
 | =plot_model_diagnostics=            | kernel variances, length scales, training rows, seconds       |
-| =plot_reduced_landscape=            | observations in the (s, d) reaction-valley plane              |
+| =plot_reduced_landscape=            | the NEB progress/deviation landscape: GP surface, evaluations, path, climbing image, saddle |
 | =plot_single_ended=                 | dimer curvature and force against oracle calls                |
 | =plot_campaign_calls=, =_matrix=, =_walls= | calls per reaction against baselines, pass matrix, wall time |
 | =plot_scaling=, =plot_efficiency_table= | speedup with the ideal line, efficiency as a heat table  |
