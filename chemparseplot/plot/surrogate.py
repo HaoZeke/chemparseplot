@@ -334,6 +334,137 @@ def plot_band_evolution(
     return fig
 
 
+# ----------------------------------------------------------- (d) reduced landscape
+
+
+def _sequential_cmap():
+    try:
+        import cmcrameri.cm  # noqa: F401, PLC0415
+
+        return plt.get_cmap("cmc.batlow")
+    except ImportError:  # pragma: no cover - cmcrameri is a plot extra
+        return plt.get_cmap("viridis")
+
+
+def reduced_coordinates(band: BandHistory):
+    """(s, d) coordinates of the band and of the retained observations.
+
+    ``a`` and ``b`` are the RMSD (A) of a geometry to the reactant and to the
+    product image of the final band; ``s`` is the progress along the straight
+    reactant-to-product line in the (a, b) plane and ``d`` the deviation from
+    it, the same reaction-valley projection :mod:`chemparseplot.parse.projection`
+    gives the NEB landscape.
+    """
+    from chemparseplot.parse.projection import (  # noqa: PLC0415
+        compute_projection_basis,
+        project_to_sd,
+    )
+
+    final = band.final
+    if final.positions is None:
+        msg = "the band holds no geometries"
+        raise ValueError(msg)
+    n_atoms = final.positions.shape[1] // 3
+
+    def rmsd(x, ref):
+        return np.linalg.norm(x - ref, axis=-1) / np.sqrt(n_atoms)
+
+    ra = rmsd(final.positions, final.positions[0])
+    rb = rmsd(final.positions, final.positions[-1])
+    basis = compute_projection_basis(ra, rb)
+    path = project_to_sd(ra, rb, basis)
+    pts = None
+    if band.points is not None and band.points.positions is not None:
+        p = band.points.positions
+        pts = project_to_sd(
+            rmsd(p, final.positions[0]), rmsd(p, final.positions[-1]), basis
+        )
+    return path, pts
+
+
+def plot_reduced_landscape(
+    band: BandHistory,
+    *,
+    energy_unit: str = "eV",
+    label_every: int | None = None,
+    contours: bool = True,
+    ax=None,
+    title: str | None = None,
+) -> Figure:
+    """Retained observations and the band in the (s, d) reaction-valley plane.
+
+    Points are the oracle observations, coloured by true energy above the
+    reactant, joined in acquisition order by a thin grey line and numbered at
+    the first, the last and every ``label_every``-th. The black line is the
+    final band (circle size grows with the predictive sigma where recorded)
+    with the climbing image ringed. Thin contours are a piecewise-linear
+    interpolation of the observed energies, which is the observed landscape,
+    not the surrogate surface.
+    """
+    _style()
+    if band.points is None or band.points.positions is None:
+        msg = "the band holds no retained observation geometries"
+        raise ValueError(msg)
+    (s_p, d_p), (s_o, d_o) = reduced_coordinates(band)
+    e = convert_energy(band.points.energy - band.final.energy[0], energy_unit)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(6.2, 4.6), layout="constrained")
+    else:
+        fig = ax.figure
+    if contours and len(e) >= 4:  # noqa: PLR2004
+        import matplotlib.tri as mtri  # noqa: PLC0415
+
+        try:
+            tri = mtri.Triangulation(s_o, d_o)
+            ax.tricontour(tri, e, levels=8, colors="#9a9a9a", linewidths=0.5, alpha=0.8)
+        except (ValueError, RuntimeError):  # collinear points: no triangulation
+            pass
+    ax.plot(s_o, d_o, "-", color="#bdbdbd", lw=0.6, zorder=1)
+    sc = ax.scatter(
+        s_o, d_o, c=e, cmap=_sequential_cmap(), s=26, edgecolor="black", lw=0.4, zorder=3
+    )
+    fig.colorbar(
+        sc, ax=ax, label=energy_axis_label(energy_unit, label="energy above reactant")
+    )
+    sig = band.final.sigma
+    size = (
+        22 + 10 * (np.nan_to_num(sig) / (np.nanmax(sig) or 1.0)) * 4
+        if sig is not None
+        else 22
+    )
+    ax.plot(s_p, d_p, "-", color="black", lw=1.4, zorder=4)
+    ax.scatter(s_p, d_p, s=size, color="white", edgecolor="black", lw=1.0, zorder=5)
+    ci = band.final.climbing
+    if ci is not None:
+        ax.plot(
+            s_p[ci],
+            d_p[ci],
+            marker="o",
+            ms=13,
+            mfc="none",
+            mec=ACQUISITION,
+            mew=2.0,
+            ls="none",
+            zorder=6,
+        )
+    order = np.arange(len(e))
+    mark = {0, len(e) - 1} | (set(order[:: label_every or max(1, len(e) // 8)].tolist()))
+    for k in sorted(mark):
+        ax.annotate(
+            str(k + 1),
+            (s_o[k], d_o[k]),
+            xytext=(3, 3),
+            textcoords="offset points",
+            fontsize=7,
+        )
+    ax.set_xlabel(r"progress $s$ ($\mathrm{\AA}$ RMSD)")
+    ax.set_ylabel(r"deviation $d$ ($\mathrm{\AA}$ RMSD)")
+    ax.set_aspect("equal", adjustable="datalim")
+    if title:
+        ax.set_title(title, loc="left")
+    return fig
+
+
 # -------------------------------------------------------------- (c) convergence
 
 

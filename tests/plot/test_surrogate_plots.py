@@ -223,3 +223,24 @@ def test_plots_accept_mlneb_snapshots():
     ax = surr.plot_band_profile(s.band).axes[0]
     assert ax.get_ylabel().startswith("energy above reactant")
     assert surr.plot_search_convergence(s.search).axes[0].get_yscale() == "log"
+
+
+def test_reduced_landscape_projects_band_and_observations(baker):
+    s, d = surr.reduced_coordinates(baker.band)[0]
+    assert s[0] == pytest.approx(0.0) and s[-1] > 0 and d[0] == pytest.approx(0.0)
+    fig = surr.plot_reduced_landscape(baker.band)
+    ax = fig.axes[0]
+    assert ax.get_xlabel().startswith("progress")
+    assert len(fig.axes) == 2  # colorbar
+    first = [
+        c
+        for c in ax.collections
+        if hasattr(c, "get_offsets") and len(c.get_offsets()) == 13
+    ]
+    assert first, "one marker per retained observation"
+
+
+def test_reduced_landscape_needs_geometries():
+    snap = BandSnapshot(np.arange(3.0), np.zeros(3))
+    with pytest.raises(ValueError, match="no geometries"):
+        surr.reduced_coordinates(BandHistory(final=snap))
