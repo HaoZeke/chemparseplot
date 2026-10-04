@@ -65,6 +65,8 @@ _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
 _WALL_INT_MIN = 10
+# Width of one contour-label character as a fraction of the landscape window.
+_LABEL_CHAR_FRACTION = 0.0105
 # Bars at least this many times the axis start hold their value inside.
 _WALL_INSIDE_MIN_RATIO = 3
 # Below this deviation/progress span ratio the landscape would be a sliver.
@@ -602,7 +604,7 @@ def plot_reduced_landscape(
     theme = get_theme("ruhi")
     own_axes = ax is None
     if own_axes:
-        fig, ax = plt.subplots(figsize=(6.2, 5.6), layout="constrained")
+        fig, ax = plt.subplots(figsize=(6.8, 5.8), layout="constrained")
     else:
         fig = ax.figure
     half = neb_plot.landscape_half_span(
@@ -638,8 +640,8 @@ def plot_reduced_landscape(
                 facecolor="#9aa7b0",
                 alpha=0.6,
                 label=(
-                    "energy surface: GP fitted afresh to the oracle energies and "
-                    "in-plane gradients, not the search's model"
+                    "energy surface: GP fitted afresh to the oracle\n"
+                    "energies and in-plane gradients, not the search's model"
                 ),
             )
         )
@@ -650,7 +652,7 @@ def plot_reduced_landscape(
                 color="black",
                 ls="--",
                 lw=1.0,
-                label="relative variance contours (0 at the data, 1 far from it)",
+                label=("relative variance contours\n(0 at the data, 1 far from it)"),
             )
         )
         if fade_variance is not None:
@@ -659,7 +661,7 @@ def plot_reduced_landscape(
                     facecolor="white",
                     edgecolor="#999999",
                     label=(
-                        f"faded: relative variance above {fade_variance:g}, "
+                        f"faded: relative variance above {fade_variance:g},\n"
                         "no oracle evaluation nearby"
                     ),
                 )
@@ -798,6 +800,12 @@ def plot_reduced_landscape(
     ax.set_ylabel(r"Orthogonal deviation $d$ ($\AA$)")
     ax.set_xlim(s_mid - half, s_mid + half)
     ax.set_ylim(-half, half)
+    for txt in list(ax.texts):  # a contour label cut by the window explains nothing
+        if txt.get_text().startswith("relative variance"):
+            x, _y = txt.get_position()
+            reach = 0.5 * len(txt.get_text()) * _LABEL_CHAR_FRACTION * 2 * half
+            if x - reach < s_mid - half or x + reach > s_mid + half:
+                txt.remove()
     ax.set_aspect("equal", adjustable="box")
     ax.minorticks_on()
     if title:
