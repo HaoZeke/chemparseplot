@@ -291,6 +291,19 @@ def test_strong_scaling_panels_from_csv():
     assert y[-1] == pytest.approx(t.series["c1"][1][-1] / 90)
 
 
+def test_every_cell_keeps_its_own_layouts(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_scaling_csv
+
+    f = tmp_path / "w.csv"
+    f.write_text(
+        "cell,set,ranks,threads,repetition,stage,seconds,calls,partition\n"
+        "a,s,1,1,1,pipeline,10,,p\na,s,2,2,1,pipeline,5,,p\n"
+        "b,s,1,1,1,pipeline,10,,p\nb,s,4,1,1,pipeline,5,,p\n"
+    )
+    t = parse_scaling_csv(f)
+    assert t.layouts == {"a": ["1x1", "2x2"], "b": ["1x1", "4x1"]}
+
+
 def test_efficiency_table_has_a_row_per_layout():
     from chemparseplot.parse.surrogate.gpr_optim import parse_scaling_csv
 

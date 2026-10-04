@@ -490,9 +490,9 @@ def parse_scaling_csv(
             calls = float(r["calls"]) if r["calls"] else np.nan
             pts[r["cell"]][key].append((float(r["seconds"]), calls))
     series, tmin, tmax, calls_d, capped, layouts = {}, {}, {}, {}, {}, {}
-    for cell, layouts in sorted(pts.items()):
-        keys = sorted(layouts, key=lambda k: (k[0] * k[1], k[1]))
-        arr = [np.array(layouts[k]) for k in keys]
+    for cell, by_layout in sorted(pts.items()):
+        keys = sorted(by_layout, key=lambda k: (k[0] * k[1], k[1]))
+        arr = [np.array(by_layout[k]) for k in keys]
         series[cell] = (
             np.array([k[0] * k[1] for k in keys], dtype=float),
             np.array([np.median(a[:, 0]) for a in arr]),
