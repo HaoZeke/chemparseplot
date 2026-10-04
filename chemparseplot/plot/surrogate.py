@@ -237,6 +237,8 @@ def plot_band_profile(
     energy_unit: str = "eV",
     sigma_scale: float = 2.0,
     show_points: bool = True,
+    observations: str = "fade",
+    observation_distance: float = 0.1,
     ax=None,
     title: str | None = None,
 ) -> Figure:
@@ -245,9 +247,15 @@ def plot_band_profile(
     The curve is the posterior mean at the images; the ribbon is
     ``+/- sigma_scale`` predictive standard deviations when the producer
     recorded them. Magenta squares are images whose true energy is known,
-    grey diamonds the measured observations projected on the path (those
-    outside the view are counted in the legend), the dashed blue curve the
-    true profile when one was recomputed on the final path.
+    diamonds the oracle evaluations projected on the path, the dashed blue
+    curve the true profile when one was recomputed on the final path.
+
+    An evaluation off the final band is not an error of the mean, so
+    ``observations`` says how distance is shown: ``"fade"`` colours each
+    diamond by its Cartesian distance from the final path (colourbar, dark is
+    near); ``"near"`` draws only those within ``observation_distance`` (A) and
+    says in the legend how many farther ones were omitted; ``"none"`` (or
+    ``show_points=False``) draws none.
     """
     _style()
     snap = snapshot or band.final
@@ -311,23 +319,59 @@ def plot_band_profile(
         )
     pad = 0.35 * (ymax - ymin or 1.0)
     lo_v, hi_v = ymin - pad, ymax + pad
-    if show_points and band.points is not None and band.points.coordinate is not None:
-        pts = band.points
+    if not show_points:
+        observations = "none"
+    pts = band.points
+    if (
+        observations != "none"
+        and pts is not None
+        and pts.coordinate is not None
+        and pts.distance is not None
+    ):
         yp = convert_energy(pts.energy - snap.energy[0], energy_unit)
-        inside = (yp >= lo_v) & (yp <= hi_v)
-        ax.plot(
-            pts.coordinate[inside],
-            yp[inside],
-            ls="none",
-            marker="D",
-            ms=3.5,
-            color=NEUTRAL,
-            alpha=0.55,
-            label=f"measured observations ({int(inside.sum())} of {len(pts)} in view)",
-        )
+        keep = (yp >= lo_v) & (yp <= hi_v)
+        omitted = 0
+        if observations == "near":
+            far = pts.distance > observation_distance
+            omitted = int((far & keep).sum())
+            keep &= ~far
+        label = f"oracle evaluations ({int(keep.sum())}), projected onto the final path"
+        if omitted:
+            label += f", {omitted} farther than {observation_distance:g} \u00c5 omitted"
+        if observations == "fade":
+            cmap = LinearSegmentedColormap.from_list("obsfade", ["#1a1a1a", "#dcdcdc"])
+            sc = ax.scatter(
+                pts.coordinate[keep],
+                yp[keep],
+                c=pts.distance[keep],
+                cmap=cmap,
+                vmin=0,
+                vmax=max(float(pts.distance[keep].max()), 1e-9) if keep.any() else 1,
+                marker="D",
+                s=14,
+                label=label,
+                zorder=2,
+            )
+            fig.colorbar(
+                sc,
+                ax=ax,
+                pad=0.02,
+                label=r"distance from the final path ($\mathrm{\AA}$)",
+            )
+        else:
+            ax.plot(
+                pts.coordinate[keep],
+                yp[keep],
+                ls="none",
+                marker="D",
+                ms=3.5,
+                color=NEUTRAL,
+                alpha=0.8,
+                label=label,
+            )
     ax.set_ylim(lo_v, hi_v)
     ax.set_xlabel(r"path coordinate ($\mathrm{\AA}$)")
-    ax.set_ylabel(energy_axis_label(energy_unit, label="energy above reactant"))
+    ax.set_ylabel(energy_axis_label(energy_unit, label="energy relative to reactant"))
     if title:
         ax.set_title(title)
     ax.legend(frameon=False, fontsize=9, loc="best")
@@ -388,7 +432,7 @@ def plot_band_evolution(
         for ax in axes.ravel()[n:]:
             ax.set_visible(False)
         fig.supxlabel(r"path coordinate ($\mathrm{\AA}$)")
-        fig.supylabel(energy_axis_label(energy_unit, label="energy above reactant"))
+        fig.supylabel(energy_axis_label(energy_unit, label="energy relative to reactant"))
         return fig
     fig, ax = plt.subplots(figsize=(7.0, 3.6), layout="constrained")
     markers = {
@@ -516,7 +560,9 @@ def plot_reduced_landscape(
         s_o, d_o, c=e, cmap=_sequential_cmap(), s=26, edgecolor="black", lw=0.4, zorder=3
     )
     fig.colorbar(
-        sc, ax=ax, label=energy_axis_label(energy_unit, label="energy above reactant")
+        sc,
+        ax=ax,
+        label=energy_axis_label(energy_unit, label="energy relative to reactant"),
     )
     sig = band.final.sigma
     size = (

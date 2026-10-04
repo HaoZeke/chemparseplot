@@ -291,9 +291,16 @@ def _search_from_log(log: dict[str, list[dict]], tol, converged) -> SearchHistor
     )
 
 
-def _projection(points: np.ndarray, path: np.ndarray, coord: np.ndarray) -> np.ndarray:
-    """Project rows of ``points`` onto the polyline ``path``; return path coordinate."""
+def project_on_path(
+    points: np.ndarray, path: np.ndarray, coord: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Project rows of ``points`` onto the polyline ``path``.
+
+    Returns the path coordinate of the foot point and the Cartesian distance
+    (norm over all coordinates, in the unit of ``path``) to it.
+    """
     out = np.empty(len(points))
+    dist = np.empty(len(points))
     for i, p in enumerate(points):
         best, bs = np.inf, 0.0
         for j in range(len(path) - 1):
@@ -304,8 +311,13 @@ def _projection(points: np.ndarray, path: np.ndarray, coord: np.ndarray) -> np.n
             d = float(np.linalg.norm(p - (a + t * ab)))
             if d < best:
                 best, bs = d, coord[j] + t * (coord[j + 1] - coord[j])
-        out[i] = bs
-    return out
+        out[i], dist[i] = bs, best
+    return out, dist
+
+
+def _projection(points: np.ndarray, path: np.ndarray, coord: np.ndarray) -> np.ndarray:
+    """Path coordinate of the foot point of each row of ``points``."""
+    return project_on_path(points, path, coord)[0]
 
 
 def _band_from_h5(h5_path: Path, events) -> BandHistory:
@@ -342,11 +354,9 @@ def _band_from_h5(h5_path: Path, events) -> BandHistory:
         hit = d.min(axis=0) < MATCH_TOLERANCE
         true_e[hit] = te[nearest[hit]]
         true_f[hit] = fmax[nearest[hit]]
+        pc, pd = project_on_path(tp, pos, coord)
         points = EvaluatedPoints(
-            energy=te,
-            max_force=fmax,
-            positions=tp,
-            coordinate=_projection(tp, pos, coord),
+            energy=te, max_force=fmax, positions=tp, coordinate=pc, distance=pd
         )
     final = BandSnapshot(
         coordinate=coord,

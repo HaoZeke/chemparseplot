@@ -221,7 +221,7 @@ def test_plots_accept_mlneb_snapshots():
     fig = surr.plot_band_evolution(s.band)
     assert len([a for a in fig.axes if a.get_visible()]) == 3
     ax = surr.plot_band_profile(s.band).axes[0]
-    assert ax.get_ylabel().startswith("energy above reactant")
+    assert ax.get_ylabel().startswith("energy relative to reactant")
     assert surr.plot_search_convergence(s.search).axes[0].get_yscale() == "log"
 
 
@@ -530,7 +530,29 @@ def test_calls_prints_search_counts_only_where_they_fit():
 
 def test_profile_legend_says_measured_and_acquisition_legend_clears_the_axis(baker):
     ax = surr.plot_band_profile(baker.band).axes[0]
-    assert any(t.startswith("measured observations (") for t in _labels(ax))
+    assert any(t.startswith("oracle evaluations (") for t in _labels(ax))
     assert not any("retained" in t for t in _labels(ax))
     fig = surr.plot_band_evolution(baker.band)
     assert fig.legends and fig.axes[0].get_legend() is None
+
+
+def test_profile_observation_modes_state_distance_honestly(baker):
+    pts = baker.band.points
+    assert pts.distance.shape == pts.energy.shape and (pts.distance >= 0).all()
+    fade = surr.plot_band_profile(baker.band, observations="fade")
+    labels = _labels(fade.axes[0])
+    assert any(
+        t.startswith("oracle evaluations (")
+        and t.endswith("projected onto the final path")
+        for t in labels
+    )
+    assert len(fade.axes) == 2  # colourbar for the distance
+    assert "distance from the final path" in fade.axes[1].get_ylabel()
+    near = surr.plot_band_profile(
+        baker.band, observations="near", observation_distance=0.05
+    )
+    text = next(t for t in _labels(near.axes[0]) if t.startswith("oracle evaluations"))
+    assert "farther than 0.05 \u00c5 omitted" in text and len(near.axes) == 1
+    none = surr.plot_band_profile(baker.band, observations="none")
+    assert not any(t.startswith("oracle evaluations") for t in _labels(none.axes[0]))
+    assert none.axes[0].get_ylabel() == "energy relative to reactant (eV)"

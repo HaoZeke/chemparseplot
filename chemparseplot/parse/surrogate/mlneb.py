@@ -23,7 +23,7 @@ from pathlib import Path
 
 import numpy as np
 
-from chemparseplot.parse.surrogate.gpr_optim import _projection, sha256_file
+from chemparseplot.parse.surrogate.gpr_optim import project_on_path, sha256_file
 from chemparseplot.parse.surrogate.model import (
     AcquisitionEvent,
     BandHistory,
@@ -165,11 +165,13 @@ def parse_mlneb_run(
         series["time_predict"] = t["ML run/[s]"]
         series["time_oracle"] = t["Evaluation/[s]"]
     final = snapshots[-1]
+    pc, pd = project_on_path(ev_pos, final.positions, final.coordinate)
     points = EvaluatedPoints(
         energy=ev_e,
         max_force=ev_f,
         positions=ev_pos,
-        coordinate=_projection(ev_pos, final.positions, final.coordinate),
+        coordinate=pc,
+        distance=pd,
         n_calls=len(ev),
     )
     fmax_last = float(series["true_force"][-1])

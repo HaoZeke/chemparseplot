@@ -79,6 +79,8 @@ class EvaluatedPoints:
     max_force: np.ndarray | None = None
     positions: np.ndarray | None = None
     coordinate: np.ndarray | None = None
+    # Cartesian distance (A) of each observation from the final path.
+    distance: np.ndarray | None = None
     n_calls: int | None = None
 
     def __post_init__(self):
