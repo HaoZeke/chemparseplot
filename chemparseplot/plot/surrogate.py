@@ -65,8 +65,6 @@ _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
 _WALL_INT_MIN = 10
-# Width of one contour-label character as a fraction of the landscape window.
-_LABEL_CHAR_FRACTION = 0.0105
 # Bars at least this many times the axis start hold their value inside.
 _WALL_INSIDE_MIN_RATIO = 3
 # Below this deviation/progress span ratio the landscape would be a sliver.
@@ -537,6 +535,23 @@ def rmsd_gradients(positions, grads, ref_a, ref_b):
     return out[:, 0], out[:, 1]
 
 
+def _drop_cut_labels(fig, ax) -> None:
+    """Remove contour labels whose text is cut by the axes: they explain nothing."""
+    fig.canvas.draw()
+    box = ax.get_window_extent()
+    for txt in list(ax.texts):
+        if not txt.get_text().startswith("relative variance"):
+            continue
+        ext = txt.get_window_extent()
+        if (
+            ext.x0 < box.x0 - 1
+            or ext.x1 > box.x1 + 1
+            or ext.y0 < box.y0 - 1
+            or ext.y1 > box.y1 + 1
+        ):
+            txt.remove()
+
+
 def plot_reduced_landscape(
     band: BandHistory,
     *,
@@ -604,7 +619,7 @@ def plot_reduced_landscape(
     theme = get_theme("ruhi")
     own_axes = ax is None
     if own_axes:
-        fig, ax = plt.subplots(figsize=(6.8, 5.8), layout="constrained")
+        fig, ax = plt.subplots(figsize=(6.8, 6.2), layout="constrained")
     else:
         fig = ax.figure
     half = neb_plot.landscape_half_span(
@@ -800,12 +815,6 @@ def plot_reduced_landscape(
     ax.set_ylabel(r"Orthogonal deviation $d$ ($\AA$)")
     ax.set_xlim(s_mid - half, s_mid + half)
     ax.set_ylim(-half, half)
-    for txt in list(ax.texts):  # a contour label cut by the window explains nothing
-        if txt.get_text().startswith("relative variance"):
-            x, _y = txt.get_position()
-            reach = 0.5 * len(txt.get_text()) * _LABEL_CHAR_FRACTION * 2 * half
-            if x - reach < s_mid - half or x + reach > s_mid + half:
-                txt.remove()
     ax.set_aspect("equal", adjustable="box")
     ax.minorticks_on()
     if title:
@@ -815,11 +824,12 @@ def plot_reduced_landscape(
             handles=handles,
             frameon=False,
             fontsize=8,
-            ncols=1,
+            ncols=2,
             loc="outside lower center",
         )
     else:
         ax.legend(handles=handles, frameon=False, fontsize=8, loc="best")
+    _drop_cut_labels(fig, ax)
     return fig
 
 
