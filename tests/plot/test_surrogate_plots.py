@@ -667,3 +667,104 @@ def test_landscape_fades_where_the_model_has_no_data(baker):
         if getattr(c, "get_alpha", lambda: None)() == pytest.approx(0.78)
     ]
     assert white and tuple(white[0].get_facecolor()[0][:3]) == (1.0, 1.0, 1.0)
+
+
+def _captions(fig):
+    """Captions of the strip axes (the axes holding the rendered image)."""
+    ax = next(a for a in fig.axes if a.images)
+    return [t.get_text() for t in sorted(ax.texts, key=lambda t: t.get_position()[0])]
+
+
+def test_landscape_strip_types_from_the_cell_and_labels(baker):
+    _jax_surfaces()
+    assert baker.band.numbers is not None
+    assert baker.band.numbers_source == "saddle/pos.con"
+    fig = surr.plot_reduced_landscape(
+        baker.band, structures="crit_points", strip_renderer="ase"
+    )
+    assert _captions(fig) == ["R", "SP", "P"]
+    on_map = {t.get_text() for t in fig.axes[0].texts}
+    assert {"R", "SP", "P"} <= on_map
+    last = fig.legends[0].get_texts()[-1].get_text()
+    assert last == "R, SP, P: reactant, saddle, product (structures below)"
+
+
+def test_strip_images_all_and_evenly_spaced(baker):
+    _jax_surfaces()
+    allf = surr.plot_reduced_landscape(
+        baker.band, structures="all", strip_renderer="ase", surface=None
+    )
+    caps = _captions(allf)
+    assert len(caps) == baker.band.final.n_images
+    assert caps[0] == "R" and caps[-1] == "P" and "SP" in caps
+    some = surr.plot_reduced_landscape(
+        baker.band,
+        structures="crit_points",
+        n_structures=5,
+        strip_renderer="ase",
+        surface=None,
+    )
+    assert len(_captions(some)) == 5
+
+
+def test_strip_without_atom_types_names_what_was_looked_for(tmp_path):
+    import shutil
+
+    src = REC / "baker" / "25_hcnh2"
+    cell = tmp_path / "baker" / "25_hcnh2"
+    shutil.copytree(src, cell)
+    (cell / "saddle" / "pos.con").unlink()
+    band = parse_gpr_optim_cell(cell).band
+    assert band.numbers is None
+    with pytest.raises(ValueError) as err:
+        surr.plot_band_profile(band, structures="crit_points")
+    msg = str(err.value)
+    assert "no atom types" in msg and "pos.con" in msg and "band.con" in msg
+    assert "--types-from" in msg
+
+
+def test_atom_types_from_any_geometry_file(baker, tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import read_atom_types
+
+    n_atoms = baker.band.final.positions.shape[1] // 3
+    xyz = tmp_path / "other.xyz"
+    xyz.write_text(f"{n_atoms}\n\nC 0 0 0\nN 1 0 0\nH 0 1 0\nH 0 0 1\nH 1 1 0\n")
+    assert read_atom_types(xyz, n_atoms).tolist() == [6, 7, 1, 1, 1]
+    with pytest.raises(ValueError, match="other.xyz has 5 atoms, the band has 4"):
+        read_atom_types(xyz, 4)
+    saved = baker.band.numbers
+    baker.band.numbers = read_atom_types(xyz, n_atoms)
+    try:
+        fig = surr.plot_band_profile(
+            baker.band, structures="crit_points", strip_renderer="ase"
+        )
+        assert _captions(fig) == ["R", "SP", "P"]
+    finally:
+        baker.band.numbers = saved
+
+
+def test_profile_strip_captions_follow_the_path(baker):
+    fig = surr.plot_band_profile(
+        baker.band, structures="crit_points", strip_renderer="ase"
+    )
+    assert _captions(fig) == ["R", "SP", "P"]
+    ax = fig.axes[0]
+    assert {"R", "SP", "P"} <= {t.get_text() for t in ax.texts}
+
+
+def test_strip_captions_use_the_requested_font(baker, tmp_path):
+    _jax_surfaces()
+    from chemparseplot.plot.provenance import save_with_provenance
+
+    fonts = _unknown_font(tmp_path, "ZetaStrip")
+    surr.set_font("ZetaStrip", [fonts])
+    try:
+        fig = surr.plot_reduced_landscape(
+            baker.band, structures="crit_points", strip_renderer="ase", title="HCN"
+        )
+        out = tmp_path / "strip.pdf"
+        save_with_provenance(fig, out, {}, sidecar=False)
+    finally:
+        surr.set_font(None)
+    names = _embedded(out)
+    assert names and all(n.startswith("ZetaStrip") for n in names), names

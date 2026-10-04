@@ -195,7 +195,14 @@ def parse_mlneb_run(
     return SurrogateSearch(
         label=label,
         producer="ml-neb",
-        band=BandHistory(final=final, snapshots=snapshots, points=points, events=events),
+        band=BandHistory(
+            final=final,
+            snapshots=snapshots,
+            points=points,
+            events=events,
+            numbers=np.asarray(ev[0].numbers, dtype=int),
+            numbers_source="evaluated.traj",
+        ),
         search=search,
         cell=cell,
         provenance={

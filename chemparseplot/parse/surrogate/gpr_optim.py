@@ -332,6 +332,43 @@ def _read_saddle(path: Path) -> np.ndarray | None:
         return None
 
 
+def read_atom_types(path: str | Path, n_atoms: int | None = None) -> np.ndarray:
+    """Atomic numbers of the first frame of a geometry file (ASE-readable; ``.con``
+    files are read as eOn files).
+
+    Raises ``ValueError`` naming the file when it cannot be read or when its atom
+    count differs from ``n_atoms``.
+    """
+    from ase.io import read
+
+    path = Path(path)
+    try:
+        atoms = read(path, index=0, format="eon" if path.suffix == ".con" else None)
+    except Exception as exc:
+        msg = f"cannot read atom types from {path}: {exc}"
+        raise ValueError(msg) from exc
+    if n_atoms is not None and len(atoms) != n_atoms:
+        msg = f"{path} has {len(atoms)} atoms, the band has {n_atoms}"
+        raise ValueError(msg)
+    return np.asarray(atoms.numbers, dtype=int)
+
+
+def _find_atom_types(cell: Path, band: BandHistory) -> None:
+    """Fill ``band.numbers`` from the cell's own geometry files, in order."""
+    n_atoms = band.final.positions.shape[1] // 3
+    candidates = [cell / "band" / "band.con", cell / "saddle" / "pos.con"]
+    band.numbers_looked_for = [str(c) for c in candidates]
+    for cand in candidates:
+        if not cand.is_file():
+            continue
+        try:
+            nums = read_atom_types(cand, n_atoms)
+        except ValueError:
+            continue
+        band.numbers, band.numbers_source = nums, str(cand.relative_to(cell))
+        return
+
+
 def _band_from_h5(h5_path: Path, events) -> BandHistory:
     import h5py
 
@@ -462,6 +499,7 @@ def parse_gpr_optim_cell(
         if h5.is_file():
             band = _band_from_h5(h5, search.events if search else [])
             prov["band/band.h5"] = sha256_file(h5)
+            _find_atom_types(cell, band)
             pos_con = cell / "saddle" / "pos.con"
             saddle = _read_saddle(pos_con)
             if saddle is not None:

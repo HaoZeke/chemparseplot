@@ -116,6 +116,11 @@ class BandHistory:
     # it passed the producer's acceptance checks.
     saddle: np.ndarray | None = None
     saddle_certified: bool | None = None
+    # Atomic numbers of the atoms (same order as the positions), where they came
+    # from, and the files looked at when none was found.
+    numbers: np.ndarray | None = None
+    numbers_source: str = ""
+    numbers_looked_for: list[str] = field(default_factory=list)
 
 
 @dataclass

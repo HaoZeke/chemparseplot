@@ -28,6 +28,7 @@ import subprocess
 from collections.abc import Sequence
 from pathlib import Path
 
+import matplotlib.patheffects as mpe
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
@@ -239,6 +240,11 @@ def plot_band_profile(
     show_points: bool = True,
     observations: str = "fade",
     observation_distance: float = 0.1,
+    structures: str | None = None,
+    n_structures: int | None = None,
+    strip_renderer: str = "xyzrender",
+    rotation: str = "auto",
+    xyzrender_config: str = "paton",
     ax=None,
     title: str | None = None,
 ) -> Figure:
@@ -256,11 +262,38 @@ def plot_band_profile(
     near); ``"near"`` draws only those within ``observation_distance`` (A) and
     says in the legend how many farther ones were omitted; ``"none"`` (or
     ``show_points=False``) draws none.
+
+    ``structures`` (``"crit_points"`` or ``"all"``, ``n_structures`` for evenly
+    spaced images) adds the strip of structures that ``rgpycrumbs eon plt-neb``
+    draws under its profile, captioned R, SP (or CI) and P and tied to their
+    points on the curve; it needs ``band.numbers`` (atom types) and raises
+    ``ValueError`` naming the files looked at otherwise.
     """
     _style()
     snap = snapshot or band.final
     own_axes = ax is None
-    if own_axes:
+    entries = []
+    if structures not in (None, "none"):
+        if not own_axes:
+            msg = "a structure strip needs the function to create its own figure"
+            raise ValueError(msg)
+
+        def locate(_pos, image):
+            return snap.coordinate[image], _rel_energy(
+                snap, snap.energy[image : image + 1], energy_unit
+            )[0]
+
+        entries = _strip_entries(band, structures, n_structures, locate)
+    if own_axes and entries:
+        n_rows_strip = -(-len(entries) // _STRIP_MAX_COLS)
+        strip_h = _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
+        plot_w, plot_h = 5.2, 3.4
+        fig_w = _Y_LABEL_IN + plot_w + _CBAR_IN * 0.7
+        fig_h = _TOP_IN + plot_h + 0.7 + strip_h + _GAP_IN + _LEGEND_IN
+        fig = plt.figure(figsize=(fig_w, fig_h))
+        ax = fig.add_axes((0.1, 0.5, 0.5, 0.4))
+        ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
+    elif own_axes:
         fig, ax = plt.subplots(figsize=(6.4, 4.0), layout="constrained")
     else:
         fig = ax.figure
@@ -375,7 +408,93 @@ def plot_band_profile(
     ax.set_ylabel(energy_axis_label(energy_unit, label="energy relative to reactant"))
     if title:
         ax.set_title(title)
-    if own_axes:
+    if entries:
+        for ent in entries:
+            if ent.label in {"R", "SP", "CI", "P"}:
+                ax.annotate(
+                    ent.label,
+                    (ent.x, ent.y),
+                    xytext=(0, 9),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                    fontsize=10,
+                    fontweight="bold",
+                    zorder=102,
+                    annotation_clip=False,
+                    path_effects=[mpe.withStroke(linewidth=2.5, foreground="white")],
+                )
+        shown = [e.label for e in entries if e.label in {"R", "SP", "CI", "P"}]
+        meaning = {
+            "R": "reactant",
+            "SP": "saddle",
+            "CI": "climbing image",
+            "P": "product",
+        }
+        h, lb = ax.get_legend_handles_labels()
+        h.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="",
+                label=(
+                    ", ".join(shown)
+                    + ": "
+                    + ", ".join(meaning[x] for x in shown)
+                    + " (structures below)"
+                ),
+            )
+        )
+        lb.append(h[-1].get_label())
+        fig.set_size_inches(fig_w, fig_h, forward=True)
+        left = _Y_LABEL_IN / fig_w
+        plot_bottom = (_GAP_IN + _LEGEND_IN + strip_h + 0.7) / fig_h
+        ax.set_position([left, plot_bottom, plot_w / fig_w, plot_h / fig_h])
+        for other in list(fig.axes):
+            if other is ax or other is ax_strip:
+                continue
+            other.set_position(
+                [
+                    left + plot_w / fig_w + 0.012,
+                    plot_bottom,
+                    max(0.015, 0.2 / fig_w),
+                    plot_h / fig_h,
+                ]
+            )
+        strip_pos = [
+            left,
+            (_GAP_IN + _LEGEND_IN) / fig_h,
+            plot_w / fig_w,
+            strip_h / fig_h,
+        ]
+        ax_strip.set_position(strip_pos)
+        ax_strip.axis("off")
+        fig.canvas.draw()
+        _neb_plot().plot_structure_strip(
+            ax_strip,
+            entries,
+            zoom=_STRIP_ZOOM,
+            rotation=rotation,
+            theme_color="black",
+            renderer=strip_renderer,
+            xyzrender_config=xyzrender_config,
+            col_spacing=_STRIP_SPACING,
+            width_fill_fraction=_STRIP_FILL,
+            max_cols=_STRIP_MAX_COLS,
+            prefer_single_row=False,
+        )
+        ax_strip.set_position(strip_pos)
+        fig.legend(
+            h,
+            lb,
+            frameon=False,
+            fontsize=9,
+            ncols=1,
+            loc="lower center",
+            bbox_to_anchor=(0.5, 0.0),
+        )
+    elif own_axes:
         # Below the axes: the observation label is long and must not cover data.
         fig.legend(frameon=False, fontsize=9, ncols=2, loc="outside lower center")
     else:
@@ -478,6 +597,92 @@ def plot_band_evolution(
 # ----------------------------------------------------------- (d) reduced landscape
 
 
+# Layout and rendering constants of the structure strip, as in rgpycrumbs eon plt-neb.
+_STRIP_MAX_COLS = 6
+_STRIP_ZOOM = 0.5 * 3.15
+_STRIP_SPACING = 1.5
+_STRIP_FILL = 0.92
+_STRIP_ROW_IN = 2.0
+_MAP_IN, _Y_LABEL_IN, _CBAR_IN = 5.2, 0.95, 1.2
+_TOP_IN, _GAP_IN, _LEGEND_IN = 0.45, 0.2, 1.25
+_SAME_GEOMETRY = 1e-3
+
+
+def _neb_plot():
+    from chemparseplot.plot import neb as neb_plot  # noqa: PLC0415
+
+    return neb_plot
+
+
+def _strip_indices(n_images, ci, n_structures):
+    """Band images for the strip: R, the climbing image, P and, with
+    ``n_structures``, evenly spaced images filling up to that many."""
+    chosen = {0, n_images - 1, ci}
+    if n_structures:
+        for cand in np.unique(
+            np.linspace(0, n_images - 1, n_structures).round().astype(int)
+        ):
+            if len(chosen) >= n_structures:
+                break
+            chosen.add(int(cand))
+    return sorted(chosen)
+
+
+def _strip_entries(band, structures, n_structures, locate):
+    """StructurePlacement entries for the strip.
+
+    ``locate(positions, image_index_or_None)`` returns the (x, y) of a structure
+    on the panel the strip belongs to.
+    """
+    from ase import Atoms  # noqa: PLC0415
+
+    from chemparseplot.plot.structs import StructurePlacement  # noqa: PLC0415
+
+    final = band.final
+    if band.numbers is None:
+        msg = (
+            "no atom types for the structure strip: looked for "
+            f"{band.numbers_looked_for or 'a types file'}; pass a geometry file with "
+            "the same atom order (--types-from FILE) or draw without the strip "
+            "(--plot-structures none)"
+        )
+        raise ValueError(msg)
+    n_images = final.n_images
+    ci = final.climbing if final.climbing is not None else int(np.argmax(final.energy))
+    if structures == "all":
+        idx = list(range(n_images))
+    elif structures == "crit_points":
+        idx = _strip_indices(n_images, ci, n_structures)
+    else:
+        msg = f"unknown structures {structures!r}; use 'crit_points', 'all' or None"
+        raise ValueError(msg)
+
+    def place(pos, label, image=None):
+        x, y = locate(pos, image)
+        atoms = Atoms(numbers=band.numbers, positions=np.asarray(pos).reshape(-1, 3))
+        return StructurePlacement(atoms=atoms, x=float(x), y=float(y), label=label)
+
+    out = []
+    saddle_is_ci = (
+        band.saddle is not None
+        and np.linalg.norm(band.saddle - final.positions[ci]) < _SAME_GEOMETRY
+    )
+    for i in idx:
+        if i == 0:
+            label = "R"
+        elif i == n_images - 1:
+            label = "P"
+        elif i == ci:
+            label = "SP" if (band.saddle is None or saddle_is_ci) else "CI"
+        else:
+            label = str(i)
+        out.append(place(final.positions[i], label, i))
+    if band.saddle is not None and not saddle_is_ci:
+        out.append(place(band.saddle, "SP", ci))
+    out.sort(key=lambda e: e.x)
+    return out
+
+
 def reduced_coordinates(band: BandHistory):
     """(s, d) coordinates of the band and of the oracle evaluations.
 
@@ -560,6 +765,11 @@ def plot_reduced_landscape(
     color_by: str = "energy",
     fade_variance: float | None = 0.95,
     label_every: int | None = None,
+    structures: str | None = None,
+    n_structures: int | None = None,
+    strip_renderer: str = "xyzrender",
+    rotation: str = "auto",
+    xyzrender_config: str = "paton",
     ax=None,
     title: str | None = None,
 ) -> Figure:
@@ -588,6 +798,15 @@ def plot_reduced_landscape(
     - the final path (its colour is the surrogate mean energy);
     - the climbing image (ringed) and the saddle the search reports (gold
       star), certified when the producer says the cell passed.
+
+    ``structures`` adds the strip of structures ``rgpycrumbs eon plt-neb``
+    draws under its landscapes (same renderer and layout constants):
+    ``"crit_points"`` draws the reactant, the saddle (or the climbing image) and
+    the product, ``"all"`` every band image, and ``n_structures=N`` that many
+    images evenly spaced along the band, always including those three. Each
+    structure is captioned on the strip and, for R, SP/CI and P, at its
+    position on the path. The atom types come from ``band.numbers``; without
+    them the call raises ``ValueError`` naming the files looked at.
 
     Needs ``rgpycrumbs`` (surface models, via JAX).
     """
@@ -618,7 +837,28 @@ def plot_reduced_landscape(
     basis = compute_projection_basis(r_path, p_path)
     theme = get_theme("ruhi")
     own_axes = ax is None
-    if own_axes:
+    entries = []
+    if structures not in (None, "none"):
+        if own_axes is False:
+            msg = "a structure strip needs the function to create its own figure"
+            raise ValueError(msg)
+
+        def locate(pos, _image):
+            sd = project_to_sd(
+                np.array([rmsd(pos, ref_a)]), np.array([rmsd(pos, ref_b)]), basis
+            )
+            return sd[0][0], sd[1][0]
+
+        entries = _strip_entries(band, structures, n_structures, locate)
+    if own_axes and entries:
+        n_rows_strip = -(-len(entries) // _STRIP_MAX_COLS)
+        strip_h = _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
+        fig_w = _Y_LABEL_IN + _MAP_IN + _CBAR_IN
+        fig_h = _TOP_IN + _MAP_IN + _GAP_IN + strip_h + _GAP_IN + _LEGEND_IN
+        fig = plt.figure(figsize=(fig_w, fig_h))
+        ax = fig.add_axes((0.1, 0.5, 0.5, 0.4))
+        ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
+    elif own_axes:
         fig, ax = plt.subplots(figsize=(6.8, 6.2), layout="constrained")
     else:
         fig = ax.figure
@@ -767,7 +1007,7 @@ def plot_reduced_landscape(
             s_p[ci],
             d_p[ci],
             marker="o",
-            ms=22,
+            ms=30,
             mfc="none",
             mec=ACQUISITION,
             mew=2.0,
@@ -819,7 +1059,89 @@ def plot_reduced_landscape(
     ax.minorticks_on()
     if title:
         ax.set_title(title, loc="left")
-    if own_axes:
+    if entries:
+        for ent in entries:
+            if ent.label in {"R", "SP", "CI", "P"}:
+                ax.text(
+                    ent.x,
+                    ent.y,
+                    ent.label,
+                    fontsize=11,
+                    fontweight="bold",
+                    color="white",
+                    ha="center",
+                    va="bottom",
+                    zorder=102,
+                    clip_on=False,
+                    path_effects=[mpe.withStroke(linewidth=2.5, foreground="black")],
+                )
+        shown = [e.label for e in entries if e.label in {"R", "SP", "CI", "P"}]
+        meaning = {
+            "R": "reactant",
+            "SP": "saddle",
+            "CI": "climbing image",
+            "P": "product",
+        }
+        handles.append(
+            Line2D(
+                [],
+                [],
+                ls="none",
+                marker="",
+                label=(
+                    ", ".join(shown)
+                    + ": "
+                    + ", ".join(meaning[x] for x in shown)
+                    + " (structures below)"
+                ),
+            )
+        )
+        fig.set_size_inches(fig_w, fig_h, forward=True)
+        left = _Y_LABEL_IN / fig_w
+        map_bottom = (_GAP_IN + _LEGEND_IN + strip_h + _GAP_IN) / fig_h
+        ax.set_position([left, map_bottom, _MAP_IN / fig_w, _MAP_IN / fig_h])
+        ax.set_aspect("equal", adjustable="box", anchor="C")
+        for other in list(fig.axes):
+            if other is ax or other is ax_strip:
+                continue
+            other.set_position(
+                [
+                    left + _MAP_IN / fig_w + 0.012,
+                    map_bottom,
+                    max(0.015, 0.2 / fig_w),
+                    _MAP_IN / fig_h,
+                ]
+            )
+        ax_strip.set_position(
+            [left, (_GAP_IN + _LEGEND_IN) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+        )
+        ax_strip.axis("off")
+        fig.canvas.draw()
+        neb_plot.plot_structure_strip(
+            ax_strip,
+            entries,
+            zoom=_STRIP_ZOOM,
+            rotation=rotation,
+            theme_color=theme.textcolor,
+            renderer=strip_renderer,
+            xyzrender_config=xyzrender_config,
+            col_spacing=_STRIP_SPACING,
+            width_fill_fraction=_STRIP_FILL,
+            max_cols=_STRIP_MAX_COLS,
+            prefer_single_row=False,
+        )
+        ax_strip.set_position(
+            [left, (_GAP_IN + _LEGEND_IN) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+        )
+        fig.legend(
+            handles=handles,
+            frameon=False,
+            fontsize=8,
+            ncols=2,
+            loc="lower center",
+            bbox_to_anchor=(0.5, 0.0),
+        )
+    elif own_axes:
         fig.legend(
             handles=handles,
             frameon=False,
