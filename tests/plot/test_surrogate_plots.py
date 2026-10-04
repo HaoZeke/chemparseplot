@@ -581,6 +581,7 @@ def test_landscape_uses_the_shared_neb_functions_and_labels(baker, monkeypatch):
     assert [t.get_text() for t in fig.legends[0].get_texts()] == [
         "energy surface (GP fit to the oracle evaluations)",
         "GP variance contours (relative, labelled)",
+        "faded: relative variance above 0.95, no oracle evaluation nearby",
         "final path (coloured by surrogate energy)",
         "oracle evaluations (fill: true energy, as the colourbar)",
         "climbing image",
@@ -601,7 +602,7 @@ def test_landscape_has_no_unexplained_marks(baker):
         if not t.get_text().startswith("variance ")
     ]
     assert texts and all(t.isdigit() for t in texts)
-    entry = numbered.legends[0].get_texts()[3].get_text()
+    entry = numbered.legends[0].get_texts()[4].get_text()
     assert "numbers: order of evaluation" in entry
 
 
@@ -609,7 +610,7 @@ def test_landscape_colouring_surface_and_saddle_options(baker):
     _jax_surfaces()
     by_iter = surr.plot_reduced_landscape(baker.band, color_by="iteration")
     assert by_iter.axes[-1].get_ylabel() == "order of evaluation"
-    entry = by_iter.legends[0].get_texts()[3].get_text()
+    entry = by_iter.legends[0].get_texts()[4].get_text()
     assert "shade: order of evaluation" in entry
     flat = surr.plot_reduced_landscape(baker.band, surface=None)
     assert not any("surface" in t.get_text() for t in flat.legends[0].get_texts())
@@ -649,3 +650,19 @@ def test_landscape_pdf_embeds_only_the_requested_family(baker, tmp_path):
         surr.set_font(None)
     names = _embedded(out)
     assert names and all(n.startswith("ZetaLandscape") for n in names), names
+
+
+def test_landscape_fades_where_the_model_has_no_data(baker):
+    _jax_surfaces()
+    faded = surr.plot_reduced_landscape(baker.band)
+    plain = surr.plot_reduced_landscape(baker.band, fade_variance=None)
+    names = [t.get_text() for t in plain.legends[0].get_texts()]
+    assert not any(n.startswith("faded") for n in names)
+    # the fade is one more filled contour set, drawn white over the surface
+    assert len(faded.axes[0].collections) > len(plain.axes[0].collections)
+    white = [
+        c
+        for c in faded.axes[0].collections
+        if getattr(c, "get_alpha", lambda: None)() == pytest.approx(0.78)
+    ]
+    assert white and tuple(white[0].get_facecolor()[0][:3]) == (1.0, 1.0, 1.0)

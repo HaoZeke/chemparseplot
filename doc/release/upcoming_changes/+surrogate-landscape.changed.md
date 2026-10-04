@@ -1,1 +1,2 @@
 The surrogate landscape (`chemparseplot.plot.surrogate.plot_reduced_landscape`) is drawn with the NEB landscape functions: the progress/deviation plane, the GP energy surface fitted to the oracle evaluations, the evaluations, the final path, the climbing image and the reported saddle, each in the legend. `plot_landscape_surface` takes `variance_label` to set the variance contour text.
+The surrogate landscape fades the GP surface where the relative variance exceeds a threshold (default 0.95), and `plot_landscape_surface` takes `fade_variance_above` for the same purpose.

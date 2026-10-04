@@ -1088,6 +1088,7 @@ def plot_landscape_surface(
     max_surface_points: int = 64,
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
     variance_label: Callable[[float], str] | None = None,
+    fade_variance_above: float | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1118,6 +1119,12 @@ def plot_landscape_surface(
         Text of a variance contour label from its level; default
         ``$\\sigma^2 = $`` and the value (mathtext). Pass a plain-text
         formatter when the figure must embed a single font family.
+    fade_variance_above : float, optional
+        Relative variance level in (0, 1) (the same scale as the labelled
+        contours: 0 the smallest variance on the grid, 1 the largest). Where
+        the relative variance is above it the surface is faded to the
+        background, so the plot does not show a confident surface where the
+        model has no data. Default None: no fading (the NEB behaviour).
     surface_fit : SurfaceFitConfig or mapping, optional
         TOML-friendly config object. When given, overrides *auto_thin* and
         *max_surface_points* (prefer this over ad-hoc kwargs).
@@ -1378,6 +1385,18 @@ def plot_landscape_surface(
     )
     # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
+        if fade_variance_above is not None and np.ptp(var_grid) > 1e-10:
+            rel = (var_grid - var_grid.min()) / np.ptp(var_grid)
+            if rel.max() > fade_variance_above:
+                ax.contourf(
+                    xg,
+                    yg,
+                    rel,
+                    levels=[fade_variance_above, rel.max() + 1e-9],
+                    colors="white",
+                    alpha=0.78,
+                    zorder=11,
+                )
         # Get the actual min and max variance currently in the grid
         v_min, v_max = var_grid.min(), var_grid.max()
         v_range = v_max - v_min

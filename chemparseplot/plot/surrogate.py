@@ -541,6 +541,7 @@ def plot_reduced_landscape(
     energy_unit: str = "eV",
     surface: str | None = "grad_matern",
     color_by: str = "energy",
+    fade_variance: float | None = 0.95,
     label_every: int | None = None,
     ax=None,
     title: str | None = None,
@@ -556,10 +557,13 @@ def plot_reduced_landscape(
 
     What this version adds, each with a legend entry:
 
-    - the GP energy surface is fitted here to the oracle evaluations (energy
-      and the part of the true gradient in the plane), with dashed relative
-      variance contours; it is the surface of those evaluations, not the
-      producer's own model. ``surface=None`` omits it;
+    - the GP energy surface is a fresh fit to the oracle energies and the
+      in-plane gradient components in the reduced (s, d) plane, with dashed
+      relative variance contours; it is not the search's own model.
+      Where the relative variance exceeds ``fade_variance`` (default 0.95, the
+      outermost labelled contour; None keeps it all) the surface is faded to
+      the background, so no confident surface is drawn where nothing was
+      evaluated. ``surface=None`` omits it;
     - the oracle evaluations as dots, coloured by true energy
       (``color_by="energy"``) or by order of evaluation
       (``"iteration"``); ``label_every=k`` also numbers every k-th one, and the
@@ -627,6 +631,7 @@ def plot_reduced_landscape(
             ylim=(-half, half),
             basis=basis,
             variance_label=lambda x: f"variance {x:.2g}",
+            fade_variance_above=fade_variance,
         )
         handles.append(
             Patch(
@@ -645,6 +650,17 @@ def plot_reduced_landscape(
                 label="GP variance contours (relative, labelled)",
             )
         )
+        if fade_variance is not None:
+            handles.append(
+                Patch(
+                    facecolor="white",
+                    edgecolor="#999999",
+                    label=(
+                        f"faded: relative variance above {fade_variance:g}, "
+                        "no oracle evaluation nearby"
+                    ),
+                )
+            )
     neb_plot.plot_landscape_path_overlay(
         ax,
         r_path,
