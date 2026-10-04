@@ -284,7 +284,7 @@ def test_strong_scaling_panels_from_csv():
     fig = surr.plot_strong_scaling(t, "c1")
     wall, speed, calls, per_call = fig.axes
     assert speed.get_xlabel().startswith("cores")  # straight ideal line on cores
-    ideal = [ln for ln in speed.lines if ln.get_linestyle() == ":"][0]
+    ideal = next(ln for ln in speed.lines if ln.get_linestyle() == ":")
     assert list(ideal.get_xdata()) == sorted(ideal.get_xdata())
     assert wall.get_yscale() == "log" and calls.get_ylabel().startswith("oracle calls")
     assert per_call.get_ylabel() == "seconds per call"
@@ -328,16 +328,37 @@ def test_pop_efficiencies():
     assert len(ax.lines) == 3 and ax.get_ylim()[0] == 0
 
 
-def test_font_override_reaches_the_figure():
-    surr.set_font("DejaVu Serif")
+def _embedded(pdf):
+    import re
+
+    names = re.findall(rb"/FontName\s*/(?:[A-Z]{6}\+)?([^\s/>\[\]]+)", pdf.read_bytes())
+    return sorted({n.decode() for n in names})
+
+
+def test_font_family_is_registered_and_embedded_in_pdf(tmp_path):
+    import shutil
+
+    import matplotlib.font_manager as fm
+
+    face = Path(fm.findfont("DejaVu Serif"))
+    fonts = tmp_path / "fonts"
+    fonts.mkdir()
+    shutil.copy(face, fonts / "DejaVuSerif.ttf")
+    surr.set_font("DejaVu Serif", [fonts])
     try:
-        fig = surr.plot_pop_efficiencies(["1x1"], {"lb": [1.0]})
+        fig = surr.plot_pop_efficiencies(["1x1", "2x2"], {r"load $\sigma$": [1.0, 0.8]})
         assert fig.axes[0].xaxis.label.get_fontfamily() == ["DejaVu Serif"]
+        out = tmp_path / "f.pdf"
+        from chemparseplot.plot.provenance import save_with_provenance
+
+        save_with_provenance(fig, out, {}, sidecar=False)
+        names = _embedded(out)
+        assert names and all(n.startswith("DejaVuSerif") for n in names), names
     finally:
         surr.set_font(None)
 
 
 def test_missing_font_is_an_error_not_a_fallback():
-    with pytest.raises(ValueError, match="not installed"):
-        surr.set_font("No Such Family 123")
+    with pytest.raises(ValueError, match="No Such Family 123.*searched.*fonts"):
+        surr.set_font("No Such Family 123", ["/nonexistent/dir"])
     assert surr._FONT[0] is None

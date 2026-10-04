@@ -22,10 +22,13 @@ Encodings shared by the figures:
 
 from __future__ import annotations
 
+import os
 from collections.abc import Sequence
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import font_manager
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
@@ -65,29 +68,67 @@ _CI_ARMS = {"current_ci", "ci"}
 
 
 _FONT: list[str | None] = [None]
+FONT_DIRS_ENV = "CHEMPARSEPLOT_FONT_DIRS"
 
 
-def set_font(family: str | None) -> None:
+def _font_search_dirs(extra) -> list[Path]:
+    env = [Path(d) for d in os.environ.get(FONT_DIRS_ENV, "").split(os.pathsep) if d]
+    return [
+        *(Path(d) for d in extra),
+        *env,
+        Path.home() / ".local/share/fonts",
+        Path("/usr/share/fonts"),
+    ]
+
+
+def set_font(family: str | None, font_dirs: Sequence[str | Path] = ()) -> None:
     """Draw every figure of this module in ``family`` (None: the theme font).
 
-    Raises ``ValueError`` when matplotlib cannot find the family, so a figure
-    never silently embeds a fallback font.
+    Faces named ``<family>*.ttf`` or ``.otf`` (spaces ignored, any case) are
+    searched recursively in ``font_dirs``, ``$CHEMPARSEPLOT_FONT_DIRS``,
+    ``~/.local/share/fonts`` and ``/usr/share/fonts`` and registered with
+    matplotlib. Text and math text use the family. A family that still cannot
+    be resolved raises ``ValueError`` naming the directories searched; there is
+    no fallback.
     """
-    if family:
-        from matplotlib import font_manager  # noqa: PLC0415
-
-        try:
-            font_manager.findfont(family, fallback_to_default=False)
-        except ValueError as exc:
-            msg = f"font family {family!r} is not installed for matplotlib"
-            raise ValueError(msg) from exc
+    if not family:
+        _FONT[0] = None
+        return
+    dirs = _font_search_dirs(font_dirs)
+    stem = family.replace(" ", "").lower()
+    for d in dirs:
+        if d.is_dir():
+            for face in sorted(d.rglob("*")):
+                if face.suffix.lower() in {".ttf", ".otf"} and face.stem.lower().replace(
+                    " ", ""
+                ).startswith(stem):
+                    font_manager.fontManager.addfont(str(face))
+    try:
+        font_manager.findfont(family, fallback_to_default=False)
+    except ValueError as exc:
+        msg = (
+            f"font family {family!r} is not available to matplotlib; searched "
+            f"{[str(d) for d in dirs]}. Install it or add its directory with "
+            f"--font-dir or ${FONT_DIRS_ENV}."
+        )
+        raise ValueError(msg) from exc
     _FONT[0] = family
 
 
 def _style() -> None:
     setup_publication_theme(get_theme("ruhi"))
     if _FONT[0]:
-        plt.rcParams.update({"font.family": _FONT[0]})
+        fam = _FONT[0]
+        plt.rcParams.update(
+            {
+                "font.family": fam,
+                "mathtext.fontset": "custom",
+                "mathtext.rm": fam,
+                "mathtext.it": f"{fam}:italic",
+                "mathtext.bf": f"{fam}:bold",
+                "mathtext.default": "regular",
+            }
+        )
     plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "path"})
 
 
