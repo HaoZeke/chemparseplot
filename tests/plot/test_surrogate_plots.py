@@ -449,7 +449,9 @@ def test_cases_wall_log_axis_reference_tick_and_labels():
         "earlier record",
         "not certified",
     ]
-    assert "26" in [t.get_text() for t in a.texts]
+    # the value sits beyond the reference tick, not on top of it (H2CO: 26 s, tick 31 s)
+    h2co = next(t for t in a.texts if t.get_text() == "26")
+    assert h2co.xy[0] == pytest.approx(31.0)
     assert not [w for w in _BANNED if any(w in t for t in _texts(fig))]
 
 

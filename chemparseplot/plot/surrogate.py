@@ -1530,12 +1530,13 @@ def plot_cases_wall(
                 height=0.7,
             )
         have_uncert |= bool((~cert).any())
-        for yi, wi in zip(y, w, strict=True):
+        for yi, wi, r in zip(y, w, b.rows, strict=True):
             txt = f"{wi:,.0f}" if wi >= _WALL_INT_MIN else f"{wi:.1f}"
+            end = max(wi, r.reference_wall_s or 0.0)  # keep the value clear of the tick
             ax.annotate(
                 txt,
-                (wi, yi),
-                xytext=(3, 0),
+                (end, yi),
+                xytext=(4, 0),
                 textcoords="offset points",
                 va="center",
                 fontsize=7,
@@ -1554,6 +1555,7 @@ def plot_cases_wall(
         ax.set_xscale("log")
         ax.set_xlim(lo, hi_all * 3)
         _plain_log_axis(ax.xaxis)
+        ax.xaxis.set_major_locator(LogLocator(subs=(1.0,)))
         ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
         ax.set_ylim(n_rows - 0.5, -0.5)
         ax.set_xlabel("Wall time (s)")
