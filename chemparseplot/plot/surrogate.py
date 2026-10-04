@@ -806,7 +806,18 @@ def _fit_window(surf, fade_variance, xs, ys, margin=0.06):
             x0, x1 = min(x0, surf.x[keep].min()), max(x1, surf.x[keep].max())
             y0, y1 = min(y0, surf.y[keep].min()), max(y1, surf.y[keep].max())
     pad = margin * max(x1 - x0, y1 - y0)
-    return (x0 - pad, x1 + pad), (y0 - pad, y1 + pad)
+    lo_x, hi_x, lo_y, hi_y = x0 - pad, x1 + pad, y0 - pad, y1 + pad
+    if surf is not None:
+        # Do not open a blank margin beyond the evaluated surface.
+        lo_x, hi_x = (
+            max(lo_x, min(surf.x.min(), x.min())),
+            min(hi_x, max(surf.x.max(), x.max())),
+        )
+        lo_y, hi_y = (
+            max(lo_y, min(surf.y.min(), y.min())),
+            min(hi_y, max(surf.y.max(), y.max())),
+        )
+    return (lo_x, hi_x), (lo_y, hi_y)
 
 
 def reduced_coordinates(band: BandHistory):
