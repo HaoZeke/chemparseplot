@@ -259,7 +259,8 @@ def plot_band_profile(
     """
     _style()
     snap = snapshot or band.final
-    if ax is None:
+    own_axes = ax is None
+    if own_axes:
         fig, ax = plt.subplots(figsize=(6.4, 4.0), layout="constrained")
     else:
         fig = ax.figure
@@ -374,7 +375,11 @@ def plot_band_profile(
     ax.set_ylabel(energy_axis_label(energy_unit, label="energy relative to reactant"))
     if title:
         ax.set_title(title)
-    ax.legend(frameon=False, fontsize=9, loc="best")
+    if own_axes:
+        # Below the axes: the observation label is long and must not cover data.
+        fig.legend(frameon=False, fontsize=9, ncols=2, loc="outside lower center")
+    else:
+        ax.legend(frameon=False, fontsize=9, loc="best")
     return fig
 
 

@@ -44,7 +44,8 @@ def oxirane():
 
 
 def _labels(ax):
-    return [t.get_text() for t in ax.get_legend().get_texts()]
+    legend = ax.get_legend() or ax.figure.legends[0]
+    return [t.get_text() for t in legend.get_texts()]
 
 
 def test_band_profile_encodes_mean_truth_and_climbing_image(baker):
