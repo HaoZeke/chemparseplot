@@ -28,4 +28,23 @@ __all__ = [
     "SearchHistory",
     "SingleEndedHistory",
     "SurrogateSearch",
+    "read_search",
 ]
+
+
+def read_search(path, producer: str = "gpr_optim", **kwargs) -> SurrogateSearch:
+    """Parse one search directory with the parser of ``producer``.
+
+    ``producer`` is ``"gpr_optim"`` (a campaign cell) or ``"ml-neb"`` (an ASE
+    ML-NEB run directory). Optional dependencies load on use.
+    """
+    if producer == "gpr_optim":
+        from chemparseplot.parse.surrogate.gpr_optim import parse_gpr_optim_cell
+
+        return parse_gpr_optim_cell(path, **kwargs)
+    if producer == "ml-neb":
+        from chemparseplot.parse.surrogate.mlneb import parse_mlneb_run
+
+        return parse_mlneb_run(path, **kwargs)
+    msg = f"unknown producer {producer!r}; expected 'gpr_optim' or 'ml-neb'"
+    raise ValueError(msg)

@@ -211,3 +211,15 @@ def test_scaling_and_efficiency():
     assert "1.00" in texts and len(texts) == 7
     w, sp = t.speedup("ours")
     assert sp[-1] == pytest.approx(100 / 18)
+
+
+def test_plots_accept_mlneb_snapshots():
+    from chemparseplot.parse.surrogate import read_search
+
+    pytest.importorskip("ase")
+    s = read_search(REC.parent / "mlneb", "ml-neb")
+    fig = surr.plot_band_evolution(s.band)
+    assert len([a for a in fig.axes if a.get_visible()]) == 3
+    ax = surr.plot_band_profile(s.band).axes[0]
+    assert ax.get_ylabel().startswith("energy above reactant")
+    assert surr.plot_search_convergence(s.search).axes[0].get_yscale() == "log"

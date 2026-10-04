@@ -1,0 +1,1 @@
+Added `chemparseplot.parse.surrogate.mlneb.parse_mlneb_run`, which reads ASE/CatLearn ML-NEB output (`predicted.traj`, `evaluated.traj`, `ml_summary.txt`) into the same records as the gpr_optim parser, and `read_search` to pick a parser by producer.
