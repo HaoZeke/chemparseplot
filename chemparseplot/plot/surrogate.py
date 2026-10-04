@@ -166,6 +166,16 @@ def _lfs(default: float) -> float:
     return _LEGEND_PT[0] or default
 
 
+def _wrap_handle_labels(handles, fontsize, fig_w, handle_in=0.55):
+    """Re-wrap legend labels so two columns fit the figure width."""
+    import textwrap  # noqa: PLC0415
+
+    chars = max(12, int((fig_w / 2 - handle_in - 0.1) * 72 / (fontsize * 0.52)))
+    for h in handles:
+        text = " ".join(h.get_label().split())
+        h.set_label(textwrap.fill(text, chars))
+
+
 def _legend_layout(labels, fontsize, fig_w, handle_in=0.55, max_cols=2):
     """Columns and height (inches) for a figure legend of ``labels``.
 
@@ -178,10 +188,14 @@ def _legend_layout(labels, fontsize, fig_w, handle_in=0.55, max_cols=2):
     rows = -(-len(labels) // ncols)
     per_row = []
     for r in range(rows):
-        chunk = labels[r::rows] if ncols == _TWO else [labels[r]]
+        # matplotlib fills columns first: row r holds labels[r], labels[rows + r]
+        chunk = [labels[r]] + (
+            [labels[rows + r]] if ncols == _TWO and rows + r < len(labels) else []
+        )
         per_row.append(max(lab.count("\n") + 1 for lab in chunk))
-    line_in = fontsize * 1.35 / 72
-    height = sum(per_row) * line_in + rows * 0.12 + 0.2
+    line_in = fontsize * 1.2 / 72  # one text line
+    gap_in = fontsize * 0.5 / 72  # matplotlib's default label spacing
+    height = sum(per_row) * line_in + rows * gap_in + 0.15
     return ncols, height
 
 
@@ -773,6 +787,28 @@ def _critical_legend(crit, tail):
     return [", ".join(shown) + ": " + ", ".join(meaning[x] for x in shown) + tail]
 
 
+def _fit_window(surf, fade_variance, xs, ys, margin=0.06):
+    """Window around the unfaded surface and all the plotted points.
+
+    The box is widened by ``margin`` of its larger side; every given point is
+    inside it.
+    """
+    x = np.concatenate([np.asarray(v, dtype=float).ravel() for v in xs])
+    y = np.concatenate([np.asarray(v, dtype=float).ravel() for v in ys])
+    x0, x1, y0, y1 = x.min(), x.max(), y.min(), y.max()
+    if surf is not None and surf.relative_variance is not None:
+        keep = (
+            np.ones_like(surf.relative_variance, dtype=bool)
+            if fade_variance is None
+            else surf.relative_variance <= fade_variance
+        )
+        if keep.any():
+            x0, x1 = min(x0, surf.x[keep].min()), max(x1, surf.x[keep].max())
+            y0, y1 = min(y0, surf.y[keep].min()), max(y1, surf.y[keep].max())
+    pad = margin * max(x1 - x0, y1 - y0)
+    return (x0 - pad, x1 + pad), (y0 - pad, y1 + pad)
+
+
 def reduced_coordinates(band: BandHistory):
     """(s, d) coordinates of the band and of the oracle evaluations.
 
@@ -855,6 +891,9 @@ def plot_reduced_landscape(
     color_by: str = "energy",
     fade_variance: float | None = 0.95,
     label_every: int | None = None,
+    window: str = "square",
+    xlim: tuple[float, float] | None = None,
+    ylim: tuple[float, float] | None = None,
     structures: str | None = None,
     label_critical_points: bool | None = None,
     n_structures: int | None = None,
@@ -893,6 +932,13 @@ def plot_reduced_landscape(
     ``label_critical_points`` puts R, SP (or CI) and P on the path when no strip
     is drawn (the structures can be shown elsewhere); with a strip they are
     always labelled.
+
+    ``window`` sets the extent: ``"square"`` (default) is the equal-metric square
+    window of ``plt-neb``; ``"fit"`` crops to the bounding box of the part of the
+    surface that is not faded (relative variance at most ``fade_variance``) united
+    with every oracle evaluation, the final path and the saddle, plus a margin,
+    keeping the same angstrom scale on both axes, so the map becomes a rectangle.
+    ``xlim`` and ``ylim`` set the window explicitly and win over ``window``.
 
     ``structures`` adds the strip of structures ``rgpycrumbs eon plt-neb``
     draws under its landscapes (same renderer and layout constants):
@@ -970,9 +1016,11 @@ def plot_reduced_landscape(
     )
     s_mid = 0.5 * (min(s_p.min(), s_o.min()) + max(s_p.max(), s_o.max()))
     handles = []
+    saddle_xy = None
+    surf = None
     if surface and pts.gradients is not None:
         gr, gp = rmsd_gradients(pts.positions, pts.gradients, ref_a, ref_b)
-        neb_plot.plot_landscape_surface(
+        surf = neb_plot.plot_landscape_surface(
             ax,
             r_obs,
             p_obs,
@@ -1132,6 +1180,7 @@ def plot_reduced_landscape(
             np.array([rmsd(band.saddle, ref_b)]),
             basis,
         )
+        saddle_xy = (float(s_sd[0][0]), float(s_sd[1][0]))
         neb_plot.mark_saddle_point(ax, s_sd[0][0], s_sd[1][0], annotate=False)
         what = (
             "certified saddle"
@@ -1152,8 +1201,23 @@ def plot_reduced_landscape(
         )
     ax.set_xlabel(r"Reaction progress $s$ ($\AA$)")
     ax.set_ylabel(r"Orthogonal deviation $d$ ($\AA$)")
-    ax.set_xlim(s_mid - half, s_mid + half)
-    ax.set_ylim(-half, half)
+    win_x, win_y = (s_mid - half, s_mid + half), (-half, half)
+    if xlim is not None or ylim is not None:
+        win_x, win_y = xlim or win_x, ylim or win_y
+    elif window == "fit":
+        win_x, win_y = _fit_window(
+            surf,
+            fade_variance,
+            [s_p, s_o, *([np.array([saddle_xy[0]])] if saddle_xy else [])],
+            [d_p, d_o, *([np.array([saddle_xy[1]])] if saddle_xy else [])],
+        )
+    elif window != "square":
+        msg = f"unknown window {window!r}; use 'square' or 'fit'"
+        raise ValueError(msg)
+    map_w_in = _MAP_IN
+    map_h_in = max(2.5, _MAP_IN * (win_y[1] - win_y[0]) / (win_x[1] - win_x[0]))
+    ax.set_xlim(*win_x)
+    ax.set_ylim(*win_y)
     ax.set_aspect("equal", adjustable="box")
     ax.minorticks_on()
     if title:
@@ -1218,24 +1282,25 @@ def plot_reduced_landscape(
             )
         )
     if own_axes:
+        _wrap_handle_labels(handles, _lfs(8), fig_w)
         ncols_leg, legend_in = _legend_layout(
             [h.get_label() for h in handles], _lfs(8), fig_w
         )
-        fig_h = _TOP_IN + _MAP_IN + _XLABEL_GAP_IN + strip_h + _GAP_IN + legend_in
+        fig_h = _TOP_IN + map_h_in + _XLABEL_GAP_IN + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)
         left = _Y_LABEL_IN / fig_w
         map_bottom = (_GAP_IN + legend_in + strip_h + _XLABEL_GAP_IN) / fig_h
-        ax.set_position([left, map_bottom, _MAP_IN / fig_w, _MAP_IN / fig_h])
+        ax.set_position([left, map_bottom, map_w_in / fig_w, map_h_in / fig_h])
         ax.set_aspect("equal", adjustable="box", anchor="C")
         for other in list(fig.axes):
             if other is ax or other is ax_strip:
                 continue
             other.set_position(
                 [
-                    left + _MAP_IN / fig_w + 0.012,
+                    left + map_w_in / fig_w + 0.012,
                     map_bottom,
                     max(0.015, 0.2 / fig_w),
-                    _MAP_IN / fig_h,
+                    map_h_in / fig_h,
                 ]
             )
         if entries:

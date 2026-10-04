@@ -1065,6 +1065,16 @@ class SurfaceFitConfig:
         )
 
 
+@dataclass(frozen=True)
+class LandscapeSurface:
+    """The grid ``plot_landscape_surface`` evaluated: coordinates and the
+    relative variance (0 smallest on the grid, 1 largest; None when flat)."""
+
+    x: np.ndarray
+    y: np.ndarray
+    relative_variance: np.ndarray | None
+
+
 def plot_landscape_surface(
     ax,
     rmsd_r,
@@ -1474,6 +1484,16 @@ def plot_landscape_surface(
                 alpha=0.6,
                 zorder=40,
             )
+
+    return LandscapeSurface(
+        x=xg,
+        y=yg,
+        relative_variance=(
+            (var_grid - var_grid.min()) / np.ptp(var_grid)
+            if var_grid is not None and np.ptp(var_grid) > 1e-10
+            else None
+        ),
+    )
 
 
 def plot_landscape_path_overlay(

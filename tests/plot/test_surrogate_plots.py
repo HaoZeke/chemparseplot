@@ -48,6 +48,11 @@ def _labels(ax):
     return [t.get_text() for t in legend.get_texts()]
 
 
+def _flat(texts):
+    """Legend labels with line breaks as single spaces (wrapping is layout)."""
+    return [" ".join(t.split()) for t in texts]
+
+
 def test_band_profile_encodes_mean_truth_and_climbing_image(baker):
     fig = surr.plot_band_profile(baker.band)
     ax = fig.axes[0]
@@ -578,11 +583,11 @@ def test_landscape_uses_the_shared_neb_functions_and_labels(baker, monkeypatch):
     assert ax.get_ylabel() == r"Orthogonal deviation $d$ ($\AA$)"
     xs, ys = ax.get_xlim(), ax.get_ylim()
     assert xs[1] - xs[0] == pytest.approx(ys[1] - ys[0])
-    assert [t.get_text() for t in fig.legends[0].get_texts()] == [
-        "energy surface: GP fitted afresh to the oracle\n"
+    assert _flat(t.get_text() for t in fig.legends[0].get_texts()) == [
+        "energy surface: GP fitted afresh to the oracle "
         "energies and in-plane gradients, not the search's model",
-        "relative variance contours\n(0 at the data, 1 far from it)",
-        "faded: relative variance above 0.95,\nno oracle evaluation nearby",
+        "relative variance contours (0 at the data, 1 far from it)",
+        "faded: relative variance above 0.95, no oracle evaluation nearby",
         "final path (coloured by surrogate energy)",
         "oracle evaluations (fill: true energy, as the colourbar)",
         "climbing image",
@@ -685,7 +690,7 @@ def test_landscape_strip_types_from_the_cell_and_labels(baker):
     assert _captions(fig) == ["R", "SP", "P"]
     on_map = {t.get_text() for t in fig.axes[0].texts}
     assert {"R", "SP", "P"} <= on_map
-    last = fig.legends[0].get_texts()[-1].get_text()
+    last = " ".join(fig.legends[0].get_texts()[-1].get_text().split())
     assert last == "R, SP, P: reactant, saddle, product (structures below)"
 
 
@@ -810,3 +815,65 @@ def test_critical_points_are_labelled_without_the_strip(baker):
     )
     assert {"R", "SP", "P"} <= {t.get_text() for t in land.axes[0].texts}
     assert not any(a.images for a in land.axes)
+
+
+def test_fitted_window_contains_the_data_and_keeps_equal_metric(baker):
+    _jax_surfaces()
+    sq = surr.plot_reduced_landscape(baker.band, window="square")
+    fit = surr.plot_reduced_landscape(baker.band, window="fit")
+    (s_p, d_p), (s_o, d_o) = surr.reduced_coordinates(baker.band)
+    ax = fit.axes[0]
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    for xs, ys in ((s_p, d_p), (s_o, d_o)):
+        assert x0 <= xs.min() and xs.max() <= x1 and y0 <= ys.min() and ys.max() <= y1
+    # the reported saddle is inside too (it lies on the climbing-image geometry)
+    ci = baker.band.final.climbing
+    assert x0 <= s_p[ci] <= x1 and y0 <= d_p[ci] <= y1
+    # same angstrom scale on both axes: the drawn box has the data aspect
+    box = ax.get_position()
+    w_in = box.width * fit.get_figwidth()
+    h_in = box.height * fit.get_figheight()
+    assert h_in / w_in == pytest.approx((y1 - y0) / (x1 - x0), rel=0.02)
+
+
+def test_fit_window_drops_the_faded_region_but_never_the_data():
+    from chemparseplot.plot.neb import LandscapeSurface
+
+    x, y = np.meshgrid(np.linspace(0, 2, 41), np.linspace(-1, 1, 41))
+    rel = np.clip((np.abs(y) - 0.2) / 0.8, 0, 1)  # variance grows away from y = 0
+    surf = LandscapeSurface(x=x, y=y, relative_variance=rel)
+    pts_x = [np.array([0.2, 1.8])]
+    pts_y = [np.array([0.05, 0.15])]
+    (x0, x1), (y0, y1) = surr._fit_window(surf, 0.5, pts_x, pts_y)
+    assert -0.8 < y0 < -0.6 and 0.6 < y1 < 0.8  # |y| <= 0.6 plus the margin, not +-1
+    assert y0 > -1 and y1 < 1 and x0 < 0.2 and x1 > 1.8
+    # data outside the unfaded region still end up inside
+    (_, _), (y0, y1) = surr._fit_window(surf, 0.1, pts_x, [np.array([0.9, -0.9])])
+    assert y0 <= -0.9 and y1 >= 0.9
+
+
+def test_explicit_window_and_unknown_window(baker):
+    _jax_surfaces()
+    fig = surr.plot_reduced_landscape(
+        baker.band, surface=None, xlim=(-0.1, 1.5), ylim=(-0.2, 0.6)
+    )
+    assert fig.axes[0].get_xlim() == (-0.1, 1.5) and fig.axes[0].get_ylim() == (-0.2, 0.6)
+    with pytest.raises(ValueError, match="unknown window"):
+        surr.plot_reduced_landscape(baker.band, surface=None, window="tight")
+
+
+def test_landscape_legend_wraps_into_two_columns_at_large_sizes(baker):
+    _jax_surfaces()
+    surr.set_legend_fontsize(9.5)
+    try:
+        fig = surr.plot_reduced_landscape(
+            baker.band, structures="crit_points", strip_renderer="ase"
+        )
+    finally:
+        surr.set_legend_fontsize(None)
+    legend = fig.legends[0]
+    fig.canvas.draw()
+    box = legend.get_window_extent()
+    assert box.x0 >= 0 and box.x1 <= fig.bbox.x1 and box.y0 >= 0
+    assert legend._ncols == 2
