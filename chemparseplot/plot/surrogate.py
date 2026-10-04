@@ -630,14 +630,17 @@ def plot_reduced_landscape(
             xlim=(s_mid - half, s_mid + half),
             ylim=(-half, half),
             basis=basis,
-            variance_label=lambda x: f"variance {x:.2g}",
+            variance_label=lambda x: f"relative variance {x:.2g}",
             fade_variance_above=fade_variance,
         )
         handles.append(
             Patch(
                 facecolor="#9aa7b0",
                 alpha=0.6,
-                label="energy surface (GP fit to the oracle evaluations)",
+                label=(
+                    "energy surface: GP fitted afresh to the oracle energies and "
+                    "in-plane gradients, not the search's model"
+                ),
             )
         )
         handles.append(
@@ -647,7 +650,7 @@ def plot_reduced_landscape(
                 color="black",
                 ls="--",
                 lw=1.0,
-                label="GP variance contours (relative, labelled)",
+                label="relative variance contours (0 at the data, 1 far from it)",
             )
         )
         if fade_variance is not None:
@@ -804,7 +807,7 @@ def plot_reduced_landscape(
             handles=handles,
             frameon=False,
             fontsize=8,
-            ncols=2,
+            ncols=1,
             loc="outside lower center",
         )
     else:
