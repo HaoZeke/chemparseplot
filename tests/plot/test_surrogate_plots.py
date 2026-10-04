@@ -335,25 +335,36 @@ def _embedded(pdf):
     return sorted({n.decode() for n in names})
 
 
-def test_font_family_is_registered_and_embedded_in_pdf(tmp_path):
-    import shutil
-
+def _unknown_font(tmp_path, family="ZetaTestFace"):
+    """A copy of DejaVu Sans renamed so matplotlib does not know the family."""
     import matplotlib.font_manager as fm
+    from fontTools.ttLib import TTFont
 
-    face = Path(fm.findfont("DejaVu Serif"))
+    font = TTFont(fm.findfont("DejaVu Sans"))
+    for rec in font["name"].names:
+        if rec.nameID in {1, 4, 16}:
+            rec.string = family
+        elif rec.nameID == 6:
+            rec.string = family + "-Regular"
     fonts = tmp_path / "fonts"
     fonts.mkdir()
-    shutil.copy(face, fonts / "DejaVuSerif.ttf")
-    surr.set_font("DejaVu Serif", [fonts])
+    font.save(fonts / f"{family}-Regular.ttf")
+    return fonts
+
+
+def test_font_family_is_registered_and_embedded_in_pdf(tmp_path):
+    fonts = _unknown_font(tmp_path)
+    assert "ZetaTestFace" not in {f.name for f in surr.font_manager.fontManager.ttflist}
+    surr.set_font("ZetaTestFace", [fonts])
     try:
         fig = surr.plot_pop_efficiencies(["1x1", "2x2"], {r"load $\sigma$": [1.0, 0.8]})
-        assert fig.axes[0].xaxis.label.get_fontfamily() == ["DejaVu Serif"]
+        assert fig.axes[0].xaxis.label.get_fontfamily() == ["ZetaTestFace"]
         out = tmp_path / "f.pdf"
         from chemparseplot.plot.provenance import save_with_provenance
 
         save_with_provenance(fig, out, {}, sidecar=False)
         names = _embedded(out)
-        assert names and all(n.startswith("DejaVuSerif") for n in names), names
+        assert names and all(n.startswith("ZetaTestFace") for n in names), names
     finally:
         surr.set_font(None)
 

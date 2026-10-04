@@ -23,6 +23,8 @@ Encodings shared by the figures:
 from __future__ import annotations
 
 import os
+import shutil
+import subprocess
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -81,11 +83,34 @@ def _font_search_dirs(extra) -> list[Path]:
     ]
 
 
+def _fontconfig_faces(family: str) -> list[str]:
+    """Files fontconfig lists for ``family``; empty when fc-list is absent."""
+    exe = shutil.which("fc-list")
+    if exe is None:
+        return []
+    try:
+        out = subprocess.run(  # noqa: S603
+            [exe, f":family={family}", "file"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=20,
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return [
+        ln.strip().rstrip(":").strip()
+        for ln in out.splitlines()
+        if ln.strip().lower().rstrip(":").endswith((".ttf", ".otf"))
+    ]
+
+
 def set_font(family: str | None, font_dirs: Sequence[str | Path] = ()) -> None:
     """Draw every figure of this module in ``family`` (None: the theme font).
 
     Faces named ``<family>*.ttf`` or ``.otf`` (spaces ignored, any case) are
-    searched recursively in ``font_dirs``, ``$CHEMPARSEPLOT_FONT_DIRS``,
+    searched, after fontconfig (``fc-list``), recursively in ``font_dirs``,
+    ``$CHEMPARSEPLOT_FONT_DIRS``,
     ``~/.local/share/fonts`` and ``/usr/share/fonts`` and registered with
     matplotlib. Text and math text use the family. A family that still cannot
     be resolved raises ``ValueError`` naming the directories searched; there is
@@ -96,6 +121,8 @@ def set_font(family: str | None, font_dirs: Sequence[str | Path] = ()) -> None:
         return
     dirs = _font_search_dirs(font_dirs)
     stem = family.replace(" ", "").lower()
+    for face in _fontconfig_faces(family):
+        font_manager.fontManager.addfont(face)
     for d in dirs:
         if d.is_dir():
             for face in sorted(d.rglob("*")):
@@ -108,7 +135,8 @@ def set_font(family: str | None, font_dirs: Sequence[str | Path] = ()) -> None:
     except ValueError as exc:
         msg = (
             f"font family {family!r} is not available to matplotlib; searched "
-            f"{[str(d) for d in dirs]}. Install it or add its directory with "
+            f"fontconfig and {[str(d) for d in dirs]}. Install it or add its "
+            "directory with "
             f"--font-dir or ${FONT_DIRS_ENV}."
         )
         raise ValueError(msg) from exc
