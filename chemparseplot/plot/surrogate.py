@@ -57,6 +57,8 @@ NEUTRAL = "#6b6b6b"
 _FORCE_LABEL = r"max atomic force (eV/$\mathrm{\AA}$)"
 _MAX_EVOLUTION_PANELS = 8
 _MIN_SNAPSHOTS = 2
+# Below this deviation/progress span ratio the landscape would be a sliver.
+_EQUAL_ASPECT_MIN = 0.35
 _EFFICIENCY_DARK = 0.6
 _FORCE_LABEL_MIN_ROWS = 8
 _CI_ARMS = {"current_ci", "ci"}
@@ -459,7 +461,10 @@ def plot_reduced_landscape(
         )
     ax.set_xlabel(r"progress $s$ ($\mathrm{\AA}$ RMSD)")
     ax.set_ylabel(r"deviation $d$ ($\mathrm{\AA}$ RMSD)")
-    ax.set_aspect("equal", adjustable="datalim")
+    span_s = np.ptp(np.concatenate([s_p, s_o]))
+    span_d = np.ptp(np.concatenate([d_p, d_o]))
+    if span_d > _EQUAL_ASPECT_MIN * span_s:
+        ax.set_aspect("equal", adjustable="datalim")
     if title:
         ax.set_title(title, loc="left")
     return fig
