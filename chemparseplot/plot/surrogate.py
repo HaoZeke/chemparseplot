@@ -1544,6 +1544,9 @@ def plot_cases_wall(
                 va="center",
                 fontsize=7,
                 color="white" if inside else "black",
+                bbox={"facecolor": SURROGATE, "edgecolor": "none", "pad": 1.0}
+                if inside
+                else None,
             )
         for yi, r in zip(y, b.rows, strict=True):
             if r.reference_wall_s:
