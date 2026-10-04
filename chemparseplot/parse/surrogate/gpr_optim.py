@@ -447,3 +447,57 @@ def parse_gpr_optim_cell(
         cell=rec,
         provenance=prov,
     )
+
+
+def parse_scaling_csv(
+    wall_csv: str | Path,
+    counts_csv: str | Path | None = None,
+    *,
+    stage: str = "pipeline",
+    cells: list[str] | None = None,
+):
+    """Strong-scaling table from per-repetition wall times.
+
+    ``wall_csv`` has columns ``cell, ranks, threads, repetition, stage,
+    seconds, calls``; ``counts_csv`` (optional) ``cell, ranks, threads,
+    repetition, passed``. One series per cell, one point per
+    ``ranks x threads`` layout (x = cores), time = median over repetitions
+    with min and max kept, calls = median, and a point is capped when any of
+    its repetitions has ``passed`` false.
+    """
+    import csv
+    from collections import defaultdict
+
+    from chemparseplot.parse.surrogate.model import ScalingTable
+
+    passed: dict[tuple, bool] = {}
+    if counts_csv:
+        with Path(counts_csv).open() as fh:
+            for r in csv.DictReader(fh):
+                key = (r["cell"], int(r["ranks"]), int(r["threads"]))
+                passed[key] = passed.get(key, True) and r["passed"] == "True"
+    pts: dict[str, dict[tuple, list]] = defaultdict(lambda: defaultdict(list))
+    with Path(wall_csv).open() as fh:
+        for r in csv.DictReader(fh):
+            if r["stage"] != stage or (cells and r["cell"] not in cells):
+                continue
+            key = (int(r["ranks"]), int(r["threads"]))
+            calls = float(r["calls"]) if r["calls"] else np.nan
+            pts[r["cell"]][key].append((float(r["seconds"]), calls))
+    series, tmin, tmax, calls_d, capped = {}, {}, {}, {}, {}
+    for cell, layouts in sorted(pts.items()):
+        keys = sorted(layouts, key=lambda k: (k[0] * k[1], k[1]))
+        arr = [np.array(layouts[k]) for k in keys]
+        series[cell] = (
+            np.array([k[0] * k[1] for k in keys], dtype=float),
+            np.array([np.median(a[:, 0]) for a in arr]),
+        )
+        tmin[cell] = np.array([a[:, 0].min() for a in arr])
+        tmax[cell] = np.array([a[:, 0].max() for a in arr])
+        calls_d[cell] = np.array(
+            [np.nanmedian(a[:, 1]) if np.isfinite(a[:, 1]).any() else np.nan for a in arr]
+        )
+        capped[cell] = np.array([not passed.get((cell, *k), True) for k in keys])
+    return ScalingTable(
+        series, time_min=tmin, time_max=tmax, calls=calls_d, capped=capped
+    )

@@ -80,3 +80,28 @@ def test_campaign_table():
     assert sorted(c.label for c in t.cells) == ["16_oxirane", "25_hcnh2"]
     assert t.tolerance == pytest.approx(0.0514221)
     assert t.to_frame().shape[0] == 2
+
+
+def test_scaling_csv(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_scaling_csv
+
+    wall = tmp_path / "w.csv"
+    rows = ["cell,set,ranks,threads,repetition,stage,seconds,calls,partition"]
+    for r, (ranks, thr, secs, calls) in enumerate(
+        [(1, 1, (10, 12, 11), 50), (2, 2, (4, 5, 4.5), 60)]
+    ):
+        rows += [
+            f"c,s,{ranks},{thr},{i + 1},pipeline,{v},{calls},p"
+            for i, v in enumerate(secs)
+        ]
+        rows += [f"c,s,{ranks},{thr},{i + 1},band,1,5,p" for i in range(3)]
+    wall.write_text("\n".join(rows) + "\n")
+    cnt = tmp_path / "n.csv"
+    cnt.write_text(
+        "cell,set,ranks,threads,repetition,partition,passed\nc,s,2,2,1,p,False\nc,s,2,2,2,p,True\n"
+    )
+    t = parse_scaling_csv(wall, cnt)
+    w, tm = t.series["c"]
+    assert w.tolist() == [1, 4] and tm.tolist() == [11, 4.5]
+    assert t.time_min["c"].tolist() == [10, 4] and t.time_max["c"].tolist() == [12, 5]
+    assert t.capped["c"].tolist() == [False, True] and t.calls["c"].tolist() == [50, 60]

@@ -254,3 +254,18 @@ def test_speedup_defaults_to_each_series_own_baseline():
     assert shared.speedup("b")[1].tolist() == pytest.approx([10 / 3, 5.0])
     fig = surr.plot_efficiency_table(t)
     assert "1.00" in [x.get_text() for x in fig.axes[0].texts]
+
+
+def test_scaling_bars_capped_markers_and_calls():
+    t = ScalingTable(
+        {"c": ([1, 2, 4], [10.0, 6.0, 4.0])},
+        time_min={"c": np.array([9.0, 5.5, 3.5])},
+        time_max={"c": np.array([11.0, 6.5, 4.5])},
+        calls={"c": np.array([100.0, 100.0, 140.0])},
+        capped={"c": np.array([False, False, True])},
+    )
+    lo, hi = t.speedup_range("c")
+    assert lo[0] < 1.0 < hi[0]
+    ax = surr.plot_scaling(t).axes[0]
+    assert "c (capped)" in _labels(ax)
+    assert [x.get_text() for x in ax.texts] == ["100", "100", "140"]

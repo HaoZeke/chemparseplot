@@ -255,6 +255,12 @@ class ScalingTable:
 
     series: dict[str, tuple[np.ndarray, np.ndarray]]
     reference: str | None = None
+    # Optional per-point extras, keyed like ``series``: slowest/fastest
+    # repetition (s), oracle calls of the run, and runs that hit a cap.
+    time_min: dict[str, np.ndarray] = field(default_factory=dict)
+    time_max: dict[str, np.ndarray] = field(default_factory=dict)
+    calls: dict[str, np.ndarray] = field(default_factory=dict)
+    capped: dict[str, np.ndarray] = field(default_factory=dict)
 
     def speedup(self, name: str) -> tuple[np.ndarray, np.ndarray]:
         """Speedup of ``name`` against its own first point.
@@ -267,6 +273,14 @@ class ScalingTable:
         w, t = _arr(w), _arr(t)
         _, rt = self.series[self.reference or name]
         return w, _arr(rt)[0] / t
+
+    def speedup_range(self, name: str) -> tuple[np.ndarray, np.ndarray] | None:
+        """(low, high) speedup from the slowest and fastest repetition."""
+        if name not in self.time_min or name not in self.time_max:
+            return None
+        _, rt = self.series[self.reference or name]
+        r0 = _arr(rt)[0]
+        return r0 / _arr(self.time_max[name]), r0 / _arr(self.time_min[name])
 
 
 @dataclass

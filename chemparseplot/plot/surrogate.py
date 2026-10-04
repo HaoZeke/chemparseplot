@@ -1003,7 +1003,9 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
 
     Speedup is ``T_ref(w0) / T(w)`` with ``w0`` the first worker count of the
     reference series, or of the series itself when the table names no
-    reference.
+    reference. Bars span the slowest to the fastest repetition when the table
+    holds them, open markers are runs that hit a cap, and the small numbers
+    are the oracle calls of the run.
     """
     _style()
     fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
@@ -1021,7 +1023,44 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
     ]
     for name, (ls, mk, col) in zip(table.series, styles, strict=False):
         w, sp = t.speedup(name)
-        ax.plot(w, sp, ls=ls, marker=mk, color=col, ms=5, lw=1.4, label=name)
+        ax.plot(w, sp, ls=ls, color=col, lw=1.0, alpha=0.6)
+        rng = t.speedup_range(name)
+        if rng is not None:
+            ax.errorbar(
+                w,
+                sp,
+                yerr=[sp - rng[0], rng[1] - sp],
+                fmt="none",
+                ecolor=col,
+                elinewidth=1.0,
+                capsize=2,
+            )
+        cap = np.asarray(table.capped.get(name, np.zeros(len(w), bool)))
+        ax.plot(w[~cap], sp[~cap], ls="none", marker=mk, color=col, ms=5, label=name)
+        if cap.any():
+            ax.plot(
+                w[cap],
+                sp[cap],
+                ls="none",
+                marker=mk,
+                mfc="white",
+                mec=col,
+                mew=1.4,
+                ms=6,
+                label=f"{name} (capped)",
+            )
+        if name in table.calls:
+            for wi, si, ci in zip(w, sp, table.calls[name], strict=True):
+                if np.isfinite(ci):
+                    ax.annotate(
+                        f"{int(ci)}",
+                        (wi, si),
+                        xytext=(0, 6),
+                        textcoords="offset points",
+                        ha="center",
+                        fontsize=6,
+                        color=col,
+                    )
     ax.set_xscale("log", base=2)
     ax.set_yscale("log", base=2)
     ax.set_xticks(allw, [f"{int(v)}" for v in allw])
