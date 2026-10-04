@@ -283,6 +283,9 @@ def test_strong_scaling_panels_from_csv():
     assert t.capped["c1"].tolist() == [False] * 5 + [True]
     fig = surr.plot_strong_scaling(t, "c1")
     wall, speed, calls, per_call = fig.axes
+    assert speed.get_xlabel().startswith("cores")  # straight ideal line on cores
+    ideal = [ln for ln in speed.lines if ln.get_linestyle() == ":"][0]
+    assert list(ideal.get_xdata()) == sorted(ideal.get_xdata())
     assert wall.get_yscale() == "log" and calls.get_ylabel().startswith("oracle calls")
     assert per_call.get_ylabel() == "seconds per call"
     assert [x.get_text() for x in calls.get_xticklabels()] == t.layouts["c1"]
@@ -323,3 +326,12 @@ def test_pop_efficiencies():
     )
     ax = fig.axes[0]
     assert len(ax.lines) == 3 and ax.get_ylim()[0] == 0
+
+
+def test_font_override_reaches_the_figure():
+    surr.set_font("DejaVu Serif")
+    try:
+        fig = surr.plot_pop_efficiencies(["1x1"], {"lb": [1.0]})
+        assert fig.axes[0].xaxis.label.get_fontfamily() == ["DejaVu Serif"]
+    finally:
+        surr.set_font(None)

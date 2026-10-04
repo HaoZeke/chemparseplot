@@ -64,8 +64,18 @@ _FORCE_LABEL_MIN_ROWS = 8
 _CI_ARMS = {"current_ci", "ci"}
 
 
+_FONT: list[str | None] = [None]
+
+
+def set_font(family: str | None) -> None:
+    """Draw every figure of this module in ``family`` (None: the theme font)."""
+    _FONT[0] = family
+
+
 def _style() -> None:
     setup_publication_theme(get_theme("ruhi"))
+    if _FONT[0]:
+        plt.rcParams.update({"font.family": _FONT[0]})
     plt.rcParams.update({"pdf.fonttype": 42, "ps.fonttype": 42, "svg.fonttype": "path"})
 
 
@@ -1026,7 +1036,7 @@ def _draw_scaling(ax, table: ScalingTable, names, *, ylabel="speedup") -> None:
         )
     )
     w0 = float(np.min(table.series[table.reference or next(iter(table.series))][0]))
-    ax.plot(allw, allw / w0, ":", color="black", lw=1.0, label="ideal")
+    ax.plot(allw, allw / w0, ":", color="black", lw=1.4, label="ideal")
     for name, (ls, mk, col) in zip(names, _SCALING_STYLES * 4, strict=False):
         w, _labels, dodge = _layout_axis(table, name)
         _, sp = table.speedup(name)
@@ -1077,7 +1087,7 @@ def plot_scaling(table: ScalingTable, *, ylabel: str = "speedup") -> Figure:
     _style()
     fig, ax = plt.subplots(figsize=(4.8, 4.2), layout="constrained")
     _draw_scaling(ax, table, list(table.series), ylabel=ylabel)
-    ax.legend(frameon=False, fontsize=8)
+    ax.legend(frameon=False, fontsize=9, handlelength=2.4)
     return fig
 
 
@@ -1118,20 +1128,8 @@ def plot_strong_scaling(table: ScalingTable, name: str) -> Figure:
     pts(a1, t, SURROGATE, "o", [lo, hi])
     a1.set_yscale("log")
     a1.set_ylabel("wall time (s)")
-    sp = table.speedup(name)[1]
-    rng = table.speedup_range(name)
-    pts(a2, sp, ORACLE, "s", None if rng is None else [sp - rng[0], rng[1] - sp])
-    a2.plot(
-        x,
-        w / w.min() * (sp[np.argmin(w)] if len(sp) else 1.0),
-        ":",
-        color="black",
-        lw=1.0,
-        label="ideal",
-    )
-    a2.set_yscale("log", base=2)
-    a2.set_ylabel("speedup")
-    a2.legend(frameon=False, fontsize=8)
+    _draw_scaling(a2, table, [name])
+    a2.legend(frameon=False, fontsize=9, handlelength=2.4)
     calls = np.asarray(table.calls.get(name, np.full(len(w), np.nan)), dtype=float)
     pts(a3, calls, REFERENCE, "^")
     a3.set_ylabel("oracle calls in the search")
@@ -1140,7 +1138,7 @@ def plot_strong_scaling(table: ScalingTable, name: str) -> Figure:
     for ax in (a3, a4):
         if not np.isfinite(calls).any():
             ax.text(0.5, 0.5, "no call counts", transform=ax.transAxes, ha="center")
-    for ax in axes.ravel():
+    for ax in (a1, a3, a4):
         ax.set_xticks(x, labels, rotation=45, ha="right", fontsize=8)
         ax.set_xlabel("ranks x threads")
     fig.suptitle(name, x=0.02, ha="left", fontsize=11)
