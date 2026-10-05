@@ -7,16 +7,69 @@ Repo: https://github.com/HaoZeke/chemparseplot
 PyPI / conda-forge: chemparseplot
 Context7: /haozeke/chemparseplot
 
+This file is a map of the published pages. It does not restate the API.
 Import the public `chemparseplot` parse and plot API. Do not import private `_` modules.
 
-## Docs
+## eOn options
 
-- [Quickstart](https://chemparseplot.rgoswami.me/quickstart.html)
-- [Install](https://chemparseplot.rgoswami.me/installation.html)
-- [Features](https://chemparseplot.rgoswami.me/features.html)
-- [eOn NEB howto](https://chemparseplot.rgoswami.me/howto/parse_eon_neb.html)
-- [ORCA NEB howto](https://chemparseplot.rgoswami.me/howto/parse_orca_neb.html)
-- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html)
+eOn configuration options are not listed here. The option schema is published with the eOn docs, not restated here: [eOn user guide](https://eondocs.org/user_guide/).
+
+## Getting started
+
+- [Home](https://chemparseplot.rgoswami.me/): parsers, plotters, and the documentation map
+- [Quickstart](https://chemparseplot.rgoswami.me/quickstart): install and a minimal parse and plot
+- [Installation](https://chemparseplot.rgoswami.me/installation): package install
+- [Features](https://chemparseplot.rgoswami.me/features): parse, project, and plot
+
+## Tutorials
+
+- [Tutorial introduction](https://chemparseplot.rgoswami.me/tutorials/): tutorial index
+- [ORCA NEB parsing and plotting](https://chemparseplot.rgoswami.me/tutorials/orca_neb): end-to-end ORCA NEB tutorial
+- [Contributing tutorials](https://chemparseplot.rgoswami.me/tutorials/contribdoc): how tutorial notebooks are written
+- [ChemGP tutorials](https://chemparseplot.rgoswami.me/tutorials/chemgp/): GP optimization plots
+- [ChemGP 1D plots](https://chemparseplot.rgoswami.me/tutorials/chemgp/convergence): convergence, RFF, profile, and FPS
+- [ChemGP 2D plots](https://chemparseplot.rgoswami.me/tutorials/chemgp/surfaces): surfaces, NLL, variance, trust, and sensitivity
+- [Geometry scan](https://chemparseplot.rgoswami.me/tutorials/orca/geomscan): ORCA geometry-scan plots
+- [eOn saddle search analysis](https://chemparseplot.rgoswami.me/tutorials/eon/saddle): parse saddle-search results
+
+## How-to
+
+- [How-to guides](https://chemparseplot.rgoswami.me/howto/): goal-oriented guides
+- [Installation guide](https://chemparseplot.rgoswami.me/howto/install): install for development and use
+- [Parse ORCA NEB calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb): energies and barriers from ORCA NEB
+- [Parse eOn NEB calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb): data from eOn NEB output
+- [Create publication NEB figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures): NEB, dimer, and minimization figures
+- [Draw surrogate-assisted searches](https://chemparseplot.rgoswami.me/howto/surrogate_search_figures): figures from gpr_optim or ML-NEB output
+- [FAQ](https://chemparseplot.rgoswami.me/howto/faq): frequent questions
+- [Troubleshooting](https://chemparseplot.rgoswami.me/howto/troubleshooting): common failures
+- [Run tests and check coverage](https://chemparseplot.rgoswami.me/howto/dev_testing): test and coverage commands
+
+## Explanation
+
+- [Explanation](https://chemparseplot.rgoswami.me/explanation/): design notes
+- [Architecture overview](https://chemparseplot.rgoswami.me/explanation/architecture): parsers, plots, and delegated fits
+- [Lazy import pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports): optional dependency loading
+- [NEB parsing design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design): shared NEB data
+- [ORCA NEB integration design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design): OPI and compatible formats
+- [How to cite](https://chemparseplot.rgoswami.me/explanation/citation): citation
+
+## Reference
+
+- [Reference](https://chemparseplot.rgoswami.me/reference/): prose API guides
+- [Glossary](https://chemparseplot.rgoswami.me/reference/glossary): terms
+- [ORCA NEB API reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api): ORCA NEB parse and plot guide
+- [eOn NEB API reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api): eOn NEB parse and plot guide
+- [Plotting API reference](https://chemparseplot.rgoswami.me/reference/plotting_api): plotting guide
+- [Release process](https://chemparseplot.rgoswami.me/release): towncrier and release steps
+- [Generated API reference](https://chemparseplot.rgoswami.me/apidocs/): module pages built from the package; not copied into this map
+
+## Other pages
+
+- [Used by](https://chemparseplot.rgoswami.me/used_by): downstream projects
+- [Graph trials](https://chemparseplot.rgoswami.me/worklog/graphTrials): worklog on multi-plot graphs
+- [Developer documentation](https://chemparseplot.rgoswami.me/dev/): contributor notes
+- [Contributing guidelines](https://chemparseplot.rgoswami.me/dev/contributing): how to contribute
+- [Best practices](https://chemparseplot.rgoswami.me/dev/best_practices): project practices
 
 ## Siblings
 
