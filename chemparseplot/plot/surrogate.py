@@ -694,9 +694,9 @@ _STRIP_MAX_COLS = 6
 _STRIP_ZOOM = 0.5 * 3.15
 _STRIP_SPACING = 1.5
 _STRIP_FILL = 0.92
-_STRIP_ROW_IN = 1.8
+_STRIP_ROW_IN = 1.6
 _MAP_IN, _Y_LABEL_IN, _CBAR_IN = 5.2, 0.95, 1.2
-_TOP_IN, _GAP_IN, _LEGEND_IN = 0.45, 0.2, 1.25
+_TOP_IN, _GAP_IN, _LEGEND_IN = 0.4, 0.1, 1.25
 _XLABEL_GAP_IN = 0.5  # room for the x label between the map and the strip
 _SAME_GEOMETRY = 1e-3
 
