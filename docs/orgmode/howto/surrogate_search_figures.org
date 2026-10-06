@@ -52,7 +52,10 @@ sp.plot_search_comparison([old, new], ["625 calls", "58 calls"])
 | =plot_scaling=, =plot_efficiency_table= | speedup with the ideal line, efficiency as a heat table  |
 
 The same figures are available as commands: =rgpycrumbs surrogate plt-band=,
-=plt-history=, =plt-dimer=, =plt-campaign=, =plt-scaling=.
+=plt-history=, =plt-dimer=, =plt-campaign=, =plt-cases=, =plt-scaling=.
+=plt-cases= reads a tidy cases table. =plot_cases_wall= draws an optional
+=pipeline_wall_sd= column as a horizontal bar and writes that sample standard
+deviation beside the time.
 
 ** Add the structure strip
 

@@ -496,6 +496,25 @@ def test_wall_axis_range_and_minor_decade_labels():
     assert shown == {"3", "30", "300"}
 
 
+def test_wall_draws_the_sample_standard_deviation(tmp_path):
+    from chemparseplot.parse.surrogate import CaseBoard, CaseRow, parse_cases_csv
+
+    row = CaseRow("a", "A", 10, 2, 20.0, True, wall_sd=1.5)
+    fig = surr.plot_cases_wall([CaseBoard("B", [row])])
+    ax = fig.axes[0]
+    bars = [c for c in ax.containers if c.__class__.__name__ == "ErrorbarContainer"]
+    assert len(bars) == 1
+    assert [t.get_text() for t in fig.legends[0].get_texts()] == ["sample sd"]
+    assert "20.0 ± 1.5" in [t.get_text() for t in ax.texts]
+    table = tmp_path / "cases.csv"
+    table.write_text(
+        "board,case,label,search_calls,validation_calls,pipeline_wall_s,"
+        "certified,reference_pipeline_wall_s,pipeline_wall_sd\n"
+        "B,a,A,10,2,20,true,,1.5\n"
+    )
+    assert parse_cases_csv(table)[0].rows[0].wall_sd == 1.5
+
+
 def test_wall_value_follows_the_bar_without_a_reference():
     from chemparseplot.parse.surrogate import parse_cases_csv
 

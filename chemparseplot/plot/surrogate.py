@@ -2343,6 +2343,18 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
     return fig
 
 
+def _wall_tick(wall: float, sd: float | None) -> str:
+    """Bar label. With a deviation, both numbers share its printed place.
+
+    The place is two significant figures of the deviation, and at most
+    hundredths. Without one, a time of at least ten seconds is an integer.
+    """
+    if not sd or sd <= 0:
+        return f"{wall:,.0f}" if wall >= _WALL_INT_MIN else f"{wall:.1f}"
+    places = int(max(0, min(2, 1 - np.floor(np.log10(sd)))))
+    return f"{wall:,.{places}f} ± {sd:,.{places}f}"
+
+
 def plot_cases_wall(
     boards: Sequence[CaseBoard], *, reference_label: str = "reference"
 ) -> Figure:
@@ -2350,17 +2362,32 @@ def plot_cases_wall(
 
     A thin vertical tick on the case's row marks ``reference_wall_s`` when the
     table has one (the value then sits inside the bar end, off the tick);
-    ``reference_label`` names it in the legend. The axis spans half a decade
-    below the fastest and a third above the slowest case. Not-certified
-    cases are hatched.
+    ``reference_label`` names it in the legend. ``wall_sd`` draws a horizontal
+    error bar, the sample standard deviation of repeated runs, and the label
+    writes that deviation beside the time. The axis spans
+    half a decade below the fastest and a third above the slowest case.
+    Not-certified cases are hatched.
     """
     _style()
     fig, axes, _ = _board_axes(boards)
     have_ref = False
     have_uncert = False
-    lo_all = min(r.wall_s for b in boards for r in b.rows)
+    have_sd = False
+
+    def _lo(r) -> float:
+        if r.wall_sd and r.wall_s > r.wall_sd:
+            return r.wall_s - r.wall_sd
+        return r.wall_s
+
+    def _hi(r) -> float:
+        top = max(r.wall_s, r.reference_wall_s or 0)
+        if r.wall_sd:
+            top = max(top, r.wall_s + r.wall_sd)
+        return top
+
+    lo_all = min(_lo(r) for b in boards for r in b.rows)
     lo = lo_all * 10**-0.5  # half a decade below the fastest case
-    hi_all = max(max(r.wall_s, r.reference_wall_s or 0) for b in boards for r in b.rows)
+    hi_all = max(_hi(r) for b in boards for r in b.rows)
     hi = hi_all * 10 ** (1 / 3)  # a third of a decade above the slowest
     for ax, b in zip(axes, boards, strict=True):
         y = np.arange(len(b.rows))
@@ -2379,10 +2406,15 @@ def plot_cases_wall(
             )
         have_uncert |= bool((~cert).any())
         for yi, wi, row in zip(y, w, b.rows, strict=True):
-            txt = f"{wi:,.0f}" if wi >= _WALL_INT_MIN else f"{wi:.1f}"
+            txt = _wall_tick(wi, row.wall_sd)
             # With a reference tick the value goes inside the bar end so it
             # never reads as the tick's value; without one it follows the bar.
-            inside = bool(row.reference_wall_s) and wi / lo >= _WALL_INSIDE_MIN_RATIO
+            # A deviation stays outside: the bar end is too narrow for it.
+            inside = (
+                bool(row.reference_wall_s)
+                and not row.wall_sd
+                and wi / lo >= _WALL_INSIDE_MIN_RATIO
+            )
             ax.annotate(
                 txt,
                 (wi, yi),
@@ -2395,6 +2427,20 @@ def plot_cases_wall(
                 bbox={"facecolor": SURROGATE, "edgecolor": "none", "pad": 1.0}
                 if inside
                 else None,
+            )
+        sd = np.array([r.wall_sd or 0.0 for r in b.rows])
+        if np.any(sd > 0):
+            have_sd = True
+            ax.errorbar(
+                w,
+                y,
+                xerr=sd,
+                fmt="none",
+                ecolor="black",
+                elinewidth=0.7,
+                capsize=1.5,
+                capthick=0.7,
+                zorder=4,
             )
         for yi, r in zip(y, b.rows, strict=True):
             if r.reference_wall_s:
@@ -2433,6 +2479,19 @@ def plot_cases_wall(
                 ms=10,
                 mew=1.6,
                 label=reference_label,
+            )
+        )
+    if have_sd:
+        handles.append(
+            Line2D(
+                [],
+                [],
+                color="black",
+                lw=0.7,
+                marker="|",
+                ms=6,
+                mew=0.7,
+                label="sample sd",
             )
         )
     if have_uncert:

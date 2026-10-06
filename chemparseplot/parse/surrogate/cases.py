@@ -40,6 +40,7 @@ class CaseRow:
     wall_s: float
     certified: bool
     reference_wall_s: float | None = None
+    wall_sd: float | None = None
 
 
 @dataclass
@@ -57,7 +58,9 @@ class CaseBoard:
 
 def parse_cases_csv(path: str | Path) -> list[CaseBoard]:
     """Read ``board, case, label, search_calls, validation_calls,
-    pipeline_wall_s, certified[, reference_pipeline_wall_s]``.
+    pipeline_wall_s, certified[, reference_pipeline_wall_s]
+    [, pipeline_wall_sd]``. ``pipeline_wall_sd`` is the sample standard
+    deviation of repeated runs of the same case.
 
     Boards and rows keep the order of the file.
     """
@@ -88,6 +91,7 @@ def parse_cases_csv(path: str | Path) -> list[CaseBoard]:
                     wall_s=float(r["pipeline_wall_s"]),
                     certified=_flag(r["certified"]),
                     reference_wall_s=_num(r.get("reference_pipeline_wall_s")),
+                    wall_sd=_num(r.get("pipeline_wall_sd")),
                 )
             )
     return list(boards.values())
