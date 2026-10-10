@@ -161,9 +161,7 @@ def test_sexithiophene_midpoints_stay_on_their_rings():
     assert track.n_queries == 12
     for query in range(12):
         rows = [
-            sample.terminal_atoms
-            for sample in track.samples
-            if sample.query == query
+            sample.terminal_atoms for sample in track.samples if sample.query == query
         ]
         assert rows[0] == rows[1] == rows[2]
 

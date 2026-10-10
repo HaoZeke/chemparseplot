@@ -49,10 +49,7 @@ plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
 # 0.13 parser rejects those files with UnsupportedSpecVersion.
 neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.14.5"]
 xyzrender = ["xyzrender>=0.1.2"]
-rings = [
-  "pydseamslib>=2.9.1; python_version >= '3.12'",
-  "xyzrender>=0.3.8",
-]
+rings = ["pydseamslib>=2.9.1; python_version >= '3.12'", "xyzrender>=0.3.8"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
 # internal backend for parse.orca.neb — consumers use parse_orca_neb.
 opi = ["orca-pi>=0.1.0"]
@@ -216,7 +213,9 @@ ban-relative-imports = "all"
   "PLW2901",
 ]
 "chemparseplot/plot/geomscan.py" = ["PLC0415"]
-"chemparseplot/plot/landscape.py" = ["PLC0415"] # optional plotting deps stay lazy
+"chemparseplot/plot/landscape.py" = [
+  "PLC0415",
+] # optional plotting deps stay lazy
 "chemparseplot/plot/rings.py" = ["PLC0415", "PLR2004"]
 "chemparseplot/units.py" = [
   "F822",    # lazy Q_/ureg via __getattr__

@@ -722,9 +722,7 @@ def align_trajectory(
 
 
 def track_queries(
-    frames: Sequence[
-        tuple[Sequence[str], np.ndarray, Sequence[tuple[int, int]] | None]
-    ],
+    frames: Sequence[tuple[Sequence[str], np.ndarray, Sequence[tuple[int, int]] | None]],
     queries: np.ndarray,
     *,
     cutoff: float | None = None,
