@@ -1,0 +1,13 @@
+cell,ranks,threads,repetition,component,seconds
+c1,1,1,1,total,100
+c1,1,1,1,oracle,40
+c1,1,1,1,fits,20
+c1,1,1,2,total,102
+c1,1,1,2,oracle,42
+c1,1,1,2,fits,22
+c1,4,2,1,total,50
+c1,4,2,1,oracle,20
+c1,4,2,1,fits,10
+c2,4,2,1,total,200
+c2,4,2,1,oracle,50
+c2,4,2,1,fits,100

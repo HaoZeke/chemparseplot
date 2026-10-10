@@ -104,11 +104,15 @@ def attach_baselines(boards: list[CaseBoard], path: str | Path) -> None:
     error, so a mislabelled case cannot vanish silently.
     """
     by_name = {b.name: b for b in boards}
+    known = {b.name: [x.case for x in b.rows] for b in boards}
     with Path(path).open(newline="") as fh:
         for r in csv.DictReader(fh):
             board = by_name.get(r["board"])
-            if board is None or r["case"] not in {x.case for x in board.rows}:
-                msg = f"baseline row for unknown case {r['board']}/{r['case']}"
+            if board is None or r["case"] not in known[board.name]:
+                msg = (
+                    f"{path}: baseline row for unknown case "
+                    f"{r['board']}/{r['case']}; the cases table holds {known}"
+                )
                 raise ValueError(msg)
             board.baselines.setdefault(r["method"], {})[r["case"]] = (
                 float(r["calls"]),

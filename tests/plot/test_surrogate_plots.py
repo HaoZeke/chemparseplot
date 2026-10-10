@@ -388,6 +388,66 @@ def test_time_breakdown_stacks_components_and_remainder():
     assert ax.get_ylabel() == "wall time (s)"
 
 
+def test_pop_factors_panel_dodges_shared_core_counts_and_draws_the_guide():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_factors
+
+    t = parse_pop_factors(
+        SCALING / "pop.csv",
+        {"parallel_eff": "parallel efficiency", "load_balance": "load balance"},
+        cell="c1",
+    )
+    fig = surr.plot_pop_factors(t, title="c1")
+    a1, a2 = fig.axes
+    assert a1.get_xscale() == "log" and a1.get_yscale() == "log"
+    assert a1.get_ylabel() == "fixed-work speedup"
+    assert [x.get_text() for x in a1.get_yticklabels()][:3] == ["1", "2", "4"]
+    # the two 8-core layouts do not share an x position
+    pts = a1.lines[1].get_xdata()
+    assert len(set(np.round(pts, 6))) == len(t.layouts)
+    assert {x.get_text() for x in a1.texts} == set(t.layouts)
+    labels = _labels(a2)
+    assert labels == ["fixed-work efficiency", "parallel efficiency", "load balance"]
+    assert a2.get_ylim() == (0.0, 1.05)
+    guides = [
+        ln for ln in a2.lines if ln.get_linestyle() == ":" and len(ln.get_xdata()) == 2
+    ]
+    assert guides and guides[0].get_ydata()[0] == 0.8
+    assert "0.8" in [x.get_text() for x in a2.texts]
+    none = surr.plot_pop_factors(t, guide=None).axes[1]
+    assert not [
+        ln for ln in none.lines if ln.get_linestyle() == ":" and len(ln.get_xdata()) == 2
+    ]
+
+
+def test_component_breakdown_stacks_to_the_total_and_bounds_each_component():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_components_csv
+
+    t = parse_components_csv(SCALING / "components.csv")
+    fig = surr.plot_component_breakdown(t, "4x2")
+    a1, a2 = fig.axes
+    assert [x.get_text() for x in a1.get_yticklabels()] == ["c1", "c2"]
+    legend = [x.get_text() for x in a1.get_legend().get_texts()]
+    assert legend == ["oracle", "fits", "unattributed"]
+    widths = [p.get_width() for p in a1.patches]
+    # two cells x three segments, each row summing to that cell's total
+    assert sum(widths[0::2]) == pytest.approx(50.0)
+    assert sum(widths[1::2]) == pytest.approx(200.0)
+    assert {"50 s", "200 s"} <= {x.get_text() for x in a1.texts}
+    assert [x.get_text() for x in a2.get_yticklabels()] == [
+        "oracle",
+        "fits",
+        "unattributed",
+    ]
+    assert _labels(a2) == ["c1", "c2"]
+    c1 = a2.lines[0].get_xdata()
+    assert c1.tolist() == pytest.approx([50 / 30, 50 / 40, 50 / 30])
+    assert "1.67x" in [x.get_text() for x in a2.texts]
+    with pytest.raises(ValueError, match="no layout '9x9'"):
+        surr.plot_component_breakdown(t, "9x9")
+    one = surr.plot_component_breakdown(t, "1x1", cells=["c1"])
+    assert [x.get_text() for x in one.axes[0].get_yticklabels()] == ["c1"]
+
+
 CASES = SCALING.parent / "cases"
 _BANNED = ("retained", "force point", "upper bound", "force threshold only")
 
@@ -457,7 +517,8 @@ def test_cases_csv_errors(tmp_path):
     boards = parse_cases_csv(CASES / "cases.csv")
     base = tmp_path / "base.csv"
     base.write_text("board,case,method,calls,converged\nBaker-Chan,99_nope,M,1,true\n")
-    with pytest.raises(ValueError, match="unknown case"):
+    both = r"unknown case Baker-Chan/99_nope; the cases table holds \{'Baker-Chan': \["
+    with pytest.raises(ValueError, match=both):
         attach_baselines(boards, base)
 
 

@@ -590,32 +590,66 @@ def parse_scaling_csv(
     )
 
 
+def pop_csv_cells(path: str | Path) -> list[str] | None:
+    """Distinct ``cell`` values of a fixed-work CSV, in file order.
+
+    ``None`` when the file has no ``cell`` column: its rows then belong to
+    whichever cell the caller draws.
+    """
+    import csv
+
+    with Path(path).open() as fh:
+        reader = csv.DictReader(fh)
+        if "cell" not in (reader.fieldnames or []):
+            return None
+        return list(dict.fromkeys(r["cell"] for r in reader))
+
+
+def _pop_rows(path, cell):
+    """Rows of ``cell`` (every row without a cell column), as dicts.
+
+    A named cell the file does not hold is an error that lists the cells it
+    does hold, so a label that differs from the wall table cannot vanish.
+    """
+    import csv
+
+    with Path(path).open() as fh:
+        reader = csv.DictReader(fh)
+        fields = reader.fieldnames or []
+        rows = list(reader)
+    if cell is None or "cell" not in fields:
+        return fields, rows
+    have = list(dict.fromkeys(r["cell"] for r in rows))
+    if cell not in have:
+        msg = f"{path} has no rows of cell {cell!r}; its cells are {have}"
+        raise ValueError(msg)
+    return fields, [r for r in rows if r["cell"] == cell]
+
+
 def parse_pop_csv(
     path: str | Path, metrics: list[str], *, cell: str | None = None
 ) -> tuple[list[str], dict[str, np.ndarray]]:
     """Per-layout means of efficiency columns from a fixed-work CSV.
 
-    The file needs ``ranks`` and ``threads`` columns (and ``cell`` when
-    ``cell`` is given); each name in ``metrics`` is a column of fractions.
-    Rows of one layout are averaged; layouts sort by cores, then threads.
+    The file needs ``ranks`` and ``threads`` columns; each name in ``metrics``
+    is a column of fractions. With ``cell`` given and a ``cell`` column
+    present, only that cell's rows count, and a cell the file lacks is an
+    error naming the cells it has. Rows of one layout are averaged; layouts
+    sort by cores, then threads.
     """
-    import csv
     from collections import defaultdict
 
+    fields, rows = _pop_rows(path, cell)
+    missing = [m for m in metrics if m not in fields]
+    if missing:
+        msg = f"{path} has no column(s) {missing}"
+        raise ValueError(msg)
     acc: dict[tuple, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-    with Path(path).open() as fh:
-        reader = csv.DictReader(fh)
-        missing = [m for m in metrics if m not in (reader.fieldnames or [])]
-        if missing:
-            msg = f"{path} has no column(s) {missing}"
-            raise ValueError(msg)
-        for r in reader:
-            if cell is not None and r.get("cell") != cell:
-                continue
-            key = (int(r["ranks"]), int(r["threads"]))
-            for m in metrics:
-                if r[m] not in ("", "nan"):
-                    acc[key][m].append(float(r[m]))
+    for r in rows:
+        key = (int(r["ranks"]), int(r["threads"]))
+        for m in metrics:
+            if r[m] not in ("", "nan"):
+                acc[key][m].append(float(r[m]))
     keys = sorted(acc, key=lambda k: (k[0] * k[1], k[1]))
     return (
         [f"{k[0]}x{k[1]}" for k in keys],
@@ -623,6 +657,109 @@ def parse_pop_csv(
             m: np.array([np.mean(acc[k][m]) if acc[k][m] else np.nan for k in keys])
             for m in metrics
         },
+    )
+
+
+def parse_pop_factors(
+    path: str | Path,
+    metrics: dict[str, str] | list[str],
+    *,
+    time: str = "elapsed_s",
+    cell: str | None = None,
+):
+    """Fixed-work factors and wall per layout as a :class:`PopTable`.
+
+    ``metrics`` maps a column of fractions to the label it is drawn with (a
+    list uses the column names as labels); ``time`` names the column of the
+    wall in seconds, from which speedup and fixed-work efficiency follow.
+    Rows of one layout are averaged. The cell rule is that of
+    :func:`parse_pop_csv`.
+    """
+    from chemparseplot.parse.surrogate.model import PopTable
+
+    labels = dict(metrics) if isinstance(metrics, dict) else {m: m for m in metrics}
+    layouts, values = parse_pop_csv(path, [*labels, time], cell=cell)
+    cores = np.array([int(a) * int(b) for a, b in (lay.split("x") for lay in layouts)])
+    return PopTable(
+        layouts=layouts,
+        cores=cores.astype(float),
+        time=values.pop(time),
+        metrics={labels[m]: v for m, v in values.items()},
+        cell=cell,
+    )
+
+
+def parse_components_csv(
+    path: str | Path,
+    *,
+    total: str = "total",
+    cells: list[str] | None = None,
+):
+    """Median seconds per component from a tidy CSV as a :class:`ComponentTable`.
+
+    Columns ``cell, ranks, threads, repetition, component, seconds``; the
+    component named ``total`` is the whole wall of that run and every other
+    component a non-nesting part of it. Repetitions of one cell and layout
+    are reduced to their median. A requested cell the file lacks, and a run
+    without a ``total`` row, are errors.
+    """
+    import csv
+    from collections import defaultdict
+
+    from chemparseplot.parse.surrogate.model import ComponentTable
+
+    need = {"cell", "ranks", "threads", "repetition", "component", "seconds"}
+    acc: dict[tuple, list[float]] = defaultdict(list)
+    order: list[str] = []
+    have: list[str] = []
+    with Path(path).open() as fh:
+        reader = csv.DictReader(fh)
+        missing = need - set(reader.fieldnames or [])
+        if missing:
+            msg = f"{path} lacks column(s) {sorted(missing)}"
+            raise ValueError(msg)
+        for r in reader:
+            if r["cell"] not in have:
+                have.append(r["cell"])
+            if cells and r["cell"] not in cells:
+                continue
+            comp = r["component"]
+            if comp != total and comp not in order:
+                order.append(comp)
+            lay = f"{int(r['ranks'])}x{int(r['threads'])}"
+            acc[(r["cell"], lay, comp)].append(float(r["seconds"]))
+    if cells:
+        absent = [c for c in cells if c not in have]
+        if absent:
+            msg = f"{path} has no rows of cell(s) {absent}; its cells are {have}"
+            raise ValueError(msg)
+    keys = sorted({(c, lay) for c, lay, _ in acc})
+    parts: dict[tuple[str, str], dict[str, float]] = {}
+    totals: dict[tuple[str, str], float] = {}
+    layouts: dict[str, list[str]] = defaultdict(list)
+    for cell, lay in keys:
+        if (cell, lay, total) not in acc:
+            msg = f"{path}: {cell} {lay} has no {total!r} component row"
+            raise ValueError(msg)
+        totals[(cell, lay)] = float(np.median(acc[(cell, lay, total)]))
+        parts[(cell, lay)] = {
+            c: float(np.median(acc[(cell, lay, c)]))
+            for c in order
+            if (cell, lay, c) in acc
+        }
+        layouts[cell].append(lay)
+
+    def _cores(lay):
+        a, b = lay.split("x")
+        return int(a) * int(b), int(b)
+
+    cell_list = cells or [c for c in have if c in layouts]
+    return ComponentTable(
+        components=order,
+        cells=cell_list,
+        layouts={c: sorted(layouts[c], key=_cores) for c in cell_list},
+        parts=parts,
+        total=totals,
     )
 
 

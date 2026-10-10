@@ -309,3 +309,71 @@ class SurrogateSearch:
     single_ended: SingleEndedHistory | None = None
     cell: CellRecord | None = None
     provenance: dict = field(default_factory=dict)
+
+
+@dataclass
+class PopTable:
+    """Fixed-work efficiency factors of one cell, one row per layout.
+
+    ``layouts`` are ``ranks x threads`` labels sorted by cores then threads,
+    ``cores`` the matching core counts, ``time`` the wall of each layout and
+    ``metrics`` one array per factor name, every value a fraction in [0, 1].
+    Speedup and fixed-work (global) efficiency follow from ``time`` against
+    the layout with the fewest cores.
+    """
+
+    layouts: list[str]
+    cores: np.ndarray
+    time: np.ndarray
+    metrics: dict[str, np.ndarray]
+    cell: str | None = None
+
+    def speedup(self) -> np.ndarray:
+        """``T(reference) / T(layout)``, the reference being the fewest cores."""
+        t = _arr(self.time)
+        return t[int(np.argmin(self.cores))] / t
+
+    def efficiency(self) -> np.ndarray:
+        """Speedup per core ratio against the reference layout."""
+        c = _arr(self.cores)
+        return self.speedup() / (c / c[int(np.argmin(c))])
+
+
+@dataclass
+class ComponentTable:
+    """Median seconds per component of the wall, per cell and layout.
+
+    ``components`` keeps the order of the file; ``parts[(cell, layout)]`` maps
+    each component to its median seconds over repetitions and
+    ``total[(cell, layout)]`` holds the whole wall. The part of the total no
+    component accounts for is ``unattributed``.
+    """
+
+    components: list[str]
+    cells: list[str]
+    layouts: dict[str, list[str]]
+    parts: dict[tuple[str, str], dict[str, float]]
+    total: dict[tuple[str, str], float]
+
+    def unattributed(self, cell: str, layout: str) -> float:
+        key = (cell, layout)
+        return max(self.total[key] - sum(self.parts[key].values()), 0.0)
+
+    def fractions(self, cell: str, layout: str) -> dict[str, float]:
+        """Share of the total per component, plus ``unattributed``."""
+        key = (cell, layout)
+        tot = self.total[key]
+        out = {c: v / tot for c, v in self.parts[key].items()}
+        out["unattributed"] = self.unattributed(cell, layout) / tot
+        return out
+
+    def amdahl_bounds(self, cell: str, layout: str) -> dict[str, float]:
+        """Largest whole-run speedup if one component alone took no time.
+
+        With the component's share ``f`` of the wall, the rest of the run
+        bounds the speedup at ``1 / (1 - f)``.
+        """
+        return {
+            c: (1.0 / (1.0 - f) if f < 1.0 else float("inf"))
+            for c, f in self.fractions(cell, layout).items()
+        }

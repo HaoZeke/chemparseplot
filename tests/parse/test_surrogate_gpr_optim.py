@@ -121,3 +121,75 @@ def test_pop_csv(tmp_path):
     assert m["lb"].tolist() == pytest.approx([1.0, 0.7])
     with pytest.raises(ValueError, match="no column"):
         parse_pop_csv(f, ["zz"])
+
+
+def test_pop_csv_refuses_a_cell_the_file_lacks_and_names_both_sides(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_csv, pop_csv_cells
+
+    f = tmp_path / "p.csv"
+    f.write_text("cell,ranks,threads,lb\noxirane,1,1,1\noxirane,2,1,0.8\n")
+    assert pop_csv_cells(f) == ["oxirane"]
+    with pytest.raises(ValueError, match=r"no rows of cell '16_oxirane'.*\['oxirane'\]"):
+        parse_pop_csv(f, ["lb"], cell="16_oxirane")
+    # without a cell column the rows belong to whichever cell is asked for
+    g = tmp_path / "q.csv"
+    g.write_text("ranks,threads,lb\n1,1,1\n2,1,0.8\n")
+    assert pop_csv_cells(g) is None
+    layouts, m = parse_pop_csv(g, ["lb"], cell="16_oxirane")
+    assert layouts == ["1x1", "2x1"] and m["lb"].tolist() == [1.0, 0.8]
+
+
+def test_pop_factors_table(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_factors
+
+    f = tmp_path / "p.csv"
+    f.write_text(
+        "cell,ranks,threads,elapsed_s,parallel_eff,load_balance\n"
+        "a,1,1,100,1.0,1.0\na,4,2,25,0.7,0.9\na,8,1,25,0.5,0.8\na,2,2,60,0.9,1.0\n"
+    )
+    t = parse_pop_factors(
+        f,
+        {"parallel_eff": "parallel efficiency", "load_balance": "load balance"},
+        cell="a",
+    )
+    assert t.layouts == ["1x1", "2x2", "8x1", "4x2"]
+    assert t.cores.tolist() == [1, 4, 8, 8]
+    assert t.speedup().tolist() == pytest.approx([1.0, 100 / 60, 4.0, 4.0])
+    assert t.efficiency().tolist() == pytest.approx([1.0, 100 / 240, 0.5, 0.5])
+    assert list(t.metrics) == ["parallel efficiency", "load balance"]
+    assert t.metrics["load balance"].tolist() == [1.0, 1.0, 0.8, 0.9]
+    with pytest.raises(ValueError, match="no column"):
+        parse_pop_factors(f, ["parallel_eff"], time="wall_s", cell="a")
+
+
+def test_components_csv(tmp_path):
+    from chemparseplot.parse.surrogate.gpr_optim import parse_components_csv
+
+    f = tmp_path / "c.csv"
+    f.write_text(
+        "cell,ranks,threads,repetition,component,seconds\n"
+        "a,4,2,1,total,100\na,4,2,1,oracle,30\na,4,2,1,fits,20\n"
+        "a,4,2,2,total,110\na,4,2,2,oracle,34\na,4,2,2,fits,20\n"
+        "a,1,1,1,total,300\na,1,1,1,oracle,60\n"
+    )
+    t = parse_components_csv(f)
+    assert t.components == ["oracle", "fits"] and t.cells == ["a"]
+    assert t.layouts["a"] == ["1x1", "4x2"]
+    assert t.parts[("a", "4x2")] == {"oracle": 32.0, "fits": 20.0}
+    assert t.total[("a", "4x2")] == 105.0
+    assert t.unattributed("a", "4x2") == pytest.approx(53.0)
+    assert t.fractions("a", "4x2")["oracle"] == pytest.approx(32 / 105)
+    b = t.amdahl_bounds("a", "4x2")
+    assert b["oracle"] == pytest.approx(1 / (1 - 32 / 105))
+    assert b["unattributed"] == pytest.approx(105 / 52)
+    assert t.parts[("a", "1x1")] == {"oracle": 60.0}
+    with pytest.raises(
+        ValueError, match=r"no rows of cell\(s\) \['zz'\]; its cells are \['a'\]"
+    ):
+        parse_components_csv(f, cells=["zz"])
+    f.write_text("cell,ranks,threads,repetition,component,seconds\na,4,2,1,oracle,30\n")
+    with pytest.raises(ValueError, match="no 'total' component row"):
+        parse_components_csv(f)
+    f.write_text("cell,component\na,x\n")
+    with pytest.raises(ValueError, match="lacks column"):
+        parse_components_csv(f)

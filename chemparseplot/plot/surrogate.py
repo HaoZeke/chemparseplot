@@ -43,6 +43,8 @@ from chemparseplot.parse.surrogate.model import (
     BandHistory,
     BandSnapshot,
     CampaignTable,
+    ComponentTable,
+    PopTable,
     ScalingTable,
     SearchHistory,
     SingleEndedHistory,
@@ -2180,6 +2182,232 @@ def plot_time_breakdown(
     ax.legend(frameon=False, fontsize=_lfs(8), ncols=2)
     if title:
         ax.set_title(title, loc="left")
+    return fig
+
+
+def _dodge_cores(cores: np.ndarray) -> np.ndarray:
+    """Multiplicative offsets so layouts of one core count sit side by side."""
+    cores = np.asarray(cores, dtype=float)
+    dodge = np.ones(len(cores))
+    for v in np.unique(cores):
+        idx = np.where(cores == v)[0]
+        for k, j in enumerate(idx):
+            dodge[j] = 1.0 + 0.08 * (k - (len(idx) - 1) / 2)
+    return dodge
+
+
+def _best_per_core(cores, values):
+    """Core counts and the largest value at each, for the joining line."""
+    u = np.unique(cores)
+    return u, np.array([np.nanmax(values[cores == v]) for v in u])
+
+
+def plot_pop_factors(
+    table: PopTable, *, guide: float | None = 0.8, title: str | None = None
+) -> Figure:
+    """Fixed-work speedup and the POP efficiency factors against cores.
+
+    Left: ``T(reference) / T(layout)`` on log axes, one marker per
+    ``ranks x threads`` layout, layouts of one core count dodged sideways and
+    a line through the fastest layout per core count; no ideal line is
+    drawn. Right: the fixed-work efficiency (speedup per core ratio) and
+    every factor of ``table.metrics`` on one 0 to 1 axis against cores, each
+    with its own marker and line style, with the ``guide`` level (0.8, the
+    threshold the POP methodology uses) as a dotted line.
+    """
+    _style()
+    fig, (a1, a2) = plt.subplots(
+        1, 2, figsize=(8.0, 3.6), layout="constrained", width_ratios=(1.0, 1.35)
+    )
+    cores = np.asarray(table.cores, dtype=float)
+    dodge = _dodge_cores(cores)
+    x = cores * dodge
+    sp = table.speedup()
+    u, best = _best_per_core(cores, sp)
+    a1.plot(u, best, "-", color=SURROGATE, lw=1.0, alpha=0.6)
+    a1.plot(x, sp, ls="none", marker="o", color=SURROGATE, ms=5)
+    for xi, yi, lab, d in zip(x, sp, table.layouts, dodge, strict=True):
+        # the lower-dodged layout of a shared core count labels to the left
+        a1.annotate(
+            lab,
+            (xi, yi),
+            xytext=(-4 if d < 1.0 else 4, -9 if d <= 1.0 else 3),
+            textcoords="offset points",
+            ha="right" if d < 1.0 else "left",
+            fontsize=7,
+            color=NEUTRAL,
+        )
+    a1.set_xscale("log", base=2)
+    a1.set_yscale("log", base=2)
+    a1.set_xticks(u, [f"{int(v)}" for v in u])
+    yt = 2.0 ** np.arange(0, int(np.ceil(np.log2(np.nanmax(sp)))) + 1)
+    a1.set_yticks(yt, [f"{v:g}" for v in yt])
+    a1.yaxis.set_minor_formatter(FuncFormatter(lambda _v, _p: ""))
+    a1.set_xlabel("cores (ranks x threads)")
+    a1.set_ylabel("fixed-work speedup")
+    series = {"fixed-work efficiency": table.efficiency(), **table.metrics}
+    styles = [*_SCALING_STYLES, ("-", "v", HIGHLIGHT), ("--", "P", NEUTRAL)] * 2
+    for (name, raw), (ls, mk, col) in zip(series.items(), styles, strict=False):
+        vals = np.asarray(raw, dtype=float)
+        u, best = _best_per_core(cores, vals)
+        a2.plot(u, best, ls=ls, color=col, lw=1.0, alpha=0.6)
+        a2.plot(x, vals, ls="none", marker=mk, color=col, ms=5, label=name)
+    if guide is not None:
+        a2.axhline(guide, color="black", lw=0.8, ls=":")
+        a2.annotate(
+            f"{guide:g}",
+            (u[0], guide),
+            xytext=(0, 2),
+            textcoords="offset points",
+            fontsize=7,
+            color=NEUTRAL,
+        )
+    a2.set_xscale("log", base=2)
+    a2.set_xticks(u, [f"{int(v)}" for v in u])
+    a2.set_xlabel("cores (ranks x threads)")
+    a2.set_ylabel("efficiency")
+    a2.set_ylim(0, 1.05)
+    a2.legend(frameon=False, fontsize=_lfs(8), loc="lower left")
+    if title:
+        fig.suptitle(title, x=0.02, ha="left", fontsize=11)
+    return fig
+
+
+_COMPONENT_PALETTE = [
+    ORACLE,
+    SURROGATE,
+    REFERENCE,
+    ACQUISITION,
+    HIGHLIGHT,
+    "#7b3294",
+    "#008837",
+    NEUTRAL,
+]
+_COMPONENT_HATCHES = ["", "//", "..", "xx", "\\\\", "++", "oo", ""]
+UNATTRIBUTED_COLOR = "#d0d0d0"
+
+
+def plot_component_breakdown(
+    table: ComponentTable,
+    layout: str,
+    *,
+    cells: Sequence[str] | None = None,
+    title: str | None = None,
+) -> Figure:
+    """Where the wall of one layout goes, per cell, with the Amdahl bound.
+
+    Left: one horizontal bar per cell at ``layout`` stacking the median
+    seconds of each component in the order of the table, the rest of the
+    total as a grey ``unattributed`` segment, and the total at the bar end.
+    Right: for every component the bound ``1 / (1 - f)`` on the whole-run
+    speedup if that component alone took no time, ``f`` being its share of
+    the wall; one marker per cell. A component that is a large share of the
+    wall is the only one whose removal moves the total much.
+    """
+    _style()
+    cells = list(cells or table.cells)
+    for c in cells:
+        if (c, layout) not in table.total:
+            msg = f"{c} has no layout {layout!r}; it has {table.layouts.get(c, [])}"
+            raise ValueError(msg)
+    names = [*table.components, "unattributed"]
+    styles = {
+        n: (
+            _COMPONENT_PALETTE[k % len(_COMPONENT_PALETTE)],
+            _COMPONENT_HATCHES[k % len(_COMPONENT_HATCHES)],
+        )
+        for k, n in enumerate(table.components)
+    }
+    styles["unattributed"] = (UNATTRIBUTED_COLOR, "")
+    fig, (a1, a2) = plt.subplots(
+        1,
+        2,
+        figsize=(8.6, 1.6 + 0.3 * len(names)),
+        layout="constrained",
+        width_ratios=(1.5, 1.0),
+    )
+    y = np.arange(len(cells))
+    left = np.zeros(len(cells))
+    for name in names:
+        vals = np.array(
+            [
+                table.unattributed(c, layout)
+                if name == "unattributed"
+                else table.parts[(c, layout)].get(name, 0.0)
+                for c in cells
+            ]
+        )
+        col, hatch = styles[name]
+        a1.barh(
+            y,
+            vals,
+            left=left,
+            color=col,
+            hatch=hatch,
+            edgecolor="white",
+            lw=0.5,
+            height=0.62,
+            label=name,
+        )
+        left += vals
+    for yi, c in zip(y, cells, strict=True):
+        a1.annotate(
+            f"{table.total[(c, layout)]:.0f} s",
+            (left[yi], yi),
+            xytext=(3, 0),
+            textcoords="offset points",
+            va="center",
+            fontsize=8,
+        )
+    a1.set_yticks(y, cells)
+    a1.set_ylim(len(cells) - 0.4, -0.6)
+    a1.set_xlim(0, left.max() * 1.14)
+    a1.set_xlabel("wall time (s)")
+    a1.legend(
+        frameon=False,
+        fontsize=_lfs(8),
+        ncols=4,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.28),
+    )
+    markers = ["o", "s", "^", "D", "v"]
+    colors = [SURROGATE, ACQUISITION, REFERENCE, ORACLE, NEUTRAL]
+    rows = np.arange(len(names))
+    step = 0.6 / max(len(cells), 1)
+    finite = []
+    for k, c in enumerate(cells):
+        bounds = table.amdahl_bounds(c, layout)
+        vals = np.array([bounds.get(n, np.nan) for n in names])
+        finite += [v for v in vals if np.isfinite(v)]
+        off = (k - (len(cells) - 1) / 2) * step
+        col = colors[k % len(colors)]
+        a2.plot(
+            vals,
+            rows + off,
+            ls="none",
+            marker=markers[k % len(markers)],
+            color=col,
+            ms=4.5,
+            label=c,
+        )
+        for v, r in zip(vals, rows + off, strict=True):
+            if np.isfinite(v):
+                a2.annotate(
+                    f"{v:.2f}x",
+                    (v, r),
+                    xytext=(5, 0),
+                    textcoords="offset points",
+                    va="center",
+                    fontsize=7,
+                    color=col,
+                )
+    a2.axvline(1.0, color="black", lw=0.8, ls=":")
+    a2.set_yticks(rows, names, fontsize=8)
+    a2.set_ylim(len(names) - 0.5, -0.5)
+    a2.set_xlabel("bound on whole-run speedup\nif the component took no time")
+    a2.set_xlim(0.95, (max(finite) if finite else 2.0) * 1.3)
+    a2.legend(frameon=False, fontsize=_lfs(8), loc="upper right")
+    fig.suptitle(title or f"{layout} (ranks x threads)", x=0.02, ha="left", fontsize=11)
     return fig
 
 
