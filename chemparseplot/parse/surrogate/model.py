@@ -155,11 +155,10 @@ class SearchHistory:
         return self.series["oracle_calls"]
 
     def to_frame(self, method: str = "search"):
-        """Long-form pandas frame (columns ``oracle_calls``, ``max_force``,
-        ``kind``, ``method``) for
-        :func:`chemparseplot.plot.chemgp.plot_convergence_curve`.
+        """Long-form polars frame (columns ``oracle_calls``, ``max_fatom``,
+        ``kind``, ``method``), one row per oracle call and force kind.
         """
-        import pandas as pd
+        import polars as pl
 
         rows = []
         for key, kind in (("true_force", "true"), ("surrogate_force", "surrogate")):
@@ -167,7 +166,7 @@ class SearchHistory:
             if v is None:
                 continue
             rows.append(
-                pd.DataFrame(
+                pl.DataFrame(
                     {
                         "oracle_calls": self.oracle_calls,
                         "max_fatom": v,
@@ -176,7 +175,7 @@ class SearchHistory:
                     }
                 )
             )
-        return pd.concat(rows, ignore_index=True)
+        return pl.concat(rows)
 
 
 @dataclass
@@ -236,9 +235,10 @@ class CampaignTable:
         return {c.label: c for c in self.cells}
 
     def to_frame(self):
-        import pandas as pd
+        """One polars row per cell; the wall times become ``wall_<stage>``."""
+        import polars as pl
 
-        return pd.DataFrame(
+        return pl.DataFrame(
             [
                 {
                     "label": c.label,
