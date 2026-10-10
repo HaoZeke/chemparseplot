@@ -35,6 +35,7 @@ h5py = ">=3.0"
 
 [feature.plot.pypi-dependencies]
 pandas = ">=2.0"
+plotnine = ">=0.13"
 cmcrameri = ">=1.7"
 jax = ">=0.4"
 
