@@ -2277,7 +2277,12 @@ def plot_pop_factors(
         a2.set_xticks(u, [f"{int(v)}" for v in u])
         a2.set_xlabel("cores (ranks x threads)")
         a2.set_ylabel("efficiency")
-        a2.set_ylim(0, 1.05)
+        # a superlinear point (cache effects at few ranks) stays in view
+        top = max(
+            [1.0]
+            + [float(np.nanmax(np.asarray(v, dtype=float))) for v in series.values()]
+        )
+        a2.set_ylim(0, top + 0.05)
         a2.legend(frameon=False, fontsize=_lfs(8), loc="lower left")
         if table.cell or len(tables) > 1:
             a1.set_title(f"{table.cell or ''}, {table.quantity}".strip(", "), loc="left")

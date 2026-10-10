@@ -429,6 +429,11 @@ def test_pop_factors_draws_one_row_per_table():
     )
     fig = surr.plot_pop_factors([whole, fit])
     assert len(fig.axes) == 4
+    # c9 has no second layout, so its efficiency is 1 and the axis ends at 1.05;
+    # a superlinear value raises the top
+    assert fig.axes[3].get_ylim() == (0.0, 1.05)
+    fit.time[1] = fit.time[0] / 10.0
+    assert surr.plot_pop_factors(fit).axes[1].get_ylim()[1] == pytest.approx(1.3)
     titles = [ax.get_title(loc="left") for ax in fig.axes[::2]]
     assert titles == ["c1, process wall", "c9, fit"]
     assert fig.axes[2].get_ylabel() == "fixed-work speedup, fit"
