@@ -513,6 +513,7 @@ class TestLabelsDict:
 def test_render_single_ended_landscape_writes_pdf(tmp_path, monkeypatch):
     """Shipped landscape pipeline builds a figure (RMSD coords stubbed)."""
     matplotlib = pytest.importorskip("matplotlib")
+    pytest.importorskip("jax")  # the landscape surface is fitted through rgpycrumbs
     matplotlib.use("Agg")
     import numpy as np
     from ase import Atoms
