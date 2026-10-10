@@ -38,7 +38,7 @@ class TestSurfaceFitIndices:
             surface_fit_indices(10, 1)
 
 
-def _install_dummy_surfaces(seen: dict):
+def _install_dummy_surfaces(seen: dict, monkeypatch):
     class DummyModel:
         def __init__(self, **kwargs):
             x = kwargs.get("x", kwargs.get("x_obs"))
@@ -57,18 +57,19 @@ def _install_dummy_surfaces(seen: dict):
     fake.NYSTROM_THRESHOLD = 1000
     fake.get_surface_model = lambda method: DummyModel
     fake.nystrom_paths_needed = lambda *a, **k: 1
-    sys.modules["rgpycrumbs.surfaces"] = fake
+    # Installed through monkeypatch so the real package returns after the test.
     if "rgpycrumbs" not in sys.modules:
-        sys.modules["rgpycrumbs"] = types.ModuleType("rgpycrumbs")
+        monkeypatch.setitem(sys.modules, "rgpycrumbs", types.ModuleType("rgpycrumbs"))
+    monkeypatch.setitem(sys.modules, "rgpycrumbs.surfaces", fake)
     return DummyModel
 
 
 class TestPlotLandscapeSurfaceAutoThin:
-    def test_auto_thin_false_by_default_uses_all_points(self):
+    def test_auto_thin_false_by_default_uses_all_points(self, monkeypatch):
         from chemparseplot.plot import neb as neb_mod
 
         seen: dict = {}
-        _install_dummy_surfaces(seen)
+        _install_dummy_surfaces(seen, monkeypatch)
 
         n = 100
         r = np.linspace(0.0, 1.0, n)
@@ -83,11 +84,11 @@ class TestPlotLandscapeSurfaceAutoThin:
         assert seen["n"] == n
         plt.close(fig)
 
-    def test_auto_thin_reduces_fit_points(self):
+    def test_auto_thin_reduces_fit_points(self, monkeypatch):
         from chemparseplot.plot import neb as neb_mod
 
         seen: dict = {}
-        _install_dummy_surfaces(seen)
+        _install_dummy_surfaces(seen, monkeypatch)
 
         n = 194
         r = np.linspace(0.0, 1.0, n)
@@ -131,7 +132,7 @@ class TestSurfaceFitConfig:
         assert cfg.auto_thin is True
         assert cfg.max_surface_points == 48
 
-    def test_surface_fit_kwarg_overrides_scalars(self):
+    def test_surface_fit_kwarg_overrides_scalars(self, monkeypatch):
         import sys
         import types
 
@@ -161,8 +162,9 @@ class TestSurfaceFitConfig:
         fake.NYSTROM_THRESHOLD = 1000
         fake.get_surface_model = lambda method: DummyModel
         fake.nystrom_paths_needed = lambda *a, **k: 1
-        sys.modules["rgpycrumbs.surfaces"] = fake
-        sys.modules.setdefault("rgpycrumbs", types.ModuleType("rgpycrumbs"))
+        if "rgpycrumbs" not in sys.modules:
+            monkeypatch.setitem(sys.modules, "rgpycrumbs", types.ModuleType("rgpycrumbs"))
+        monkeypatch.setitem(sys.modules, "rgpycrumbs.surfaces", fake)
 
         n = 100
         r = np.linspace(0.0, 1.0, n)
