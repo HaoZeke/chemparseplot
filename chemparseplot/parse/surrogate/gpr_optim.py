@@ -385,32 +385,32 @@ def _band_from_h5(h5_path: Path, events) -> BandHistory:
         if "training" in f:
             nr = int(f["training/n_rows"][0])
             dof = int(f["training/dof"][0])
-            tp = f["training/positions"][:].reshape(-1, dof)[:nr]
-            te = f["training/energies"][:nr]
-            tg = f["training/gradients"][:].reshape(-1, dof)[:nr]
-            pts = (tp, te, tg, dof)
+            train_pos = f["training/positions"][:].reshape(-1, dof)[:nr]
+            train_energy = f["training/energies"][:nr]
+            train_grad = f["training/gradients"][:].reshape(-1, dof)[:nr]
+            pts = (train_pos, train_energy, train_grad, dof)
     step = np.linalg.norm(np.diff(pos, axis=0), axis=1)
     coord = np.concatenate([[0.0], np.cumsum(step)])
     true_e = np.full(len(keys), np.nan)
     true_f = np.full(len(keys), np.nan)
     points = None
     if pts is not None:
-        tp, te, tg, dof = pts
+        train_pos, train_energy, train_grad, dof = pts
         atoms = dof // 3
-        fmax = np.linalg.norm(tg.reshape(-1, atoms, 3), axis=2).max(axis=1)
-        d = np.linalg.norm(tp[:, None, :] - pos[None], axis=2)
+        fmax = np.linalg.norm(train_grad.reshape(-1, atoms, 3), axis=2).max(axis=1)
+        d = np.linalg.norm(train_pos[:, None, :] - pos[None], axis=2)
         nearest = d.argmin(axis=0)
         hit = d.min(axis=0) < MATCH_TOLERANCE
-        true_e[hit] = te[nearest[hit]]
+        true_e[hit] = train_energy[nearest[hit]]
         true_f[hit] = fmax[nearest[hit]]
-        pc, pd = project_on_path(tp, pos, coord)
+        pc, pd = project_on_path(train_pos, pos, coord)
         points = EvaluatedPoints(
-            energy=te,
+            energy=train_energy,
             max_force=fmax,
-            positions=tp,
+            positions=train_pos,
             coordinate=pc,
             distance=pd,
-            gradients=tg,
+            gradients=train_grad,
         )
     final = BandSnapshot(
         coordinate=coord,

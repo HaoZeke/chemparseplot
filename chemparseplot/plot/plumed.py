@@ -8,7 +8,6 @@ Provides publication-quality 1D and 2D Free Energy Surface plots
 using the Ruhi theme and cmcrameri colormaps.
 """
 
-import cmcrameri.cm as cmc
 import matplotlib.pyplot as plt
 
 from chemparseplot.plot.theme import get_theme, setup_publication_theme
@@ -40,6 +39,8 @@ def plot_fes_2d(fes_result, minima_result=None, cmap=None, figsize=(8, 6), dpi=3
     setup_publication_theme(get_theme("ruhi"))
 
     if cmap is None:
+        import cmcrameri.cm as cmc  # noqa: PLC0415  optional plotting dep stays lazy
+
         cmap = cmc.batlow
 
     fes_data = fes_result["fes"]

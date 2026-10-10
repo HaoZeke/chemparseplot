@@ -684,8 +684,10 @@ def test_landscape_uses_the_shared_neb_functions_and_labels(baker, monkeypatch):
     xs, ys = ax.get_xlim(), ax.get_ylim()
     assert xs[1] - xs[0] == pytest.approx(ys[1] - ys[0])
     assert _flat(t.get_text() for t in fig.legends[0].get_texts()) == [
-        "energy surface: GP fitted afresh to the oracle "
-        "energies and in-plane gradients, not the search's model",
+        (
+            "energy surface: GP fitted afresh to the oracle "
+            "energies and in-plane gradients, not the search's model"
+        ),
         "relative variance contours (0 at the data, 1 far from it)",
         "faded: relative variance above 0.95, no oracle evaluation nearby",
         "final path (coloured by surrogate energy)",

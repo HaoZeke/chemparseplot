@@ -16,6 +16,9 @@ import numpy as np
 import polars as pl
 from ase import Atoms
 
+# A finite-difference gradient along the path needs two samples.
+_MIN_GRADIENT_POINTS = 2
+
 log = logging.getLogger(__name__)
 
 
@@ -96,8 +99,8 @@ def compute_synthetic_gradients(
     :param f_para: Force component parallel to the path for each image.
     :return: (grad_r, grad_p) arrays.
     """
-    if min(np.size(rmsd_r), np.size(rmsd_p), np.size(f_para)) < 2:
-        n = min(np.size(rmsd_r), np.size(rmsd_p), np.size(f_para))
+    n = min(np.size(rmsd_r), np.size(rmsd_p), np.size(f_para))
+    if n < _MIN_GRADIENT_POINTS:
         zeros = np.zeros(n, dtype=float)
         return zeros, zeros
     dr = np.gradient(rmsd_r)

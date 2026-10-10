@@ -37,6 +37,9 @@ from chemparseplot.plot.structs import (
 )
 from chemparseplot.plot.theme import apply_axis_theme
 
+# One sample has no path tangent, so a numerical gradient needs two.
+_MIN_GRADIENT_POINTS = 2
+
 log = logging.getLogger(__name__)
 
 # --- Label modes ---
@@ -419,7 +422,7 @@ def render_single_ended_landscape(
         display_e = convert_energy(energies_plot, energy_unit)
 
     # One sample has no path tangent, so a numerical gradient is undefined.
-    short_series = energies_plot.size < 2
+    short_series = energies_plot.size < _MIN_GRADIENT_POINTS
     if short_series:
         f_para = np.zeros_like(energies_plot, dtype=float)
     else:
