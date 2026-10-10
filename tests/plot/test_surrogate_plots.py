@@ -399,7 +399,8 @@ def test_pop_factors_panel_dodges_shared_core_counts_and_draws_the_guide():
     fig = surr.plot_pop_factors(t, title="c1")
     a1, a2 = fig.axes
     assert a1.get_xscale() == "log" and a1.get_yscale() == "log"
-    assert a1.get_ylabel() == "fixed-work speedup"
+    assert a1.get_ylabel() == "fixed-work speedup, process wall"
+    assert a1.get_title(loc="left") == "c1, process wall"
     assert [x.get_text() for x in a1.get_yticklabels()][:3] == ["1", "2", "4"]
     # the two 8-core layouts do not share an x position
     pts = a1.lines[1].get_xdata()
@@ -417,6 +418,20 @@ def test_pop_factors_panel_dodges_shared_core_counts_and_draws_the_guide():
     assert not [
         ln for ln in none.lines if ln.get_linestyle() == ":" and len(ln.get_xdata()) == 2
     ]
+
+
+def test_pop_factors_draws_one_row_per_table():
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_factors
+
+    whole = parse_pop_factors(SCALING / "pop.csv", ["parallel_eff"], cell="c1")
+    fit = parse_pop_factors(
+        SCALING / "pop.csv", ["parallel_eff"], cell="c9", time="elapsed_s", quantity="fit"
+    )
+    fig = surr.plot_pop_factors([whole, fit])
+    assert len(fig.axes) == 4
+    titles = [ax.get_title(loc="left") for ax in fig.axes[::2]]
+    assert titles == ["c1, process wall", "c9, fit"]
+    assert fig.axes[2].get_ylabel() == "fixed-work speedup, fit"
 
 
 def test_component_breakdown_stacks_to_the_total_and_bounds_each_component():

@@ -327,6 +327,8 @@ class PopTable:
     time: np.ndarray
     metrics: dict[str, np.ndarray]
     cell: str | None = None
+    # what ``time`` measures, for the axis label (process wall, fit, ...)
+    quantity: str = "process wall"
 
     def speedup(self) -> np.ndarray:
         """``T(reference) / T(layout)``, the reference being the fewest cores."""

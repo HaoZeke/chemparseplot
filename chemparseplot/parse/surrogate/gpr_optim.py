@@ -665,15 +665,16 @@ def parse_pop_factors(
     metrics: dict[str, str] | list[str],
     *,
     time: str = "elapsed_s",
+    quantity: str = "process wall",
     cell: str | None = None,
 ):
     """Fixed-work factors and wall per layout as a :class:`PopTable`.
 
     ``metrics`` maps a column of fractions to the label it is drawn with (a
     list uses the column names as labels); ``time`` names the column of the
-    wall in seconds, from which speedup and fixed-work efficiency follow.
-    Rows of one layout are averaged. The cell rule is that of
-    :func:`parse_pop_csv`.
+    wall in seconds, from which speedup and fixed-work efficiency follow, and
+    ``quantity`` says what that column measures for the axis label. Rows of
+    one layout are averaged. The cell rule is that of :func:`parse_pop_csv`.
     """
     from chemparseplot.parse.surrogate.model import PopTable
 
@@ -686,6 +687,7 @@ def parse_pop_factors(
         time=values.pop(time),
         metrics={labels[m]: v for m, v in values.items()},
         cell=cell,
+        quantity=quantity,
     )
 
 

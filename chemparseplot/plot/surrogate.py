@@ -2203,71 +2203,84 @@ def _best_per_core(cores, values):
 
 
 def plot_pop_factors(
-    table: PopTable, *, guide: float | None = 0.8, title: str | None = None
+    tables: PopTable | Sequence[PopTable],
+    *,
+    guide: float | None = 0.8,
+    title: str | None = None,
 ) -> Figure:
     """Fixed-work speedup and the POP efficiency factors against cores.
 
-    Left: ``T(reference) / T(layout)`` on log axes, one marker per
-    ``ranks x threads`` layout, layouts of one core count dodged sideways and
-    a line through the fastest layout per core count; no ideal line is
-    drawn. Right: the fixed-work efficiency (speedup per core ratio) and
-    every factor of ``table.metrics`` on one 0 to 1 axis against cores, each
-    with its own marker and line style, with the ``guide`` level (0.8, the
-    threshold the POP methodology uses) as a dotted line.
+    One row of two panels per table. Left: ``T(reference) / T(layout)`` on
+    log axes, one marker per ``ranks x threads`` layout, layouts of one core
+    count dodged sideways and a line through the fastest layout per core
+    count; no ideal line is drawn. Right: the fixed-work efficiency (speedup
+    per core ratio) and every factor of ``table.metrics`` on one 0 to 1 axis
+    against cores, each with its own marker and line style, with the
+    ``guide`` level (0.8, the threshold the POP methodology uses) as a dotted
+    line. A row is titled by its table's cell and quantity.
     """
     _style()
-    fig, (a1, a2) = plt.subplots(
-        1, 2, figsize=(8.0, 3.6), layout="constrained", width_ratios=(1.0, 1.35)
+    tables = [tables] if isinstance(tables, PopTable) else list(tables)
+    fig, axes = plt.subplots(
+        len(tables),
+        2,
+        figsize=(8.0, 3.4 * len(tables)),
+        layout="constrained",
+        width_ratios=(1.0, 1.35),
+        squeeze=False,
     )
-    cores = np.asarray(table.cores, dtype=float)
-    dodge = _dodge_cores(cores)
-    x = cores * dodge
-    sp = table.speedup()
-    u, best = _best_per_core(cores, sp)
-    a1.plot(u, best, "-", color=SURROGATE, lw=1.0, alpha=0.6)
-    a1.plot(x, sp, ls="none", marker="o", color=SURROGATE, ms=5)
-    for xi, yi, lab, d in zip(x, sp, table.layouts, dodge, strict=True):
-        # the lower-dodged layout of a shared core count labels to the left
-        a1.annotate(
-            lab,
-            (xi, yi),
-            xytext=(-4 if d < 1.0 else 4, -9 if d <= 1.0 else 3),
-            textcoords="offset points",
-            ha="right" if d < 1.0 else "left",
-            fontsize=7,
-            color=NEUTRAL,
-        )
-    a1.set_xscale("log", base=2)
-    a1.set_yscale("log", base=2)
-    a1.set_xticks(u, [f"{int(v)}" for v in u])
-    yt = 2.0 ** np.arange(0, int(np.ceil(np.log2(np.nanmax(sp)))) + 1)
-    a1.set_yticks(yt, [f"{v:g}" for v in yt])
-    a1.yaxis.set_minor_formatter(FuncFormatter(lambda _v, _p: ""))
-    a1.set_xlabel("cores (ranks x threads)")
-    a1.set_ylabel("fixed-work speedup")
-    series = {"fixed-work efficiency": table.efficiency(), **table.metrics}
     styles = [*_SCALING_STYLES, ("-", "v", HIGHLIGHT), ("--", "P", NEUTRAL)] * 2
-    for (name, raw), (ls, mk, col) in zip(series.items(), styles, strict=False):
-        vals = np.asarray(raw, dtype=float)
-        u, best = _best_per_core(cores, vals)
-        a2.plot(u, best, ls=ls, color=col, lw=1.0, alpha=0.6)
-        a2.plot(x, vals, ls="none", marker=mk, color=col, ms=5, label=name)
-    if guide is not None:
-        a2.axhline(guide, color="black", lw=0.8, ls=":")
-        a2.annotate(
-            f"{guide:g}",
-            (u[0], guide),
-            xytext=(0, 2),
-            textcoords="offset points",
-            fontsize=7,
-            color=NEUTRAL,
-        )
-    a2.set_xscale("log", base=2)
-    a2.set_xticks(u, [f"{int(v)}" for v in u])
-    a2.set_xlabel("cores (ranks x threads)")
-    a2.set_ylabel("efficiency")
-    a2.set_ylim(0, 1.05)
-    a2.legend(frameon=False, fontsize=_lfs(8), loc="lower left")
+    for table, (a1, a2) in zip(tables, axes, strict=True):
+        cores = np.asarray(table.cores, dtype=float)
+        dodge = _dodge_cores(cores)
+        x = cores * dodge
+        sp = table.speedup()
+        u, best = _best_per_core(cores, sp)
+        a1.plot(u, best, "-", color=SURROGATE, lw=1.0, alpha=0.6)
+        a1.plot(x, sp, ls="none", marker="o", color=SURROGATE, ms=5)
+        for xi, yi, lab, d in zip(x, sp, table.layouts, dodge, strict=True):
+            # the lower-dodged layout of a shared core count labels to the left
+            a1.annotate(
+                lab,
+                (xi, yi),
+                xytext=(-4 if d < 1.0 else 4, -9 if d <= 1.0 else 3),
+                textcoords="offset points",
+                ha="right" if d < 1.0 else "left",
+                fontsize=7,
+                color=NEUTRAL,
+            )
+        a1.set_xscale("log", base=2)
+        a1.set_yscale("log", base=2)
+        a1.set_xticks(u, [f"{int(v)}" for v in u])
+        yt = 2.0 ** np.arange(0, int(np.ceil(np.log2(np.nanmax(sp)))) + 1)
+        a1.set_yticks(yt, [f"{v:g}" for v in yt])
+        a1.yaxis.set_minor_formatter(FuncFormatter(lambda _v, _p: ""))
+        a1.set_xlabel("cores (ranks x threads)")
+        a1.set_ylabel(f"fixed-work speedup, {table.quantity}")
+        series = {"fixed-work efficiency": table.efficiency(), **table.metrics}
+        for (name, raw), (ls, mk, col) in zip(series.items(), styles, strict=False):
+            vals = np.asarray(raw, dtype=float)
+            u, best = _best_per_core(cores, vals)
+            a2.plot(u, best, ls=ls, color=col, lw=1.0, alpha=0.6)
+            a2.plot(x, vals, ls="none", marker=mk, color=col, ms=5, label=name)
+        if guide is not None:
+            a2.axhline(guide, color="black", lw=0.8, ls=":")
+            a2.annotate(
+                f"{guide:g}",
+                (u[0], guide),
+                xytext=(0, 2),
+                textcoords="offset points",
+                fontsize=7,
+                color=NEUTRAL,
+            )
+        a2.set_xscale("log", base=2)
+        a2.set_xticks(u, [f"{int(v)}" for v in u])
+        a2.set_xlabel("cores (ranks x threads)")
+        a2.set_ylabel("efficiency")
+        a2.set_ylim(0, 1.05)
+        a2.legend(frameon=False, fontsize=_lfs(8), loc="lower left")
+        if table.cell or len(tables) > 1:
+            a1.set_title(f"{table.cell or ''}, {table.quantity}".strip(", "), loc="left")
     if title:
         fig.suptitle(title, x=0.02, ha="left", fontsize=11)
     return fig
