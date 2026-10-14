@@ -108,6 +108,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
+      - pypi: git+https://github.com/lode-org/readcon-core.git?branch=main#694e808080c49979ee3099afcfa18e5420c40433
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl
@@ -140,7 +141,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c3/059298687310d527a58bb01f3b1965787ee3b40dce76752eda8b44e9a2c5/pexpect-4.9.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/c2971a3ba4c6103a3d10c4b0f24f461ddc027f0f09763220cf35ca1401b3/nest_asyncio-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a5/6f/fb4b2ea7fa7b296b515a62fdee6609d05448d817cf8e2e8397171c071ced/readcon-0.16.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ab/88/550d41e81e6d43335603a960cd9c75c1d88f9cf01bc9d4ee8e86290aba7d/pint-0.25.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/33/ee4519fa02ed11a94aef9559552f3b17bb863f2ecfe1a35dc7f548cde231/matplotlib_inline-0.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/04/7b5705d5b3c0fab088f434f9c83edac1573830ca49ccf29fb83bf7178eec/tornado-6.5.5-cp39-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -316,6 +316,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
+      - pypi: git+https://github.com/lode-org/readcon-core.git?branch=main#694e808080c49979ee3099afcfa18e5420c40433
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl
@@ -350,7 +351,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c3/059298687310d527a58bb01f3b1965787ee3b40dce76752eda8b44e9a2c5/pexpect-4.9.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/c2971a3ba4c6103a3d10c4b0f24f461ddc027f0f09763220cf35ca1401b3/nest_asyncio-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a5/6f/fb4b2ea7fa7b296b515a62fdee6609d05448d817cf8e2e8397171c071ced/readcon-0.16.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ab/88/550d41e81e6d43335603a960cd9c75c1d88f9cf01bc9d4ee8e86290aba7d/pint-0.25.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/33/ee4519fa02ed11a94aef9559552f3b17bb863f2ecfe1a35dc7f548cde231/matplotlib_inline-0.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/04/7b5705d5b3c0fab088f434f9c83edac1573830ca49ccf29fb83bf7178eec/tornado-6.5.5-cp39-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -478,6 +478,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
+      - pypi: git+https://github.com/lode-org/readcon-core.git?branch=main#694e808080c49979ee3099afcfa18e5420c40433
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl
@@ -509,7 +510,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c3/059298687310d527a58bb01f3b1965787ee3b40dce76752eda8b44e9a2c5/pexpect-4.9.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/c2971a3ba4c6103a3d10c4b0f24f461ddc027f0f09763220cf35ca1401b3/nest_asyncio-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a5/6f/fb4b2ea7fa7b296b515a62fdee6609d05448d817cf8e2e8397171c071ced/readcon-0.16.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ab/88/550d41e81e6d43335603a960cd9c75c1d88f9cf01bc9d4ee8e86290aba7d/pint-0.25.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/33/ee4519fa02ed11a94aef9559552f3b17bb863f2ecfe1a35dc7f548cde231/matplotlib_inline-0.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/04/7b5705d5b3c0fab088f434f9c83edac1573830ca49ccf29fb83bf7178eec/tornado-6.5.5-cp39-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -637,6 +637,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/werkzeug-3.1.6-pyhcf101f3_0.conda
       - pypi: ./
       - pypi: git+https://github.com/HaoZeke/rgpycrumbs#d92cc0ddce9fc85dde9bde26baf6ce251a548780
+      - pypi: git+https://github.com/lode-org/readcon-core.git?branch=main#694e808080c49979ee3099afcfa18e5420c40433
       - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/6c/aa3f2f849e01cb6a001cd8554a88d4c77c5c1a31c95bdf1cf9301e6d9ef4/defusedxml-0.7.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl
@@ -667,7 +668,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/9e/c3/059298687310d527a58bb01f3b1965787ee3b40dce76752eda8b44e9a2c5/pexpect-4.9.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/c4/c2971a3ba4c6103a3d10c4b0f24f461ddc027f0f09763220cf35ca1401b3/nest_asyncio-1.6.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/a5/6f/fb4b2ea7fa7b296b515a62fdee6609d05448d817cf8e2e8397171c071ced/readcon-0.16.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ab/88/550d41e81e6d43335603a960cd9c75c1d88f9cf01bc9d4ee8e86290aba7d/pint-0.25.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/af/33/ee4519fa02ed11a94aef9559552f3b17bb863f2ecfe1a35dc7f548cde231/matplotlib_inline-0.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b2/04/7b5705d5b3c0fab088f434f9c83edac1573830ca49ccf29fb83bf7178eec/tornado-6.5.5-cp39-abi3-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -2168,7 +2168,7 @@ packages:
   - parsimonious>=0.10.0 ; extra == 'all'
   - polars>=0.20 ; extra == 'all'
   - pydseamslib>=2.9.1 ; python_full_version >= '3.12' and extra == 'all'
-  - readcon>=0.14.5 ; extra == 'all'
+  - readcon @ git+https://github.com/lode-org/readcon-core@main ; extra == 'all'
   - xyzrender>=0.1.2 ; extra == 'all'
   - xyzrender>=0.3.8 ; extra == 'all'
   - mdit-py-plugins>=0.3.4 ; extra == 'doc'
@@ -2188,7 +2188,7 @@ packages:
   - ase>=3.22 ; extra == 'neb'
   - h5py>=3.0 ; extra == 'neb'
   - polars>=0.20 ; extra == 'neb'
-  - readcon>=0.14.5 ; extra == 'neb'
+  - readcon @ git+https://github.com/lode-org/readcon-core@main ; extra == 'neb'
   - orca-pi>=0.1.0 ; extra == 'opi'
   - cmcrameri>=1.7 ; extra == 'plot'
   - matplotlib>=3.8.2 ; extra == 'plot'
@@ -2207,7 +2207,7 @@ packages:
   - pydseamslib>=2.9.1 ; python_full_version >= '3.12' and extra == 'test'
   - pytest-cov>=4.1.0 ; extra == 'test'
   - pytest>=7.4.3 ; extra == 'test'
-  - readcon>=0.14.5 ; extra == 'test'
+  - readcon @ git+https://github.com/lode-org/readcon-core@main ; extra == 'test'
   - rgpycrumbs ; extra == 'test'
   - scipy>=1.11 ; extra == 'test'
   - xyzrender>=0.3.8 ; extra == 'test'
@@ -2232,6 +2232,12 @@ packages:
   - pychum ; extra == 'test'
   - pytest-cov>=4.1.0 ; extra == 'test'
   - pytest>=9.0 ; extra == 'test'
+  requires_python: '>=3.10'
+- pypi: git+https://github.com/lode-org/readcon-core.git?branch=main#694e808080c49979ee3099afcfa18e5420c40433
+  name: readcon
+  version: 0.17.1
+  requires_dist:
+  - readcon-chemfiles==0.17.1 ; extra == 'chemfiles'
   requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl
   name: traitlets
@@ -2794,13 +2800,6 @@ packages:
   version: 1.6.0
   sha256: 87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c
   requires_python: '>=3.5'
-- pypi: https://files.pythonhosted.org/packages/a5/6f/fb4b2ea7fa7b296b515a62fdee6609d05448d817cf8e2e8397171c071ced/readcon-0.16.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-  name: readcon
-  version: 0.16.2
-  sha256: fab8dd1b0567acab88dca74d8bddb593b14af5c4e8b2c27bcbcf65afbcfb2725
-  requires_dist:
-  - readcon-chemfiles==0.16.2 ; extra == 'chemfiles'
-  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/ab/88/550d41e81e6d43335603a960cd9c75c1d88f9cf01bc9d4ee8e86290aba7d/pint-0.25.2-py3-none-any.whl
   name: pint
   version: 0.25.2

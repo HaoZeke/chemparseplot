@@ -5,10 +5,12 @@
 
 from __future__ import annotations
 
+import struct
 import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 readcon = pytest.importorskip("readcon")
@@ -21,10 +23,12 @@ from chemparseplot.parse.eon import con_io as con_io_mod
 from chemparseplot.parse.eon.con_io import (
     CON_SUFFIXES,
     frame_with_energy,
+    frame_with_positions,
     is_con_path,
     read_con_as_ase,
     read_con_frames,
     read_first_atoms,
+    read_first_frame,
     write_atoms_as_con,
     write_con_frames,
 )
@@ -72,32 +76,11 @@ def test_frame_with_energy_roundtrip(tmp_path: Path):
     assert back.to_ase().get_positions()[0, 2] == pytest.approx(0.0)
 
 
-def test_frame_with_energy_scalar_metadata_fallback(tmp_path: Path):
+def test_frame_with_energy_requires_set_energy(tmp_path: Path):
     src = write_band(tmp_path / "in.con", [(0.5, 0.1)])
     frame = read_con_frames(src)[0]
 
     class _NoSetEnergy:
-        def __init__(self, inner):
-            self.cell = inner.cell
-            self.angles = inner.angles
-            self.atoms = inner.atoms
-            self.prebox_header = inner.prebox_header
-            self.postbox_header = inner.postbox_header
-            self.metadata = inner.metadata
-            self._energy = None
-
-        def set_scalar_metadata(self, key, value):
-            assert key == "energy"
-            self._energy = float(value)
-
-        @property
-        def energy(self):
-            return self._energy
-
-    proxy = _NoSetEnergy(frame)
-    created = []
-
-    class _RecordingConFrame:
         def __init__(self, cell, angles, atoms, prebox_header, postbox_header, metadata):
             self.cell = cell
             self.angles = angles
@@ -105,73 +88,24 @@ def test_frame_with_energy_scalar_metadata_fallback(tmp_path: Path):
             self.prebox_header = prebox_header
             self.postbox_header = postbox_header
             self.metadata = metadata
-            self._energy = None
-            created.append(self)
 
-        def set_scalar_metadata(self, key, value):
-            assert key == "energy"
-            self._energy = float(value)
-
-        @property
-        def energy(self):
-            return self._energy
-
-    fake_readcon = SimpleNamespace(ConFrame=_RecordingConFrame)
-    SimpleNamespace(
-        _readcon=lambda: fake_readcon,
-        frame_with_energy=con_io_mod.frame_with_energy,
-    )
-    # Call implementation with patched _readcon
+    fake_readcon = SimpleNamespace(ConFrame=_NoSetEnergy)
     original = con_io_mod._readcon
     con_io_mod._readcon = lambda: fake_readcon
     try:
-        out = frame_with_energy(proxy, 9.25)
+        with pytest.raises(ImportError, match=r"readcon>=0\.17\.1"):
+            frame_with_energy(frame, 9.25)
     finally:
         con_io_mod._readcon = original
-    assert created and out.energy == pytest.approx(9.25)
 
 
-def test_frame_with_energy_string_metadata_reconstruct(tmp_path: Path):
+def test_frame_with_energy_rejects_non_finite(tmp_path: Path):
     src = write_band(tmp_path / "in.con", [(0.25, 0.2)])
     frame = read_con_frames(src)[0]
-    original = con_io_mod._readcon
-
-    class _LegacyFrame:
-        def __init__(self, cell, angles, atoms, prebox_header, postbox_header, metadata):
-            self.cell = cell
-            self.angles = angles
-            self.atoms = atoms
-            self.prebox_header = prebox_header
-            self.postbox_header = postbox_header
-            self.metadata = metadata
-
-        @property
-        def energy(self):
-            raw = self.metadata.get("energy")
-            return float(raw) if raw is not None else None
-
-    class _LegacyReadcon:
-        ConFrame = _LegacyFrame
-
-        @staticmethod
-        def read_con(path):
-            return original().read_con(path)
-
-    con_io_mod._readcon = lambda: _LegacyReadcon
-    try:
-        legacy_src = _LegacyFrame(
-            frame.cell,
-            frame.angles,
-            frame.atoms,
-            frame.prebox_header,
-            frame.postbox_header,
-            {str(k): v for k, v in frame.metadata.items()},
-        )
-        updated = frame_with_energy(legacy_src, 6.5)
-    finally:
-        con_io_mod._readcon = original
-    assert updated.energy == pytest.approx(6.5)
-    assert updated.metadata["energy"] == "6.5"
+    with pytest.raises(Exception, match="finite"):
+        frame_with_energy(frame, float("nan"))
+    assert frame.energy == pytest.approx(0.25)
+    assert "nan" not in str(frame.metadata.get("energy", "")).lower()
 
 
 def test_write_atoms_as_con_preserves_energy(tmp_path: Path):
@@ -235,3 +169,149 @@ def test_con_io_exported_from_parse_eon():
     assert con_io.read_con_frames is read_con_frames
     assert con_io.write_con_frames is write_con_frames
     assert hasattr(con_io, "frame_with_energy")
+    assert hasattr(con_io, "frame_with_positions")
+    assert hasattr(con_io, "read_first_frame")
+
+
+_FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
+# RoundTrip bytes from ConFrameWriter on readcon-core 694e808 (version 0.17.1).
+# TODO: replace these with the published restart_exact golden when v0.17.1 is tagged.
+RESTART_EXACT = _FIXTURES / "restart_exact.con"
+RESTART_EXACT_VEL = _FIXTURES / "restart_exact_vel.con"
+_SUBNORMAL = struct.unpack("<d", (1).to_bytes(8, "little"))[0]
+
+
+def _f64_bits(value) -> bytes | None:
+    if value is None:
+        return None
+    return struct.pack("<d", float(value))
+
+
+def _array_bits(array) -> bytes:
+    return np.ascontiguousarray(array, dtype=np.float64).tobytes()
+
+
+def _section_bits(frame, names: tuple[str, ...]) -> list[tuple[bytes | None, ...]]:
+    rows = []
+    for atom in frame.atoms:
+        rows.append(tuple(_f64_bits(getattr(atom, name)) for name in names))
+    return rows
+
+
+def test_write_con_omits_precision_and_canonical(tmp_path: Path, monkeypatch):
+    src = write_band(tmp_path / "in.con", [(1.0, 0.0)])
+    frame = read_con_frames(src)[0]
+    calls = []
+    real = readcon.write_con
+
+    def _wrapped(*args, **kwargs):
+        calls.append((args, kwargs))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(readcon, "write_con", _wrapped)
+    write_con_frames(tmp_path / "out.con", [frame])
+    assert calls
+    _args, kwargs = calls[0]
+    assert kwargs.get("precision", None) is None
+    assert kwargs.get("canonical", False) is False
+
+
+def test_restart_exact_rewrite_is_byte_identical(tmp_path: Path):
+    for golden in (RESTART_EXACT, RESTART_EXACT_VEL):
+        assert golden.is_file()
+        text = golden.read_bytes()
+        assert text.startswith(b"Generated by eOn\n")
+        frame = read_first_frame(golden)
+        out = tmp_path / golden.name
+        write_con_frames(out, [frame])
+        assert out.read_bytes() == text
+
+
+def test_restart_exact_xyz_matches_ase_bitwise():
+    frame = read_first_frame(RESTART_EXACT)
+    atoms = read_con_as_ase(RESTART_EXACT)[0]
+    assert _array_bits(atoms.positions) == _array_bits(frame.xyz)
+    first = read_first_atoms(RESTART_EXACT)
+    assert _array_bits(first.positions) == _array_bits(frame.xyz)
+    coords = np.asarray(frame.xyz, dtype=np.float64).ravel()
+    assert any(_f64_bits(value) == _f64_bits(-0.0) for value in coords)
+    assert any(_f64_bits(value) == struct.pack("<d", _SUBNORMAL) for value in coords)
+    assert frame.frc is not None
+    assert not all(angle == pytest.approx(90.0) for angle in frame.angles)
+    fixed = [tuple(atom.fixed) for atom in frame.atoms]
+    assert any(mask != (False, False, False) for mask in fixed)
+
+
+def test_restart_exact_vel_carries_natural_time():
+    frame = read_first_frame(RESTART_EXACT_VEL)
+    units = frame.metadata["units"]
+    assert units["time"] == "(amu*angstrom^2/eV)^0.5"
+    assert frame.vel is not None
+    assert _array_bits(frame.xyz) == _array_bits(read_first_frame(RESTART_EXACT).xyz)
+
+
+def test_frame_with_energy_keeps_xyz_bits(tmp_path: Path):
+    frame = read_first_frame(RESTART_EXACT)
+    for index, atom in enumerate(frame.atoms):
+        atom.dx = float(index)
+        atom.dy = -0.0
+        atom.dz = _SUBNORMAL
+    before_xyz = _array_bits(frame.xyz)
+    before_disp = _array_bits(frame.disp)
+    updated = frame_with_energy(frame, -4.25)
+    assert _array_bits(updated.xyz) == before_xyz
+    assert _array_bits(updated.disp) == before_disp
+    assert updated.energy == pytest.approx(-4.25)
+    out = tmp_path / "shifted.con"
+    write_con_frames(out, [updated])
+    assert out.read_bytes() != RESTART_EXACT.read_bytes()
+
+
+def test_frame_with_positions_keeps_other_sections():
+    frame = read_first_frame(RESTART_EXACT)
+    for index, atom in enumerate(frame.atoms):
+        atom.dx = float(index) + 0.125
+        atom.dy = -0.0
+        atom.dz = _SUBNORMAL
+        atom.sx = 0.25 + index
+        atom.sy = -0.5
+        atom.sz = 1.5
+    positions = np.array(frame.xyz, dtype=np.float64, copy=True)
+    positions[0, 0] = positions[0, 0] + 0.5
+    original_x = frame.atoms[0].x
+    updated = frame_with_positions(frame, positions)
+    assert updated.atoms[0] is not frame.atoms[0]
+    assert _f64_bits(frame.atoms[0].x) == _f64_bits(original_x)
+    assert _array_bits(np.asarray(updated.xyz)[1:]) == _array_bits(positions[1:])
+    moved = _array_bits(np.asarray(updated.xyz)[0])
+    original = _array_bits(np.asarray(frame.xyz)[0])
+    assert moved != original
+    names = ("dx", "dy", "dz", "fx", "fy", "fz", "sx", "sy", "sz")
+    assert _section_bits(updated, names) == _section_bits(frame, names)
+    for atom, src in zip(updated.atoms, frame.atoms, strict=True):
+        assert tuple(atom.fixed) == tuple(src.fixed)
+        assert atom.atom_id == src.atom_id
+        assert _f64_bits(atom.mass) == _f64_bits(src.mass)
+        assert atom.symbol == src.symbol
+
+
+def test_read_first_atoms_stops_at_frame_zero(tmp_path: Path, monkeypatch):
+    expected = _array_bits(read_first_atoms(RESTART_EXACT).positions)
+    bad = tmp_path / "two.con"
+    bad.write_bytes(RESTART_EXACT.read_bytes() + b"\nthis second frame is not legal\n")
+    calls = {"first": 0, "all": 0}
+    real_first = readcon.read_first_frame
+
+    def _first(path):
+        calls["first"] += 1
+        return real_first(path)
+
+    def _all(*_args, **_kwargs):
+        calls["all"] += 1
+        raise AssertionError("read_con must not parse the rest of the movie")
+
+    monkeypatch.setattr(readcon, "read_first_frame", _first)
+    monkeypatch.setattr(readcon, "read_con", _all)
+    atoms = read_first_atoms(bad)
+    assert calls == {"first": 1, "all": 0}
+    assert _array_bits(atoms.positions) == expected

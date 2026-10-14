@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 from ase import Atoms
-from ase.io import read as ase_read
 
 from chemparseplot.parse.neb_utils import (
     compute_synthetic_gradients,
@@ -24,6 +23,18 @@ except ImportError:
     ira_mod = None
 
 log = logging.getLogger(__name__)
+
+
+def ase_read(path, index=None):
+    """Read a CON path through :mod:`chemparseplot.parse.eon.con_io`.
+
+    ``index=":"`` returns every frame. Any other index returns the first frame.
+    """
+    from chemparseplot.parse.eon.con_io import read_con_as_ase, read_first_atoms
+
+    if index == ":":
+        return read_con_as_ase(path)
+    return read_first_atoms(path)
 
 
 @dataclass(frozen=True, slots=True)

@@ -46,9 +46,12 @@ __all__ = [
     "energy_quantity",
     "extract_orca_geomscan_energy",
     "grammar_available",
+    "load_trajectory",
     "normalize_energy_unit",
     "parse_orca_final_energy",
     "parse_xyz",
+    "plot_con_overlay",
+    "plot_con_overview",
     "suite_pins",
 ]
 
@@ -122,6 +125,32 @@ def extract_orca_geomscan_energy(
         Distances (bohr) and energies (hartree). Empty quantities if no match.
     """
     return extract_energy_data(data, energy_type)
+
+
+def load_trajectory(path: str):
+    """Load a ``.con`` / ``.convel`` file, or an ASE trajectory of another suffix.
+
+    ``.con`` goes through :mod:`chemparseplot.parse.eon.con_io`. ``fmax`` comes
+    from ``frame.frc`` when a forces section is present. The extxyz reader in
+    :mod:`chemparseplot.parse.trajectory.neb` is a different function.
+    """
+    from chemparseplot.parse.eon.con_trajectory import load_trajectory as _load
+
+    return _load(path)
+
+
+def plot_con_overview(*args, **kwargs):
+    """Draw one loaded trajectory. This does not parse a file."""
+    from chemparseplot.plot.con import plot_con_overview as _plot
+
+    return _plot(*args, **kwargs)
+
+
+def plot_con_overlay(*args, **kwargs):
+    """Draw several loaded trajectories on one axes. This does not parse."""
+    from chemparseplot.plot.con import plot_con_overlay as _plot
+
+    return _plot(*args, **kwargs)
 
 
 def suite_pins() -> dict[str, str]:

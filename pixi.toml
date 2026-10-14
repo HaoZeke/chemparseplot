@@ -27,7 +27,8 @@ polars = ">=0.20"
 scipy = ">=1.11"
 matplotlib = ">=3.8"
 xyzrender = ">=0.1.2"
-readcon = ">=0.14.5"
+# TODO: drop the git source once readcon 0.17.1 is published on PyPI.
+readcon = { git = "https://github.com/lode-org/readcon-core.git", branch = "main" }
 
 [feature.test.dependencies]
 ase = ">=3.23,<4"
