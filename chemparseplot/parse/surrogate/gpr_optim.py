@@ -325,25 +325,25 @@ def _read_saddle(path: Path) -> np.ndarray | None:
     if not path.is_file():
         return None
     try:
-        from ase.io import read
+        from chemparseplot.parse.eon.con_io import read_first_atoms
 
-        return np.asarray(read(path, format="eon").positions, dtype=float).ravel()
+        return np.asarray(read_first_atoms(path).positions, dtype=float).ravel()
     except Exception:
         return None
 
 
 def read_atom_types(path: str | Path, n_atoms: int | None = None) -> np.ndarray:
-    """Atomic numbers of the first frame of a geometry file (ASE-readable; ``.con``
-    files are read as eOn files).
+    """Atomic numbers of the first geometry frame, using readcon for CON files.
 
     Raises ``ValueError`` naming the file when it cannot be read or when its atom
     count differs from ``n_atoms``.
     """
     from ase.io import read
+    from chemparseplot.parse.eon.con_io import is_con_path, read_first_atoms
 
     path = Path(path)
     try:
-        atoms = read(path, index=0, format="eon" if path.suffix == ".con" else None)
+        atoms = read_first_atoms(path) if is_con_path(path) else read(path, index=0)
     except Exception as exc:
         msg = f"cannot read atom types from {path}: {exc}"
         raise ValueError(msg) from exc

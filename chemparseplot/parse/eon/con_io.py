@@ -14,13 +14,17 @@ when these helpers are called.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 __all__ = [
     "CON_SUFFIXES",
     "frame_with_energy",
+    "frame_energy_eV",
+    "iter_con_frames",
+    "iter_corpus_frames",
     "is_con_path",
     "read_con_as_ase",
     "read_con_frames",
@@ -55,6 +59,51 @@ def read_con_frames(path: str | Path) -> list[Any]:
     return list(readcon.read_con(str(path)))
 
 
+def iter_con_frames(path: str | Path) -> Iterator[Any]:
+    """Yield CON frames without retaining the complete trajectory."""
+    yield from _readcon().iter_con(str(path))
+
+
+def iter_corpus_frames(
+    path: str | Path, *, trajectory: int | None = None,
+    require_energy: bool = False, require_forces: bool = False,
+) -> Iterator[Any]:
+    """Yield selected stored frames in trajectory and frame-index order.
+
+    The corpus is opened read-only. Frame decoding is lazy; selection retains
+    only the trajectory and frame keys, including for compressed stores.
+    """
+    from readcon_db import ConCorpus
+
+    corpus = ConCorpus(str(path), readonly=True)
+    keys = corpus.select(traj_id=trajectory, require_energy=require_energy,
+                         require_forces=require_forces)
+    for trajectory_id, frame_index in sorted(keys):
+        yield corpus.get_frame(trajectory_id, frame_index)
+
+
+def _energy_unit(frame: Any) -> str:
+    return frame.metadata.get("units", {}).get("energy", "eV")
+
+
+def _energy_factor(source: str, target: str) -> float:
+    if source == target:
+        return 1.0
+    from readcon_db import unit_conversion_factor
+
+    return unit_conversion_factor(source, target)
+
+
+def frame_energy_eV(frame: Any) -> float | None:
+    """Return the stored total energy in eV without evaluating a potential."""
+    value = frame.metadata.get("energy")
+    if value is None:
+        value = getattr(frame, "energy", None)
+    if value is None:
+        return None
+    return float(value) * _energy_factor(_energy_unit(frame), "eV")
+
+
 def read_con_as_ase(path: str | Path) -> list:
     """Read all frames from a CON/convel file as ASE ``Atoms`` objects."""
     readcon = _readcon()
@@ -63,18 +112,21 @@ def read_con_as_ase(path: str | Path) -> list:
 
 def read_first_atoms(path: str | Path):
     """Read the first frame of a CON file as an ASE ``Atoms`` object."""
-    return read_con_as_ase(path)[0]
+    return _readcon().read_first_frame(str(path)).to_ase()
 
 
 def frame_with_energy(frame: Any, energy: float) -> Any:
-    """Return a ``ConFrame`` copy with per-frame total ``energy`` set (eV).
+    """Return a ``ConFrame`` copy with the supplied total energy in eV.
+
+    The stored number uses the frame's declared energy unit. Geometry, forces,
+    and their unit declarations are retained.
 
     Uses ``ConFrame.set_energy`` when available (readcon>=0.7) so metadata stays
     schema-valid; falls back to reconstructing the frame with string metadata.
     """
     readcon = _readcon()
     ConFrame = readcon.ConFrame
-    metadata = frame.metadata
+    metadata = deepcopy(frame.metadata)
     if hasattr(metadata, "items"):
         metadata_dict = {str(k): v for k, v in metadata.items()}
     else:
@@ -87,7 +139,7 @@ def frame_with_energy(frame: Any, energy: float) -> Any:
         frame.postbox_header,
         metadata_dict,
     )
-    value = float(energy)
+    value = float(energy) * _energy_factor("eV", _energy_unit(frame))
     setter = getattr(clone, "set_energy", None)
     if callable(setter):
         setter(value)

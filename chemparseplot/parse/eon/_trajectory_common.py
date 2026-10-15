@@ -124,9 +124,10 @@ def metadata_value(frame: object, key: str) -> Any:
     """Return a typed metadata value from a readcon frame."""
 
     if key == "frame_index":
-        return frame.frame_index
+        value = frame.metadata.get(key)
+        return frame.frame_index if value is None else value
     if key == "energy":
-        return frame.energy
+        return con_io.frame_energy_eV(frame)
     return frame.metadata.get(key)
 
 
