@@ -1,0 +1,72 @@
+"""Plot inputs retain their physical values through CON and corpus readers."""
+
+import numpy as np
+import pytest
+import readcon
+from ase import units
+from readcon_db import ConCorpus
+
+from chemparseplot.parse.eon.con_io import (
+    frame_energy_eV,
+    frame_with_energy,
+    iter_con_frames,
+    iter_corpus_frames,
+    read_first_atoms,
+)
+from chemparseplot.parse.eon.frame_series import atoms_list_from_frames, energies_from_frames
+from chemparseplot.parse.surrogate.gpr_optim import read_atom_types
+
+
+def _frame(energy, *, atomic_id=41):
+    return readcon.ConFrame(
+        cell=[10, 10, 10], angles=[90, 90, 90],
+        atoms=[readcon.Atom(symbol="H", x=1, y=2, z=3, atom_id=atomic_id, mass=2.014)],
+        metadata={"energy": energy, "units": {"length": "bohr", "energy": "hartree"},
+                  "pbc": [False, False, False]},
+    )
+
+
+def test_energy_and_ase_metadata_use_ev():
+    frame = _frame(-0.5)
+    expected = -0.5 * units.Hartree
+    assert frame_energy_eV(frame) == pytest.approx(expected)
+    np.testing.assert_allclose(energies_from_frames([frame]), [expected])
+    atoms = atoms_list_from_frames([frame])[0]
+    assert atoms.info["energy"] == pytest.approx(expected)
+    assert frame.energy == -0.5
+
+
+def test_energy_replacement_retains_the_frames_units(tmp_path):
+    original = _frame(-0.5)
+    replaced = frame_with_energy(original, 2 * units.Hartree)
+    assert replaced.energy == pytest.approx(2)
+    assert replaced.metadata["units"] == original.metadata["units"]
+    assert original.energy == -0.5
+    path = tmp_path / "updated.con"
+    readcon.write_con(str(path), [replaced])
+    assert frame_energy_eV(readcon.read_first_frame(str(path))) == pytest.approx(2 * units.Hartree)
+
+
+def test_first_frame_reader_does_not_parse_trailing_frames(tmp_path):
+    path = tmp_path / "band.con"
+    path.write_text(readcon.write_con_string([_frame(0)]) + "not a CON frame\n")
+    atoms = read_first_atoms(path)
+    assert atoms.get_chemical_symbols() == ["H"]
+    np.testing.assert_allclose(atoms.positions, np.array([[1, 2, 3]]) * units.Bohr)
+    np.testing.assert_array_equal(read_atom_types(path), [1])
+    iterator = iter_con_frames(path)
+    assert next(iterator).energy == 0
+    with pytest.raises(Exception):
+        next(iterator)
+
+
+def test_corpus_selects_one_trajectory_in_frame_order(tmp_path):
+    path = tmp_path / "corpus"
+    corpus = ConCorpus(str(path))
+    corpus.append_trajectory_frames(9, [_frame(1), _frame(2)])
+    corpus.append_trajectory_frames(3, [_frame(8, atomic_id=7)])
+    del corpus
+    frames = list(iter_corpus_frames(path, trajectory=9, require_energy=True))
+    assert [frame.energy for frame in frames] == [1, 2]
+    assert [frame.atoms[0].atom_id for frame in frames] == [41, 41]
+    assert [frame.energy for frame in iter_corpus_frames(path)] == [8, 1, 2]
