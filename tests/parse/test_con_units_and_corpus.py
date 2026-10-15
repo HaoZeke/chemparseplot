@@ -81,7 +81,9 @@ def test_corpus_selects_one_trajectory_in_frame_order(tmp_path):
     assert [frame.energy for frame in iter_corpus_frames(path)] == [8, 1, 2]
 
 
-def test_saddle_positions_use_declared_length_without_ase_conversion(tmp_path, monkeypatch):
+def test_saddle_positions_use_declared_length_without_ase_conversion(
+    tmp_path, monkeypatch
+):
     from chemparseplot.parse.surrogate.gpr_optim import _read_saddle
 
     path = tmp_path / "saddle.con"
