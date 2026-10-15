@@ -199,8 +199,11 @@ def report_from_bonds(
     edges = _as_edges(bonds, n_atoms)
     adj = _adjacency(n_atoms, edges)
     rows = _nlist(adj)
-    raw = (updater.update(rows) if updater is not None else
-           _import_pydseams().yoda.ringNetwork(rows, int(max_depth)))
+    raw = (
+        updater.update(rows)
+        if updater is not None
+        else _import_pydseams().yoda.ringNetwork(rows, int(max_depth))
+    )
     rings: list[tuple[int, ...]] = []
     for ring in raw:
         verts = [int(v) for v in ring]

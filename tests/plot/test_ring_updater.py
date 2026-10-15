@@ -11,7 +11,9 @@ def test_incremental_ring_reports_match_full_enumeration():
     for bonds in [cycle, cycle, cycle[:-1], cycle, cycle + [(0, 3)]]:
         full = report_from_bonds(6, bonds, max_depth=6)
         incremental = report_from_bonds(6, bonds, max_depth=6, updater=updater)
-        assert {frozenset(r) for r in incremental.rings} == {frozenset(r) for r in full.rings}
+        assert {frozenset(r) for r in incremental.rings} == {
+            frozenset(r) for r in full.rings
+        }
         assert incremental.census == full.census
         assert incremental.bonds == full.bonds
         assert incremental.junctions == full.junctions
