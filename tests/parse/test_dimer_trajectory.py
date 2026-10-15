@@ -119,10 +119,10 @@ class TestLoadDimerTrajectory:
     """Tests for load_dimer_trajectory with synthetic eOn output."""
 
     def _write_con(self, path, atoms):
-        """Write a .con file via ASE."""
-        from ase.io import write
+        """Write a .con file through readcon."""
+        from tests.parse._con_fixtures import write_ase_con
 
-        write(str(path), atoms, format="eon")
+        write_ase_con(path, atoms)
 
     def _make_job_dir(self, tmp_path):
         """Create a synthetic saddle search job directory."""
@@ -139,12 +139,12 @@ class TestLoadDimerTrajectory:
         self._write_con(tmp_path / "saddle.con", saddle)
 
         # climb movie (3 frames: initial + 2 iterations)
-        from ase.io import write
+        from tests.parse._con_fixtures import write_ase_con
 
         frames = [h2o.copy() for _ in range(3)]
         for i, f in enumerate(frames):
             f.positions[0, 0] += 0.1 * i
-        write(str(tmp_path / "climb"), frames, format="eon")
+        write_ase_con(tmp_path / "climb", frames)
 
         # climb.dat
         dat = tmp_path / "climb.dat"
@@ -182,22 +182,22 @@ class TestLoadDimerTrajectory:
 
     def test_missing_dat_raises(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
-        write(str(tmp_path / "climb"), molecule("H2O"), format="eon")
+        write_ase_con(tmp_path / "climb", molecule("H2O"))
         with pytest.raises(FileNotFoundError, match=r"climb\.dat"):
             load_dimer_trajectory(tmp_path)
 
     def test_no_reactant_uses_first_frame(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
         h2o = molecule("H2O")
-        write(str(tmp_path / "climb"), [h2o, h2o], format="eon")
+        write_ase_con(tmp_path / "climb", [h2o, h2o])
         (tmp_path / "climb.dat").write_text(
             "iteration\tstep_size\tdelta_e\tconvergence\teigenvalue\ttorque\tangle\trotations\n"
             "1\t0.1\t0.01\t0.05\t-0.1\t0.05\t10\t3\n"

@@ -66,7 +66,8 @@ test = [
   "polars>=0.20",
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
-  "readcon>=0.17.1", "readcon-db>=0.1.8",
+  "readcon>=0.17.1",
+  "readcon-db>=0.1.8",
   "rgpycrumbs",
   "scipy>=1.11",
   "xyzrender>=0.3.8",
@@ -88,6 +89,8 @@ url = "https://pypi.org/simple"
 
 [tool.uv.sources]
 # rgpycrumbs provided by parent pixi workspace as editable install
+# TODO: drop this git source once readcon 0.17.1 is published on PyPI.
+readcon = { git = "https://github.com/lode-org/readcon-core", branch = "main" }
 
 [tool.hatch.version]
 source = "vcs"
@@ -237,6 +240,7 @@ ban-relative-imports = "all"
   "PLW0603",
   "UP047",
 ]
+"chemparseplot/plot/con.py" = ["PLR2004", "PLC0415", "FBT001", "FBT002"]
 "chemparseplot/plot/neb.py" = [
   "PLR2004",
   "PLC0415",
