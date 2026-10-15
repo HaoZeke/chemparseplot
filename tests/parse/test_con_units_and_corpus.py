@@ -79,3 +79,16 @@ def test_corpus_selects_one_trajectory_in_frame_order(tmp_path):
     assert [frame.energy for frame in frames] == [1, 2]
     assert [frame.atoms[0].atom_id for frame in frames] == [41, 41]
     assert [frame.energy for frame in iter_corpus_frames(path)] == [8, 1, 2]
+
+
+def test_saddle_positions_use_declared_length_without_ase_conversion(tmp_path, monkeypatch):
+    from chemparseplot.parse.surrogate.gpr_optim import _read_saddle
+
+    path = tmp_path / "saddle.con"
+    readcon.write_con(str(path), [_frame(-0.5)])
+
+    def no_ase(*args, **kwargs):
+        raise AssertionError("saddle coordinates do not require an ASE conversion")
+
+    monkeypatch.setattr(readcon, "read_con_as_ase", no_ase)
+    np.testing.assert_allclose(_read_saddle(path), np.array([1, 2, 3]) * units.Bohr)
