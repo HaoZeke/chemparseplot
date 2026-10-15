@@ -339,6 +339,7 @@ def read_atom_types(path: str | Path, n_atoms: int | None = None) -> np.ndarray:
     count differs from ``n_atoms``.
     """
     from ase.io import read
+
     from chemparseplot.parse.eon.con_io import is_con_path, read_first_atoms
 
     path = Path(path)

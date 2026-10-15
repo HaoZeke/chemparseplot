@@ -7,29 +7,36 @@ from ase import units
 from readcon_db import ConCorpus
 
 from chemparseplot.parse.eon.con_io import (
-    frame_energy_eV,
+    frame_energy_ev,
     frame_with_energy,
     iter_con_frames,
     iter_corpus_frames,
     read_first_atoms,
 )
-from chemparseplot.parse.eon.frame_series import atoms_list_from_frames, energies_from_frames
+from chemparseplot.parse.eon.frame_series import (
+    atoms_list_from_frames,
+    energies_from_frames,
+)
 from chemparseplot.parse.surrogate.gpr_optim import read_atom_types
 
 
 def _frame(energy, *, atomic_id=41):
     return readcon.ConFrame(
-        cell=[10, 10, 10], angles=[90, 90, 90],
+        cell=[10, 10, 10],
+        angles=[90, 90, 90],
         atoms=[readcon.Atom(symbol="H", x=1, y=2, z=3, atom_id=atomic_id, mass=2.014)],
-        metadata={"energy": energy, "units": {"length": "bohr", "energy": "hartree"},
-                  "pbc": [False, False, False]},
+        metadata={
+            "energy": energy,
+            "units": {"length": "bohr", "energy": "hartree"},
+            "pbc": [False, False, False],
+        },
     )
 
 
 def test_energy_and_ase_metadata_use_ev():
     frame = _frame(-0.5)
     expected = -0.5 * units.Hartree
-    assert frame_energy_eV(frame) == pytest.approx(expected)
+    assert frame_energy_ev(frame) == pytest.approx(expected)
     np.testing.assert_allclose(energies_from_frames([frame]), [expected])
     atoms = atoms_list_from_frames([frame])[0]
     assert atoms.info["energy"] == pytest.approx(expected)
@@ -44,7 +51,9 @@ def test_energy_replacement_retains_the_frames_units(tmp_path):
     assert original.energy == -0.5
     path = tmp_path / "updated.con"
     readcon.write_con(str(path), [replaced])
-    assert frame_energy_eV(readcon.read_first_frame(str(path))) == pytest.approx(2 * units.Hartree)
+    assert frame_energy_ev(readcon.read_first_frame(str(path))) == pytest.approx(
+        2 * units.Hartree
+    )
 
 
 def test_first_frame_reader_does_not_parse_trailing_frames(tmp_path):

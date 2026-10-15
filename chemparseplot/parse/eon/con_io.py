@@ -21,11 +21,11 @@ from typing import Any
 
 __all__ = [
     "CON_SUFFIXES",
+    "frame_energy_ev",
     "frame_with_energy",
-    "frame_energy_eV",
+    "is_con_path",
     "iter_con_frames",
     "iter_corpus_frames",
-    "is_con_path",
     "read_con_as_ase",
     "read_con_frames",
     "read_first_atoms",
@@ -65,8 +65,11 @@ def iter_con_frames(path: str | Path) -> Iterator[Any]:
 
 
 def iter_corpus_frames(
-    path: str | Path, *, trajectory: int | None = None,
-    require_energy: bool = False, require_forces: bool = False,
+    path: str | Path,
+    *,
+    trajectory: int | None = None,
+    require_energy: bool = False,
+    require_forces: bool = False,
 ) -> Iterator[Any]:
     """Yield selected stored frames in trajectory and frame-index order.
 
@@ -76,8 +79,9 @@ def iter_corpus_frames(
     from readcon_db import ConCorpus
 
     corpus = ConCorpus(str(path), readonly=True)
-    keys = corpus.select(traj_id=trajectory, require_energy=require_energy,
-                         require_forces=require_forces)
+    keys = corpus.select(
+        traj_id=trajectory, require_energy=require_energy, require_forces=require_forces
+    )
     for trajectory_id, frame_index in sorted(keys):
         yield corpus.get_frame(trajectory_id, frame_index)
 
@@ -94,7 +98,7 @@ def _energy_factor(source: str, target: str) -> float:
     return unit_conversion_factor(source, target)
 
 
-def frame_energy_eV(frame: Any) -> float | None:
+def frame_energy_ev(frame: Any) -> float | None:
     """Return the stored total energy in eV without evaluating a potential."""
     value = frame.metadata.get("energy")
     if value is None:

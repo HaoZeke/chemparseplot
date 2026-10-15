@@ -127,7 +127,7 @@ def metadata_value(frame: object, key: str) -> Any:
         value = frame.metadata.get(key)
         return frame.frame_index if value is None else value
     if key == "energy":
-        return con_io.frame_energy_eV(frame)
+        return con_io.frame_energy_ev(frame)
     return frame.metadata.get(key)
 
 
