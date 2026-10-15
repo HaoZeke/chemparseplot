@@ -47,7 +47,7 @@ doc = [
 plot = ["cmcrameri>=1.7", "matplotlib>=3.8.2"]
 # readcon>=0.14.5 required for eOn 3.2+ con_spec_version=3 output; the
 # 0.13 parser rejects those files with UnsupportedSpecVersion.
-neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.14.5"]
+neb = ["ase>=3.22", "h5py>=3.0", "polars>=0.20", "readcon>=0.17.1", "readcon-db>=0.1.8"]
 xyzrender = ["xyzrender>=0.1.2"]
 rings = ["pydseamslib>=2.9.1; python_version >= '3.12'", "xyzrender>=0.3.8"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
@@ -66,7 +66,7 @@ test = [
   "polars>=0.20",
   "pytest>=7.4.3",
   "pytest-cov>=4.1.0",
-  "readcon>=0.14.5",
+  "readcon>=0.17.1", "readcon-db>=0.1.8",
   "rgpycrumbs",
   "scipy>=1.11",
   "xyzrender>=0.3.8",
