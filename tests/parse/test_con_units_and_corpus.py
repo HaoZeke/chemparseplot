@@ -3,15 +3,21 @@
 import numpy as np
 import pytest
 import readcon
+import readcon_db
 from ase import units
 from readcon_db import ConCorpus
 
 from chemparseplot.parse.eon.con_io import (
     frame_energy_ev,
+    frame_positions_angstrom,
     frame_with_energy,
     iter_con_frames,
     iter_corpus_frames,
+    read_con_as_ase,
+    read_con_frames,
     read_first_atoms,
+    read_first_frame,
+    write_con_frames,
 )
 from chemparseplot.parse.eon.frame_series import (
     atoms_list_from_frames,
@@ -69,16 +75,25 @@ def test_first_frame_reader_does_not_parse_trailing_frames(tmp_path):
         next(iterator)
 
 
-def test_corpus_selects_one_trajectory_in_frame_order(tmp_path):
+def test_corpus_selects_one_trajectory_in_frame_order(tmp_path, monkeypatch):
     path = tmp_path / "corpus"
     corpus = ConCorpus(str(path))
     corpus.append_trajectory_frames(9, [_frame(1), _frame(2)])
     corpus.append_trajectory_frames(3, [_frame(8, atomic_id=7)])
     del corpus
+    opened = []
+
+    def open_readonly(corpus_path, *, readonly):
+        assert readonly is True
+        opened.append(corpus_path)
+        return ConCorpus(corpus_path, readonly=readonly)
+
+    monkeypatch.setattr(readcon_db, "ConCorpus", open_readonly)
     frames = list(iter_corpus_frames(path, trajectory=9, require_energy=True))
     assert [frame.energy for frame in frames] == [1, 2]
     assert [frame.atoms[0].atom_id for frame in frames] == [41, 41]
     assert [frame.energy for frame in iter_corpus_frames(path)] == [8, 1, 2]
+    assert opened == [str(path), str(path)]
 
 
 def test_saddle_positions_use_declared_length_without_ase_conversion(
@@ -94,3 +109,22 @@ def test_saddle_positions_use_declared_length_without_ase_conversion(
 
     monkeypatch.setattr("chemparseplot.parse.eon.con_io.read_first_atoms", no_ase)
     np.testing.assert_allclose(_read_saddle(path), np.array([1, 2, 3]) * units.Bohr)
+
+
+def test_ordinary_con_operations_do_not_open_a_corpus(tmp_path, monkeypatch):
+    def unexpected_corpus(*args, **kwargs):
+        raise AssertionError("ordinary CON operations must not open a corpus")
+
+    monkeypatch.setattr(readcon_db, "ConCorpus", unexpected_corpus)
+    path = tmp_path / "structure.con"
+    frame = _frame(-0.5)
+    write_con_frames(path, [frame])
+    assert len(read_con_frames(path)) == 1
+    assert len(list(iter_con_frames(path))) == 1
+    assert read_first_frame(path).energy == -0.5
+    expected = np.array([[1, 2, 3]]) * units.Bohr
+    np.testing.assert_allclose(read_first_atoms(path).positions, expected)
+    np.testing.assert_allclose(read_con_as_ase(path)[0].positions, expected)
+    np.testing.assert_allclose(frame_positions_angstrom(frame), expected)
+    assert frame_energy_ev(frame) == pytest.approx(-0.5 * units.Hartree)
+    assert frame_with_energy(frame, 2 * units.Hartree).energy == pytest.approx(2)

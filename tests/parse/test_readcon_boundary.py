@@ -147,11 +147,22 @@ def test_trajectory_fixtures_use_write_atoms_as_con():
 
 
 @pytest.mark.pure
-def test_package_does_not_open_lmdb_or_readcon_db():
+def test_database_imports_use_the_lazy_con_io_boundary():
+    """Corpus access and unit conversion use the public readcon-db API."""
     root = Path(__file__).resolve().parents[2] / "chemparseplot"
     offenders: list[str] = []
     for path in sorted(root.rglob("*.py")):
-        text = path.read_text().lower()
-        if "readcon-db" in text or "readcon_db" in text or "import lmdb" in text:
-            offenders.append(str(path.relative_to(root)))
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                modules = [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                modules = [(node.module or "").split(".")[0]]
+            else:
+                continue
+            if "lmdb" in modules or (
+                "readcon_db" in modules
+                and (path != EON_PARSE / "con_io.py" or node in tree.body)
+            ):
+                offenders.append(f"{path.relative_to(root)}:{node.lineno}")
     assert offenders == []
