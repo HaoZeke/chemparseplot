@@ -28,6 +28,7 @@ per-segment barriers.
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,6 +42,19 @@ def _frame_with_energy(frame, energy: float):
     from chemparseplot.parse.eon.con_io import frame_with_energy
 
     return frame_with_energy(frame, energy)
+
+
+def _finite_energy(frame, where: str) -> float:
+    """Return a finite frame energy, or raise when it is missing."""
+    energy = getattr(frame, "energy", None)
+    if energy is None:
+        msg = f"{where} is missing an energy"
+        raise ValueError(msg)
+    value = float(energy)
+    if not math.isfinite(value):
+        msg = f"{where} energy is not finite"
+        raise ValueError(msg)
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,7 +145,6 @@ def stitch_neb_segments(
     """
     from chemparseplot.parse.eon.con_io import (
         read_con_frames,
-        write_atoms_as_con,
         write_con_frames,
     )
 
@@ -145,7 +158,7 @@ def stitch_neb_segments(
 
     ref: float | None = None  # global reference energy (first frame, absolute)
     prev_last_aligned: float | None = None  # previous segment last kept energy (abs)
-    sp_best: tuple[float, object] | None = None  # (referenced energy, saddle atoms)
+    sp_best: tuple[float, object] | None = None  # (referenced energy, saddle ConFrame)
 
     for seg_idx, (label, con_path, start, end) in enumerate(segments):
         frames = read_con_frames(con_path)
@@ -154,7 +167,11 @@ def stitch_neb_segments(
             msg = f"Segment '{label}' ({con_path}) sliced to zero frames."
             raise ValueError(msg)
 
-        seg_abs = np.array([f.energy for f in seg_frames], dtype=float)
+        where = f"Segment '{label}' ({con_path})"
+        seg_abs = np.array(
+            [_finite_energy(frame, where) for frame in seg_frames],
+            dtype=float,
+        )
 
         if seg_idx == 0:
             shift = 0.0
@@ -184,10 +201,13 @@ def stitch_neb_segments(
         well_energy = float(seg_ref[0])
         if label in saddle_overrides:
             sad_path, sad_abs = saddle_overrides[label]
+            if not math.isfinite(float(sad_abs)):
+                msg = f"Saddle override '{label}' energy is not finite"
+                raise ValueError(msg)
             peak_energy = float(sad_abs) + shift - ref
-            sad_atoms = read_con_frames(sad_path)[0].to_ase()
+            sad_frame = read_con_frames(sad_path)[0]
             if sp_best is None or peak_energy > sp_best[0]:
-                sp_best = (peak_energy, sad_atoms)
+                sp_best = (peak_energy, sad_frame)
         else:
             peak_energy = float(seg_ref.max())
 
@@ -217,8 +237,13 @@ def stitch_neb_segments(
             fh.write(f"{img:>4d} {rc:>12.6f} {en:>12.6f} {0.0:>12.6f}\n")
 
     # --- Saddle overlay (sp.con) ---
+    # An existing ConFrame stays a ConFrame. from_ase would drop sections and
+    # renumber ids unless the ASE tags are distinct and non-negative.
     if sp_best is not None:
-        write_atoms_as_con(out_dir / "sp.con", [sp_best[1]], energies=[float(sp_best[0])])
+        write_con_frames(
+            out_dir / "sp.con",
+            [_frame_with_energy(sp_best[1], float(sp_best[0]))],
+        )
     else:
         # Fallback: the global band maximum so the landscape overlay still works.
         peak_idx = int(np.argmax(energies))

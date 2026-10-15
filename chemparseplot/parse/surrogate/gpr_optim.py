@@ -325,32 +325,47 @@ def _read_saddle(path: Path) -> np.ndarray | None:
     if not path.is_file():
         return None
     try:
-        from ase.io import read
+        from chemparseplot.parse.eon.con_io import read_first_frame
 
-        return np.asarray(read(path, format="eon").positions, dtype=float).ravel()
+        return np.asarray(read_first_frame(path).xyz, dtype=float).ravel()
     except Exception:
         return None
 
 
 def read_atom_types(path: str | Path, n_atoms: int | None = None) -> np.ndarray:
-    """Atomic numbers of the first frame of a geometry file (ASE-readable; ``.con``
-    files are read as eOn files).
+    """Atomic numbers of the first frame of a geometry file.
+
+    ``.con`` / ``.convel`` symbols come from :mod:`chemparseplot.parse.eon.con_io`
+    and are mapped with ``ase.data.atomic_numbers``. Other suffixes stay on
+    ``ase.io.read``.
 
     Raises ``ValueError`` naming the file when it cannot be read or when its atom
     count differs from ``n_atoms``.
     """
-    from ase.io import read
+    from chemparseplot.parse.eon.con_io import is_con_path, read_first_frame
 
     path = Path(path)
     try:
-        atoms = read(path, index=0, format="eon" if path.suffix == ".con" else None)
+        if is_con_path(path):
+            from ase.data import atomic_numbers
+
+            frame = read_first_frame(path)
+            numbers = np.asarray(
+                [atomic_numbers[atom.symbol] for atom in frame.atoms],
+                dtype=int,
+            )
+        else:
+            from ase.io import read
+
+            atoms = read(path, index=0)
+            numbers = np.asarray(atoms.numbers, dtype=int)
     except Exception as exc:
         msg = f"cannot read atom types from {path}: {exc}"
         raise ValueError(msg) from exc
-    if n_atoms is not None and len(atoms) != n_atoms:
-        msg = f"{path} has {len(atoms)} atoms, the band has {n_atoms}"
+    if n_atoms is not None and len(numbers) != n_atoms:
+        msg = f"{path} has {len(numbers)} atoms, the band has {n_atoms}"
         raise ValueError(msg)
-    return np.asarray(atoms.numbers, dtype=int)
+    return numbers
 
 
 def _find_atom_types(cell: Path, band: BandHistory) -> None:

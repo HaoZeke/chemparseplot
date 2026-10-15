@@ -75,6 +75,83 @@ def test_eon_modules_do_not_import_readcon_at_module_level_except_typed_files():
 @pytest.mark.pure
 def test_con_io_is_single_readcon_entry_point():
     text = (EON_PARSE / "con_io.py").read_text()
-    assert "readcon>=0.7" in text
+    assert "readcon>=0.17.1" in text
     assert "def read_con_frames" in text
+    assert "def read_first_frame" in text
     assert "def write_con_frames" in text
+    assert "canonical" in text
+
+
+PARSE_ROOT = EON_PARSE.parent
+# Traj and extxyz readers keep ase.io. gpr_optim may read non-CON suffixes
+# with ase.io, and must not pass format="eon".
+_ASE_READ_ALLOW = {
+    Path("trajectory/neb.py"),
+    Path("eon/gprd.py"),
+    Path("eon/con_trajectory.py"),
+    Path("surrogate/mlneb.py"),
+    Path("surrogate/gpr_optim.py"),
+}
+_EON_FORMAT_ALLOW = {
+    Path("trajectory/neb.py"),
+    Path("eon/gprd.py"),
+    Path("surrogate/mlneb.py"),
+}
+
+
+def _allows_ase_read(rel: Path) -> bool:
+    return rel.parts[0] == "sella" or rel in _ASE_READ_ALLOW
+
+
+def _allows_eon_format(rel: Path) -> bool:
+    return rel.parts[0] == "sella" or rel in _EON_FORMAT_ALLOW
+
+
+@pytest.mark.pure
+def test_parse_does_not_read_con_with_ase_eon():
+    offenders: list[str] = []
+    for path in sorted(PARSE_ROOT.rglob("*.py")):
+        rel = path.relative_to(PARSE_ROOT)
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                for keyword in node.keywords:
+                    value = keyword.value
+                    if (
+                        keyword.arg == "format"
+                        and isinstance(value, ast.Constant)
+                        and value.value == "eon"
+                        and not _allows_eon_format(rel)
+                    ):
+                        offenders.append(f"{rel}:{node.lineno} format=eon")
+            ase_io_modules = {"ase.io", "ase.io.trajectory"}
+            if isinstance(node, ast.ImportFrom) and node.module in ase_io_modules:
+                if not _allows_ase_read(rel):
+                    offenders.append(f"{rel}:{node.lineno} import {node.module}")
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name == "ase.io" or alias.name.startswith("ase.io."):
+                        if not _allows_ase_read(rel):
+                            offenders.append(f"{rel}:{node.lineno} import {alias.name}")
+    assert offenders == []
+
+
+@pytest.mark.pure
+def test_trajectory_fixtures_use_write_atoms_as_con():
+    root = Path(__file__).resolve().parent
+    for name in ("test_dimer_trajectory.py", "test_min_trajectory.py"):
+        text = (root / name).read_text()
+        assert 'format="eon"' not in text
+        assert "format='eon'" not in text
+        assert "write_ase_con" in text or "write_atoms_as_con" in text
+
+
+@pytest.mark.pure
+def test_package_does_not_open_lmdb_or_readcon_db():
+    root = Path(__file__).resolve().parents[2] / "chemparseplot"
+    offenders: list[str] = []
+    for path in sorted(root.rglob("*.py")):
+        text = path.read_text().lower()
+        if "readcon-db" in text or "readcon_db" in text or "import lmdb" in text:
+            offenders.append(str(path.relative_to(root)))
+    assert offenders == []

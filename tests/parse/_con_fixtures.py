@@ -47,6 +47,26 @@ def band_text(
     return "\n".join(blocks) + "\n"
 
 
+def write_ase_con(path: Path, atoms) -> Path:
+    """Write ASE atoms as CON through ``write_atoms_as_con``.
+
+    A molecule with no cell gets a large cubic cell so the 0.17 writer accepts
+    the frame. Positions are copied first and are not wrapped.
+    """
+    from chemparseplot.parse.eon.con_io import write_atoms_as_con
+
+    frames = list(atoms) if isinstance(atoms, (list, tuple)) else [atoms]
+    prepared = []
+    for item in frames:
+        clone = item.copy()
+        cell = clone.get_cell()
+        if cell.rank < 3 or float(cell.volume) == 0.0:
+            clone.set_cell([20.0, 20.0, 20.0])
+            clone.set_pbc(True)
+        prepared.append(clone)
+    return write_atoms_as_con(path, prepared)
+
+
 def write_band(path: Path, frames: list[tuple[float, float]], **kwargs) -> Path:
     path.write_text(band_text(frames, **kwargs))
     return path

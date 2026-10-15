@@ -101,13 +101,14 @@ class TestLoadMinTrajectory:
 
     def _make_job_dir(self, tmp_path, prefix="minimization"):
         from ase.build import molecule
-        from ase.io import write
+
+        from tests.parse._con_fixtures import write_ase_con
 
         h2o = molecule("H2O")
         frames = [h2o.copy() for _ in range(4)]
         for i, f in enumerate(frames):
             f.positions[0, 0] += 0.05 * i
-        write(str(tmp_path / prefix), frames, format="eon")
+        write_ase_con(tmp_path / prefix, frames)
 
         dat = tmp_path / f"{prefix}.dat"
         lines = [
@@ -120,7 +121,7 @@ class TestLoadMinTrajectory:
         dat.write_text("\n".join(lines) + "\n")
 
         # explicit final structure
-        write(str(tmp_path / f"{prefix}.con"), frames[-1], format="eon")
+        write_ase_con(tmp_path / f"{prefix}.con", frames[-1])
         return tmp_path
 
     def test_load_full(self, tmp_path):
@@ -142,11 +143,11 @@ class TestLoadMinTrajectory:
 
     def test_missing_dat_raises(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
-        write(str(tmp_path / "minimization"), molecule("H2O"), format="eon")
+        write_ase_con(tmp_path / "minimization", molecule("H2O"))
         with pytest.raises(FileNotFoundError, match=r"\.dat"):
             load_min_trajectory(tmp_path)
 
@@ -159,26 +160,26 @@ class TestLoadMinTrajectory:
 
     def test_custom_prefix_prefers_explicit_prefixed_final_structure(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
         job = self._make_job_dir(tmp_path, prefix="qm_min")
         explicit_final = molecule("H2O")
         explicit_final.positions[1, 0] += 0.77
-        write(str(job / "qm_min.con"), explicit_final, format="eon")
+        write_ase_con(job / "qm_min.con", explicit_final)
 
         traj = load_min_trajectory(job, prefix="qm_min")
         np.testing.assert_allclose(traj.final_atoms.positions, explicit_final.positions)
 
     def test_no_min_con_uses_last_frame(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
         h2o = molecule("H2O")
-        write(str(tmp_path / "minimization"), [h2o, h2o], format="eon")
+        write_ase_con(tmp_path / "minimization", [h2o, h2o])
         (tmp_path / "minimization.dat").write_text(
             "iteration\tstep_size\tconvergence\tenergy\n"
             "0\t0.0\t0.5\t-10.0\n"
@@ -189,15 +190,15 @@ class TestLoadMinTrajectory:
 
     def test_legacy_min_con_is_used_when_prefixed_final_is_absent(self, tmp_path):
         from ase.build import molecule
-        from ase.io import write
 
         from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+        from tests.parse._con_fixtures import write_ase_con
 
         job = self._make_job_dir(tmp_path, prefix="qm_min")
         (job / "qm_min.con").unlink()
         legacy_final = molecule("H2O")
         legacy_final.positions[2, 1] -= 0.44
-        write(str(job / "min.con"), legacy_final, format="eon")
+        write_ase_con(job / "min.con", legacy_final)
 
         traj = load_min_trajectory(job, prefix="qm_min")
         np.testing.assert_allclose(traj.final_atoms.positions, legacy_final.positions)
