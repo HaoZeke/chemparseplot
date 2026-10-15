@@ -196,3 +196,23 @@ from rgpycrumbs.eon import plot
 
 plot(frames, kind="neb", plot_type="profile", output_file="1d.pdf")
 #+end_src
+
+
+** Frames from a stored corpus
+
+A =readcon-db= corpus stores frames under trajectory and frame indices.
+=iter_corpus_frames= opens that corpus read-only and decodes selected frames
+as they are consumed. This example selects trajectory 9 and requires an
+energy for each frame:
+
+#+begin_src python
+from chemparseplot.parse.eon.con_io import iter_corpus_frames
+from chemparseplot.parse.eon.frame_series import energies_from_frames
+
+frames = list(iter_corpus_frames("observations.lmdb", trajectory=9, require_energy=True))
+energies = energies_from_frames(frames)
+#+end_src
+
+The frames follow increasing frame index within the selected trajectory.
+=energies= contains one value in eV per frame, converted from its declared
+energy unit. Ordinary CON file helpers read files without opening a corpus.
