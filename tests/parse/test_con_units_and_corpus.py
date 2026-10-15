@@ -90,5 +90,5 @@ def test_saddle_positions_use_declared_length_without_ase_conversion(tmp_path, m
     def no_ase(*args, **kwargs):
         raise AssertionError("saddle coordinates do not require an ASE conversion")
 
-    monkeypatch.setattr(readcon, "read_con_as_ase", no_ase)
+    monkeypatch.setattr("chemparseplot.parse.eon.con_io.read_first_atoms", no_ase)
     np.testing.assert_allclose(_read_saddle(path), np.array([1, 2, 3]) * units.Bohr)
