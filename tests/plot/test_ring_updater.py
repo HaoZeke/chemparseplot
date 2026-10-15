@@ -8,7 +8,7 @@ from chemparseplot.plot.rings import report_from_bonds
 def test_incremental_ring_reports_match_full_enumeration():
     cycle = [(i, (i + 1) % 6) for i in range(6)]
     updater = pydseams.yoda.RingUpdater(6)
-    for bonds in [cycle, cycle, cycle[:-1], cycle, cycle + [(0, 3)]]:
+    for bonds in [cycle, cycle, cycle[:-1], cycle, [*cycle, (0, 3)]]:
         full = report_from_bonds(6, bonds, max_depth=6)
         incremental = report_from_bonds(6, bonds, max_depth=6, updater=updater)
         assert {frozenset(r) for r in incremental.rings} == {
