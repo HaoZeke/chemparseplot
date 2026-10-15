@@ -186,6 +186,7 @@ def report_from_bonds(
     bonds: Sequence[tuple[int, int]],
     *,
     max_depth: int = 6,
+    updater=None,
 ) -> RingReport:
     """Enumerate primitive rings of an explicit neighbour list.
 
@@ -197,7 +198,9 @@ def report_from_bonds(
     """
     edges = _as_edges(bonds, n_atoms)
     adj = _adjacency(n_atoms, edges)
-    raw = _import_pydseams().yoda.ringNetwork(_nlist(adj), int(max_depth))
+    rows = _nlist(adj)
+    raw = (updater.update(rows) if updater is not None else
+           _import_pydseams().yoda.ringNetwork(rows, int(max_depth)))
     rings: list[tuple[int, ...]] = []
     for ring in raw:
         verts = [int(v) for v in ring]
@@ -269,6 +272,7 @@ def ring_report(
     bonds: Sequence[tuple[int, int]] | None = None,
     cutoff: float | None = None,
     max_depth: int = 6,
+    updater=None,
 ) -> RingReport:
     """Primitive rings of an explicit bond list or of a heavy-atom cutoff."""
     xyz = np.asarray(coords, dtype=float)
@@ -280,7 +284,7 @@ def ring_report(
         raise ValueError(msg)
     if bonds is None:
         bonds = bonds_within_cutoff(symbols, xyz, float(cutoff))
-    return report_from_bonds(len(symbols), bonds, max_depth=max_depth)
+    return report_from_bonds(len(symbols), bonds, max_depth=max_depth, updater=updater)
 
 
 def _owners(
@@ -745,6 +749,7 @@ def track_queries(
         msg = f"{len(frames)} molecule frames and {points.shape[0]} query frames"
         raise ValueError(msg)
     packed: list[tuple[RingReport, tuple[Assignment, ...], np.ndarray]] = []
+    updater = _import_pydseams().yoda.RingUpdater(int(max_depth))
     for frame_index, ((symbols, coords, bonds), pts) in enumerate(
         zip(frames, points, strict=True)
     ):
@@ -754,6 +759,7 @@ def track_queries(
             bonds=bonds,
             cutoff=cutoff,
             max_depth=max_depth,
+            updater=updater,
         )
         n_owners = len(report.rings) + len(report.junctions)
         if n_owners < 2:
