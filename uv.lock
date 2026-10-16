@@ -319,8 +319,9 @@ all = [
     { name = "orca-pi" },
     { name = "parsimonious" },
     { name = "polars" },
-    { name = "pydseamslib", marker = "python_full_version >= '3.12'" },
+    { name = "pydseamslib" },
     { name = "readcon" },
+    { name = "readcon-db" },
     { name = "xyzrender" },
 ]
 doc = [
@@ -349,6 +350,7 @@ neb = [
     { name = "h5py" },
     { name = "polars" },
     { name = "readcon" },
+    { name = "readcon-db" },
 ]
 opi = [
     { name = "orca-pi" },
@@ -364,7 +366,7 @@ release = [
     { name = "wheel" },
 ]
 rings = [
-    { name = "pydseamslib", marker = "python_full_version >= '3.12'" },
+    { name = "pydseamslib" },
     { name = "xyzrender" },
 ]
 test = [
@@ -375,10 +377,11 @@ test = [
     { name = "matplotlib" },
     { name = "parsimonious" },
     { name = "polars" },
-    { name = "pydseamslib", marker = "python_full_version >= '3.12'" },
+    { name = "pydseamslib" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "readcon" },
+    { name = "readcon-db" },
     { name = "rgpycrumbs" },
     { name = "scipy" },
     { name = "xyzrender" },
@@ -415,14 +418,17 @@ requires-dist = [
     { name = "polars", marker = "extra == 'all'", specifier = ">=0.20" },
     { name = "polars", marker = "extra == 'neb'", specifier = ">=0.20" },
     { name = "polars", marker = "extra == 'test'", specifier = ">=0.20" },
-    { name = "pydseamslib", marker = "python_full_version >= '3.12' and extra == 'all'", specifier = ">=2.9.1" },
-    { name = "pydseamslib", marker = "python_full_version >= '3.12' and extra == 'rings'", specifier = ">=2.9.1" },
-    { name = "pydseamslib", marker = "python_full_version >= '3.12' and extra == 'test'", specifier = ">=2.9.1" },
+    { name = "pydseamslib", marker = "extra == 'all'", specifier = ">=2.11.1" },
+    { name = "pydseamslib", marker = "extra == 'rings'", specifier = ">=2.11.1" },
+    { name = "pydseamslib", marker = "extra == 'test'", specifier = ">=2.11.1" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.4.3" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.1.0" },
-    { name = "readcon", marker = "extra == 'all'", git = "https://github.com/lode-org/readcon-core?branch=main" },
-    { name = "readcon", marker = "extra == 'neb'", git = "https://github.com/lode-org/readcon-core?branch=main" },
-    { name = "readcon", marker = "extra == 'test'", git = "https://github.com/lode-org/readcon-core?branch=main" },
+    { name = "readcon", marker = "extra == 'all'", specifier = ">=0.17.1" },
+    { name = "readcon", marker = "extra == 'neb'", specifier = ">=0.17.1" },
+    { name = "readcon", marker = "extra == 'test'", specifier = ">=0.17.1" },
+    { name = "readcon-db", marker = "extra == 'all'", specifier = ">=0.2.0" },
+    { name = "readcon-db", marker = "extra == 'neb'", specifier = ">=0.2.0" },
+    { name = "readcon-db", marker = "extra == 'test'", specifier = ">=0.2.0" },
     { name = "rgpycrumbs", marker = "extra == 'test'" },
     { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.1.6" },
     { name = "scipy", marker = "extra == 'test'", specifier = ">=1.11" },
@@ -2369,16 +2375,19 @@ wheels = [
 
 [[package]]
 name = "pydseamslib"
-version = "2.9.1"
+version = "2.11.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d7/7e/d23b07e054fb07c25497c63b5056ca1dacc2de72a37cee42c388a822b465/pydseamslib-2.9.1.tar.gz", hash = "sha256:dc3532df757b241fde37bb1e701d3c49523580d17a01ba7e082fd77a4c525fdd", size = 488632, upload-time = "2026-09-03T02:05:32.781Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/9a/67fec5c0e7f4b3d41e73dbda3978f00761e3a14acdbe67ff4dcce577d6f6/pydseamslib-2.11.1.tar.gz", hash = "sha256:25a6f720ece34ea308981b42b581ecf6a51725f64c4c0e3a0dc48b42f890816a", size = 496566, upload-time = "2026-10-16T00:02:00.427Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/62/1487ffebae244a2b8a8d9b251f94abd64057d20f9d10cbfa419d3af0266f/pydseamslib-2.9.1-cp312-abi3-macosx_14_0_arm64.whl", hash = "sha256:8905191efdbbefa1d264e6a0694741558f8986b3e7e01ba59478748870da8220", size = 1393787, upload-time = "2026-09-03T02:05:28.389Z" },
-    { url = "https://files.pythonhosted.org/packages/61/50/a04cf708a1a48edfe81c88f6a0ff54cd7e034c3f14c65433a13b7a5bcc39/pydseamslib-2.9.1-cp312-abi3-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:22b65aa590438636627b4e3e9e881d4828967f93cbbe5a1bc7b1cd0341bcedd3", size = 1306874, upload-time = "2026-09-03T02:05:30.052Z" },
-    { url = "https://files.pythonhosted.org/packages/e5/22/2e405adbe424687bc40d0491d506c60e9ed4226cfdd2e4b25178dbf9f023/pydseamslib-2.9.1-cp312-abi3-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:19879d14b0511a924bf166b71902ebe501894648623817cb188456686e4dc4fd", size = 1440869, upload-time = "2026-09-03T02:05:31.313Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/22/c922c953c3f450f2791893d40f33f18c39a2d40579a23d2ee712bd0fd0ff/pydseamslib-2.11.1-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:8d15019f3a4f33d5e0fac9d74063a37fa11bce69e0877a2ca60bc654549e5f9c", size = 2301283, upload-time = "2026-10-16T00:01:48.665Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/dd/4480a3c895808a69accff81156baa85e8124137b8bef28d7da5ad8f4e9c1/pydseamslib-2.11.1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:767994791a8d496afa679afc3cb6d521cd23950de23f2e899b9fcc3b77794485", size = 3203964, upload-time = "2026-10-16T00:01:50.947Z" },
+    { url = "https://files.pythonhosted.org/packages/32/d8/2ffd5535ac950975914b055db94b38c097e78abce4d746e5f43b1a7db96a/pydseamslib-2.11.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:0b256382c94904cb6080b1e91a56467d41047879be86ed033fa24d928fdb13f0", size = 3739178, upload-time = "2026-10-16T00:01:53.169Z" },
+    { url = "https://files.pythonhosted.org/packages/63/88/6bb0fc015e754b5221c571b1b0b6b3ab1dcbce607559e4a2e5a070ea5e4d/pydseamslib-2.11.1-cp312-abi3-macosx_14_0_arm64.whl", hash = "sha256:543aa7c1946887434b2ee715f2ac8751e7e41416f9d8455a1d9867f25ae1d067", size = 2298458, upload-time = "2026-10-16T00:01:55.073Z" },
+    { url = "https://files.pythonhosted.org/packages/81/61/58c5885004052677d304e89b6764464da1ad058531c74cadc8f9a9720129/pydseamslib-2.11.1-cp312-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:0db77a7449d6e1ee09468c1b6115bb2a28f37d2fd8bcf546b74e7518d08e0370", size = 3202977, upload-time = "2026-10-16T00:01:56.752Z" },
+    { url = "https://files.pythonhosted.org/packages/76/d3/ebdff0d35f81d350a95cc4193147dc8a117b5e7811c0a109dfd074d105c6/pydseamslib-2.11.1-cp312-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:8030bb89a53d89a12f4140d3d14430e54feea922aa2191747e22de192667efeb", size = 3738822, upload-time = "2026-10-16T00:01:58.485Z" },
 ]
 
 [[package]]
@@ -2614,7 +2623,74 @@ wheels = [
 [[package]]
 name = "readcon"
 version = "0.17.1"
-source = { git = "https://github.com/lode-org/readcon-core?branch=main#694e808080c49979ee3099afcfa18e5420c40433" }
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/65/74/a5bfabd7331758454eac8df026d00517af92f5a89503ad971a80eb11e1b9/readcon-0.17.1.tar.gz", hash = "sha256:b7aa1ca718086af38448e65e08ff38771bda25e06f1443f4bcf7ef53367bb20d", size = 928185, upload-time = "2026-10-15T21:56:53.323Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/4d/24116ae9ed05613649be79e2fc85dd011818054e055eb26fdefdf2c338a2/readcon-0.17.1-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:b0b0f281e6fffec9c9501aff521d23db135b1c05cd9f33b2d399faca6322272a", size = 862896, upload-time = "2026-10-15T21:55:24.605Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/65/84c6c7befd9a4e27711696cd8a296383b6bc9d8dca328762bc36bcf758f2/readcon-0.17.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:dd8cdbdcc6398f25bba96d18fb0cf93c9775f69161d74bb09644502a484ca38f", size = 815031, upload-time = "2026-10-15T21:55:26.088Z" },
+    { url = "https://files.pythonhosted.org/packages/53/e5/b63f06299d02167a9228b4211a6114d5364d17072127b5058eefab7b2963/readcon-0.17.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7928140ae68c74d4461c046356fbe7fc938b1ebbe81e423f93de7951fcc98f10", size = 877182, upload-time = "2026-10-15T21:55:27.417Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/b7/23592014b0038df25cfcacfea39a2c791d45b63fe21960f96cfb165a1f52/readcon-0.17.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5bd96f580767a6085a3f7bf34f4cd3ebe4ec0c0a71dca82bcacc584f69ccf944", size = 916145, upload-time = "2026-10-15T21:55:28.869Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/49/bd44cd4f72b629bbfd818c4c8155eadda29360ec1f5c242c72f1ae8be1e4/readcon-0.17.1-cp311-cp311-win_amd64.whl", hash = "sha256:bdbe246fa279bab9f80448d8379f92f001753f1cac27873ad380b473b523c388", size = 781767, upload-time = "2026-10-15T21:55:30.217Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/c0/cd50262a1cd96dca84c54ee91f190ad44c564b6f58924884c0cf528efd5c/readcon-0.17.1-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:37f930594bd75b6f77b0a6fd7af240075d80985715d03a354782dc726ee20ad5", size = 860798, upload-time = "2026-10-15T21:55:31.718Z" },
+    { url = "https://files.pythonhosted.org/packages/78/09/41ac705c7fd553e1a51ad308ea0ecd577488f1f0dc17f9a04083a8adf690/readcon-0.17.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b6167cbdc606e9d35a1cec71e7b6735dfa38c0c40b92d676f395b7761bf0fb7e", size = 812362, upload-time = "2026-10-15T21:55:33.314Z" },
+    { url = "https://files.pythonhosted.org/packages/33/4b/9f88c691779e7c3440fc032b0d804b79058e0d4f15b6ef43c80329302861/readcon-0.17.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4ad60d03dd329574d52ce85229cf7de1867a39b55ae9cfbdd4f228dd365fb7e9", size = 877136, upload-time = "2026-10-15T21:55:34.76Z" },
+    { url = "https://files.pythonhosted.org/packages/11/ee/fc9a07506c09d71b728f9ebd9a3df25b4f81948e11b7cc7b71dfae08bfaf/readcon-0.17.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:28d7bd528890d4d013df3f63a1323eefff7d7bd51af5c49d7240409f7a0492aa", size = 916979, upload-time = "2026-10-15T21:55:36.594Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/14/573d6082bcff1e5188b6c3fcb304ff1d9d7e706b891cc43de35063f065a1/readcon-0.17.1-cp312-cp312-win_amd64.whl", hash = "sha256:7a12cb816222d3f97c6efa2a594ad8565a08ce445b14948b7969ac66aa2cbfd3", size = 779769, upload-time = "2026-10-15T21:55:38.246Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/6e/0e093c835c27db353e98badaa5e7b1cdb22f08166f7f9a3fb035aa8d5f0c/readcon-0.17.1-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:051df28baf69317d1a2b1d779518545c7b9f7ea0e4950a11b72eaee80451522a", size = 860215, upload-time = "2026-10-15T21:55:39.582Z" },
+    { url = "https://files.pythonhosted.org/packages/b1/74/0aab66820d8538d761e6caf46a43b41af6396272955bfb5f64130ab5ea49/readcon-0.17.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:6787ad55da9c616dfadd709bcde768e14da4ddc19373a77a47844a91bc3c9cbd", size = 811637, upload-time = "2026-10-15T21:55:40.874Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/c2/a15cb51142ec5e7498cd6752d344042df99bdabe245af023b9dc14ebcfd3/readcon-0.17.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:82e2dce7b7264ecb4f6995428c84b20ec87909f0ab01b9b3b0ce34936ee6432f", size = 876733, upload-time = "2026-10-15T21:55:42.391Z" },
+    { url = "https://files.pythonhosted.org/packages/09/f6/4bf330b37e8fc0ceb52b29920cfd972d53896bf813f8a19aac93488bd838/readcon-0.17.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cb873fc733b2182d372c36ce1fb46a764cd017356aa65483418163564e837871", size = 916312, upload-time = "2026-10-15T21:55:44.072Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/bf/c5d59f0a676f1e60aa4783f1a4ba02b10ac37e2ac5d31d8cc7573b96816c/readcon-0.17.1-cp313-cp313-win_amd64.whl", hash = "sha256:42e4af964bb5ce84501156aaefbdb2bae8b769074e9f3813d82df170264596bb", size = 779579, upload-time = "2026-10-15T21:55:45.436Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/0c/aeb4bcc50f6ff72637b1e4faac5fbd91201afecdb2795a077ce053e828fb/readcon-0.17.1-cp314-cp314-macosx_10_12_x86_64.whl", hash = "sha256:ba04d43ae18009f62df710eefba9943b5b3394e492c987ad4eb7aedd1b922133", size = 860506, upload-time = "2026-10-15T21:55:46.782Z" },
+    { url = "https://files.pythonhosted.org/packages/57/f1/3b51c64bffb5cf49c8883e01f6a431ff4e7757ff95a21e97eceb17845a1d/readcon-0.17.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:86851ac1db7947467566def9af3dfeb560fda9782400f0c8eae6c9630ed234d7", size = 811843, upload-time = "2026-10-15T21:55:48.127Z" },
+    { url = "https://files.pythonhosted.org/packages/db/91/b3610c97a618eb2136351fe248c2d70d52107e6a5c75ccffa6845893ca61/readcon-0.17.1-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c152e46e86e41c0e7cb9384f9419d6c63c1b4c71865eae2b9c8adc4333b9d28e", size = 876801, upload-time = "2026-10-15T21:55:49.687Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/ab/fd6ad30090c6b34dfb676df00f343ee9b789c99837fc58b432e410ac79a4/readcon-0.17.1-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a1cda4291a7b20663308b8ada6060d3db5951ba63b9c1b9a6551b5cf6ce917b8", size = 916719, upload-time = "2026-10-15T21:55:51.224Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/b0/0c0f012acba933a980db43693a5141a51b39be833e15492fb3c33f2e2959/readcon-0.17.1-cp314-cp314-win_amd64.whl", hash = "sha256:be2657c78ff9e333a294c7a5901c5b93ab099f3351891eabea627fa9503bb94b", size = 779901, upload-time = "2026-10-15T21:55:52.813Z" },
+    { url = "https://files.pythonhosted.org/packages/87/b8/a8d44d8ac3669c4d6cb5d62e1046404d05dcbdae959de73d31a8af3b9c43/readcon-0.17.1-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d341dd11c5ab2f7a21b9e661560ca1d942ab8e4d80f6dd79cbb3534b03cf91ff", size = 873432, upload-time = "2026-10-15T21:55:54.087Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/d1/d43579c4b9e8d9ae9e172f43170297da5f7a62b900724a83f13bc63d0d2a/readcon-0.17.1-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:280ff4e49efa1c21b5559931dd7842c7734a8f0bc4f4c7c35793633076397f52", size = 914328, upload-time = "2026-10-15T21:55:55.352Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/5e/693246ff700a33cea546de645377819cfd0d8647f7324cf428f061929f62/readcon-0.17.1-cp315-cp315-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:640649d33afebbdcdffd62368db8d7fff85f560eaa331db48922a1e743b9cccd", size = 876821, upload-time = "2026-10-15T21:55:56.776Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/15/46e642439322fe1164a9caf219f12015dd63c850ba4fa1c5a90e169471dd/readcon-0.17.1-cp315-cp315-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6764a38174147ed4611e3bf29ba74b768e829d2404c94c2729decb89b09749df", size = 916801, upload-time = "2026-10-15T21:55:58.285Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/c9/12b000cd5237192ac3a7adf8886586aa220bbd7654a59529b3c719b4c8e7/readcon-0.17.1-cp315-cp315t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7ce204516a68ef17a9479f080b839401c9048f17ad1d2afbf3d794e8f18e83d4", size = 873596, upload-time = "2026-10-15T21:55:59.746Z" },
+    { url = "https://files.pythonhosted.org/packages/06/e4/7888eaa75359f1b9b7f82c53be8edfc8829e3b70501bf47c2131db708b7a/readcon-0.17.1-cp315-cp315t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1fe76f57078c561fcf741b6613f9ea2e40d225bfaef93f299d0534fc03c69fa2", size = 914318, upload-time = "2026-10-15T21:56:01.205Z" },
+    { url = "https://files.pythonhosted.org/packages/42/5c/32bfe97ecdd699b3ab63bb7f603296e0bc94fdad92efb06e1eacad70022a/readcon-0.17.1-pp311-pypy311_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d73a1b146de2c50f3bf7d6140ac2598d114765f0da40487810816831bf28002c", size = 878772, upload-time = "2026-10-15T21:56:02.589Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/58/fad96cd4badc855c849f927b944153c81b95c9b5a03445a56ff49fada2c8/readcon-0.17.1-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ab643a162fe568abfd421eac30c4898d4131fcc4ec492e81625f8cf96231d305", size = 917521, upload-time = "2026-10-15T21:56:04.593Z" },
+]
+
+[[package]]
+name = "readcon-db"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/46/98beca442ee580e17176818aaa36bb8ed888aaca4a3e55e5ed49938d8839/readcon_db-0.2.0.tar.gz", hash = "sha256:5c83ecf30ebd9ddfcad1113bd4620e2f13f15991b85007ada03df9e1caff3b6e", size = 307459, upload-time = "2026-10-15T22:35:04.528Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/e1/3681b436466285a89c406f5cb5a0e3f6dc0ae86cdc61d063b82441243c10/readcon_db-0.2.0-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:06e8389b8be6b8a52d947b11481c046fda1614aa80d7ef07640224e5973bc7bd", size = 1296062, upload-time = "2026-10-15T22:34:13.892Z" },
+    { url = "https://files.pythonhosted.org/packages/02/cb/838efc672673de1a20935a63b4ae3145f1df0957b57b386bca24afe9e840/readcon_db-0.2.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:9f47ca520fdd247f694297c6499acf26d219745c50031bd27514f29467fc88ce", size = 1201234, upload-time = "2026-10-15T22:34:15.465Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/c2/de9d60440283328a3089d64041a6015a05766c2fa1639c608421a062a530/readcon_db-0.2.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f1a458daa1cda62e2408a23afc1fe1e49f6207155c482efec73f3f053dfdb575", size = 1399821, upload-time = "2026-10-15T22:34:17.043Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/fc/e29d819119cd062d592376f4e19f8c296390484d5f566cdc3a99e4bdb338/readcon_db-0.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2b8924072e01169aaa4235935413711499be636335d17bd6e790884ced770add", size = 1434085, upload-time = "2026-10-15T22:34:19.045Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/bc/981e3e6d1d6540528f11c5af71983d54bbfd2c55bfa288d0541b98564a78/readcon_db-0.2.0-cp311-cp311-win_amd64.whl", hash = "sha256:1a1f1dc3872fe6d5b0f9ef50b5c402cd82b5c060d015d2858c2296054bc552f0", size = 1205105, upload-time = "2026-10-15T22:34:20.876Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/69/60f6925699346cf009dbef9b91cf3be3d0646043edc32e081b1d7a042f59/readcon_db-0.2.0-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:9958d13269c39a02f0a2f0cdd8eec221f24223c9a5428fa39b6d0260ea100fde", size = 1296682, upload-time = "2026-10-15T22:34:22.501Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/be/1eb35ffac5f029a8934b2454f126500612c019bcbdfa30466a263bd98feb/readcon_db-0.2.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:f769f07bce2c016da4e27f68aac4cd2c557356cc87f6295b62297a83e89ce5c6", size = 1198325, upload-time = "2026-10-15T22:34:24.033Z" },
+    { url = "https://files.pythonhosted.org/packages/23/75/07f9f99f79349967b0c7b6ba0cd5d6129205465c1600264402f038ebc05c/readcon_db-0.2.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:19d7c8d4a5aa80a2963f24eceafa536257b2546a639cebb6ecadbdc58e602d22", size = 1397407, upload-time = "2026-10-15T22:34:25.792Z" },
+    { url = "https://files.pythonhosted.org/packages/87/3e/3a3da144525bcdadfac7efdf6cceb0ae24ea8d398d9f8702c41199fbf814/readcon_db-0.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd565e301e343e2a532152d2b4d16ab45355bd7eda7a4cd3f230e38d238f485c", size = 1431321, upload-time = "2026-10-15T22:34:27.821Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/2c/2ce272a3d0433f4e3f82474c85085d1fb6ff4a1af71ebc0618ae929bcf48/readcon_db-0.2.0-cp312-cp312-win_amd64.whl", hash = "sha256:228cee32acfb2089373e8c3907a6129e4c42e473b8fae0d64ffce10b16e220d1", size = 1201730, upload-time = "2026-10-15T22:34:29.417Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/1d/76e0d2e40811ed1ef2ed662c397e0820be4b408ec703f152287d18b8446d/readcon_db-0.2.0-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:14b23051205c5af6ef7232b4cfa45fbdcb1dc3a6ef61ee4a3aec865fe9ee2263", size = 1296116, upload-time = "2026-10-15T22:34:30.877Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/a9/cd7e5965d2e7ba0869fec67db55b5af69f1bc6a706a16f4c526114b9a40a/readcon_db-0.2.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:e8da6466dc50c00888ad0ad93fc68a0ff0edad20e58f902eda43c9d69cbbf17c", size = 1197884, upload-time = "2026-10-15T22:34:32.5Z" },
+    { url = "https://files.pythonhosted.org/packages/92/2a/cc738b1d3845e9240279c264fc991ed7f8d0a2abc5fc8ae27a8d82b717e0/readcon_db-0.2.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:974b1f5009315d615d176fbc6b3447a49f95a1cff0f316a151a59073ce61bce0", size = 1396767, upload-time = "2026-10-15T22:34:34.18Z" },
+    { url = "https://files.pythonhosted.org/packages/5a/48/34f59639dc6b23cdb93ecf66e6c30b0edd337fae20d4bfb54964c88cba85/readcon_db-0.2.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bd39f4b449cefbb9f81ebbc996c3b291b5ea724e6a2651b13b88cc19bf57fa41", size = 1430604, upload-time = "2026-10-15T22:34:35.922Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/e4/82fdbc9537d774e41161bd6b45985afc796581849d1a1672e1a3f055d28f/readcon_db-0.2.0-cp313-cp313-win_amd64.whl", hash = "sha256:9e526737c44ce2a34f630f2cadb447c591fdc756f416ef7a81274ae398517444", size = 1201973, upload-time = "2026-10-15T22:34:37.36Z" },
+    { url = "https://files.pythonhosted.org/packages/19/0e/9958fe6585583478eef7a82823393a31b93c6fd10f0e710d311fccf52616/readcon_db-0.2.0-cp314-cp314-macosx_10_12_x86_64.whl", hash = "sha256:e9937c01eda54492025c68996b395fd68a08da24ffbfe7f03cae0773a322e002", size = 1296279, upload-time = "2026-10-15T22:34:38.987Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/41/d1279c5d35ba888760868959208f3c076a40e8dba1d284e6956b09f912f6/readcon_db-0.2.0-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:c1f8094fe89190948e2d50d6868ff11ad97a517ff8c44300489a191204c6ce39", size = 1198558, upload-time = "2026-10-15T22:34:40.672Z" },
+    { url = "https://files.pythonhosted.org/packages/7f/75/dbaf7f3fe7b132e54c34f72726097b8552c941e6570bb452f91fca0da1a7/readcon_db-0.2.0-cp314-cp314-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c7c54e6e4d0a1d68ec0de06beb563c3efdd9a86f3fb92d3565c980993013b2cc", size = 1397102, upload-time = "2026-10-15T22:34:42.258Z" },
+    { url = "https://files.pythonhosted.org/packages/42/76/31a18d460e536fc5c82463958f407639f711ef633f3b22d740ba26098458/readcon_db-0.2.0-cp314-cp314-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0ccbbfab82b69b490b56323e05342e9116a8c3ba80ed549c9b417e0ecfc55e16", size = 1431002, upload-time = "2026-10-15T22:34:43.856Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/8a/7d48a844064aeca971a9b4a92c138552ea5a02b15630480a4561fd27138b/readcon_db-0.2.0-cp314-cp314-win_amd64.whl", hash = "sha256:8b244d15a79b4ce5b17f867b595005c91feda42eb38f64c80b15a9c15be1a1fe", size = 1201951, upload-time = "2026-10-15T22:34:45.441Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/4c/dd20604a70cc80259a5cf1e188ee82332c675346e37e59115df633944339/readcon_db-0.2.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1b1cb3035878f1ab240f5885a58844b6e5d767df031e2f73be62da40d99e8434", size = 1393320, upload-time = "2026-10-15T22:34:47.257Z" },
+    { url = "https://files.pythonhosted.org/packages/95/43/dfe62a660dcc9d84fbcb5df26dbd26db6dbd8feaf5b68fd44b7ae11e1f78/readcon_db-0.2.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:103287813136e16318c416427d5ac57b4cbdf0f479fa86cc9a9920bbecacd7e9", size = 1429278, upload-time = "2026-10-15T22:34:48.937Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/ac/a9c9149b97279d235a927deb51f7efa4e8ad91190e994800039517278b35/readcon_db-0.2.0-cp315-cp315-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:55e5f4f487c0bee75e629e6346280194fa411acfdfdbdbe541b32c506b6018e0", size = 1396606, upload-time = "2026-10-15T22:34:50.516Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/d5/6d90b295ef482e69dc4754feca9035564809f2d223b64b973d7f5502d966/readcon_db-0.2.0-cp315-cp315-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2bd17cee57e3c059213bf3f7cc2755a1884a866b6f7c3be9da0561c2f13cd54d", size = 1430639, upload-time = "2026-10-15T22:34:52.113Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/b2/f94ee74fa8582f9255f8ff4eafd07a23470ce73381786b01ffe8550af312/readcon_db-0.2.0-cp315-cp315t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2718870a71dd2e8153722ce1a054eece2eacf9725ecabc336f9e74b7131f5ed8", size = 1393479, upload-time = "2026-10-15T22:34:54.008Z" },
+    { url = "https://files.pythonhosted.org/packages/16/11/95bb32b27e4877599492dc3b46e2510df358d9e4644bfa49309c516e30b3/readcon_db-0.2.0-cp315-cp315t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b4abc672523a67aaeac1488479843fd0cb674d144ec660901869e166ee2a4a6e", size = 1429273, upload-time = "2026-10-15T22:34:55.607Z" },
+    { url = "https://files.pythonhosted.org/packages/58/2c/de917c5630a65263a483451b1a09b63cd049daa3168c10eaa3528a0ab46a/readcon_db-0.2.0-pp311-pypy311_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a8490094725bc930511327611db40442bb43d34719e83f2b5e17828d2a22cd11", size = 1403624, upload-time = "2026-10-15T22:35:00.997Z" },
+    { url = "https://files.pythonhosted.org/packages/25/3d/bc0596a0712348afe225f473d9b28b2a2d52d788ce4bfc39010684d9b87b/readcon_db-0.2.0-pp311-pypy311_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:97cc7790a6fcc2d89b7d7ac3e614cede625f4f4fb77c622136492963a89d7409", size = 1438954, upload-time = "2026-10-15T22:35:02.725Z" },
+]
 
 [[package]]
 name = "readme-renderer"
