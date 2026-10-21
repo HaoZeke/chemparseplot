@@ -89,3 +89,28 @@ def test_performance_profile_keeps_failures_and_counts_ties():
     rows[0]["cost"] = 0
     with pytest.raises(ValueError, match="finite and positive"):
         performance_ratios(rows, "b", ["a", "b"], "cost")
+
+
+def test_frontier_uses_the_same_cases_and_preserves_equal_points():
+    from chemparseplot.parse.benchmark import cost_frontier
+
+    rows = [
+        {"set": "b", "method": m, "label": k, "accepted": ok,
+         "search_calls": c, "search_wall_s": t}
+        for m, k, ok, c, t in [
+            ("a", "one", True, 10, 2), ("a", "two", True, 100, 20),
+            ("b", "one", True, 10, 2), ("b", "two", False, 1, 1),
+            ("c", "one", True, 20, 2), ("c", "two", True, 1, 1),
+            ("plain", "one", False, 1, 1), ("plain", "two", False, 1, 1),
+        ]
+    ]
+    report = cost_frontier(rows, "b", ["a", "b", "c", "plain"])
+    assert report["common_accepted_labels"] == ["one"]
+    assert report["acceptance"] == {"a": 2, "b": 1, "c": 2, "plain": 0}
+    assert report["cases"] == 2
+    assert [p["mean_search_calls"] for p in report["points"]] == [10, 10, 20]
+    assert [p["nondominated"] for p in report["points"]] == [True, True, False]
+    rows[0]["accepted"] = False
+    report = cost_frontier(rows, "b", ["a", "b", "c", "plain"])
+    assert report["points"] == []
+    assert report["common_accepted_labels"] == []

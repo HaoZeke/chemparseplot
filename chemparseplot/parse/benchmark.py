@@ -138,3 +138,37 @@ def performance_ratios(rows, panel, methods, metric):
         for method in methods:
             ratios[method].append(costs[method] / best if method in costs else None)
     return {"labels": labels, "ratios": ratios}
+
+
+def cost_frontier(rows, panel, methods, *, exclude=("plain",)):
+    """Mean costs on the same successful cases, retaining full-panel acceptance.
+
+    Equal points both belong to the frontier. A method dominates another only
+    when neither cost is larger and at least one is strictly smaller.
+    """
+    checked = performance_ratios(rows, panel, methods, "search_calls")
+    performance_ratios(rows, panel, methods, "search_wall_s")
+    labels = checked["labels"]
+    group = {(r["method"], r["label"]): r for r in rows if r["set"] == panel}
+    locators = [m for m in methods if m not in exclude]
+    common = [k for k in labels if all(group[m, k]["accepted"] for m in locators)]
+    points = []
+    if locators and common:
+        for method in locators:
+            points.append({
+                "method": method,
+                **{f"mean_{key}": sum(group[method, k][key] for k in common) / len(common)
+                   for key in ("search_calls", "search_wall_s")},
+            })
+        for point in points:
+            point["nondominated"] = not any(
+                all(other[key] <= point[key] for key in ("mean_search_calls", "mean_search_wall_s"))
+                and any(other[key] < point[key] for key in ("mean_search_calls", "mean_search_wall_s"))
+                for other in points
+            )
+    return {
+        "common_accepted_labels": common if locators else [],
+        "points": points,
+        "acceptance": {m: sum(group[m, k]["accepted"] for k in labels) for m in methods},
+        "cases": len(labels),
+    }
