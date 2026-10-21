@@ -16,6 +16,7 @@ def align_reaction(atoms_list, reference=1):
     from ase.build import minimize_rotation_and_translation  # noqa: PLC0415
 
     ref = atoms_list[reference].copy()
+    ref.pbc = False
     ref.positions -= ref.positions.mean(axis=0)
     _, _, axes = np.linalg.svd(ref.positions, full_matrices=False)
     if np.linalg.det(axes) < 0:
@@ -26,9 +27,14 @@ def align_reaction(atoms_list, reference=1):
             msg = "Reaction frames must have matching atom identities and order"
             raise ValueError(msg)
         frame = atoms.copy()
+        frame.pbc = False
         minimize_rotation_and_translation(ref, frame)
         frame.positions = frame.positions @ axes.T
-        frame.pbc = False
+        if not np.allclose(
+            atoms.get_all_distances(), frame.get_all_distances(), rtol=1e-12, atol=1e-10
+        ):
+            msg = "Molecular alignment must preserve every interatomic distance"
+            raise ValueError(msg)
         result.append(frame)
     return result
 

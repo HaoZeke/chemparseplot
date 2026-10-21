@@ -52,3 +52,19 @@ def test_measured_bond_styles_replace_geometric_edges(tmp_path):
     assert graph[a][b]["bond_width_override"] < graph[a][c]["bond_width_override"]
     assert not graph.has_edge(b, c)
     assert "bond_color_override" not in original.graph[a][b]
+
+
+def test_molecular_alignment_ignores_container_periodicity():
+    positions = np.array([[0, 0, 0], [1, 0, 0], [0, 2, 0], [0, 0, 3]], dtype=float)
+    a = Atoms("CHNO", positions=positions + 15, cell=[30, 30, 30], pbc=True)
+    b = a.copy()
+    b.rotate(47, "x", center="COP")
+    b.translate([0.2, -0.3, 0.1])
+    result = align_reaction([a, b], reference=1)
+    for original, aligned in zip((a, b), result, strict=True):
+        np.testing.assert_allclose(
+            original.get_all_distances(), aligned.get_all_distances(), atol=1e-12
+        )
+        assert not aligned.pbc.any()
+        assert original.pbc.all()
+    np.testing.assert_allclose(result[0].positions, result[1].positions, atol=1e-12)
