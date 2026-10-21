@@ -38,16 +38,17 @@ def test_missing_wbo_is_not_a_measured_zero(tmp_path):
 
 def test_measured_bond_styles_replace_geometric_edges(tmp_path):
     import xyzrender as xr
+
     from chemparseplot.plot.reaction import apply_wbo_style
 
     path = tmp_path / "water.xyz"
     path.write_text("3\nwater\nO 0 0 0\nH .95 0 0\nH -.2 .93 0\n")
     original = xr.load(str(path), quick=True)
-    graph = apply_wbo_style(original, {(1,2): .4, (1,3): 1.1, (2,3): .05}).graph
-    a,b,c = sorted(graph.nodes)
+    graph = apply_wbo_style(original, {(1, 2): 0.4, (1, 3): 1.1, (2, 3): 0.05}).graph
+    a, b, c = sorted(graph.nodes)
     assert graph[a][b]["NCI"] is True
     assert graph[a][c]["NCI"] is False
     assert graph[a][b]["bond_color_override"] != graph[a][c]["bond_color_override"]
     assert graph[a][b]["bond_width_override"] < graph[a][c]["bond_width_override"]
-    assert not graph.has_edge(b,c)
+    assert not graph.has_edge(b, c)
     assert "bond_color_override" not in original.graph[a][b]
