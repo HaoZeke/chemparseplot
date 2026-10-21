@@ -2663,7 +2663,7 @@ def plot_cases_wall(
             )
             ax.annotate(
                 txt,
-                (wi, yi),
+                (wi + (row.wall_sd or 0.0) if not inside else wi, yi),
                 xytext=(-3 if inside else 3, 0),
                 textcoords="offset points",
                 ha="right" if inside else "left",
