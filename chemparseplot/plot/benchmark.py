@@ -11,6 +11,7 @@ from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
 from chemparseplot.parse.benchmark import paired_costs
 
 TEXT_CONTRAST_THRESHOLD = 2.7
+MAJOR_TICKS_ONLY_DECADES = 1.5
 GP_COLOR = "#008577"
 BASE_COLOR = "#69778b"
 
@@ -33,6 +34,11 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
         ]
         stats = {m: paired_costs(rows, panel, m) for m in present}
         reports[panel] = stats
+        reference = [r for r in rows if r["set"] == panel and r["method"] == "gpridge"]
+        check_label = (
+            f"GPRidge: {sum(r['accepted'] for r in reference)}/{len(reference)} "
+            "index-1 checks"
+        )
         for j, (metric, xlabel) in enumerate(
             (
                 ("search_calls", "Mean search force calls"),
@@ -41,7 +47,7 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
         ):
             ax = axes[i, j]
             ax.set_title(
-                f"{'abcd'[i * 2 + j]}) {title}\nGPRidge: {sum(r['accepted'] for r in rows if r['set'] == panel and r['method'] == 'gpridge')}/{sum(r['set'] == panel and r['method'] == 'gpridge' for r in rows)} index-1 checks",
+                f"{'abcd'[i * 2 + j]}) {title}\n{check_label}",
                 loc="left",
                 fontweight="bold",
                 fontsize=9,
@@ -98,7 +104,7 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
             ax.set_ylim(len(present) - 0.45, -0.6)
             ax.set_xscale("log")
             lo, hi = ax.get_xlim()
-            subs = (1,) if np.log10(hi / lo) > 1.5 else (1, 2, 5)
+            subs = (1,) if np.log10(hi / lo) > MAJOR_TICKS_ONLY_DECADES else (1, 2, 5)
             ax.xaxis.set_major_locator(LogLocator(base=10, subs=subs))
             ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
             ax.xaxis.set_minor_formatter(NullFormatter())
