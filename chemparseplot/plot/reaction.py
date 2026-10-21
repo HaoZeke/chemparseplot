@@ -129,7 +129,15 @@ def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
 
 
 def render_reaction_state(
-    xyz, output, *, cube=None, charge=0, multiplicity=1, iso=0.02, bond_orders=None
+    xyz,
+    output,
+    *,
+    cube=None,
+    charge=0,
+    multiplicity=1,
+    iso=0.02,
+    bond_orders=None,
+    labels=None,
 ):
     """Render a fixed common orientation; density is a qualitative surface."""
     import xyzrender as xr  # noqa: PLC0415
@@ -144,6 +152,8 @@ def render_reaction_state(
         "orient": False,
         "transparent": True,
         "canvas_size": 700,
+        "labels": labels,
+        "label_font_size": 22,
         "output": str(output),
     }
     if cube is not None:
@@ -157,64 +167,74 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
 
     from chemparseplot.plot.neb import _crop_transparent_rgba  # noqa: PLC0415
 
-    fig, axes = plt.subplots(
-        len(cases), 4, figsize=(width, 3.0 * len(cases)), squeeze=False
-    )
-    fig.subplots_adjust(
-        left=0.025, right=0.98, top=0.92, bottom=0.15, wspace=0.08, hspace=0.7
-    )
+    row_height = 2.65
+    height = row_height * len(cases) + 0.7
+    fig = plt.figure(figsize=(width, height))
+    left, right, gap = 0.025, 0.985, 0.02
+    column_width = (right - left - 3 * gap) / 4
     for row, case in enumerate(cases):
+        top = 1 - (0.08 + row * row_height) / height
+        fig.text(
+            left,
+            top,
+            f"{'abcdefghijklmnopqrstuvwxyz'[row]}) {case['title']}",
+            fontsize=10,
+            fontweight="bold",
+            va="top",
+        )
         for col, state in enumerate(case["states"]):
-            ax = axes[row, col]
+            x = left + col * (column_width + gap)
+            center = x + column_width / 2
+            fig.text(
+                center,
+                top - 0.25 / height,
+                state["title"],
+                ha="center",
+                va="top",
+                fontsize=9,
+                color="#a13b4c" if col == COMPARATOR_COLUMN else "#222222",
+            )
+            ax = fig.add_axes([x, top - 1.98 / height, column_width, 1.45 / height])
             img = plt.imread(state["density_image" if density else "image"])
             ax.imshow(_crop_transparent_rgba(img))
             ax.axis("off")
-            ax.set_title(
-                state["title"],
-                fontsize=9,
-                color="#a13b4c" if col == COMPARATOR_COLUMN else "#222222",
-                pad=7,
-            )
-            ax.text(
-                0.5,
-                -0.04,
+            fig.text(
+                center,
+                top - 2.02 / height,
                 state.get("subtitle", ""),
                 ha="center",
                 va="top",
-                transform=ax.transAxes,
-                fontsize=8,
+                fontsize=7,
             )
             lines = []
             for bond in state["bonds"]:
-                wbo = "not printed" if bond["wbo"] is None else f"{bond['wbo']:.2f}"
+                wbo = "n/r" if bond["wbo"] is None else f"{bond['wbo']:.2f}"
                 lines.append(f"{bond['label']}: {bond['distance_A']:.2f} Å / {wbo}")
-            ax.text(
-                0.5,
-                -0.24,
+            fig.text(
+                center,
+                top - 2.33 / height,
                 "\n".join(lines),
                 ha="center",
                 va="top",
-                transform=ax.transAxes,
-                fontsize=7,
+                fontsize=6.5,
             )
-        axes[row, 0].text(
-            0,
-            1.35,
-            f"{'abcdefghijklmnopqrstuvwxyz'[row]}) {case['title']}",
-            transform=axes[row, 0].transAxes,
-            fontsize=10,
-            fontweight="bold",
-        )
     from matplotlib.cm import ScalarMappable  # noqa: PLC0415
     from matplotlib.colors import Normalize  # noqa: PLC0415
 
-    cax = fig.add_axes([0.30, 0.035, 0.40, 0.025])
+    cax = fig.add_axes([0.30, 0.065, 0.40, 0.025])
     cbar = fig.colorbar(
         ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
         cax=cax,
         orientation="horizontal",
     )
-    cbar.set_label(
-        "Wiberg bond order   ·   dotted below 0.5; omitted below 0.1", fontsize=8
+    cbar.set_label("Wiberg bond order", fontsize=8)
+    cbar.ax.tick_params(labelsize=7)
+    fig.text(
+        0.5,
+        0.005,
+        "Dotted: WBO < 0.5; omitted: WBO < 0.1; n/r: not reported",
+        ha="center",
+        va="bottom",
+        fontsize=7,
     )
     return fig
