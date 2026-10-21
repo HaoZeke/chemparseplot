@@ -41,7 +41,8 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
         ):
             ax = axes[i, j]
             ax.set_title(
-                f"{'abcd'[i * 2 + j]}) {title}", loc="left", fontweight="bold", fontsize=9
+                f"{'abcd'[i * 2 + j]}) {title}\nGPRidge: {sum(r['accepted'] for r in rows if r['set'] == panel and r['method'] == 'gpridge')}/{sum(r['set'] == panel and r['method'] == 'gpridge' for r in rows)} index-1 checks",
+                loc="left", fontweight="bold", fontsize=9
             )
             for y, m in enumerate(present):
                 s = stats[m]
@@ -94,7 +95,9 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
             )
             ax.set_ylim(len(present) - 0.45, -0.6)
             ax.set_xscale("log")
-            ax.xaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            lo, hi = ax.get_xlim()
+            subs = (1,) if np.log10(hi / lo) > 1.5 else (1, 2, 5)
+            ax.xaxis.set_major_locator(LogLocator(base=10, subs=subs))
             ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
             ax.xaxis.set_minor_formatter(NullFormatter())
             ax.tick_params(axis="x", labelsize=8)
