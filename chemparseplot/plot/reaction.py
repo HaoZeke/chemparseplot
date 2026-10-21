@@ -122,7 +122,7 @@ def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
     return result
 
 
-def render_reaction_state(xyz, output, *, cube=None, charge=0, multiplicity=1, iso=0.02):
+def render_reaction_state(xyz, output, *, cube=None, charge=0, multiplicity=1, iso=0.02, bond_orders=None):
     """Render a fixed common orientation; density is a qualitative surface."""
     import xyzrender as xr  # noqa: PLC0415
 
