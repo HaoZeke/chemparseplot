@@ -16,14 +16,22 @@ def row(step, seconds, force):
 
 def test_reprinted_timestamps_do_not_move_old_steps(tmp_path):
     path = tmp_path / "search.log"
-    path.write_text(row(0, 1, 0.04) + row(0, 7, 0.04) + row(1, 7, 5.0)
-                    + row(0, 23, 0.04) + row(1, 23, 5.0) + row(2, 23, 0.3))
+    path.write_text(
+        row(0, 1, 0.04)
+        + row(0, 7, 0.04)
+        + row(1, 7, 5.0)
+        + row(0, 23, 0.04)
+        + row(1, 23, 5.0)
+        + row(2, 23, 0.3)
+    )
     history = read_mlneb_history(path)
     assert [r["elapsed_s"] for r in history] == [0, 6, 22]
     assert [r["observations"] for r in history] == [2, 3, 4]
     assert [r["sample_fmax_eV_A"] for r in history] == [0.04, 5, 0.3]
-    frames = [SimpleNamespace(calc=SimpleNamespace(results={"forces": forces}))
-              for forces in [[[9, 0, 0]], [[0.04, 0, 0]], [[3, 4, 0]], [[0, 0, 0.3]]]]
+    frames = [
+        SimpleNamespace(calc=SimpleNamespace(results={"forces": forces}))
+        for forces in [[[9, 0, 0]], [[0.04, 0, 0]], [[3, 4, 0]], [[0, 0, 0.3]]]
+    ]
     assert check_mlneb_forces(history, frames) < 1e-12
     frames[2].calc.results["forces"] = [[3, 3, 0]]
     with pytest.raises(ValueError, match="does not match"):

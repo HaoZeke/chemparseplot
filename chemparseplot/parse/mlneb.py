@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
+import math
 from datetime import datetime
 from pathlib import Path
-import math
-
 
 VALUE_COLUMNS = (
-    "barrier_eV", "reverse_barrier_eV", "max_uncertainty_eV",
-    "mean_uncertainty_eV", "sample_fmax_eV_A",
+    "barrier_eV",
+    "reverse_barrier_eV",
+    "max_uncertainty_eV",
+    "mean_uncertainty_eV",
+    "sample_fmax_eV_A",
 )
 
 
@@ -45,11 +47,14 @@ def read_mlneb_history(path):
         elapsed = (row["timestamp"] - start).total_seconds()
         if result and elapsed < result[-1]["elapsed_s"]:
             raise ValueError("ML-NEB timestamps are not monotone")
-        result.append({
-            "step": row["step"], "observations": row["step"] + 2,
-            "elapsed_s": elapsed,
-            **{key: row[key] for key in VALUE_COLUMNS},
-        })
+        result.append(
+            {
+                "step": row["step"],
+                "observations": row["step"] + 2,
+                "elapsed_s": elapsed,
+                **{key: row[key] for key in VALUE_COLUMNS},
+            }
+        )
     return result
 
 
