@@ -95,7 +95,7 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
             ax.set_ylim(len(present) - 0.45, -0.6)
             ax.set_xscale("log")
             ax.xaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
-            ax.xaxis.set_major_formatter(FuncFormatter(lambda value, pos: f"{value:g}"))
+            ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
             ax.xaxis.set_minor_formatter(NullFormatter())
             ax.tick_params(axis="x", labelsize=8)
             ax.margins(x=0.25)
