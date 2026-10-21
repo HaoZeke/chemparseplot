@@ -42,7 +42,9 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
             ax = axes[i, j]
             ax.set_title(
                 f"{'abcd'[i * 2 + j]}) {title}\nGPRidge: {sum(r['accepted'] for r in rows if r['set'] == panel and r['method'] == 'gpridge')}/{sum(r['set'] == panel and r['method'] == 'gpridge' for r in rows)} index-1 checks",
-                loc="left", fontweight="bold", fontsize=9
+                loc="left",
+                fontweight="bold",
+                fontsize=9,
             )
             for y, m in enumerate(present):
                 s = stats[m]
