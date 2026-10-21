@@ -46,7 +46,8 @@ def plot_mlneb_diagnostics(history, summaries, titles=None, *, width=7.2):
             f"{float(case['search_wall_s']):.0f} s (timeout)\n"
             f"GPRidge: {int(case['gp_search_calls'])} calls, "
             f"{float(case['gp_search_wall_s']):.1f} s",
-            loc="left", fontsize=8,
+            loc="left",
+            fontsize=8,
         )
         ax.set_xlabel("Energy and force observations")
         if index % 2 == 0:
