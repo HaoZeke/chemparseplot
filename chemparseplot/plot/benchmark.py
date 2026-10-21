@@ -201,3 +201,83 @@ def plot_reaction_costs(rows, panel, title, methods, *, width=7.2):
         fontweight="bold",
     )
     return fig
+
+
+def plot_performance_profiles(rows, panels, methods, *, width=7.2):
+    """Dolan-More profiles over every reaction, with failure assigned infinite cost."""
+    from chemparseplot.parse.benchmark import performance_ratios  # noqa: PLC0415
+
+    labels = {"gpridge": "GPRidge", **methods}
+    colors = {
+        "gpridge": GP_COLOR,
+        "plain": "#999999",
+        "cineb": "#0072b2",
+        "ocineb": "#56b4e9",
+        "catlearn": "#cc79a7",
+        "mlfsm": "#d55e00",
+        "dimer": "#e69f00",
+        "sella": "#785ef0",
+    }
+    fig, axes = plt.subplots(
+        len(panels),
+        2,
+        figsize=(width, 2.5 * len(panels)),
+        squeeze=False,
+        layout="constrained",
+    )
+    reports, handles = {}, {}
+    for i, (panel, title) in enumerate(panels.items()):
+        present = [
+            m for m in labels if any(r["set"] == panel and r["method"] == m for r in rows)
+        ]
+        reports[panel] = {}
+        for j, (metric, name) in enumerate(
+            (("search_calls", "Force calls"), ("search_wall_s", "Search time"))
+        ):
+            ax = axes[i, j]
+            report = performance_ratios(rows, panel, present, metric)
+            reports[panel][metric] = report
+            finite = [
+                v for values in report["ratios"].values() for v in values if v is not None
+            ]
+            upper = max(2, max(finite, default=1) * 1.15)
+            x = np.array(sorted({1.0, upper, *finite}))
+            for method in present:
+                values = np.array(
+                    [np.inf if v is None else v for v in report["ratios"][method]]
+                )
+                fraction = (values[:, None] <= x).mean(axis=0)
+                (line,) = ax.step(
+                    x,
+                    fraction,
+                    where="post",
+                    label=labels[method],
+                    color=colors.get(method),
+                    linewidth=2.3 if method == "gpridge" else 1.5,
+                    linestyle="--" if method == "plain" else "-",
+                    zorder=4 if method == "gpridge" else 2,
+                )
+                handles[method] = line
+            ax.set_xscale("log", base=2)
+            ax.set_xlim(1, upper)
+            ax.set_ylim(-0.025, 1.04)
+            ax.set_yticks([0, 0.25, 0.5, 0.75, 1])
+            ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
+            ax.set_title(
+                f"{'abcdefghijklmnopqrstuvwxyz'[2 * i + j]}) {title}: {name}",
+                loc="left",
+                fontsize=9,
+                fontweight="bold",
+            )
+            ax.set_xlabel("Cost / best accepted cost")
+            ax.set_ylabel("Fraction of all reactions")
+            ax.grid(alpha=0.15)
+            ax.spines[["top", "right"]].set_visible(False)
+    fig.legend(
+        handles=list(handles.values()),
+        loc="outside lower center",
+        ncols=4,
+        fontsize=8,
+        frameon=False,
+    )
+    return fig, reports

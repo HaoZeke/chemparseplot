@@ -110,3 +110,30 @@ def paired_costs(rows, panel, method, reference="gpridge"):
             "ratio": a / b if labels else None,
         }
     return result
+
+
+def performance_ratios(rows, panel, methods, metric):
+    """Return cost/best accepted cost; failed checks retain their denominator."""
+    selected = [r for r in rows if r["set"] == panel and r["method"] in methods]
+    group = {(r["method"], r["label"]): r for r in selected}
+    if len(group) != len(selected):
+        raise ValueError("Duplicate reaction in performance profile")
+    labels = sorted({r["label"] for r in selected})
+    if not labels or any((m, label) not in group for m in methods for label in labels):
+        raise ValueError("Methods must contain the same complete reaction set")
+    ratios = {m: [] for m in methods}
+    for label in labels:
+        costs = {}
+        for method in methods:
+            row = group[method, label]
+            if row["accepted"]:
+                value = row[metric]
+                if not math.isfinite(value) or value <= 0:
+                    raise ValueError(
+                        "Accepted performance costs must be finite and positive"
+                    )
+                costs[method] = value
+        best = min(costs.values(), default=None)
+        for method in methods:
+            ratios[method].append(costs[method] / best if method in costs else None)
+    return {"labels": labels, "ratios": ratios}

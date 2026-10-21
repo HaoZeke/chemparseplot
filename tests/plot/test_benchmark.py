@@ -60,3 +60,32 @@ def test_no_shared_successes_have_no_speedup():
     result = paired_costs(rows, "b", "other")
     assert result["search_calls"]["ratio"] is None
     assert result["labels"] == []
+
+
+def test_performance_profile_keeps_failures_and_counts_ties():
+    from chemparseplot.parse.benchmark import performance_ratios
+
+    rows = [
+        {"set": "b", "method": m, "label": label, "accepted": ok, "cost": cost}
+        for m, label, ok, cost in [
+            ("a", "one", True, 1),
+            ("b", "one", True, 2),
+            ("a", "two", True, 4),
+            ("b", "two", True, 4),
+            ("a", "three", False, 0.001),
+            ("b", "three", True, 3),
+            ("a", "four", False, 0),
+            ("b", "four", False, 0),
+        ]
+    ]
+    result = performance_ratios(rows, "b", ["a", "b"], "cost")
+    assert result["labels"] == ["four", "one", "three", "two"]
+    assert result["ratios"]["a"] == [None, 1, None, 1]
+    assert result["ratios"]["b"] == [None, 2, 1, 1]
+    assert sum(v == 1 for v in result["ratios"]["a"]) / len(result["labels"]) == 0.5
+    assert (
+        sum(v is not None for v in result["ratios"]["b"]) / len(result["labels"]) == 0.75
+    )
+    rows[0]["cost"] = 0
+    with pytest.raises(ValueError, match="finite and positive"):
+        performance_ratios(rows, "b", ["a", "b"], "cost")
