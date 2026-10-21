@@ -380,7 +380,8 @@ def plot_cost_frontiers(rows, panels, methods, *, width=7.2):
         ax.set_xlim(0, total * 1.22)
         ax.set_xlabel("Accepted saddles in the full panel")
         ax.set_title(
-            f"{'abcdefghijklmnopqrstuvwxyz'[len(panels) + col]}) {title}: all {total} reactions",
+            f"{'abcdefghijklmnopqrstuvwxyz'[len(panels) + col]}) "
+            f"{title}: all {total} reactions",
             fontsize=9,
         )
         ax.spines[["top", "right"]].set_visible(False)
