@@ -48,8 +48,10 @@ def plot_mlneb_diagnostics(history, summaries, titles=None, *, width=7.2):
         ax.text(
             0.02,
             0.98,
-            f"CatLearn: {int(case['observations'])} calls, {float(case['search_wall_s']):.0f} s (timeout)\n"
-            f"GPRidge: {int(case['gp_search_calls'])} calls, {float(case['gp_search_wall_s']):.1f} s",
+            f"CatLearn: {int(case['observations'])} calls, "
+            f"{float(case['search_wall_s']):.0f} s (timeout)\n"
+            f"GPRidge: {int(case['gp_search_calls'])} calls, "
+            f"{float(case['gp_search_wall_s']):.1f} s",
             transform=ax.transAxes,
             va="top",
             fontsize=7,
