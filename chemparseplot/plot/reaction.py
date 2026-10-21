@@ -83,11 +83,43 @@ def changed_bonds(reactant, product, limit=3):
     return [(i, j) for _, i, j in sorted(pairs, reverse=True)[:limit]]
 
 
+def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
+    """Replace geometric connectivity with measured Wiberg bond orders.
+
+    Atom numbering follows the source file. Dotted edges encode WBO below
+    ``weak``; colour and width use a common scale across all structures.
+    """
+    from matplotlib import colormaps  # noqa: PLC0415
+    from matplotlib.colors import to_hex  # noqa: PLC0415
+
+    result = molecule.copy()
+    graph = result.graph
+    nodes = sorted(graph.nodes)
+    if nodes not in (list(range(len(nodes))), list(range(1, len(nodes)+1))):
+        msg = "Renderer atom indices must follow contiguous source-file order"
+        raise ValueError(msg)
+    for (i,j), value in bond_orders.items():
+        if not (1 <= i <= len(nodes) and 1 <= j <= len(nodes)) or i == j or not np.isfinite(value):
+            msg = "Invalid Wiberg bond-order index or value"
+            raise ValueError(msg)
+    graph.remove_edges_from(list(graph.edges))
+    palette = colormaps["viridis"]
+    for (i,j), value in bond_orders.items():
+        if value < minimum:
+            continue
+        graph.add_edge(nodes[i-1], nodes[j-1], bond_order=value, NCI=value < weak,
+                       bond_color_override=to_hex(palette(np.clip(value/vmax,0,1))),
+                       bond_width_override=2.0 + 3.0 * min(value,vmax))
+    return result
+
+
 def render_reaction_state(xyz, output, *, cube=None, charge=0, multiplicity=1, iso=0.02):
     """Render a fixed common orientation; density is a qualitative surface."""
     import xyzrender as xr  # noqa: PLC0415
 
     mol = xr.load(str(cube or xyz), charge=charge, multiplicity=multiplicity, quick=True)
+    if bond_orders is not None:
+        mol = apply_wbo_style(mol, bond_orders)
     kwargs = {
         "config": "paton",
         "hy": True,
@@ -112,7 +144,7 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
         len(cases), 4, figsize=(width, 3.0 * len(cases)), squeeze=False
     )
     fig.subplots_adjust(
-        left=0.025, right=0.98, top=0.92, bottom=0.08, wspace=0.08, hspace=0.7
+        left=0.025, right=0.98, top=0.92, bottom=0.15, wspace=0.08, hspace=0.7
     )
     for row, case in enumerate(cases):
         for col, state in enumerate(case["states"]):
@@ -156,4 +188,10 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
             fontsize=10,
             fontweight="bold",
         )
+    from matplotlib.cm import ScalarMappable  # noqa: PLC0415
+    from matplotlib.colors import Normalize  # noqa: PLC0415
+
+    cax = fig.add_axes([.30,.035,.40,.025])
+    cbar = fig.colorbar(ScalarMappable(norm=Normalize(0,3),cmap="viridis"), cax=cax, orientation="horizontal")
+    cbar.set_label("Wiberg bond order   ·   dotted below 0.5; omitted below 0.1", fontsize=8)
     return fig
