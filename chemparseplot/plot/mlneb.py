@@ -37,25 +37,16 @@ def plot_mlneb_diagnostics(history, summaries, titles=None, *, width=7.2):
         ax.plot(n, np.where(u > 0, u, np.nan), color="#cc79a7", linewidth=1.3)
         ax.axhline(1, color="#444444", linestyle="--", linewidth=0.8)
         ax.set_yscale("log")
-        ax.set_ylim(0.1, 300)
+        positive = np.concatenate((f[f > 0], u[u > 0]))
+        ax.set_ylim(min(0.1, positive.min() / 2), max(300, positive.max() * 2))
         name = titles.get(case["label"], case["label"].replace("_", " "))
         ax.set_title(
-            f"{'abcdefghijklmnopqrstuvwxyz'[index]}) {name}",
-            loc="left",
-            fontsize=9,
-            fontweight="bold",
-        )
-        ax.text(
-            0.02,
-            0.98,
+            f"{'abcdefghijklmnopqrstuvwxyz'[index]}) {name}\n"
             f"CatLearn: {int(case['observations'])} calls, "
             f"{float(case['search_wall_s']):.0f} s (timeout)\n"
             f"GPRidge: {int(case['gp_search_calls'])} calls, "
             f"{float(case['gp_search_wall_s']):.1f} s",
-            transform=ax.transAxes,
-            va="top",
-            fontsize=7,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.85},
+            loc="left", fontsize=8,
         )
         ax.set_xlabel("Energy and force observations")
         if index % 2 == 0:
