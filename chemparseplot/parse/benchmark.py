@@ -117,10 +117,12 @@ def performance_ratios(rows, panel, methods, metric):
     selected = [r for r in rows if r["set"] == panel and r["method"] in methods]
     group = {(r["method"], r["label"]): r for r in selected}
     if len(group) != len(selected):
-        raise ValueError("Duplicate reaction in performance profile")
+        msg = "Duplicate reaction in performance profile"
+        raise ValueError(msg)
     labels = sorted({r["label"] for r in selected})
     if not labels or any((m, label) not in group for m in methods for label in labels):
-        raise ValueError("Methods must contain the same complete reaction set")
+        msg = "Methods must contain the same complete reaction set"
+        raise ValueError(msg)
     ratios = {m: [] for m in methods}
     for label in labels:
         costs = {}
@@ -129,9 +131,8 @@ def performance_ratios(rows, panel, methods, metric):
             if row["accepted"]:
                 value = row[metric]
                 if not math.isfinite(value) or value <= 0:
-                    raise ValueError(
-                        "Accepted performance costs must be finite and positive"
-                    )
+                    msg = "Accepted performance costs must be finite and positive"
+                    raise ValueError(msg)
                 costs[method] = value
         best = min(costs.values(), default=None)
         for method in methods:

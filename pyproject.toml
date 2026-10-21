@@ -53,7 +53,7 @@ neb = [
   "readcon>=0.17.1",
   "readcon-db>=0.2.0",
 ]
-xyzrender = ["xyzrender>=0.1.2"]
+xyzrender = ["xyzrender>=0.3.8", "resvg-py>=0.5.0"]
 rings = ["pydseamslib>=2.11.1", "xyzrender>=0.3.8"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
 # internal backend for parse.orca.neb — consumers use parse_orca_neb.
