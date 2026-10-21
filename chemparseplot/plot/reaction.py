@@ -3,12 +3,17 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 import numpy as np
+
+WBO_COLUMNS = 3
+MIN_BOND_CHANGE_A = 0.25
+COMPARATOR_COLUMN = 3
 
 
 def align_reaction(atoms_list, reference=1):
     """Keep atom identities and apply proper rigid rotations into one view."""
-    from ase.build import minimize_rotation_and_translation
+    from ase.build import minimize_rotation_and_translation  # noqa: PLC0415
 
     ref = atoms_list[reference].copy()
     ref.positions -= ref.positions.mean(axis=0)
@@ -18,9 +23,8 @@ def align_reaction(atoms_list, reference=1):
     result = []
     for atoms in atoms_list:
         if not np.array_equal(atoms.numbers, ref.numbers):
-            raise ValueError(
-                "Reaction frames must have matching atom identities and order"
-            )
+            msg = "Reaction frames must have matching atom identities and order"
+            raise ValueError(msg)
         frame = atoms.copy()
         minimize_rotation_and_translation(ref, frame)
         frame.positions = frame.positions @ axes.T
@@ -39,8 +43,9 @@ def read_wbo(path, natoms):
         if not line.strip():
             continue
         fields = line.split()
-        if len(fields) != 3:
-            raise ValueError("Expected two atom indices and a Wiberg bond order")
+        if len(fields) != WBO_COLUMNS:
+            msg = "Expected two atom indices and a Wiberg bond order"
+            raise ValueError(msg)
         i, j = int(fields[0]), int(fields[1])
         value = float(fields[2].replace("D", "E"))
         key = tuple(sorted((i, j)))
@@ -49,9 +54,11 @@ def read_wbo(path, natoms):
             or i == j
             or not np.isfinite(value)
         ):
-            raise ValueError("Invalid Wiberg bond-order entry")
+            msg = "Invalid Wiberg bond-order entry"
+            raise ValueError(msg)
         if key in bonds:
-            raise ValueError("Duplicate Wiberg bond-order pair")
+            msg = "Duplicate Wiberg bond-order pair"
+            raise ValueError(msg)
         bonds[key] = value
     return bonds
 
@@ -59,8 +66,9 @@ def read_wbo(path, natoms):
 def changed_bonds(reactant, product, limit=3):
     """Largest endpoint distance changes among initially or finally close pairs."""
     if not np.array_equal(reactant.numbers, product.numbers):
-        raise ValueError("Endpoint atom order differs")
-    from ase.data import covalent_radii
+        msg = "Endpoint atom order differs"
+        raise ValueError(msg)
+    from ase.data import covalent_radii  # noqa: PLC0415
 
     dr, dp = reactant.get_all_distances(), product.get_all_distances()
     pairs = []
@@ -70,25 +78,25 @@ def changed_bonds(reactant, product, limit=3):
                 covalent_radii[reactant.numbers[i]] + covalent_radii[reactant.numbers[j]]
             )
             change = abs(dr[i, j] - dp[i, j])
-            if min(dr[i, j], dp[i, j]) <= cutoff and change >= 0.25:
+            if min(dr[i, j], dp[i, j]) <= cutoff and change >= MIN_BOND_CHANGE_A:
                 pairs.append((change, i + 1, j + 1))
     return [(i, j) for _, i, j in sorted(pairs, reverse=True)[:limit]]
 
 
 def render_reaction_state(xyz, output, *, cube=None, charge=0, multiplicity=1, iso=0.02):
     """Render a fixed common orientation; density is a qualitative surface."""
-    import xyzrender as xr
+    import xyzrender as xr  # noqa: PLC0415
 
     mol = xr.load(str(cube or xyz), charge=charge, multiplicity=multiplicity, quick=True)
-    kwargs = dict(
-        config="paton",
-        hy=True,
-        bo=False,
-        orient=False,
-        transparent=True,
-        canvas_size=700,
-        output=str(output),
-    )
+    kwargs = {
+        "config": "paton",
+        "hy": True,
+        "bo": False,
+        "orient": False,
+        "transparent": True,
+        "canvas_size": 700,
+        "output": str(output),
+    }
     if cube is not None:
         kwargs.update(dens=True, iso=iso, opacity=0.3, dens_color="teal")
     xr.render(mol, **kwargs)
@@ -96,8 +104,9 @@ def render_reaction_state(xyz, output, *, cube=None, charge=0, multiplicity=1, i
 
 def plot_reaction_atlas(cases, *, density=False, width=7.2):
     """Render images and measured bond annotations in aligned reaction rows."""
-    import matplotlib.pyplot as plt
-    from chemparseplot.plot.neb import _crop_transparent_rgba
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+
+    from chemparseplot.plot.neb import _crop_transparent_rgba  # noqa: PLC0415
 
     fig, axes = plt.subplots(
         len(cases), 4, figsize=(width, 3.0 * len(cases)), squeeze=False
@@ -114,7 +123,7 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
             ax.set_title(
                 state["title"],
                 fontsize=9,
-                color="#a13b4c" if col == 3 else "#222222",
+                color="#a13b4c" if col == COMPARATOR_COLUMN else "#222222",
                 pad=7,
             )
             ax.text(

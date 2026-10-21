@@ -26,7 +26,8 @@ def load_benchmark_exports(paths, panels):
             return None
         result = float(value)
         if not math.isfinite(result) or result < 0:
-            raise ValueError("Costs must be finite and nonnegative")
+            msg = "Costs must be finite and nonnegative"
+            raise ValueError(msg)
         return result
 
     for path in paths:
@@ -38,28 +39,28 @@ def load_benchmark_exports(paths, panels):
                 key = panel, method, label
                 if key in records:
                     raise ValueError(f"Duplicate measurement: {key}")
-                records[key] = dict(
-                    set=panel,
-                    method=method,
-                    label=label,
-                    accepted=flag(raw["accepted"]),
-                    search_calls=number(
+                records[key] = {
+                    "set": panel,
+                    "method": method,
+                    "label": label,
+                    "accepted": flag(raw["accepted"]),
+                    "search_calls": number(
                         raw.get("search_calls_with_initialization", raw["search_calls"])
                     ),
-                    search_wall_s=number(raw["search_wall_s"]),
-                    error=raw.get("error", ""),
-                    run_sha256=raw["run_sha256"],
-                )
-                reference = dict(
-                    set=panel,
-                    method="gpridge",
-                    label=label,
-                    accepted=flag(raw["gp_accepted"]),
-                    search_calls=number(raw["gp_search_calls"]),
-                    search_wall_s=number(raw["gp_search_wall_s"]),
-                    run_sha256=raw["gp_result_sha256"],
-                    source_revision=raw["gp_revision"],
-                )
+                    "search_wall_s": number(raw["search_wall_s"]),
+                    "error": raw.get("error", ""),
+                    "run_sha256": raw["run_sha256"],
+                }
+                reference = {
+                    "set": panel,
+                    "method": "gpridge",
+                    "label": label,
+                    "accepted": flag(raw["gp_accepted"]),
+                    "search_calls": number(raw["gp_search_calls"]),
+                    "search_wall_s": number(raw["gp_search_wall_s"]),
+                    "run_sha256": raw["gp_result_sha256"],
+                    "source_revision": raw["gp_revision"],
+                }
                 refkey = panel, "gpridge", label
                 if refkey in references and references[refkey] != reference:
                     raise ValueError(f"Conflicting reference: {refkey}")
@@ -77,7 +78,8 @@ def load_benchmark_exports(paths, panels):
         if row["accepted"] and any(
             row[k] is None or row[k] <= 0 for k in ("search_calls", "search_wall_s")
         ):
-            raise ValueError("Accepted searches require positive measured costs")
+            msg = "Accepted searches require positive measured costs"
+            raise ValueError(msg)
     return list(records.values())
 
 
@@ -88,7 +90,8 @@ def paired_costs(rows, panel, method, reference="gpridge"):
     }
     refs = {r["label"]: r for r in rows if r["set"] == panel and r["method"] == reference}
     if set(selected) != set(refs):
-        raise ValueError("Methods must contain the same complete reaction panel")
+        msg = "Methods must contain the same complete reaction panel"
+        raise ValueError(msg)
     labels = sorted(
         k for k in selected if selected[k]["accepted"] and refs[k]["accepted"]
     )

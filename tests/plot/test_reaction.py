@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 from ase import Atoms
+
 from chemparseplot.plot.reaction import align_reaction, read_wbo
 
 
