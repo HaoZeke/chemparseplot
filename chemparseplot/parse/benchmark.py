@@ -155,15 +155,26 @@ def cost_frontier(rows, panel, methods, *, exclude=("plain",)):
     points = []
     if locators and common:
         for method in locators:
-            points.append({
-                "method": method,
-                **{f"mean_{key}": sum(group[method, k][key] for k in common) / len(common)
-                   for key in ("search_calls", "search_wall_s")},
-            })
+            points.append(
+                {
+                    "method": method,
+                    **{
+                        f"mean_{key}": sum(group[method, k][key] for k in common)
+                        / len(common)
+                        for key in ("search_calls", "search_wall_s")
+                    },
+                }
+            )
         for point in points:
             point["nondominated"] = not any(
-                all(other[key] <= point[key] for key in ("mean_search_calls", "mean_search_wall_s"))
-                and any(other[key] < point[key] for key in ("mean_search_calls", "mean_search_wall_s"))
+                all(
+                    other[key] <= point[key]
+                    for key in ("mean_search_calls", "mean_search_wall_s")
+                )
+                and any(
+                    other[key] < point[key]
+                    for key in ("mean_search_calls", "mean_search_wall_s")
+                )
                 for other in points
             )
     return {

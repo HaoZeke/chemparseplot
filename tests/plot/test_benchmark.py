@@ -95,13 +95,23 @@ def test_frontier_uses_the_same_cases_and_preserves_equal_points():
     from chemparseplot.parse.benchmark import cost_frontier
 
     rows = [
-        {"set": "b", "method": m, "label": k, "accepted": ok,
-         "search_calls": c, "search_wall_s": t}
+        {
+            "set": "b",
+            "method": m,
+            "label": k,
+            "accepted": ok,
+            "search_calls": c,
+            "search_wall_s": t,
+        }
         for m, k, ok, c, t in [
-            ("a", "one", True, 10, 2), ("a", "two", True, 100, 20),
-            ("b", "one", True, 10, 2), ("b", "two", False, 1, 1),
-            ("c", "one", True, 20, 2), ("c", "two", True, 1, 1),
-            ("plain", "one", False, 1, 1), ("plain", "two", False, 1, 1),
+            ("a", "one", True, 10, 2),
+            ("a", "two", True, 100, 20),
+            ("b", "one", True, 10, 2),
+            ("b", "two", False, 1, 1),
+            ("c", "one", True, 20, 2),
+            ("c", "two", True, 1, 1),
+            ("plain", "one", False, 1, 1),
+            ("plain", "two", False, 1, 1),
         ]
     ]
     report = cost_frontier(rows, "b", ["a", "b", "c", "plain"])

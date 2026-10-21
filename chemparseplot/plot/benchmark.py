@@ -289,47 +289,100 @@ def plot_cost_frontiers(rows, panels, methods, *, width=7.2):
     from chemparseplot.parse.benchmark import cost_frontier  # noqa: PLC0415
 
     labels = {"gpridge": "GPRidge", **methods}
-    fig, axes = plt.subplots(2, len(panels), figsize=(width, 6.4),
-                             squeeze=False, layout="constrained",
-                             gridspec_kw={"height_ratios": [1.2, 1]})
+    fig, axes = plt.subplots(
+        2,
+        len(panels),
+        figsize=(width, 6.4),
+        squeeze=False,
+        layout="constrained",
+        gridspec_kw={"height_ratios": [1.2, 1]},
+    )
     reports = {}
-    markers = {"gpridge": "o", "cineb": "s", "ocineb": "D", "catlearn": "^",
-               "mlfsm": "P", "dimer": "s", "sella": "^"}
+    markers = {
+        "gpridge": "o",
+        "cineb": "s",
+        "ocineb": "D",
+        "catlearn": "^",
+        "mlfsm": "P",
+        "dimer": "s",
+        "sella": "^",
+    }
     for col, (panel, title) in enumerate(panels.items()):
-        present = [m for m in labels if any(r["set"] == panel and r["method"] == m for r in rows)]
+        present = [
+            m for m in labels if any(r["set"] == panel and r["method"] == m for r in rows)
+        ]
         summary = cost_frontier(rows, panel, present)
         reports[panel] = summary
         ax = axes[0, col]
-        ax.set_title(f"{'abcdefghijklmnopqrstuvwxyz'[col]}) {title}\n"
-                     f"{len(summary['common_accepted_labels'])} common accepted reactions", fontsize=9)
+        ax.set_title(
+            f"{'abcdefghijklmnopqrstuvwxyz'[col]}) {title}\n"
+            f"{len(summary['common_accepted_labels'])} common accepted reactions",
+            fontsize=9,
+        )
         for point in summary["points"]:
             method = point["method"]
             x, y = point["mean_search_calls"], point["mean_search_wall_s"]
-            ax.scatter(x, y, s=48, color=METHOD_COLORS.get(method), marker=markers.get(method, "o"),
-                       edgecolors="black" if point["nondominated"] else "none", linewidths=1, zorder=3)
+            ax.scatter(
+                x,
+                y,
+                s=48,
+                color=METHOD_COLORS.get(method),
+                marker=markers.get(method, "o"),
+                edgecolors="black" if point["nondominated"] else "none",
+                linewidths=1,
+                zorder=3,
+            )
             offset = (5, -13) if method == "ocineb" else (5, 9)
-            ax.annotate(labels[method], (x, y), xytext=offset, textcoords="offset points", fontsize=8)
-        front = sorted((p for p in summary["points"] if p["nondominated"]),
-                       key=lambda p: p["mean_search_calls"])
+            ax.annotate(
+                labels[method],
+                (x, y),
+                xytext=offset,
+                textcoords="offset points",
+                fontsize=8,
+            )
+        front = sorted(
+            (p for p in summary["points"] if p["nondominated"]),
+            key=lambda p: p["mean_search_calls"],
+        )
         if len(front) > 1:
-            ax.plot([p["mean_search_calls"] for p in front], [p["mean_search_wall_s"] for p in front],
-                    color="#444444", linestyle="--", linewidth=1, zorder=1)
+            ax.plot(
+                [p["mean_search_calls"] for p in front],
+                [p["mean_search_wall_s"] for p in front],
+                color="#444444",
+                linestyle="--",
+                linewidth=1,
+                zorder=1,
+            )
         if not summary["points"]:
-            ax.text(0.5, 0.5, "No common accepted reactions", transform=ax.transAxes, ha="center")
-        ax.set(xscale="log", yscale="log", xlabel="Mean search force calls", ylabel="Mean search time (s)")
-        ax.margins(x=.38, y=.4)
-        ax.grid(alpha=.18)
+            ax.text(
+                0.5,
+                0.5,
+                "No common accepted reactions",
+                transform=ax.transAxes,
+                ha="center",
+            )
+        ax.set(
+            xscale="log",
+            yscale="log",
+            xlabel="Mean search force calls",
+            ylabel="Mean search time (s)",
+        )
+        ax.margins(x=0.38, y=0.4)
+        ax.grid(alpha=0.18)
         ax.spines[["top", "right"]].set_visible(False)
         ax = axes[1, col]
         total = summary["cases"]
         for i, (method, count) in enumerate(summary["acceptance"].items()):
-            ax.barh(i, count, color=METHOD_COLORS.get(method), height=.67)
-            ax.text(count + .25, i, f"{count}/{total}", va="center", fontsize=8)
+            ax.barh(i, count, color=METHOD_COLORS.get(method), height=0.67)
+            ax.text(count + 0.25, i, f"{count}/{total}", va="center", fontsize=8)
         ax.set_yticks(range(len(present)), [labels[m] for m in present])
         ax.invert_yaxis()
         ax.set_xlim(0, total * 1.22)
         ax.set_xlabel("Accepted saddles in the full panel")
-        ax.set_title(f"{'abcdefghijklmnopqrstuvwxyz'[len(panels) + col]}) {title}: all {total} reactions", fontsize=9)
+        ax.set_title(
+            f"{'abcdefghijklmnopqrstuvwxyz'[len(panels) + col]}) {title}: all {total} reactions",
+            fontsize=9,
+        )
         ax.spines[["top", "right"]].set_visible(False)
     return fig, reports
 
@@ -339,27 +392,50 @@ def plot_acceptance_curves(rows, panel, title, methods, *, width=7.2):
     from chemparseplot.parse.benchmark import performance_ratios  # noqa: PLC0415
 
     labels = {"gpridge": "GPRidge", **methods}
-    present = [m for m in labels if any(r["set"] == panel and r["method"] == m for r in rows)]
+    present = [
+        m for m in labels if any(r["set"] == panel and r["method"] == m for r in rows)
+    ]
     fig, axes = plt.subplots(1, 2, figsize=(width, 3.2), layout="constrained")
-    for i, (field, label) in enumerate((("search_wall_s", "Search time (s)"),
-                                      ("search_calls", "Search force calls"))):
+    for i, (field, label) in enumerate(
+        (("search_wall_s", "Search time (s)"), ("search_calls", "Search force calls"))
+    ):
         report = performance_ratios(rows, panel, present, field)
         total = len(report["labels"])
-        measured = [r[field] for r in rows if r["set"] == panel and r["method"] in present and r["accepted"]]
+        measured = [
+            r[field]
+            for r in rows
+            if r["set"] == panel and r["method"] in present and r["accepted"]
+        ]
         xmin, xmax = (min(measured) / 1.3, max(measured) * 1.3) if measured else (1, 10)
         ax = axes[i]
         for method in present:
-            values = sorted(r[field] for r in rows if r["set"] == panel and r["method"] == method and r["accepted"])
-            ax.step([xmin, *values, xmax], [0, *[k / total for k in range(1, len(values) + 1)], len(values) / total],
-                    where="post", color=METHOD_COLORS.get(method), label=labels[method],
-                    linewidth=2.3 if method == "gpridge" else 1.5,
-                    linestyle="--" if method == "plain" else "-")
-        ax.set(xscale="log", xlim=(xmin, xmax), ylim=(0, 1.04), xlabel=label,
-               ylabel="Fraction of all reactions accepted")
-        ax.set_yticks([0, .25, .5, .75, 1])
+            values = sorted(
+                r[field]
+                for r in rows
+                if r["set"] == panel and r["method"] == method and r["accepted"]
+            )
+            ax.step(
+                [xmin, *values, xmax],
+                [0, *[k / total for k in range(1, len(values) + 1)], len(values) / total],
+                where="post",
+                color=METHOD_COLORS.get(method),
+                label=labels[method],
+                linewidth=2.3 if method == "gpridge" else 1.5,
+                linestyle="--" if method == "plain" else "-",
+            )
+        ax.set(
+            xscale="log",
+            xlim=(xmin, xmax),
+            ylim=(0, 1.04),
+            xlabel=label,
+            ylabel="Fraction of all reactions accepted",
+        )
+        ax.set_yticks([0, 0.25, 0.5, 0.75, 1])
         ax.set_title(f"{'ab'[i]}) {title}: {label}", fontsize=9)
-        ax.grid(alpha=.18)
+        ax.grid(alpha=0.18)
         ax.spines[["top", "right"]].set_visible(False)
     handles, names = axes[0].get_legend_handles_labels()
-    fig.legend(handles, names, loc="outside lower center", ncols=3, frameon=False, fontsize=8)
+    fig.legend(
+        handles, names, loc="outside lower center", ncols=3, frameon=False, fontsize=8
+    )
     return fig
