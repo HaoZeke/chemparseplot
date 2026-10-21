@@ -94,7 +94,7 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
                     color=GP_COLOR,
                 )
                 ratio = s[metric]["ratio"]
-                text = f"{ratio:.1f}\u00d7" if ratio >= 1 else f"{ratio:.2f}\u00d7"
+                text = f"{ratio:.3g}\u00d7"
                 ax.text(
                     1.03,
                     y,
