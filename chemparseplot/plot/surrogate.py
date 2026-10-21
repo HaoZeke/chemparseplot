@@ -2545,7 +2545,7 @@ def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
         ax.set_yticks(y, [r.label for r in b.rows], fontsize=8)
         ax.set_ylim(len(b.rows) - 0.5, -0.5)
         ax.set_xlim(0, top * 1.12)
-        ax.set_xlabel("Oracle evaluations")
+        ax.set_xlabel("Potential evaluations")
         pt_per_unit = _PANEL_WIDTH_IN * 72 / (top * 1.12)
         for yi, si in zip(y, s, strict=True):
             txt = f"{si:.0f}"
