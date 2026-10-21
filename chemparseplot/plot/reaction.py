@@ -95,21 +95,30 @@ def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
     result = molecule.copy()
     graph = result.graph
     nodes = sorted(graph.nodes)
-    if nodes not in (list(range(len(nodes))), list(range(1, len(nodes)+1))):
+    if nodes not in (list(range(len(nodes))), list(range(1, len(nodes) + 1))):
         msg = "Renderer atom indices must follow contiguous source-file order"
         raise ValueError(msg)
-    for (i,j), value in bond_orders.items():
-        if not (1 <= i <= len(nodes) and 1 <= j <= len(nodes)) or i == j or not np.isfinite(value):
+    for (i, j), value in bond_orders.items():
+        if (
+            not (1 <= i <= len(nodes) and 1 <= j <= len(nodes))
+            or i == j
+            or not np.isfinite(value)
+        ):
             msg = "Invalid Wiberg bond-order index or value"
             raise ValueError(msg)
     graph.remove_edges_from(list(graph.edges))
     palette = colormaps["viridis"]
-    for (i,j), value in bond_orders.items():
+    for (i, j), value in bond_orders.items():
         if value < minimum:
             continue
-        graph.add_edge(nodes[i-1], nodes[j-1], bond_order=value, NCI=value < weak,
-                       bond_color_override=to_hex(palette(np.clip(value/vmax,0,1))),
-                       bond_width_override=2.0 + 3.0 * min(value,vmax))
+        graph.add_edge(
+            nodes[i - 1],
+            nodes[j - 1],
+            bond_order=value,
+            NCI=value < weak,
+            bond_color_override=to_hex(palette(np.clip(value / vmax, 0, 1))),
+            bond_width_override=2.0 + 3.0 * min(value, vmax),
+        )
     return result
 
 
@@ -191,7 +200,13 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
     from matplotlib.cm import ScalarMappable  # noqa: PLC0415
     from matplotlib.colors import Normalize  # noqa: PLC0415
 
-    cax = fig.add_axes([.30,.035,.40,.025])
-    cbar = fig.colorbar(ScalarMappable(norm=Normalize(0,3),cmap="viridis"), cax=cax, orientation="horizontal")
-    cbar.set_label("Wiberg bond order   ·   dotted below 0.5; omitted below 0.1", fontsize=8)
+    cax = fig.add_axes([0.30, 0.035, 0.40, 0.025])
+    cbar = fig.colorbar(
+        ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
+        cax=cax,
+        orientation="horizontal",
+    )
+    cbar.set_label(
+        "Wiberg bond order   ·   dotted below 0.5; omitted below 0.1", fontsize=8
+    )
     return fig
