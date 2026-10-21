@@ -141,6 +141,8 @@ def render_reaction_state(
 ):
     """Render a fixed common orientation; density is a qualitative surface."""
     import xyzrender as xr  # noqa: PLC0415
+    from matplotlib import font_manager  # noqa: PLC0415
+    from resvg_py import svg_to_bytes  # noqa: PLC0415
 
     mol = xr.load(str(cube or xyz), charge=charge, multiplicity=multiplicity, quick=True)
     if bond_orders is not None:
@@ -154,11 +156,24 @@ def render_reaction_state(
         "canvas_size": 700,
         "labels": labels,
         "label_font_size": 22,
-        "output": str(output),
     }
     if cube is not None:
         kwargs.update(dens=True, iso=iso, opacity=0.3, dens_color="teal")
-    xr.render(mol, **kwargs)
+    svg = str(xr.render(mol, **kwargs))
+    Path(output).with_suffix(".svg").write_text(svg)
+    font = font_manager.findfont(
+        font_manager.FontProperties(family="DejaVu Sans Mono", weight="bold")
+    )
+    Path(output).write_bytes(
+        svg_to_bytes(
+            svg_string=svg,
+            zoom=3,
+            font_files=[font],
+            skip_system_fonts=True,
+            font_family="DejaVu Sans Mono",
+            monospace_family="DejaVu Sans Mono",
+        )
+    )
 
 
 def plot_reaction_atlas(cases, *, density=False, width=7.2):
@@ -229,12 +244,4 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
     )
     cbar.set_label("Wiberg bond order", fontsize=8)
     cbar.ax.tick_params(labelsize=7)
-    fig.text(
-        0.5,
-        0.005,
-        "Dotted: WBO < 0.5; omitted: WBO < 0.1; n/r: not reported",
-        ha="center",
-        va="bottom",
-        fontsize=7,
-    )
     return fig
