@@ -2197,9 +2197,14 @@ def _dodge_cores(cores: np.ndarray) -> np.ndarray:
 
 
 def _best_per_core(cores, values):
-    """Core counts and the largest value at each, for the joining line."""
+    """Core counts and the largest available value at each, for the joining line."""
     u = np.unique(cores)
-    return u, np.array([np.nanmax(values[cores == v]) for v in u])
+    best = []
+    for core_count in u:
+        group = values[cores == core_count]
+        available = group[~np.isnan(group)]
+        best.append(np.max(available) if available.size else np.nan)
+    return u, np.asarray(best)
 
 
 def plot_pop_factors(

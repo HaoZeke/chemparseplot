@@ -420,6 +420,25 @@ def test_pop_factors_panel_dodges_shared_core_counts_and_draws_the_guide():
     ]
 
 
+def test_pop_factors_omit_join_points_for_all_missing_metric_groups(tmp_path):
+    import warnings
+
+    from chemparseplot.parse.surrogate.gpr_optim import parse_pop_factors
+
+    path = tmp_path / "pop.csv"
+    path.write_text(
+        "cell,ranks,threads,elapsed_s,parallel_eff\n"
+        "case,1,1,10,1.0\n"
+        "case,2,1,5,\n"
+        "case,4,1,3,\n"
+    )
+    table = parse_pop_factors(path, ["parallel_eff"], cell="case")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        fig = surr.plot_pop_factors(table)
+    assert np.isnan(fig.axes[1].lines[2].get_ydata()[1:]).all()
+
+
 def test_pop_factors_draws_one_row_per_table():
     from chemparseplot.parse.surrogate.gpr_optim import parse_pop_factors
 
