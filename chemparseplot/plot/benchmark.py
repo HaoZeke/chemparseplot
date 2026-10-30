@@ -27,6 +27,20 @@ METHOD_COLORS = {
 }
 
 
+def _plain_log_ticks(axis, lo, hi):
+    """Label log-axis majors as plain numbers and leave minors unlabelled."""
+    decades = np.log10(hi / lo)
+    if decades > MAJOR_TICKS_ONLY_DECADES:
+        subs = (1,)
+    elif decades > 1:
+        subs = (1, 2, 5)
+    else:
+        subs = tuple(range(1, 10))
+    axis.set_major_locator(LogLocator(base=10, subs=subs))
+    axis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
+    axis.set_minor_formatter(NullFormatter())
+
+
 def plot_cost_savings(rows, panels, methods, *, width=7.2):
     """Paired mean costs; each method uses its shared successes with GPRidge."""
     fig, axes = plt.subplots(
@@ -115,11 +129,7 @@ def plot_cost_savings(rows, panels, methods, *, width=7.2):
             ax.set_ylim(len(present) - 0.45, -0.6)
             ax.set_xscale("log")
             ax.margins(x=0.25)
-            lo, hi = ax.get_xlim()
-            subs = (1,) if np.log10(hi / lo) > MAJOR_TICKS_ONLY_DECADES else (1, 2, 5)
-            ax.xaxis.set_major_locator(LogLocator(base=10, subs=subs))
-            ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
-            ax.xaxis.set_minor_formatter(NullFormatter())
+            _plain_log_ticks(ax.xaxis, *ax.get_xlim())
             ax.tick_params(axis="x", labelsize=8)
             ax.set_xlabel(xlabel)
             ax.grid(axis="x", alpha=0.15)
@@ -368,6 +378,8 @@ def plot_cost_frontiers(rows, panels, methods, *, width=7.2):
             ylabel="Mean search time (s)",
         )
         ax.margins(x=0.38, y=0.4)
+        _plain_log_ticks(ax.xaxis, *ax.get_xlim())
+        _plain_log_ticks(ax.yaxis, *ax.get_ylim())
         ax.grid(alpha=0.18)
         ax.spines[["top", "right"]].set_visible(False)
         ax = axes[1, col]
