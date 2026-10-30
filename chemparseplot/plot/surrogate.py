@@ -2482,7 +2482,7 @@ def _board_title(b: CaseBoard) -> str:
 
 
 def plot_cases_calls(boards: Sequence[CaseBoard]) -> Figure:
-    """Oracle evaluations per case: search and independent validation, stacked.
+    """Potential evaluations per case: search and independent validation, stacked.
 
     One panel per board, one horizontal bar per case in the order given. Teal:
     search; coral: independent validation; the total sits at the bar end. A

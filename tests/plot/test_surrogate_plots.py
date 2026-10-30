@@ -509,7 +509,7 @@ def test_cases_calls_stacked_bars_titles_and_legend():
     assert a.get_title(loc="left") == "Baker-Chan: 3/3 first-order saddles"
     assert b.get_title(loc="left") == "Birkholz-Schlegel: 1/2 first-order saddles"
     assert [t.get_text() for t in a.get_yticklabels()] == ["HCCH", "HCN", "H2CO"]
-    assert a.get_xlabel() == "Oracle evaluations" and a.get_xlim()[0] == 0
+    assert a.get_xlabel() == "Potential evaluations" and a.get_xlim()[0] == 0
     assert a.get_xscale() == "linear"
     legend = [t.get_text() for t in fig.legends[0].get_texts()]
     assert legend == [
