@@ -41,6 +41,35 @@
 
 <!-- towncrier release notes start -->
 
+## [1.12.0](https://github.com/HaoZeke/chemparseplot/tree/1.12.0) - 2026-10-30
+
+### Added
+
+- Added `chemparseplot.parse.surrogate.mlneb.parse_mlneb_run`, which reads ASE/CatLearn ML-NEB output (`predicted.traj`, `evaluated.traj`, `ml_summary.txt`) into the same records as the gpr_optim parser, and `read_search` to pick a parser by producer.
+- Added `chemparseplot.parse.surrogate`: producer-independent records of surrogate-assisted saddle searches (band, search and single-ended histories, campaign tables) and a parser for gpr_optim campaign records.
+- Added `chemparseplot.plot.surrogate`: band profile with posterior mean and true evaluations, band evolution, convergence against oracle calls, model diagnostics, single-ended curvature and force, and campaign dumbbell, matrix, wall-time, scaling and efficiency figures. They take only the records of `chemparseplot.parse.surrogate`.
+- Added a how-to and a features entry for the surrogate-search records and figures.
+- The campaign wall figure (`plot_cases_wall`) reads an optional `pipeline_wall_sd` column. It draws that sample standard deviation as a horizontal bar and writes it beside the release time.
+- The surrogate profile and landscape draw the strip of structures `rgpycrumbs eon plt-neb` draws (reactant, saddle or climbing image, product, or every image, or N evenly spaced ones), through `plot_structure_strip`. Atom types come from `band.numbers`, read from the cell (`band/band.con`, `saddle/pos.con`) or `read_atom_types(FILE)`; without any the call raises a `ValueError` naming what was looked for.
+- `chemparseplot.plot.rings` draws the faces `ringNetwork` returns and the bridges between them with xyzrender. The command is `rgpycrumbs geom plt-rings`.
+- `chemparseplot.plot.rings` tracks a query across frames. A block hop is a change of the terminal ring's atoms. A junction frame keeps that ring. The command is `rgpycrumbs geom plt-rings-track`.
+
+### Changed
+
+- CON I/O requires readcon 0.17.1.
+`chemparseplot.api` now provides `load_trajectory`, `plot_con_overview`, and `plot_con_overlay`.
+`.con` reads go through `parse.eon.con_io`, with precision omitted and canonical left off.
+- Documentation is authored in org-mode and exported to RST at build.
+Shibuya Ecosystem nav and intersphinx point at the rgpycrumbs and pychum docs
+sites.
+- The surrogate landscape (`chemparseplot.plot.surrogate.plot_reduced_landscape`) is drawn with the NEB landscape functions: the progress/deviation plane, the GP energy surface fitted to the oracle evaluations, the evaluations, the final path, the climbing image and the reported saddle, each in the legend. `plot_landscape_surface` takes `variance_label` to set the variance contour text.
+The surrogate landscape fades the GP surface where the relative variance exceeds a threshold (default 0.95), and `plot_landscape_surface` takes `fade_variance_above` for the same purpose.
+
+### Fixed
+
+- Cost-frontier panels label their log axes with plain major ticks, so minor-tick labels no longer overprint; axes narrower than one decade get unit subdivisions.
+
+
 ## [1.11.0](https://github.com/HaoZeke/chemparseplot/tree/1.11.0) - 2026-08-10
 
 ### Added

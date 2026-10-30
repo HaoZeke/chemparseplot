@@ -1,1 +1,0 @@
-Added `chemparseplot.plot.surrogate`: band profile with posterior mean and true evaluations, band evolution, convergence against oracle calls, model diagnostics, single-ended curvature and force, and campaign dumbbell, matrix, wall-time, scaling and efficiency figures. They take only the records of `chemparseplot.parse.surrogate`.

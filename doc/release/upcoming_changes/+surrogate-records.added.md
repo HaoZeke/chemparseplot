@@ -1,1 +1,0 @@
-Added `chemparseplot.parse.surrogate`: producer-independent records of surrogate-assisted saddle searches (band, search and single-ended histories, campaign tables) and a parser for gpr_optim campaign records.
