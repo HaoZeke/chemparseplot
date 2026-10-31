@@ -41,6 +41,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.13.0](https://github.com/HaoZeke/chemparseplot/tree/1.13.0) - 2026-10-31
+
+### Added
+
+- `plot_reaction_gallery` lays out one structure per reaction in a grid of tiles, each titled with the reaction's name, an optional chemistry line and its measured bond-order annotations.
+
+
 ## [1.12.0](https://github.com/HaoZeke/chemparseplot/tree/1.12.0) - 2026-10-30
 
 ### Added
