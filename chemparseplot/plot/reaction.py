@@ -90,7 +90,7 @@ def changed_bonds(reactant, product, limit=3):
 
 
 def apply_wbo_style(
-    molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0, max_contact=2.0
+    molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0, max_contact=2.5
 ):
     """Replace geometric connectivity with measured Wiberg bond orders.
 

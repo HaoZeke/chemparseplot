@@ -117,6 +117,12 @@ def test_bond_order_between_separated_atoms_draws_no_edge(tmp_path):
     a, b, c = sorted(graph.nodes)
     assert graph.has_edge(a, b)
     assert not graph.has_edge(a, c)
+    # a forming H-H contact of a dissociation saddle keeps its edge
+    hh = tmp_path / "hh.xyz"
+    hh.write_text("3\nhh\nC 0 0 0\nH 1.1 0 0\nH 1.1 1.29 0\n")
+    graph_hh = apply_wbo_style(xr.load(str(hh), quick=True), {(2, 3): 0.15}).graph
+    p, r, s = sorted(graph_hh.nodes)
+    assert graph_hh.has_edge(r, s)
     # a stretched transition-state contact within the reach keeps its edge
     graph = apply_wbo_style(
         xr.load(str(path), quick=True), {(1, 3): 0.75}, max_contact=4.0
