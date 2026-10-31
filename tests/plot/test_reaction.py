@@ -102,3 +102,54 @@ def test_gallery_places_one_titled_tile_per_reaction(tmp_path):
     plt.close(fig)
     with pytest.raises(ValueError, match="one column"):
         plot_reaction_gallery(tiles, columns=0)
+
+
+def test_bond_order_between_separated_atoms_draws_no_edge(tmp_path):
+    import xyzrender as xr
+
+    from chemparseplot.plot.reaction import apply_wbo_style
+
+    path = tmp_path / "radicals.xyz"
+    path.write_text("3\nradicals\nC 0 0 0\nH 1.09 0 0\nH -3.85 0 0\n")
+    graph = apply_wbo_style(
+        xr.load(str(path), quick=True), {(1, 2): 0.98, (1, 3): 0.75}
+    ).graph
+    a, b, c = sorted(graph.nodes)
+    assert graph.has_edge(a, b)
+    assert not graph.has_edge(a, c)
+    # a stretched transition-state contact within the reach keeps its edge
+    graph = apply_wbo_style(
+        xr.load(str(path), quick=True), {(1, 3): 0.75}, max_contact=4.0
+    ).graph
+    assert graph.has_edge(a, c)
+
+
+def test_atlas_rows_make_room_for_every_bond_line(tmp_path):
+    import matplotlib as mpl
+
+    mpl.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from chemparseplot.plot.reaction import plot_reaction_atlas
+
+    image = tmp_path / "state.png"
+    plt.imsave(image, np.ones((8, 8, 4)))
+    bond = {"label": "C1\u2013C2", "distance_A": 2.2, "wbo": 0.3}
+
+    def case(n):
+        return {
+            "title": "row",
+            "states": [
+                {"title": "s", "image": str(image), "bonds": [bond] * n} for _ in range(4)
+            ],
+        }
+
+    short = plot_reaction_atlas([case(1)] * 4)
+    tall = plot_reaction_atlas([case(3)] * 4)
+    assert tall.get_figheight() > short.get_figheight()
+    # the colour bar sits below the lowest bond annotation
+    tall.canvas.draw()
+    bar = tall.axes[-1].get_position()
+    lowest = min(t.get_window_extent().y0 for t in tall.texts if "\u2013" in t.get_text())
+    assert bar.y1 * tall.bbox.height < lowest
+    plt.close("all")

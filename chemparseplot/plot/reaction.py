@@ -89,12 +89,18 @@ def changed_bonds(reactant, product, limit=3):
     return [(i, j) for _, i, j in sorted(pairs, reverse=True)[:limit]]
 
 
-def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
+def apply_wbo_style(
+    molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0, max_contact=2.0
+):
     """Replace geometric connectivity with measured Wiberg bond orders.
 
     Atom numbering follows the source file. Dotted edges encode WBO below
     ``weak``; colour and width use a common scale across all structures.
+    A pair farther apart than ``max_contact`` times its covalent-radius sum
+    gets no edge: a closed-shell density at a near-degenerate geometry can
+    assign bond order to separated radical centres, which is not a bond.
     """
+    from ase.data import covalent_radii  # noqa: PLC0415
     from matplotlib import colormaps  # noqa: PLC0415
     from matplotlib.colors import to_hex  # noqa: PLC0415
 
@@ -117,6 +123,13 @@ def apply_wbo_style(molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0):
     for (i, j), value in bond_orders.items():
         if value < minimum:
             continue
+        a, b = graph.nodes[nodes[i - 1]], graph.nodes[nodes[j - 1]]
+        if "position" in a and "position" in b:
+            reach = max_contact * (
+                covalent_radii[a["atomic_number"]] + covalent_radii[b["atomic_number"]]
+            )
+            if np.linalg.norm(np.subtract(a["position"], b["position"])) > reach:
+                continue
         graph.add_edge(
             nodes[i - 1],
             nodes[j - 1],
@@ -182,13 +195,18 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
 
     from chemparseplot.plot.neb import _crop_transparent_rgba  # noqa: PLC0415
 
-    row_height = 2.65
-    height = row_height * len(cases) + 0.7
+    line_height = 0.13
+    row_heights = [
+        2.4 + line_height * max(len(s["bonds"]) for s in case["states"]) for case in cases
+    ]
+    margin = 0.75
+    height = sum(row_heights) + margin
     fig = plt.figure(figsize=(width, height))
     left, right, gap = 0.025, 0.985, 0.02
     column_width = (right - left - 3 * gap) / 4
+    offsets = np.concatenate([[0.0], np.cumsum(row_heights)[:-1]])
     for row, case in enumerate(cases):
-        top = 1 - (0.08 + row * row_height) / height
+        top = 1 - (0.08 + offsets[row]) / height
         fig.text(
             left,
             top,
@@ -236,7 +254,7 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
     from matplotlib.cm import ScalarMappable  # noqa: PLC0415
     from matplotlib.colors import Normalize  # noqa: PLC0415
 
-    cax = fig.add_axes([0.30, 0.065, 0.40, 0.025])
+    cax = fig.add_axes([0.30, 0.3 / height, 0.40, 0.12 / height])
     cbar = fig.colorbar(
         ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
         cax=cax,
