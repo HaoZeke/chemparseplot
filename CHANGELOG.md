@@ -41,6 +41,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.13.1](https://github.com/HaoZeke/chemparseplot/tree/1.13.1) - 2026-10-31
+
+### Fixed
+
+- Reaction panels draw no Wiberg edge between atoms farther apart than twice their covalent-radius sum (`max_contact`), so a closed-shell density at a diradical-like geometry no longer shows separated radical centres as bonded; reaction atlas rows grow with their bond annotations and the colour bar keeps its own margin.
+
+
 ## [1.13.0](https://github.com/HaoZeke/chemparseplot/tree/1.13.0) - 2026-10-31
 
 ### Added

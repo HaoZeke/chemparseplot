@@ -1,1 +1,0 @@
-Reaction panels draw no Wiberg edge between atoms farther apart than twice their covalent-radius sum (`max_contact`), so a closed-shell density at a diradical-like geometry no longer shows separated radical centres as bonded; reaction atlas rows grow with their bond annotations and the colour bar keeps its own margin.
