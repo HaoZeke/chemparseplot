@@ -41,6 +41,13 @@
 
 <!-- towncrier release notes start -->
 
+## [1.13.2](https://github.com/HaoZeke/chemparseplot/tree/1.13.2) - 2026-10-31
+
+### Fixed
+
+- The Wiberg edge reach is two and a half covalent-radius sums, so forming H-H contacts of dissociation saddles (1.3 to 1.6 A) keep their edge while separated radical centres stay unbonded.
+
+
 ## [1.13.1](https://github.com/HaoZeke/chemparseplot/tree/1.13.1) - 2026-10-31
 
 ### Fixed
