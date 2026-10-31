@@ -68,3 +68,37 @@ def test_molecular_alignment_ignores_container_periodicity():
         assert not aligned.pbc.any()
         assert original.pbc.all()
     np.testing.assert_allclose(result[0].positions, result[1].positions, atol=1e-12)
+
+
+def test_gallery_places_one_titled_tile_per_reaction(tmp_path):
+    import matplotlib as mpl
+
+    mpl.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from chemparseplot.plot.reaction import plot_reaction_gallery
+
+    image = tmp_path / "tile.png"
+    pixels = np.zeros((20, 20, 4))
+    pixels[5:15, 5:15] = [0.2, 0.4, 0.6, 1.0]
+    plt.imsave(image, pixels)
+    bond = {"label": "C1\u2013O2", "distance_A": 1.94, "wbo": 0.41}
+    tiles = [
+        {
+            "title": f"case {i}",
+            "subtitle": "ring opening",
+            "image": str(image),
+            "bonds": [bond] if i % 2 else [],
+        }
+        for i in range(5)
+    ]
+    fig = plot_reaction_gallery(tiles, columns=3)
+    texts = [t.get_text() for t in fig.texts]
+    assert [f"case {i}" for i in range(5)] == [t for t in texts if t.startswith("case")]
+    assert texts.count("ring opening") == 5
+    assert texts.count("C1\u2013O2: 1.94 Å / 0.41") == 2
+    # five structure panels and the bond-order colour bar
+    assert len(fig.axes) == 6
+    plt.close(fig)
+    with pytest.raises(ValueError, match="one column"):
+        plot_reaction_gallery(tiles, columns=0)

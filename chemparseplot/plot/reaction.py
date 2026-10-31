@@ -245,3 +245,77 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
     cbar.set_label("Wiberg bond order", fontsize=8)
     cbar.ax.tick_params(labelsize=7)
     return fig
+
+
+def plot_reaction_gallery(tiles, *, columns=4, density=False, width=7.2):
+    """Render one structure per reaction in a grid of labelled tiles.
+
+    Each tile holds a ``title`` (the name other figures use for the
+    reaction), an optional ``subtitle`` naming the chemistry, the rendered
+    ``image`` (or ``density_image``) and the measured ``bonds`` to annotate,
+    in the format of :func:`plot_reaction_atlas`.
+    """
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+    from matplotlib.cm import ScalarMappable  # noqa: PLC0415
+    from matplotlib.colors import Normalize  # noqa: PLC0415
+
+    from chemparseplot.plot.neb import _crop_transparent_rgba  # noqa: PLC0415
+
+    if columns < 1:
+        msg = "A reaction gallery needs at least one column"
+        raise ValueError(msg)
+    rows = -(-len(tiles) // columns)
+    tile_height = 2.35
+    height = tile_height * rows + 0.75
+    fig = plt.figure(figsize=(width, height))
+    left, right, gap = 0.02, 0.98, 0.015
+    column_width = (right - left - (columns - 1) * gap) / columns
+    for index, tile in enumerate(tiles):
+        row, col = divmod(index, columns)
+        top = 1 - (0.08 + row * tile_height) / height
+        x = left + col * (column_width + gap)
+        center = x + column_width / 2
+        fig.text(
+            center,
+            top,
+            tile["title"],
+            ha="center",
+            va="top",
+            fontsize=8.5,
+            fontweight="bold",
+        )
+        if tile.get("subtitle"):
+            fig.text(
+                center,
+                top - 0.2 / height,
+                tile["subtitle"],
+                ha="center",
+                va="top",
+                fontsize=6.5,
+                color="#444444",
+            )
+        ax = fig.add_axes([x, top - 1.72 / height, column_width, 1.3 / height])
+        img = plt.imread(tile["density_image" if density else "image"])
+        ax.imshow(_crop_transparent_rgba(img))
+        ax.axis("off")
+        lines = []
+        for bond in tile.get("bonds", []):
+            wbo = "n/r" if bond["wbo"] is None else f"{bond['wbo']:.2f}"
+            lines.append(f"{bond['label']}: {bond['distance_A']:.2f} Å / {wbo}")
+        fig.text(
+            center,
+            top - 1.76 / height,
+            "\n".join(lines),
+            ha="center",
+            va="top",
+            fontsize=6,
+        )
+    cax = fig.add_axes([0.30, 0.18 / height, 0.40, 0.12 / height])
+    cbar = fig.colorbar(
+        ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
+        cax=cax,
+        orientation="horizontal",
+    )
+    cbar.set_label("Wiberg bond order", fontsize=8)
+    cbar.ax.tick_params(labelsize=7)
+    return fig
