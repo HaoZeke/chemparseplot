@@ -1,0 +1,32 @@
+name: Skills
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+      - name: llms-full.txt matches the manual and the site map
+        run: python scripts/llms/build_llms.py --check
+      - name: Generator tests
+        run: python -m unittest discover -s scripts/llms -p "test_*.py" -v
+      - name: Skill frontmatter, script references and links
+        run: python scripts/skills/run_skills.py --no-run
+      # plot and test give the scan plot matplotlib, cmcrameri, rgpycrumbs
+      # and scipy; test, lint and release give the add-parser check its
+      # pytest, ruff and towncrier.
+      - name: Skill examples and scripts
+        run: >-
+          uv run --extra plot --extra test --extra lint --extra release
+          python scripts/skills/run_skills.py

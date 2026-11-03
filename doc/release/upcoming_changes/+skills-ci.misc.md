@@ -1,0 +1,1 @@
+The `Skills` workflow (`.github/workflows/ci_skills.yml`) fails when `llms-full.txt` is stale or `doc/source/llms.txt` links a page that does not exist, runs the generator's tests, and runs the examples and scripts of every guide under `skills/`.
