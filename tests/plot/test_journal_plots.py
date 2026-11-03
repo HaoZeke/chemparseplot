@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-"""Behaviour of the NEB profile and energy landscape figures.
+"""Behaviour of the NEB profile, energy landscape and convergence figures.
 
 Every figure is drawn from the Au/Al(100) EMT runs in data/au_al100.json,
 written by data/au_al100.py.
@@ -11,6 +11,7 @@ import json
 import math
 import re
 from pathlib import Path
+from types import SimpleNamespace
 
 import matplotlib
 
@@ -22,12 +23,18 @@ import numpy as np
 import pytest
 from matplotlib.colors import to_hex
 
+pl = pytest.importorskip("polars")
 pytest.importorskip("scipy")
 pytest.importorskip("ase")
 
 from chemparseplot.plot import journal as jr
 from chemparseplot.plot.chemgp import plot_surface_contour
 from chemparseplot.plot.neb import _tick_decimals, plot_neb_profile
+from chemparseplot.plot.optimization import (
+    plot_relative_error,
+    plot_single_ended_convergence,
+    save_standard_figure,
+)
 from chemparseplot.plot.palette import RUHI_CYCLE
 
 DATA = Path(__file__).parent / "data"
@@ -169,3 +176,58 @@ class TestSurfaceContour:
         fig = plot_surface_contour(*surface)
         assert fig.get_figwidth() == jr.ACS.width("single")
         assert fig.get_figheight() < fig.get_figwidth()
+
+
+def _trajectory(rows):
+    """One optimizer's history as the frame the convergence figure reads."""
+    frame = pl.DataFrame(
+        {
+            "iteration": [r["iteration"] for r in rows],
+            "convergence": [r["fmax"] for r in rows],
+            "step_size": [r["step"] for r in rows],
+        }
+    )
+    return SimpleNamespace(dat_df=frame)
+
+
+class TestConvergence:
+    def test_relative_error_floor_and_axis(self, run):
+        rows = run["neb"]["BFGS"]["history"]
+        iterations = [r["iteration"] for r in rows]
+        barriers = np.array([max(r["energies"]) for r in rows]) - run["e_initial"]
+        fig, ax = jr.journal_figure()
+        # Against the converged barrier the last iterate is exact.
+        line = plot_relative_error(ax, iterations, barriers, barriers[-1], index=1)
+        err = np.abs(barriers - barriers[-1]) / abs(barriers[-1])
+        np.testing.assert_allclose(line.get_ydata()[:-1], err[:-1])
+        assert line.get_ydata()[-1] == np.finfo(float).eps
+        assert ax.get_yscale() == "log"
+        style = jr.series_style(1)
+        assert line.get_color() == style["color"]
+        assert ax.get_ylabel() == "Relative error"
+
+    def test_constrained_figures_keep_their_size(self, run, tmp_path):
+        rows = run["neb"]["BFGS"]["history"]
+        fig, ax = jr.journal_figure()
+        ax.semilogy([r["iteration"] for r in rows], [r["fmax"] for r in rows])
+        width = fig.get_figwidth()
+        save_standard_figure(fig, tmp_path / "f.pdf", dpi=jr.ACS.raster_dpi)
+        data = (tmp_path / "f.pdf").read_bytes()
+        box = re.search(rb"/MediaBox \[ *0 0 ([\d.]+)", data)
+        assert float(box.group(1)) == pytest.approx(width * jr.BP_PER_INCH)
+
+    def test_convergence_figure_leaves_rcparams(self, run, tmp_path):
+        trajs = [_trajectory(neb["history"]) for neb in run["neb"].values()]
+        before = dict(mpl.rcParams)
+        out = tmp_path / "convergence.pdf"
+        plot_single_ended_convergence(trajs, list(run["neb"]), out, jr.ACS.raster_dpi)
+        assert out.stat().st_size > 0
+        assert dict(mpl.rcParams) == before
+
+    def test_other_figures_are_cropped(self, tmp_path):
+        fig = plt.figure(figsize=(10, 10))
+        fig.text(0.5, 0.5, "cropped")
+        save_standard_figure(fig, tmp_path / "f.pdf", dpi=jr.ACS.raster_dpi)
+        data = (tmp_path / "f.pdf").read_bytes()
+        box = re.search(rb"/MediaBox \[ *0 0 ([\d.]+)", data)
+        assert float(box.group(1)) < 10 * jr.BP_PER_INCH

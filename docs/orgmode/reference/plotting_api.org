@@ -691,9 +691,46 @@ See =plot_landscape_surface= above.
 
 Plots energy (and optionally eigenvalue) vs iteration.
 
-** =plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col="convergence", step_col="step_size", iter_col="iteration", color="#004D40")=
+** =plot_convergence_panel=
+
+#+begin_src python
+plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col="convergence",
+                       step_col="step_size", iter_col="iteration", color="#004D40")
+#+end_src
 
 Plots convergence metrics (force norm and step size) from a trajectory DataFrame.
+Both scales are logarithmic, with decades labelled as powers of ten.
+Steps of zero length are left out, and a marker shows the last iteration.
+
+** =plot_single_ended_convergence=
+
+#+begin_src python
+plot_single_ended_convergence(
+    trajs, labels, output, dpi, *, journal=None, columns="double",
+    threshold=None, threshold_label="Threshold",
+    force_label="Convergence", step_label="Step size",
+)
+#+end_src
+
+Two panels, (a) the convergence measure and (b) the step size against iteration, saved to =output=.
+The figure is in the style of =journal= (=acs= when =None=) and one =columns= of it wide.
+Each trajectory needs a =dat_df=, as the eOn loaders return.
+It gets its own colour and ISO 128-2 line type and is labelled at the end of its line.
+When the labels would touch the data, a legend placed off the data replaces them.
+=threshold= draws the convergence criterion as a dashed, labelled line.
+The global rcParams are left as they were.
+
+** =plot_relative_error=
+
+#+begin_src python
+plot_relative_error(ax, x, values, reference, *, label=None, index=0,
+                    xlabel="Iteration", ylabel="Relative error")
+#+end_src
+
+Plots =abs(values - reference) / abs(reference)= on a log scale with decades labelled as powers of ten.
+Errors below machine epsilon are drawn at epsilon, so an exact result stays on the plot.
+The line takes the colour and line type of =series_style(index)=.
+Returns the line.
 
 ** =plot_dimer_mode_evolution(ax, mode_vectors, *, color="#004D40")=
 
