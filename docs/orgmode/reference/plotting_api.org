@@ -361,6 +361,7 @@ Frozen dataclass holding all aesthetic parameters.
 | =cmap_profile= | =str= | Default colormap for profiles |
 | =cmap_landscape= | =str= | Default colormap for landscapes |
 | =highlight_color= | =str= | Accent color |
+| =caption_font= | =str= | Structure caption face. The default is Atkinson Hyperlegible. A switch to Liberation Sans is pending. |
 
 ** Built-in Themes
 
