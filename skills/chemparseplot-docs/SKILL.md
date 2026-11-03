@@ -88,7 +88,7 @@ uv run sphinx-build doc/source doc/build/html
   `- [Title](https://chemparseplot.rgoswami.me/PAGE): what it is for`.
 - `python scripts/llms/build_llms.py` writes `llms-full.txt`: every page
   in toctree order, converted to Markdown from its Org or MyST source,
-  then the skills. Its settings are in
+  then `AGENTS.md` and the skills. Its settings are in
   `scripts/llms/llms.toml`. With `--check` it changes nothing and exits
   1 when the file is stale; CI runs that. It exits 2 when the site map
   links a page with no source or when a page names a file in a home,

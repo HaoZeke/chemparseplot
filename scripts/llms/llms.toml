@@ -1,7 +1,7 @@
 # Input for scripts/llms/build_llms.py. It writes llms-full.txt at the
 # repository root: every page of the manual in toctree order, converted
 # to Markdown from the Org sources under docs/orgmode/ and the MyST pages
-# under doc/source/, then the skills. The map of the site,
+# under doc/source/, then AGENTS.md and the skills. The map of the site,
 # doc/source/llms.txt, is written by hand; [map] checks its links against
 # the manual.
 
@@ -12,7 +12,7 @@ links = "raw"
 name = "chemparseplot"
 notes = [
   "Every page of the manual at https://chemparseplot.rgoswami.me/ follows, converted to Markdown from its Org source under `docs/orgmode/` or its MyST source under `doc/source/`; each section names the address it was taken from. Tutorial code cells appear as Python blocks, without their output. The API reference that sphinx-autodoc2 builds from the docstrings, https://chemparseplot.rgoswami.me/apidocs/, is not included. The map of the site is https://chemparseplot.rgoswami.me/llms.txt.",
-  "Worked tasks with runnable scripts are under `skills/` and are reproduced at the end.",
+  "Build, test and documentation commands, and the mistakes that are easy to make, are in `AGENTS.md`; worked tasks with runnable scripts are under `skills/`. Both are reproduced at the end.",
 ]
 repo = "https://github.com/HaoZeke/chemparseplot"
 summary = """
@@ -47,6 +47,12 @@ root = "docs/orgmode"
 [map]
 path = "doc/source/llms.txt"
 site = "https://chemparseplot.rgoswami.me/"
+
+[[links]]
+description = "Build, test and documentation commands, common tasks and pitfalls for working in this repository."
+full = true
+path = "AGENTS.md"
+title = "AGENTS.md"
 
 [skills]
 dir = "skills"
