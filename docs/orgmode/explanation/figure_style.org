@@ -76,7 +76,8 @@ Data lines are wide.
 In Atkinson Hyperlegible at the ACS body size, h is 6.68 pt and d/sqrt(2) is 0.47 pt, below the ACS minimum of 0.5 pt.
 The minimum therefore binds: spines and ticks are 0.5 pt, data lines 1 pt and major ticks 4.7 pt long.
 
-Dashed series use the ISO 128-2 line types 02 (dashed), 07 (dotted), 10 (dashed dotted) and 04 (long-dashed dotted).
+Dashed series use the ISO 128-2 line types 02 (dashed), 07 (dotted), 04 (long-dashed dotted) and 10 (dashed dotted), in that order.
+Types with one kind of mark come before types with two, and each group follows the standard's numbering.
 Their dashes, gaps and dots are 12, 3 and 0.5 line widths long, and long dashes 24.
 Matplotlib scales dash patterns by the line width, so the patterns stay in proportion at any width.
 

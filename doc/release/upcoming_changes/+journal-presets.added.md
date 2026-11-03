@@ -8,6 +8,7 @@ Text is set at the body, `\small` and `\footnotesize` sizes of each journal's tw
 For `ruhi` that face is Atkinson Hyperlegible, and the faces the journal names stand in where it is not installed.
 Line widths, tick lengths, gaps and marker sizes follow from the text size.
 They follow the lettering standard ISO 3098-1 and the line standard ISO 128-2 of the International Organization for Standardization (ISO).
+`series_style` pairs each series' Ruhi colour with a line type from `LINE_TYPES`, where the ISO 128-2 types with one kind of mark come before those with two.
 `label_panels` letters the panels, and `label_lines` and `label_hline` label lines at their ends.
 `smart_legend` places a legend where it covers no data.
 `sci_axis` writes numbers from 0.1 to 1000 plain.

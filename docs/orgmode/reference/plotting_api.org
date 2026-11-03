@@ -638,7 +638,7 @@ Arguments after =ax= are optional except =line= and =label=; =lines= default to 
 
 | Name | Value | Source |
 |------+-------+--------|
-| =LINE_TYPES= | ISO 128-2 types 01, 02, 07, 10 and 04 as =(number, name, dash pattern)= | ISO 128-2:2020 |
+| =LINE_TYPES= | ISO 128-2 types 01, 02, 07, 04 and 10 as =(number, name, dash pattern)= | ISO 128-2:2020 |
 | =SI_POWERLIMITS= | =(-2, 3)= | National Institute of Standards and Technology Special Publication 811 (2008), section 7.9 |
 | =PANEL_ASPECT= | 2/3 | Tufte (1983), p. 190 |
 

@@ -276,6 +276,14 @@ class TestStyle:
         assert codes["10"] == (0, (e["dash"], e["gap"], e["dot"], e["gap"]))
         assert codes["04"] == (0, (e["long_dash"], e["gap"], e["dot"], e["gap"]))
 
+    def test_line_types_with_fewer_kinds_of_mark_come_first(self):
+        def kinds(pattern):
+            return 0 if pattern == "solid" else len(set(pattern[1][0::2]))
+
+        order = [(kinds(pattern), int(code)) for code, _, pattern in jr.LINE_TYPES]
+        assert order == sorted(order)
+        assert [code for code, _, _ in jr.LINE_TYPES] == ["01", "02", "07", "04", "10"]
+
 
 class TestFigures:
     def test_journal_figure_size(self, dejavu):

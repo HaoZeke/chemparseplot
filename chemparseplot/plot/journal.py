@@ -141,12 +141,14 @@ _DOT = 0.5
 _GAP = 3.0
 _DASH = 12.0
 _LONG_DASH = 24.0
+# The types built from one dash kind and dots. Those with fewer kinds of mark
+# come first, and types with as many follow ISO 128-2's numbering.
 LINE_TYPES = (
     ("01", "continuous", "solid"),
     ("02", "dashed", (0, (_DASH, _GAP))),
     ("07", "dotted", (0, (_DOT, _GAP))),
-    ("10", "dashed dotted", (0, (_DASH, _GAP, _DOT, _GAP))),
     ("04", "long-dashed dotted", (0, (_LONG_DASH, _GAP, _DOT, _GAP))),
+    ("10", "dashed dotted", (0, (_DASH, _GAP, _DOT, _GAP))),
 )
 
 # NIST SP 811 (2008), section 7.9: prefixes are chosen so that numerical
