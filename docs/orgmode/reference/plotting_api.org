@@ -389,6 +389,69 @@ Applies theme properties to a specific axes instance (facecolor, spine colors, t
 
 Builds and registers a =LinearSegmentedColormap= from hex color strings.
 
+* Module: =chemparseplot.plot.palette=
+
+The Ruhi palette (Ruhila Goswami), the colour science used to check it and the colour maps built from it.
+
+** Colours
+
+| Name | Type or value | Description |
+|------+---------------+-------------|
+| =RUHI_COLORS= | =dict[str, str]= | coral =#FF655D=, sunshine =#F1DB4B=, teal =#004D40=, sky =#1E88E5=, magenta =#D81B60= |
+| =RUHI_LINE_ORDER= | =tuple[str, ...]= | Names in line order: teal, sky, magenta, sunshine, coral |
+| =RUHI_CYCLE= | =tuple[str, ...]= | Hex values in line order |
+| =OKABE_ITO= | =tuple[str, ...]= | Okabe-Ito palette, the reference of =palette_report= |
+| =WCAG_TEXT_CONTRAST= | =4.5= | Web Content Accessibility Guidelines (WCAG) 2.1, criterion 1.4.3 |
+| =WCAG_GRAPHICS_CONTRAST= | =3.0= | WCAG 2.1, criterion 1.4.11 |
+
+** Colour maps
+
+=ruhi_seq= (=RUHI_SEQUENTIAL=) and =ruhi_div= (=RUHI_DIVERGING=) and their reversed =_r= forms are registered with matplotlib when the module is imported.
+
+| Function | Description |
+|----------+-------------|
+| =ruhi_sequential_colors(n)= | Table of =ruhi_seq=: dark wine through magenta and coral to sunshine, L* rising, steps even in CIEDE2000 |
+| =ruhi_diverging_colors(n)= | Table of =ruhi_div=: teal through sky to grey, then coral and magenta to dark wine; equal L* at equal distance from the centre |
+| =contrast_limited(cmap, background, ratio)= | =ListedColormap= of the entries of =cmap= that reach =ratio= (default 3) against =background= (default white) |
+| =register_ruhi_colormaps()= | Registers both maps (called on import) |
+
+=n= defaults to the =image.lut= rcParam.
+
+** Checks
+
+*** =palette_report=
+
+#+begin_src python
+palette_report(colors=None, background="white", reference=OKABE_ITO)
+#+end_src
+
+Returns a =PaletteReport= of =colors= (default =RUHI_COLORS=).
+Its =contrast= is the WCAG contrast of each colour on =background=.
+Its =min_delta_e= is the smallest CIEDE2000 difference between any two colours for each vision type.
+The keys are ="normal"=, ="protan"=, ="deutan"= and ="tritan"=.
+=reference_min_delta_e= gives the same numbers for =reference=.
+
+*** =colormap_report(cmap)=
+
+Returns a =ColormapReport= holding L* and the CIEDE2000 step between neighbouring entries for each vision type.
+Its methods =lightness_monotonic(kind)=, =arms_monotonic(kind)= (for diverging maps) and =step_cv(kind)= summarise them.
+=step_cv= is the coefficient of variation of the steps.
+
+** Colour science
+
+=background= defaults to white.
+
+| Function | Description |
+|----------+-------------|
+| =srgb_to_lab(colors)=, =srgb_to_lch(colors)= | sRGB (International Electrotechnical Commission standard 61966-2-1) to CIELAB or CIELCh, D65 |
+| =lch_to_srgb(lch)= | CIELCh to sRGB; out-of-gamut colours lose chroma at fixed L* and hue |
+| =delta_e_2000(lab1, lab2)= | CIEDE2000 colour difference |
+| =simulate_cvd(colors, kind)= | Protan, deutan or tritan vision (Machado et al., 2009, severity 1) |
+| =contrast_ratio(color, background)= | WCAG 2.1 contrast ratio |
+| =readable_color(color, background, ratio)= | =color=, or its shade at the same hue that reaches =ratio= (default 4.5) |
+| =best_contrast(neighbours, candidates)= | The candidate (default black or white) whose smallest contrast with =neighbours= is largest |
+| =order_for_lines(colors, background)= | Colours passing 3:1 first, each next one furthest in CIEDE2000 from those chosen over all four vision types |
+
 * Module: =chemparseplot.plot.optimization=
 
 Functions for single-ended method (dimer, minimization) visualization.
