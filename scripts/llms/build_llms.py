@@ -4,7 +4,8 @@
 llms.txt follows the layout at https://llmstxt.org: an H1 title, a
 blockquote summary, a few notes, then H2 sections whose list items link
 to pages. llms-full.txt has the same header followed by every page as
-Markdown, so one file holds the whole manual.
+Markdown, so one file holds the whole manual. A page listed under
+docs.full_exclude is left out, and the header names it.
 
 The page list comes from the toctree directives of the docs index, so a
 page added to a toctree appears here on the next run. A page summary is
@@ -1797,12 +1798,28 @@ class Builder:
             out += [f"## {section}", "", *sections[section], ""]
         return tidy(out)
 
+    def left_out_note(self) -> list[str]:
+        entries = []
+        for page in self.pages:
+            if page.name not in self.full_exclude:
+                continue
+            entry = f"[{page.title}]({page.url})"
+            if page.path is not None:
+                source = self.url_for(page.path.relative_to(self.root).as_posix())
+                if source != page.url:
+                    entry += f", source {source}"
+            entries.append(entry)
+        if not entries:
+            return []
+        return [f"Left out of this file: {'; '.join(entries)}.", ""]
+
     def llms_full(self) -> str:
         project = self.cfg["project"]
         out = self.header()
         note = project.get("full_note")
         if note:
             out += [note.strip(), ""]
+        out += self.left_out_note()
         kept = [p for p in self.pages if p.name not in self.full_exclude]
         ordered = [p for p in kept if not p.optional] + [p for p in kept if p.optional]
         extras = [item for item in self.extras() if item.get("full")]

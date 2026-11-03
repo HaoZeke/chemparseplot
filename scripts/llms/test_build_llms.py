@@ -182,6 +182,27 @@ class BuildTest(unittest.TestCase):
         self.assertIn("[Notes](docs/orgmode/notes.org)", optional)
         self.assertNotIn("lab notebook", self.full)
 
+    def test_left_out_page_is_named_in_the_full_text(self):
+        self.assertIn(
+            "Left out of this file: [Notes](docs/orgmode/notes.org).", self.full
+        )
+        self.assertNotIn("Left out of this file", self.index)
+
+    def test_left_out_page_on_a_site_names_its_source(self):
+        config = CONFIG.replace(
+            'index = "index.org"',
+            'index = "index.org"\npage_url = "https://demo.example/{page}"',
+        )
+        repo = Repo(config=config)
+        self.addCleanup(repo.close)
+        status, err = repo.run()
+        self.assertEqual(status, 0, err)
+        self.assertIn(
+            "Left out of this file: [Notes](https://demo.example/notes), "
+            "source docs/orgmode/notes.org.",
+            repo.read("llms-full.txt"),
+        )
+
     def test_full_text_converts_org(self):
         self.assertIn("## Guide\n\nSource: docs/orgmode/guide.org", self.full)
         self.assertIn("Call `add` with two numbers.", self.full)

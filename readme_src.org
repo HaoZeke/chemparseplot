@@ -88,8 +88,8 @@ Full documentation is at [[https://chemparseplot.rgoswami.me]]. This includes:
 - [[https://chemparseplot.rgoswami.me/apidocs/index.html][API reference]]
 
 The map of the site, [[https://chemparseplot.rgoswami.me/llms.txt][llms.txt]], lists the pages with a line on what
-each covers, and [[https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt][llms-full.txt]] holds the whole manual in one
-Markdown file. [[https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md][AGENTS.md]] has the build, test and documentation
+each covers, and [[https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt][llms-full.txt]] holds the manual in one
+Markdown file and names what it leaves out. [[https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md][AGENTS.md]] has the build, test and documentation
 commands and the mistakes that are easy to make, and [[https://github.com/HaoZeke/chemparseplot/tree/main/skills][skills/]] has task
 guides whose scripts CI runs: reading an ORCA scan, adding a parser, and
 finding the source of a docs page.

@@ -5,8 +5,8 @@ manual is published at <https://chemparseplot.rgoswami.me/>, built from
 Org pages under `docs/orgmode/` and MyST Markdown pages under
 `doc/source/`. `doc/source/llms.txt` is its hand-written map, served as
 <https://chemparseplot.rgoswami.me/llms.txt>, and `llms-full.txt` at the
-repository root holds the whole manual in one file. Task guides with
-scripts that CI runs are under `skills/`.
+repository root holds the manual in one file and names what it leaves
+out. Task guides with scripts that CI runs are under `skills/`.
 
 ## What chemparseplot is
 
