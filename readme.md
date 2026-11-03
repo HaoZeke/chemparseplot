@@ -121,6 +121,13 @@ Full documentation is at <https://chemparseplot.rgoswami.me>. This includes:
 -   [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html) for common workflows
 -   [API reference](https://chemparseplot.rgoswami.me/apidocs/index.html)
 
+The map of the site, [llms.txt](https://chemparseplot.rgoswami.me/llms.txt), lists the pages with a line on what
+each covers, and [llms-full.txt](https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt) holds the whole manual in one
+Markdown file. [AGENTS.md](https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md) has the build, test and documentation
+commands and the mistakes that are easy to make, and [skills/](https://github.com/HaoZeke/chemparseplot/tree/main/skills) has task
+guides whose scripts CI runs: reading an ORCA scan, adding a parser, and
+finding the source of a docs page.
+
 
 <a id="orgc77604d"></a>
 
