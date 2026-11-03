@@ -75,8 +75,7 @@ scripts that CI runs are under `skills/`.
   passed, 5 skipped, 2 s) is a smoke test, not the suite.
 - The pandas and plotnine tests run in the pixi environments of
   `pixi.toml` (`test`, `plot`, `chemgp`, `plumed`), which the Coverage
-  workflow combines; `pixi run cov` does the same locally. It was not
-  run here.
+  workflow combines; `pixi run cov` does the same locally.
 - The Doctest Tutorials workflow runs `scripts/run_org_doctests.py` on
   `docs/orgmode/tutorials/*.org`. Every Python block there is marked
   `SKIP-DOCTEST`, so it runs none.
@@ -137,7 +136,9 @@ uv run sphinx-build doc/source doc/build/html
 - The version comes from the git tag through hatch-vcs and is written to
   the ignored `_version.py`. The `version` in `pixi.toml` and
   `current` in `tbump.toml` still say 1.8.0; the build does not read
-  them. A `v*` tag publishes to PyPI.
+  them. `doc/source/conf.py` asks the installed package and falls back
+  to 1.11.0, so a docs build without chemparseplot installed shows that.
+  A `v*` tag publishes to PyPI.
 
 ## Common tasks
 
@@ -180,7 +181,14 @@ uv run sphinx-build doc/source doc/build/html
     converts hartree to kcal/mol with `.to`; both raise.
   - `docs/orgmode/dev/contributing.org` puts tests next to the parser,
     lists a `plot` marker that is not declared, and imports
-    `rgpycrumbs._aux.ensure_import`, which is not a dependency.
+    `rgpycrumbs._aux.ensure_import`; rgpycrumbs is not a runtime
+    dependency.
+  - `howto/install`, `howto/faq` and `tutorials/orca_neb` list Python
+    3.10; `requires-python` is `>=3.11`.
+  - `howto/dev_testing` says `pixi run cov` fails below 90% coverage
+    and that coverage runs with `parallel = true`. The `cov` task sets
+    no threshold, the Coverage workflow fails below 70%, and
+    `pyproject.toml` has `parallel = false`.
 - An Org link to another page, `[[file:page.org][...]]`, ends up as a
   link to `page.rst` on the site; see the `chemparseplot-docs` skill.
 - `CONTRIBUTING.md` at the root is empty; the guide is
