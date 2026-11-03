@@ -31,6 +31,9 @@ The column is 89 mm at 300 dpi.
 Each panel takes the figure width divided by the panel count.
 xyzrender writes an SVG at that panel size.
 The PNG file is larger than the panel.
+xyzrender 0.3.8 pads each side by 20 px and scales the drawing into the rest.
+A panel of 40 px or less would be blank, so it raises a =ValueError=.
+At the default width, a strip of 26 panels or more raises it.
 
 A single unlabelled frame is returned as that panel.
 A path is a horizontal strip.

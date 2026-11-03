@@ -1023,6 +1023,14 @@ def _render_xyzrender(
                 hy=True,
                 nci_color=SKY,
             )
+            # xyzrender scales the drawing by (canvas_size - 2 * padding) / span,
+            # so a narrower panel would come back blank.
+            if canvas <= 2 * cfg.padding:
+                msg = (
+                    "An xyzrender panel must be wider than twice its padding, "
+                    f"{2 * cfg.padding:g} px"
+                )
+                raise ValueError(msg)
             # paton is the line style. Body colours come from the element
             # map, and the outline is the theme ink.
             cfg.color_overrides = frame_color_overrides(frame.symbols, colors)
@@ -1093,7 +1101,8 @@ def render_structure(
         xyzrender writes a PNG with more pixels than the panel and no
         dpi chunk. The caption uses the dpi of that file, or the print
         resolution times the measured pixel scale when the chunk is
-        absent.
+        absent. An xyzrender panel must be wider than twice the xyzrender
+        padding (40 px in xyzrender 0.3.8), or a ``ValueError`` is raised.
     element_colors:
         Map from element symbol to hex colour. The default is
         ``ELEMENT_COLORS``: each element takes the Ruhi colour of the
