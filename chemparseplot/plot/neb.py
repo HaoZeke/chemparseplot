@@ -2,20 +2,25 @@ from __future__ import annotations
 
 import io
 import logging
+import math
 import tempfile
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+import matplotlib as mpl
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
 import numpy as np
 from ase.io import write as ase_write
 from matplotlib import tri
+from matplotlib.cm import ScalarMappable
 from matplotlib.collections import LineCollection
+from matplotlib.colors import Normalize
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.patches import ArrowStyle
+from matplotlib.ticker import MaxNLocator
 from scipy import ndimage
 from scipy.interpolate import (
     CubicHermiteSpline,
@@ -30,6 +35,20 @@ from chemparseplot.parse.projection import (
     project_to_sd,
 )
 from chemparseplot.parse.types import OrcaNebResult
+from chemparseplot.plot.journal import (
+    DEFAULT_JOURNAL,
+    LINE_TYPES,
+    apply_style,
+    figure_style,
+    journal_figure,
+    label_hline,
+    label_lines,
+)
+from chemparseplot.plot.palette import (
+    RUHI_CYCLE,
+    RUHI_SEQUENTIAL,
+    contrast_limited,
+)
 from chemparseplot.plot.structs import (
     StructurePlacement,
     convert_energy,
@@ -37,6 +56,14 @@ from chemparseplot.plot.structs import (
     eigenvalue_axis_label,
     energy_axis_label,
 )
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from matplotlib.typing import ColorType
+    from numpy.typing import ArrayLike
+
+    from chemparseplot.plot.journal import JournalPreset
 
 log = logging.getLogger(__name__)
 
@@ -835,6 +862,11 @@ def plot_energy_path(
     method="hermite",
     smoothing=None,
     label=None,
+    *,
+    markersize: float | None = None,
+    markeredgewidth: float | None = None,
+    markeredgecolor: ColorType | None = None,
+    samples: int | None = None,
 ) -> Any:
     """Plots 1D energy profile with optional spline interpolation.
 
@@ -845,83 +877,292 @@ def plot_energy_path(
         coordinates only; meaningless when ``rc`` is image index).
         ``"spline"`` — cubic spline through the energy points.
         ``"none"`` — markers joined by straight segments only (no interpolant).
+    markersize, markeredgewidth :
+        Image marker size and edge width in points; default the
+        ``lines.markersize`` and ``lines.markeredgewidth`` rcParams, which
+        :func:`chemparseplot.plot.journal.apply_style` sets.
+    markeredgecolor :
+        Marker edge colour, default the line colour. The background colour
+        keeps neighbouring markers apart.
+    samples :
+        Points on the interpolant (default 300).
 
     ```{versionadded} 0.1.0
+    ```
+
+    ```{versionchanged} 1.14.0
+    Marker size and edge width follow the rcParams; added *markersize*,
+    *markeredgewidth*, *markeredgecolor* and *samples*.
     ```
     """
     if smoothing is None:
         smoothing = SmoothingParams()
+    marker_kw = {
+        "marker": "o",
+        "color": color,
+        "ms": mpl.rcParams["lines.markersize"] if markersize is None else markersize,
+        "alpha": alpha,
+        "zorder": zorder + 1,
+        "markerfacecolor": color,
+        "markeredgewidth": (
+            mpl.rcParams["lines.markeredgewidth"]
+            if markeredgewidth is None
+            else markeredgewidth
+        ),
+    }
+    if markeredgecolor is not None:
+        marker_kw["markeredgecolor"] = markeredgecolor
 
     # Points only / piecewise linear: no smooth interpolant.
     # Use this when the abscissa is image index (force derivatives are not dE/dindex).
     if method in ("none", "linear", "raw"):
-        ax.plot(
-            rc,
-            energy,
-            marker="o",
-            ls="-",
-            color=color,
-            ms=6,
-            alpha=alpha,
-            zorder=zorder + 1,
-            markerfacecolor=color,
-            markeredgewidth=0.5,
-            label=label,
-        )
+        ax.plot(rc, energy, ls="-", label=label, **marker_kw)
         return
 
     # Derivative is negative force
     deriv = -f_para
 
     try:
-        idx = np.argsort(rc)
-        rc_s = rc[idx]
-        e_s = energy[idx]
-
-        rc_min, rc_max = rc_s.min(), rc_s.max()
-        path_length = rc_max - rc_min
-
-        # Normalize
-        if path_length > MIN_PATH_LENGTH:
-            rc_norm = (rc_s - rc_min) / path_length
-        else:
-            rc_norm = rc_s
-
-        rc_fine_norm = np.linspace(0, 1, 300)
-
-        if method == "hermite":
-            deriv_smooth = savgol_filter(
-                deriv, smoothing.window_length, smoothing.polyorder
-            )
-            deriv_sorted = deriv_smooth[idx]
-            # Scale derivative to normalized coordinate
-            deriv_scaled = deriv_sorted * path_length
-
-            spline = CubicHermiteSpline(rc_norm, e_s, deriv_scaled)
-            y_fine = spline(rc_fine_norm)
-        else:
-            tck = splrep(rc_norm, e_s, k=3)
-            y_fine = splev(rc_fine_norm, tck)
-
-        x_fine = rc_fine_norm * path_length + rc_min
-
-        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder, label=label)
-        ax.plot(
-            rc,
-            energy,
-            marker="o",
-            ls="None",
-            color=color,
-            ms=6,
-            alpha=alpha,
-            zorder=zorder + 1,
-            markerfacecolor=color,
-            markeredgewidth=0.5,
+        x_fine, y_fine = _energy_interpolant(
+            rc, energy, deriv, method, smoothing, 300 if samples is None else samples
         )
+        ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder, label=label)
+        ax.plot(rc, energy, ls="None", **marker_kw)
 
     except Exception as e:
         log.warning(f"Spline failed ({e}), plotting raw lines.")
         ax.plot(rc, energy, color=color, alpha=alpha, zorder=zorder, label=label)
+
+
+def _energy_interpolant(rc, energy, deriv, method, smoothing, samples):
+    """Hermite (through ``deriv`` = dE/drc) or cubic-spline curve through the
+    images, ``samples`` points long. ``smoothing`` None uses ``deriv`` as given."""
+    rc = np.asarray(rc, dtype=float)
+    energy = np.asarray(energy, dtype=float)
+    idx = np.argsort(rc)
+    rc_s = rc[idx]
+    e_s = energy[idx]
+
+    rc_min, rc_max = rc_s.min(), rc_s.max()
+    path_length = rc_max - rc_min
+
+    # Normalize
+    if path_length > MIN_PATH_LENGTH:
+        rc_norm = (rc_s - rc_min) / path_length
+    else:
+        rc_norm = rc_s
+
+    rc_fine_norm = np.linspace(0, 1, samples)
+
+    if method == "hermite":
+        deriv = np.asarray(deriv, dtype=float)
+        if smoothing is not None:
+            deriv = savgol_filter(deriv, smoothing.window_length, smoothing.polyorder)
+        # Scale derivative to normalized coordinate
+        deriv_scaled = deriv[idx] * path_length
+        y_fine = CubicHermiteSpline(rc_norm, e_s, deriv_scaled)(rc_fine_norm)
+    else:
+        tck = splrep(rc_norm, e_s, k=3)
+        y_fine = splev(rc_fine_norm, tck)
+
+    return rc_fine_norm * path_length + rc_min, y_fine
+
+
+# A cubic spline needs one more point than its degree.
+_SPLINE_MIN_POINTS = 4
+
+
+def _band_curve(ax, rc, energy, f_para, *, method, smoothing, samples, **line_kw):
+    """Draw one band as a smooth curve, or straight segments when the
+    interpolant is undefined (no forces for Hermite, too few images)."""
+    if method == "hermite" and f_para is None:
+        method = "spline"
+    if method == "spline" and len(rc) < _SPLINE_MIN_POINTS:
+        method = "none"
+    if method in ("none", "linear", "raw"):
+        return ax.plot(rc, energy, **line_kw)[0]
+    deriv = None if f_para is None else -np.asarray(f_para, dtype=float)
+    x_fine, y_fine = _energy_interpolant(rc, energy, deriv, method, smoothing, samples)
+    return ax.plot(x_fine, y_fine, **line_kw)[0]
+
+
+def _tick_decimals(axis) -> int:
+    """Decimals the major tick labels of ``axis`` show, in data units."""
+    decimals = 0
+    for text in axis.get_majorticklabels():
+        digits = "".join(ch for ch in text.get_text() if ch.isdigit() or ch == ".")
+        if "." in digits:
+            decimals = max(decimals, len(digits.split(".", 1)[1]))
+    magnitude = getattr(axis.get_major_formatter(), "orderOfMagnitude", 0)
+    return max(decimals - magnitude, 0)
+
+
+def _fit_above(ax, annotation) -> None:
+    """Raise the top of the y range until ``annotation``, placed above its
+    data point, ends inside the axes."""
+    fig = ax.figure
+    fig.draw_without_rendering()
+    renderer = fig.canvas.get_renderer()
+    box = ax.get_window_extent(renderer)
+    over = (
+        annotation.get_window_extent(renderer).y1
+        - ax.transData.transform(annotation.xy)[1]
+    )
+    if box.y0 + over >= box.y1:
+        return
+    y0, y1 = ax.get_ylim()
+    needed = y0 + (annotation.xy[1] - y0) / (1.0 - over / box.height)
+    if needed > y1:
+        ax.set_ylim(y0, needed)
+
+
+def plot_neb_profile(
+    rc: ArrayLike,
+    energy: ArrayLike,
+    f_para: ArrayLike | None = None,
+    *,
+    history: Sequence | None = None,
+    iterations: Sequence[int] | None = None,
+    reference: float | None = None,
+    reference_label: str = "Reference",
+    ax: Axes | None = None,
+    journal: str | JournalPreset | None = None,
+    columns: str = "single",
+    method: str = "hermite",
+    smoothing: SmoothingParams | None = None,
+    color: ColorType | None = None,
+    label: str | None = None,
+    energy_unit: str = "eV",
+    xlabel: str = "Path length (Å)",
+    ylabel: str | None = None,
+    barrier: bool = True,
+) -> Figure:
+    """NEB energy profile in the journal style of :mod:`chemparseplot.plot.journal`.
+
+    The band is a wide line in the first Ruhi line colour through its images,
+    drawn as markers outlined in the background colour. The curve is a cubic
+    Hermite interpolant whose slopes are minus the forces along the path
+    (``-f_para``), or a cubic spline when no forces are given; ``smoothing``
+    applies a Savitzky-Golay filter to the forces first (default: forces as
+    computed). It is sampled once per output pixel at the journal's raster
+    resolution, so no segment shows.
+
+    Earlier bands (``history``, oldest first, each ``(rc, energy)`` or
+    ``(rc, energy, f_para)``) are narrow lines coloured from light to dark
+    along the part of ``ruhi_seq`` that reaches the WCAG 3:1 contrast for
+    graphics, with an iteration colour bar (``iterations``, default 0, 1,
+    ...). The barrier, the highest image above the first, is written above
+    the peak with one decimal more than the energy ticks show, since the
+    axis already gives the reader the coarser digits, on a halo of the
+    background colour so earlier bands do not cross it. ``reference`` draws
+    a dashed (ISO 128-2 type 02) line at that energy with a direct label,
+    for a saddle energy known by other means.
+
+    Without ``ax`` a figure one ``columns`` of ``journal`` wide is created
+    and the journal style goes into the global rcParams, as
+    :func:`~chemparseplot.plot.journal.journal_figure` does, so the figure
+    saves in that style; with ``ax`` the caller's rcParams are kept and the
+    journal only sets line and marker sizes.
+
+    Returns the figure.
+
+    ```{versionadded} 1.14.0
+    ```
+    """
+    if ax is None:
+        style = apply_style(journal or DEFAULT_JOURNAL)
+        fig, ax = journal_figure(columns=columns, style=style)
+    else:
+        style = figure_style(journal or DEFAULT_JOURNAL)
+        fig = ax.figure
+    rc = np.asarray(rc, dtype=float)
+    energy = np.asarray(energy, dtype=float)
+    color = color or RUHI_CYCLE[0]
+    samples = math.ceil(fig.get_figwidth() * style.preset.raster_dpi) + 1
+    curve_kw = {"method": method, "smoothing": smoothing, "samples": samples}
+
+    context = []
+    if history:
+        cmap = contrast_limited(RUHI_SEQUENTIAL, background=style.facecolor).reversed()
+        steps = np.arange(len(history)) if iterations is None else np.asarray(iterations)
+        lo, hi = float(steps.min()), float(steps.max())
+        norm = Normalize(lo, hi if hi > lo else lo + 1.0)
+        for step, band in zip(steps, history, strict=True):
+            h_rc, h_e, *h_f = band
+            context.append(
+                _band_curve(
+                    ax,
+                    np.asarray(h_rc, dtype=float),
+                    np.asarray(h_e, dtype=float),
+                    h_f[0] if h_f else None,
+                    color=cmap(norm(step)),
+                    linewidth=style.narrow,
+                    zorder=10,
+                    **curve_kw,
+                )
+            )
+        cbar = fig.colorbar(ScalarMappable(norm, cmap), ax=ax, label="Iteration")
+        cbar.locator = MaxNLocator(integer=True)
+        cbar.update_ticks()
+
+    ref_line = None
+    if reference is not None:
+        ref_line = ax.axhline(
+            reference,
+            color=style.textcolor,
+            linewidth=style.narrow,
+            linestyle=LINE_TYPES[1][2],
+            zorder=15,
+        )
+
+    band = _band_curve(
+        ax,
+        rc,
+        energy,
+        f_para,
+        color=color,
+        linewidth=style.wide,
+        zorder=20,
+        label=label,
+        **curve_kw,
+    )
+    ax.plot(
+        rc,
+        energy,
+        ls="None",
+        marker="o",
+        ms=style.marker,
+        color=color,
+        markeredgecolor=style.facecolor,
+        markeredgewidth=style.narrow,
+        zorder=21,
+    )
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel or energy_axis_label(energy_unit, label="Relative energy"))
+
+    peak = int(np.argmax(energy))
+    if barrier and 0 < peak < len(energy) - 1:
+        fig.draw_without_rendering()
+        decimals = _tick_decimals(ax.yaxis) + 1
+        value = energy[peak] - energy[0]
+        text = ax.annotate(
+            rf"$\Delta E^{{\ddagger}} = {value:.{decimals}f}$ {energy_unit}",
+            xy=(rc[peak], energy[peak]),
+            xytext=(0.0, style.gap + style.marker / 2.0),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=style.small,
+            color=style.textcolor,
+            path_effects=style.halo(style.facecolor),
+            zorder=30,
+        )
+        _fit_above(ax, text)
+    if ref_line is not None:
+        label_hline(ax, ref_line, reference_label, ignore=context)
+    if label:
+        label_lines(ax, [band])
+    return fig
 
 
 def plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white"):

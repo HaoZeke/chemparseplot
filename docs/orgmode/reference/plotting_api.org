@@ -28,7 +28,15 @@ Dataclass for Savitzky-Golay smoothing of NEB force profiles.
 
 ** 1D Profile Functions
 
-*** =plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method="hermite", smoothing=None)=
+*** =plot_energy_path=
+
+#+begin_src python
+plot_energy_path(
+    ax, rc, energy, f_para, color, alpha, zorder,
+    method="hermite", smoothing=None, label=None, *,
+    markersize=None, markeredgewidth=None, markeredgecolor=None, samples=None,
+)
+#+end_src
 
 Plots a 1D energy profile with optional Hermite spline interpolation.
 
@@ -43,15 +51,71 @@ Plots a 1D energy profile with optional Hermite spline interpolation.
 | =color= | =str= | - | Line and marker color |
 | =alpha= | =float= | - | Opacity |
 | =zorder= | =int= | - | Drawing order |
-| =method= | =str= | ="hermite"= | Interpolation method: ="hermite"= or ="spline"= |
+| =method= | =str= | ="hermite"= | Interpolation method: ="hermite"=, ="spline"= or ="none"= |
 | =smoothing= | =SmoothingParams= or =None= | =None= | Savitzky-Golay parameters (defaults to =SmoothingParams()=) |
+| =label= | =str= or =None= | =None= | Legend label of the curve |
+| =markersize= | =float= or =None= | =None= | Image marker size in points; =lines.markersize= when =None= |
+| =markeredgewidth= | =float= or =None= | =None= | Marker edge width in points; =lines.markeredgewidth= when =None= |
+| =markeredgecolor= | colour or =None= | =None= | Marker edge colour; the line colour when =None= |
+| =samples= | =int= or =None= | =None= | Points on the interpolant; 300 when =None= |
 
 **** Notes
 
 - =hermite=: CubicHermiteSpline using Savitzky-Golay smoothed force derivatives. Produces physically meaningful interpolation when forces are available.
 - =spline=: Standard B-spline via =splrep/splev= (cubic, k=3). Does not use force information.
+- =none=: markers joined by straight segments.
 - Normalizes reaction coordinate to [0, 1] before fitting, then maps back.
 - Falls back to raw line plot if spline fitting raises an exception.
+- Marker size and edge width follow the rcParams, which =chemparseplot.plot.journal.apply_style= sets.
+  Before 1.14.0 they were fixed at 6 and 0.5 points.
+
+*** =plot_neb_profile=
+
+#+begin_src python
+plot_neb_profile(
+    rc, energy, f_para=None, *, history=None, iterations=None,
+    reference=None, reference_label="Reference", ax=None, journal=None,
+    columns="single", method="hermite", smoothing=None, color=None,
+    label=None, energy_unit="eV", xlabel="Path length (\u00c5)", ylabel=None,
+    barrier=True,
+)
+#+end_src
+
+Nudged elastic band (NEB) energy profile in the journal style.
+Returns the figure.
+
+**** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =rc= | =np.ndarray= | - | Path length (or other reaction coordinate) of each image |
+| =energy= | =np.ndarray= | - | Energy of each image |
+| =f_para= | =np.ndarray= or =None= | =None= | Force along the path, the negative of the Hermite curve's slope |
+| =history= | sequence or =None= | =None= | Earlier bands, oldest first, each =(rc, energy)= or =(rc, energy, f_para)= |
+| =iterations= | sequence of =int= or =None= | =None= | Iteration of each earlier band, counted from 0 when =None= |
+| =reference= | =float= or =None= | =None= | Energy drawn as a dashed, directly labelled line |
+| =reference_label= | =str= | ="Reference"= | Label of the reference line |
+| =ax= | =matplotlib.axes.Axes= or =None= | =None= | Panel to draw into; a new figure when =None= |
+| =journal= | =str=, =JournalPreset= or =None= | =None= | Journal style (=acs= when =None=) |
+| =columns= | =str= | ="single"= | Column span of a new figure |
+| =method= | =str= | ="hermite"= | ="hermite"=, ="spline"= or ="none"= |
+| =smoothing= | =SmoothingParams= or =None= | =None= | Savitzky-Golay filter on the forces; raw forces when =None= |
+| =color= | colour or =None= | =None= | Band colour (teal when =None=) |
+| =label= | =str= or =None= | =None= | Band label, written at the end of the band |
+| =energy_unit= | =str= | ="eV"= | Unit in the energy label and barrier |
+| =xlabel=, =ylabel= | =str= | path length, relative energy | x and y labels |
+| =barrier= | =bool= | =True= | Barrier written above the highest interior image |
+
+**** Notes
+
+- The band is a wide line through markers outlined in the background colour.
+  The curve is sampled once per output pixel at the journal's raster resolution.
+- Earlier bands are narrow lines coloured light to dark along the entries of =ruhi_seq= that reach 3:1 on the background.
+  A colour bar gives their iterations.
+- The barrier is the highest image above the first.
+  It is written with one decimal more than the energy ticks show, on a halo of the background colour.
+- Without =ax= the journal style goes into the global rcParams, as =journal_figure= does.
+  With =ax= the caller's rcParams are kept and the journal sets only line and marker sizes.
 
 *** =plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white")=
 
