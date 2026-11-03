@@ -22,7 +22,12 @@ from typing import TYPE_CHECKING
 import matplotlib.patheffects as mpe
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+from matplotlib.ticker import AutoLocator
 
+from chemparseplot.plot.journal import DEFAULT_JOURNAL, apply_style, fit_height
+from chemparseplot.plot.palette import RUHI_SEQUENTIAL, best_contrast
 from chemparseplot.plot.theme import (
     RUHI_COLORS,
     get_theme,
@@ -32,6 +37,8 @@ from chemparseplot.plot.theme import (
 if TYPE_CHECKING:
     import pandas as pd
     from plotnine import ggplot
+
+    from chemparseplot.plot.journal import JournalPreset
 
 log = logging.getLogger(__name__)
 
@@ -652,14 +659,27 @@ def plot_surface_contour(
     levels: int | np.ndarray | None = None,
     contour_step: float | None = None,
     _point_style: str = "star",
-    width: float = 7.0,
-    height: float = 5.0,
+    width: float | None = None,
+    height: float | None = None,
+    *,
+    journal: str | JournalPreset | None = None,
+    columns: str = "single",
+    cmap: str | None = None,
+    xlabel: str = r"$x$",
+    ylabel: str = r"$y$",
+    zlabel: str = r"$E$ (eV)",
 ) -> plt.Figure:
     """2D filled contour with optional path and point overlays.
 
-    Matches the Julia CairoMakie style: RUHI colormap, black contour
-    lines, white NEB path, coral image circles, numbered images,
-    sunshine star endpoints (or circle+label for minima/saddles).
+    Drawn in the style of :mod:`chemparseplot.plot.journal`: one column of
+    ``journal`` wide and as tall as the equal-aspect map needs, filled with
+    the perceptually ordered ``ruhi_seq`` map. Filled bands, contour lines
+    and colour-bar ticks share one set of levels, and each contour line is
+    black or white, whichever contrasts more with the bands on either side.
+    Paths are white lines with a dark outline through numbered sky-blue
+    images, a hue the warm sequential map never takes; minima are white
+    circles (A, B, ...), saddles white crosses (S1, S2, ...) and other
+    points sunshine stars.
 
     Parameters
     ----------
@@ -674,13 +694,25 @@ def plot_surface_contour(
     clamp_lo, clamp_hi : float or None
         Value clamping for z data.
     levels : int or array or None
-        Explicit contour levels. If None, uses 25 levels over clamped range.
+        Explicit contour levels. If None, the levels are the ticks
+        matplotlib's automatic locator puts on the colour bar, which it
+        spaces by the tick font size, so every band edge is labelled.
     contour_step : float or None
-        Step size for black contour lines. If None, auto-computed.
+        Step between contour lines. If None, lines are drawn at the levels.
     point_style : str
         Default point style: "star" or "labeled".
-    width, height : float
-        Figure size in inches.
+    width, height : float or None
+        Figure size in inches. Default: the ``columns`` width of
+        ``journal`` and the height the map needs at that width.
+    journal : str or JournalPreset or None
+        Journal whose style goes into the global rcParams, so the figure
+        saves in it (default ``"acs"``).
+    columns : str
+        Column span for the default width.
+    cmap : str or None
+        Colour map name (default ``"ruhi_seq"``).
+    xlabel, ylabel, zlabel : str
+        Axis labels and colour-bar label.
 
     Returns
     -------
@@ -696,138 +728,201 @@ def plot_surface_contour(
     >>> fig = plot_surface_contour(X, Y, Z, clamp_lo=-1, clamp_hi=1)
 
     .. versionadded:: 1.4.0
-    """
-    _setup()
 
-    gz = np.asarray(grid_z).copy()
+    .. versionchanged:: 1.14.0
+       Journal style and size by default, the ``ruhi_seq`` map, shared
+       levels for bands, lines and colour bar; added *journal*,
+       *columns*, *cmap*, *xlabel*, *ylabel* and *zlabel*.
+    """
+    _ensure_ruhi_cmap()
+    style = apply_style(journal or DEFAULT_JOURNAL, theme="ruhi")
+    cmap = cmap or RUHI_SEQUENTIAL
+
+    gz = np.asarray(grid_z, dtype=float).copy()
     if clamp_lo is not None:
         gz = np.clip(gz, clamp_lo, None)
     if clamp_hi is not None:
         gz = np.clip(gz, None, clamp_hi)
 
-    lo = clamp_lo if clamp_lo is not None else float(gz.min())
-    hi = clamp_hi if clamp_hi is not None else float(gz.max())
+    lo = clamp_lo if clamp_lo is not None else float(np.nanmin(gz))
+    hi = clamp_hi if clamp_hi is not None else float(np.nanmax(gz))
+    gx = np.asarray(grid_x, dtype=float)
+    gy = np.asarray(grid_y, dtype=float)
+
+    fig_w = style.width(columns) if width is None else width
+    fig_h = height
+    if fig_h is None:
+        fig_h = fig_w * np.ptp(gy) / np.ptp(gx)
+        if style.preset.max_height is not None:
+            fig_h = min(fig_h, style.preset.max_height)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h), layout="constrained")
+    ax.set_xlim(gx.min(), gx.max())
+    ax.set_ylim(gy.min(), gy.max())
+    ax.set_aspect("equal")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
 
     if levels is None:
-        levels = np.linspace(lo, hi, 25)
-
+        levels = _colorbar_levels(ax, lo, hi, cmap, zlabel)
+    cf = ax.contourf(gx, gy, gz, levels=levels, cmap=cmap)
+    cbar = fig.colorbar(cf, cax=_colorbar_axes(ax), label=zlabel)
     if contour_step is None:
-        contour_step = (hi - lo) / 10.0
-    contour_levels = np.arange(lo, hi + contour_step, contour_step)
+        line_levels = np.asarray(cf.levels)
+    else:
+        line_levels = np.arange(lo, hi + contour_step, contour_step)
+    inside = line_levels[(line_levels > np.nanmin(gz)) & (line_levels < np.nanmax(gz))]
+    if len(inside):
+        lines = ax.contour(
+            gx,
+            gy,
+            gz,
+            levels=inside,
+            colors=_contour_line_colors(cf, inside, style),
+            linewidths=style.narrow,
+        )
+        cbar.add_lines(lines)
 
-    fig, ax = plt.subplots(figsize=(width, height))
-    gx = np.asarray(grid_x)
-    gy = np.asarray(grid_y)
-
-    cf = ax.contourf(gx, gy, gz, levels=levels, cmap="ruhi_diverging")
-    ax.contour(gx, gy, gz, levels=contour_levels, colors="black", linewidths=0.3)
-    fig.colorbar(cf, ax=ax, label=r"$E$ (eV)", shrink=0.8)
-    ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$y$")
-
-    # NEB paths: white line + coral circles + numbered images
     if paths is not None:
+        outline = [
+            mpe.Stroke(
+                linewidth=style.wide + 2 * style.narrow, foreground=style.textcolor
+            ),
+            mpe.Normal(),
+        ]
+        offset = style.gap + style.marker / 2
         for _label, (xs, ys) in paths.items():
             xs = np.asarray(xs)
             ys = np.asarray(ys)
-            ax.plot(xs, ys, color="white", linewidth=2.0, zorder=30)
+            ax.plot(
+                xs,
+                ys,
+                color=style.facecolor,
+                linewidth=style.wide,
+                path_effects=outline,
+                zorder=30,
+            )
             ax.scatter(
                 xs,
                 ys,
-                c=RUHI_COLORS["coral"],
-                s=50,
+                c=RUHI_COLORS["sky"],
+                s=style.marker**2,
                 marker="o",
-                edgecolors="white",
-                linewidths=1.0,
+                edgecolors=style.facecolor,
+                linewidths=style.narrow,
                 zorder=31,
             )
+            # Image numbers go below the path, point labels above it, so the
+            # two never cover each other where an image is a stationary point.
             for j in range(len(xs)):
                 ax.annotate(
                     str(j + 1),
                     (xs[j], ys[j]),
                     textcoords="offset points",
-                    xytext=(4, 4),
-                    fontsize=8,
-                    color="white",
-                    fontweight="bold",
+                    xytext=(offset, -offset),
+                    va="top",
+                    fontsize=style.footnote,
+                    color=style.facecolor,
+                    path_effects=style.halo(),
                     zorder=32,
                 )
 
-    # Points: context-dependent markers
     if points is not None:
         _min_labels = iter(["A", "B", "C", "D", "E"])
         _sad_labels = iter(["S1", "S2", "S3", "S4"])
+        big = style.marker_large
+        offset = style.gap + big / 2
+        label_kw = {
+            "textcoords": "offset points",
+            "xytext": (offset, offset),
+            "va": "bottom",
+            "fontsize": style.body,
+            "fontweight": "bold",
+            "color": style.facecolor,
+            "path_effects": style.halo(),
+            "zorder": 34,
+        }
+        marker_kw = {
+            "c": style.facecolor,
+            "s": big**2,
+            "edgecolors": style.textcolor,
+            "linewidths": style.narrow,
+            "zorder": 33,
+        }
 
         for pname, (xs, ys) in points.items():
             xs = np.asarray(xs)
             ys = np.asarray(ys)
 
             if "minim" in pname.lower():
-                # White circles with black stroke + letter labels
-                ax.scatter(
-                    xs,
-                    ys,
-                    c="white",
-                    s=80,
-                    marker="o",
-                    edgecolors="black",
-                    linewidths=1.5,
-                    zorder=33,
-                )
+                ax.scatter(xs, ys, marker="o", **marker_kw)
                 for k in range(len(xs)):
-                    lbl = next(_min_labels, f"M{k}")
-                    ax.annotate(
-                        lbl,
-                        (xs[k], ys[k]),
-                        textcoords="offset points",
-                        xytext=(6, 6),
-                        fontsize=12,
-                        fontweight="bold",
-                        color="white",
-                        path_effects=_STROKE,
-                        zorder=34,
-                    )
+                    ax.annotate(next(_min_labels, f"M{k}"), (xs[k], ys[k]), **label_kw)
             elif "saddle" in pname.lower():
-                # White x markers with black stroke + S labels
-                ax.scatter(
-                    xs,
-                    ys,
-                    c="white",
-                    s=100,
-                    marker="X",
-                    edgecolors="black",
-                    linewidths=1.5,
-                    zorder=33,
-                )
+                ax.scatter(xs, ys, marker="X", **marker_kw)
                 for k in range(len(xs)):
-                    lbl = next(_sad_labels, f"S{k}")
-                    ax.annotate(
-                        lbl,
-                        (xs[k], ys[k]),
-                        textcoords="offset points",
-                        xytext=(6, 6),
-                        fontsize=12,
-                        fontweight="bold",
-                        color="white",
-                        path_effects=_STROKE,
-                        zorder=34,
-                    )
+                    ax.annotate(next(_sad_labels, f"S{k}"), (xs[k], ys[k]), **label_kw)
             else:
-                # Endpoints or generic: sunshine stars
+                # A star fills half its box, so it gets twice the area.
                 ax.scatter(
                     xs,
                     ys,
-                    c=RUHI_COLORS["sunshine"],
-                    s=120,
                     marker="*",
-                    edgecolors="white",
-                    linewidths=1.0,
-                    zorder=33,
+                    **{**marker_kw, "c": RUHI_COLORS["sunshine"], "s": 2 * big**2},
                 )
 
-    ax.set_aspect("equal")
-    fig.tight_layout()
+    if height is None:
+        fit_height(fig)
     return fig
+
+
+# Matplotlib's colour-bar defaults (Figure.colorbar): gap to the parent of 0.05
+# of its width, and length 20 times the thickness.
+_CBAR_PAD = 0.05
+_CBAR_ASPECT = 20.0
+
+
+def _colorbar_axes(ax):
+    """Colour-bar axes exactly as tall as the equal-aspect ``ax``.
+
+    A colour bar attached with ``ax=`` spans the layout cell, which is taller
+    than an equal-aspect map; this one is an inset on the map's own box, with
+    matplotlib's default gap and aspect. Its width follows from the data
+    aspect, which an equal-aspect box keeps, so no layout pass is needed.
+    """
+    x0, x1 = ax.get_xlim()
+    y0, y1 = ax.get_ylim()
+    box_aspect = abs(y1 - y0) / abs(x1 - x0)
+    return ax.inset_axes([1.0 + _CBAR_PAD, 0.0, box_aspect / _CBAR_ASPECT, 1.0])
+
+
+def _colorbar_levels(ax, lo, hi, cmap, label) -> np.ndarray:
+    """Levels at the ticks matplotlib's automatic locator puts on the colour
+    bar of ``ax`` for ``[lo, hi]``, extended by one tick to cover the range."""
+    fig = ax.figure
+    probe = fig.colorbar(
+        ScalarMappable(Normalize(lo, hi), cmap=cmap), cax=_colorbar_axes(ax), label=label
+    )
+    fig.draw_without_rendering()
+    locator = AutoLocator()
+    locator.set_axis(probe.ax.yaxis)
+    levels = locator.tick_values(lo, hi)
+    probe.remove()
+    return levels
+
+
+def _contour_line_colors(filled, line_levels, style) -> list[str]:
+    """Text or background colour for each line, whichever contrasts more with
+    the filled bands on both sides of it."""
+    bounds = np.asarray(filled.levels)
+    bands = filled.to_rgba(filled.cvalues)[:, :3]
+    last = len(bands) - 1
+    candidates = (style.textcolor, style.facecolor)
+    colors = []
+    for value in line_levels:
+        below = int(np.clip(np.searchsorted(bounds, value, side="left") - 1, 0, last))
+        above = int(np.clip(np.searchsorted(bounds, value, side="right") - 1, 0, last))
+        colors.append(best_contrast(bands[[below, above]], candidates))
+    return colors
 
 
 def plot_gp_progression(

@@ -635,6 +635,46 @@ Plots convergence metrics (force norm and step size) from a trajectory DataFrame
 
 Plots alignment of per-iteration dimer mode with the final converged mode (|cos(mode, final)|).
 
+* Module: =chemparseplot.plot.chemgp=
+
+** =plot_surface_contour=
+
+#+begin_src python
+plot_surface_contour(
+    grid_x, grid_y, grid_z, paths=None, points=None,
+    clamp_lo=None, clamp_hi=None, levels=None, contour_step=None,
+    _point_style="star", width=None, height=None, *,
+    journal=None, columns="single", cmap=None,
+    xlabel=r"$x$", ylabel=r"$y$", zlabel=r"$E$ (eV)",
+)
+#+end_src
+
+Filled contour map of a 2D surface with optional paths and stationary points, in the journal style.
+Returns the figure.
+
+*** Parameters
+
+| Parameter | Type | Default | Description |
+|-----------+------+---------+-------------|
+| =grid_x=, =grid_y=, =grid_z= | array | - | Meshgrid arrays of the surface |
+| =paths= | =dict= or =None= | =None= | ={label: (xs, ys)}= paths, white lines with a dark outline through numbered sky-blue images |
+| =points= | =dict= or =None= | =None= | ={label: (xs, ys)}= points: white circles lettered from A for keys containing "minim", white crosses numbered from S1 for keys containing "saddle", sunshine stars otherwise |
+| =clamp_lo=, =clamp_hi= | =float= or =None= | =None= | Clipping range of the surface values |
+| =levels= | =int=, array or =None= | =None= | Filled levels, the colour-bar ticks of matplotlib's locator when =None= |
+| =contour_step= | =float= or =None= | =None= | Spacing of the contour lines, the filled levels when =None= |
+| =width=, =height= | =float= or =None= | =None= | Figure size in inches, the column width and the height the map needs when =None= |
+| =journal= | =str=, =JournalPreset= or =None= | =None= | Journal whose style goes into the global rcParams (=acs= when =None=) |
+| =columns= | =str= | ="single"= | Column span of the default width |
+| =cmap= | =str= or =None= | =None= | Colour map (=ruhi_seq= when =None=) |
+| =xlabel=, =ylabel=, =zlabel= | =str= | x, y, E (eV) | x, y and colour-bar labels |
+
+*** Notes
+
+- The x and y scales are equal; without =height= the figure is shrunk to its content with =fit_height=.
+- Filled bands, contour lines and colour-bar ticks share one set of levels.
+- Each contour line is black or white, whichever contrasts more with the bands on both sides.
+- Image numbers are below the path and point labels above it, so they never cover each other at a stationary point.
+
 * Module: =chemparseplot.parse.projection=
 
 Shared (s, d) reaction valley projection utilities.
