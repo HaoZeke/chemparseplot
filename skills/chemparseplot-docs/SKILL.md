@@ -66,10 +66,14 @@ uv run sphinx-build doc/source doc/build/html
 
 - Emacs 30. CI installs 30.1. Emacs 29.3 with its Org 9.6.15 stops at
   the first page with `void-function (org-element-parent)`, although
-  `export.el` defines a stand-in for `org-element-type-p`; and an
-  ox-rst that Emacs 30 compiled stops under Emacs 29 with
-  `wrong-number-of-arguments` in `org-element-type`. On the first run
-  `export.el` installs ox-rst from MELPA into `~/.emacs.d/elpa`.
+  `export.el` defines a stand-in for `org-element-type-p`.
+- On the first run `export.el` installs ox-rst from MELPA into
+  `~/.emacs.d/elpa`, and the Emacs that installs it byte-compiles it.
+  A copy the other version compiled stops at the first page: with
+  `wrong-number-of-arguments` under Emacs 29, with
+  `wrong-type-argument` under Emacs 30. After switching Emacs, run with
+  a fresh `HOME`, or remove `~/.emacs.d/elpa/ox-rst-*` so that
+  `export.el` installs and compiles it again.
 - Notebooks run during the build. A cell that fails is a warning, the
   build still succeeds, and the traceback is written under
   `doc/build/html/reports/`, which CI deploys with the rest of

@@ -104,9 +104,12 @@ uv run sphinx-build doc/source doc/build/html
 
 - The export needs Emacs 30 (Org 9.7); CI installs 30.1. Emacs 29.3,
   the Ubuntu 24.04 package, stops at the first page (see the
-  `chemparseplot-docs` skill). With Emacs 30.2 the export wrote 27
-  pages in 4 s; Sphinx, with the doc extra only, took 21 s: "build
-  succeeded, 17 warnings".
+  `chemparseplot-docs` skill), and so does Emacs 30 with an ox-rst
+  that Emacs 29 compiled. After switching Emacs, remove
+  `~/.emacs.d/elpa/ox-rst-*` or use a fresh `HOME`. With Emacs 30.2 the
+  export wrote 27 pages in 1.3 s, and in 4 to 6 s when it first
+  installed ox-rst from MELPA; Sphinx, with the doc extra only, took
+  21 s: "build succeeded, 17 warnings".
 - Sphinx runs five notebooks: the two under `tutorials/chemgp/`,
   `tutorials/eon/saddle`, `tutorials/orca/geomscan` and
   `worklog/graphTrials`. A failing cell is a warning, not an error, and
