@@ -9,9 +9,10 @@ from dataclasses import dataclass, replace
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from cycler import cycler
 from matplotlib.colors import LinearSegmentedColormap
 
-from chemparseplot.plot.palette import RUHI_COLORS
+from chemparseplot.plot.palette import RUHI_COLORS, RUHI_CYCLE, RUHI_SEQUENTIAL
 
 log = logging.getLogger(__name__)
 
@@ -65,8 +66,8 @@ RUHI_THEME = PlotTheme(
     textcolor="black",
     edgecolor="black",
     gridcolor="floralwhite",
-    cmap_profile="ruhi_diverging",
-    cmap_landscape="ruhi_diverging",
+    cmap_profile=RUHI_SEQUENTIAL,
+    cmap_landscape=RUHI_SEQUENTIAL,
     highlight_color="black",
 )
 
@@ -91,7 +92,8 @@ def build_cmap(hex_list, name):
     return cmap
 
 
-# Register default colormaps
+# Linear-RGB blends kept so older figures can be redrawn. Their lightness is
+# not monotone; new figures use ruhi_seq and ruhi_div from the palette module.
 build_cmap(
     [
         RUHI_COLORS["teal"],
@@ -148,8 +150,11 @@ def setup_global_theme(theme: PlotTheme):
             "legend.fontsize": theme.font_size,
             "savefig.facecolor": theme.facecolor,
             "savefig.transparent": False,
+            "axes.prop_cycle": cycler(color=list(RUHI_CYCLE)),
         }
     )
+    if theme.cmap_landscape in mpl.colormaps:
+        plt.rcParams["image.cmap"] = theme.cmap_landscape
 
 
 def apply_axis_theme(ax: plt.Axes, theme: PlotTheme):

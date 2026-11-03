@@ -44,6 +44,7 @@ from chemparseplot.plot.neb import (
     plot_landscape_surface,
     plot_structure_strip,
 )
+from chemparseplot.plot.palette import RUHI_SEQUENTIAL
 from chemparseplot.plot.structs import (
     convert_energy,
     convert_energy_curvature,
@@ -449,7 +450,7 @@ def render_single_ended_landscape(
     energy_cap_window: float | None = None,
     relative_energy: bool = True,
     title: str | None = None,
-    cmap: str = "viridis",
+    cmap: str = RUHI_SEQUENTIAL,
     output: Path,
     dpi: int = 150,
     theme: Any | None = None,
@@ -501,6 +502,10 @@ def render_single_ended_landscape(
 
     ```{versionadded} 1.9.10
     Added *surface_fit*.
+    ```
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
     ```
     """
     from matplotlib import ticker
@@ -694,7 +699,7 @@ def plot_optimization_landscape(
     label_mode: str = "optimization",
     project_path: bool = True,
     method: str = "grad_matern",
-    cmap: str = "viridis",
+    cmap: str = RUHI_SEQUENTIAL,
     energy_unit: str = "eV",
     z_label: str | None = None,
     **surface_kwargs,
@@ -730,6 +735,10 @@ def plot_optimization_landscape(
     Returns
     -------
     colorbar or None
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
+    ```
     """
     z_values = convert_energy(z_data, energy_unit)
     grad_a_values = convert_energy(grad_a, energy_unit)

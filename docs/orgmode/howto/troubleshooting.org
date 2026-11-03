@@ -195,7 +195,7 @@ plot_orca_neb_landscape(
 | "No images found" | NEB calculation incomplete | Check ORCA output for errors |
 | "Barrier is negative" | Product higher than saddle | Check calculation converged |
 | "RMSD values are identical" | Structures not loaded | Verify .xyz/.con files exist |
-| "Color map not found" | Invalid colormap name | Use "cmc.batlow" or "viridis" |
+| "Color map not found" | Invalid colormap name | Use ="ruhi_seq"=, ="ruhi_div"= or ="cmc.batlow"= |
 
 ** Getting Help
 

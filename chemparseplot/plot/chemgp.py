@@ -996,7 +996,7 @@ def plot_gp_progression(
         ax = axes[row][col]
         gp_mean = np.clip(np.asarray(data["gp_mean"]), clamp_lo, clamp_hi)
 
-        cf = ax.contourf(xv, yv, gp_mean, levels=levels, cmap="ruhi_diverging")
+        cf = ax.contourf(xv, yv, gp_mean, levels=levels, cmap=RUHI_SEQUENTIAL)
         ax.contour(xv, yv, gp_mean, levels=contour_levels, colors="black", linewidths=0.3)
 
         # Training points
@@ -1092,8 +1092,8 @@ def plot_nll_landscape(
     hi = float(np.quantile(log_finite, 0.98))
     gz_clipped = np.clip(gz_log, 0, hi)
 
-    # Reversed RUHI colormap (Julia: Reverse(ENERGY_COLORMAP))
-    cf = ax.contourf(gx, gy, gz_clipped, levels=20, cmap="ruhi_diverging_r")
+    # Reversed sequential map: low NLL is light and warm.
+    cf = ax.contourf(gx, gy, gz_clipped, levels=20, cmap=f"{RUHI_SEQUENTIAL}_r")
     fig.colorbar(
         cf,
         ax=ax,
@@ -1203,7 +1203,7 @@ def plot_variance_overlay(
     contour_levels = np.arange(clamp_lo, clamp_hi + contour_step, contour_step)
 
     # Energy surface as filled contour (shows basins clearly)
-    cf = ax.contourf(gx, gy, ge, levels=levels, cmap="ruhi_diverging")
+    cf = ax.contourf(gx, gy, ge, levels=levels, cmap=RUHI_SEQUENTIAL)
     ax.contour(gx, gy, ge, levels=contour_levels, colors="black", linewidths=0.3)
     fig.colorbar(cf, ax=ax, label="Energy", shrink=0.8)
 

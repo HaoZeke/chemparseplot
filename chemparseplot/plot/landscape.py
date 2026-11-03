@@ -229,10 +229,15 @@ def plot_landscape_surface(ax, coords, energies, cmap=None, levels=20):
 
     ```{versionadded} 1.10.0
     ```
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``ruhi_diverging`` to ``ruhi_seq``,
+    whose lightness rises monotonically with energy.
+    ```
     """
     from scipy.interpolate import griddata
 
-    cmap = cmap or mpl.colormaps["ruhi_diverging"]
+    cmap = cmap or mpl.colormaps[RUHI_THEME.cmap_landscape]
     vmin = float(np.nanmin(energies))
     vmax = float(np.nanpercentile(energies, 97))
     gx, gy = np.meshgrid(

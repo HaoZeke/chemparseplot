@@ -45,6 +45,7 @@ from chemparseplot.plot.journal import (
     label_lines,
 )
 from chemparseplot.plot.palette import (
+    RUHI_COLORS,
     RUHI_CYCLE,
     RUHI_SEQUENTIAL,
     contrast_limited,
@@ -1326,7 +1327,7 @@ def plot_landscape_surface(
     step_data=None,
     method="grad_matern",
     rbf_smooth=None,
-    cmap="viridis",
+    cmap=RUHI_SEQUENTIAL,
     show_pts=True,
     variance_threshold=0.05,
     project_path=True,
@@ -1393,6 +1394,10 @@ def plot_landscape_surface(
 
     ```{versionadded} 1.9.10
     Added *surface_fit* (:class:`SurfaceFitConfig` / mapping).
+    ```
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
     ```
     """
     from rgpycrumbs.surfaces import (
@@ -1778,7 +1783,7 @@ def plot_landscape_path_overlay(
     try:
         colormap = plt.get_cmap(cmap)
     except ValueError:
-        colormap = plt.get_cmap("viridis")
+        colormap = plt.get_cmap(RUHI_SEQUENTIAL)
 
     norm = plt.Normalize(z.min(), z.max())
 
@@ -1858,11 +1863,13 @@ def plot_mmf_peaks_overlay(
     project_path=True,
     path_rmsd_r=None,
     path_rmsd_p=None,
+    cmap: str = RUHI_SEQUENTIAL,
 ) -> None:
     """Overlay MMF (mode-following) refinement peak positions on the landscape.
 
     Used for OCI-NEB/RONEB visualization to show where dimer refinement
-    was applied along the band.
+    was applied along the band. Peaks are coloured by energy with ``cmap``,
+    by default the sequential map of the landscape itself.
 
     Parameters
     ----------
@@ -1880,6 +1887,10 @@ def plot_mmf_peaks_overlay(
         to computing basis from the peaks themselves (less accurate).
 
     ```{versionadded} 1.5.0
+    ```
+
+    ```{versionchanged} 1.14.0
+    Added *cmap*; the default changed from ``coolwarm`` to ``ruhi_seq``.
     ```
     """
     if len(peak_rmsd_r) == 0:
@@ -1914,7 +1925,7 @@ def plot_mmf_peaks_overlay(
         plot_x,
         plot_y,
         c=peak_e,
-        cmap="coolwarm",
+        cmap=cmap,
         marker="o",
         s=48,
         edgecolors="black",
@@ -1984,7 +1995,7 @@ def plot_neb_evolution(
     step_rmsd_r_list: list[np.ndarray],
     step_rmsd_p_list: list[np.ndarray],
     project_path=True,
-    cmap="Blues",
+    cmap=None,
 ) -> None:
     """Show NEB band evolution across optimization iterations.
 
@@ -2003,16 +2014,27 @@ def plot_neb_evolution(
     project_path
         Whether to project into (s, d) coordinates.
     cmap
-        Colormap for fading bands (older = lighter).
+        Colormap for fading bands (older = lighter). Default: the entries
+        of ``ruhi_seq`` that reach the WCAG 3:1 graphics contrast on the
+        axes background, light to dark.
 
     ```{versionadded} 1.5.0
+    ```
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``Blues`` to contrast-limited ``ruhi_seq``.
     ```
     """
     n_steps = len(step_rmsd_r_list)
     if n_steps == 0:
         return
 
-    colormap = plt.get_cmap(cmap)
+    if cmap is None:
+        colormap = contrast_limited(
+            RUHI_SEQUENTIAL, background=ax.get_facecolor()
+        ).reversed()
+    else:
+        colormap = plt.get_cmap(cmap)
 
     # Use the final band to define the projection basis for all bands
     final_basis = None
@@ -2108,7 +2130,7 @@ def mark_saddle_point(
         float(y),
         marker="*",
         s=max(280, int(font_size**2 * 3.2)),
-        c="#FFD700",
+        c=RUHI_COLORS["sunshine"],
         edgecolors="black",
         linewidths=1.8,
         zorder=100,
@@ -2338,7 +2360,7 @@ def plot_orca_neb_energy_profile(
 
     get_theme("ruhi")
 
-    color = "#1f77b4"  # Default blue color
+    color = RUHI_CYCLE[0]
     plot_energy_path(
         ax,
         rc,
@@ -2589,7 +2611,8 @@ def _plot_orca_profile_keypoints(
     ax.plot(
         x_values[0],
         energies[0],
-        "go",
+        "o",
+        color=RUHI_COLORS["sky"],
         markersize=reactant_markersize,
         label="Reactant",
         **plot_kwargs,
@@ -2597,7 +2620,8 @@ def _plot_orca_profile_keypoints(
     ax.plot(
         x_values[-1],
         energies[-1],
-        "ro",
+        "o",
+        color=RUHI_COLORS["magenta"],
         markersize=product_markersize,
         label="Product",
         **plot_kwargs,
@@ -2610,7 +2634,9 @@ def _plot_orca_profile_keypoints(
     ax.plot(
         x_values[saddle_idx],
         energies[saddle_idx],
-        "ys",
+        "s",
+        color=RUHI_COLORS["sunshine"],
+        markeredgecolor="black",
         markersize=saddle_markersize,
         label="Saddle",
         **plot_kwargs,

@@ -149,7 +149,7 @@ Signature (core args abbreviated)::
   plot_landscape_surface(
       ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
       step_data=None, method="grad_matern", rbf_smooth=None,
-      cmap="viridis", show_pts=True, variance_threshold=0.05,
+      cmap="ruhi_seq", show_pts=True, variance_threshold=0.05,
       project_path=True, extra_points=None, n_inducing=None,
       xlim=None, ylim=None, basis=None,
       auto_thin=False, max_surface_points=64,
@@ -169,7 +169,7 @@ Signature (core args abbreviated)::
 | =step_data= | =np.ndarray= or =None= | =None= | Step indices per point |
 | =method= | =str= | ="grad_matern"= | Surface model (see table below) |
 | =rbf_smooth= | =float= or =None= | =None= | Length scale hint (auto-optimized) |
-| =cmap= | =str= | ="viridis"= | Matplotlib colormap name |
+| =cmap= | =str= | ="ruhi_seq"= | Matplotlib colormap name |
 | =show_pts= | =bool= | =True= | Scatter data points on surface |
 | =variance_threshold= | =float= | =0.05= | Variance contour threshold (fraction of range) |
 | =project_path= | =bool= | =True= | Project to reaction valley coordinates |
@@ -314,7 +314,12 @@ Plots a single structure as an annotation inset with an arrow.
 
 ** OCI-NEB/RONEB Functions
 
-*** =plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True)=
+*** =plot_mmf_peaks_overlay=
+
+#+begin_src python
+plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True,
+                       path_rmsd_r=None, path_rmsd_p=None, cmap="ruhi_seq")
+#+end_src
 
 Overlays MMF (mode-following) refinement peak positions on the landscape. Used for OCI-NEB/RONEB to show where dimer refinement was applied.
 
@@ -327,13 +332,14 @@ Overlays MMF (mode-following) refinement peak positions on the landscape. Used f
 | =peak_rmsd_p= | =np.ndarray= | - | RMSD-P coordinates of peak structures |
 | =peak_energies= | =np.ndarray= | - | Energy at each peak |
 | =project_path= | =bool= | =True= | Apply reaction valley projection |
+| =cmap= | =str= | ="ruhi_seq"= | Colormap of the peak cores |
 
 **** Notes
 
 - Draws a dark outer halo marker below each peak and an energy-colored core on top
-- Colors peak cores by energy using =coolwarm= colormap
+- Colors peak cores by energy with =cmap=, by default the landscape's own map
 
-*** =plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap="Blues")=
+*** =plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap=None)=
 
 Shows NEB band evolution across optimization iterations with fading older bands.
 
@@ -345,7 +351,7 @@ Shows NEB band evolution across optimization iterations with fading older bands.
 | =step_rmsd_r_list= | =list[np.ndarray]= | - | RMSD-R arrays per NEB iteration |
 | =step_rmsd_p_list= | =list[np.ndarray]= | - | RMSD-P arrays per NEB iteration |
 | =project_path= | =bool= | =True= | Apply reaction valley projection |
-| =cmap= | =str= | ="Blues"= | Colormap for band fading |
+| =cmap= | =str= or =None= | =None= | Colormap for band fading; when =None=, the entries of =ruhi_seq= that reach 3:1 on the panel background, light to dark |
 
 ** High-Level ORCA Functions
 
@@ -430,7 +436,7 @@ Frozen dataclass holding all aesthetic parameters.
 
 | Name | Font | Colormap | Notes |
 |------+------+----------+-------|
-| ="ruhi"= | Atkinson Hyperlegible | =ruhi_diverging= | Default theme |
+| ="ruhi"= | Atkinson Hyperlegible | =ruhi_seq= | Default theme |
 | ="cmc.batlow"= | Atkinson Hyperlegible | =cmc.batlow= | Crameri scientific colormap |
 
 ** =get_theme(name, **overrides)=
@@ -440,6 +446,7 @@ Retrieves a theme by name, applying optional field overrides.
 ** =setup_global_theme(theme)=
 
 Sets =plt.rcParams= from the theme (font, colors, sizes).
+The Ruhi line colours become the colour cycle and the theme's landscape map the default image map.
 
 ** =setup_publication_theme(theme, journal=None)=
 
@@ -668,7 +675,15 @@ Its methods =lightness_monotonic(kind)=, =arms_monotonic(kind)= (for diverging m
 
 Functions for single-ended method (dimer, minimization) visualization.
 
-** =plot_optimization_landscape(ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode="optimization", project_path=True, method="grad_matern", cmap="viridis", z_label="Energy (eV)", **surface_kwargs)=
+** =plot_optimization_landscape=
+
+#+begin_src python
+plot_optimization_landscape(
+    ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode="optimization",
+    project_path=True, method="grad_matern", cmap="ruhi_seq", energy_unit="eV",
+    z_label=None, **surface_kwargs,
+)
+#+end_src
 
 Wraps =plot_landscape_surface()= and =plot_landscape_path_overlay()= with semantically correct axis labels for single-ended methods.
 
