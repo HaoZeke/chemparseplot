@@ -89,6 +89,8 @@ Returns the figure.
 
 **** Parameters
 
+All but =rc= and =energy= have defaults:
+
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
 | =rc= | =np.ndarray= | - | Path length (or other reaction coordinate) of each image |
@@ -106,7 +108,7 @@ Returns the figure.
 | =color= | colour or =None= | =None= | Band colour (teal when =None=) |
 | =label= | =str= or =None= | =None= | Band label, written at the end of the band |
 | =energy_unit= | =str= | ="eV"= | Unit in the energy label and barrier |
-| =xlabel=, =ylabel= | =str= | path length, relative energy | x and y labels |
+| =xlabel= and =ylabel= | =str= | path length, relative energy | x and y labels |
 | =barrier= | =bool= | =True= | Barrier written above the highest interior image |
 
 **** Notes
@@ -839,19 +841,21 @@ Returns the figure.
 
 *** Parameters
 
+All but the three grids have defaults:
+
 | Parameter | Type | Default | Description |
 |-----------+------+---------+-------------|
-| =grid_x=, =grid_y=, =grid_z= | array | - | Meshgrid arrays of the surface |
+| =grid_x=, =grid_y= and =grid_z= | array | - | Meshgrid arrays of the surface |
 | =paths= | =dict= or =None= | =None= | ={label: (xs, ys)}= paths, white lines with a dark outline through numbered sky-blue images |
 | =points= | =dict= or =None= | =None= | ={label: (xs, ys)}= points: white circles lettered from A for keys containing "minim", white crosses numbered from S1 for keys containing "saddle", sunshine stars otherwise |
-| =clamp_lo=, =clamp_hi= | =float= or =None= | =None= | Clipping range of the surface values |
+| =clamp_lo= and =clamp_hi= | =float= or =None= | =None= | Clipping range of the surface values |
 | =levels= | =int=, array or =None= | =None= | Filled levels, the colour-bar ticks of matplotlib's locator when =None= |
 | =contour_step= | =float= or =None= | =None= | Spacing of the contour lines, the filled levels when =None= |
-| =width=, =height= | =float= or =None= | =None= | Figure size in inches, the column width and the height the map needs when =None= |
+| =width= and =height= | =float= or =None= | =None= | Figure size in inches, the column width and the height the map needs when =None= |
 | =journal= | =str=, =JournalPreset= or =None= | =None= | Journal whose style goes into the global rcParams (=acs= when =None=) |
 | =columns= | =str= | ="single"= | Column span of the default width |
 | =cmap= | =str= or =None= | =None= | Colour map (=ruhi_seq= when =None=) |
-| =xlabel=, =ylabel=, =zlabel= | =str= | x, y, E (eV) | x, y and colour-bar labels |
+| =xlabel=, =ylabel= and =zlabel= | =str= | x, y, E (eV) | x, y and colour-bar labels |
 
 *** Notes
 
