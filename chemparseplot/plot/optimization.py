@@ -297,11 +297,15 @@ def plot_single_ended_profile(
     Each trajectory takes a Ruhi colour and an ISO 128-2 line type from
     :func:`~chemparseplot.plot.journal.series_style`. Line width and marker
     size are the ``lines.linewidth`` and ``lines.markersize`` rcParams,
-    which :func:`~chemparseplot.plot.journal.apply_style` sets.
+    which :func:`~chemparseplot.plot.journal.apply_style` sets. As in
+    :func:`plot_convergence_panel`, a marker shows the last iteration only:
+    markers on iterations closer than a marker plus one dash and gap would
+    hide the line type.
 
     ```{versionchanged} 1.14.0
-    Ruhi colours, ISO 128-2 line types, and sizes from the rcParams; the
-    sizes were fixed at 4 and 1.5 points, 3 and 1.2 for eigenvalues.
+    Ruhi colours, ISO 128-2 line types, sizes from the rcParams and a
+    marker on the last iteration; markers were on every iteration, at 4
+    and 1.5 points, 3 and 1.2 for eigenvalues.
     ```
     """
 
@@ -319,13 +323,15 @@ def plot_single_ended_profile(
         series = series_style(idx)
         iters = dat["iteration"].to_numpy()
         energies = convert_energy(dat[energy_column].to_numpy(), energy_unit)
-        axes[0].plot(iters, energies, marker="o", label=lbl, **series)
+        axes[0].plot(iters, energies, marker="o", markevery=[-1], label=lbl, **series)
 
         if has_eigen and eigen_column and eigen_column in dat.columns:
             eigenvalues = convert_energy_curvature(
                 dat[eigen_column].to_numpy(), energy_unit
             )
-            axes[1].plot(iters, eigenvalues, marker="s", label=lbl, **series)
+            axes[1].plot(
+                iters, eigenvalues, marker="s", markevery=[-1], label=lbl, **series
+            )
 
     axes[0].set_xlabel("Iteration")
     axes[0].set_ylabel(energy_axis_label(energy_unit))

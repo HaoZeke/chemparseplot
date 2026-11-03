@@ -246,9 +246,8 @@ class TestConvergence:
         assert out.stat().st_size > 0
         assert dict(mpl.rcParams) == before
 
-    def test_single_ended_profile_sizes_follow_the_rcparams(
-        self, run, tmp_path, monkeypatch
-    ):
+    @pytest.fixture
+    def profile_lines(self, run, tmp_path, monkeypatch):
         saved = []
         monkeypatch.setattr(
             "chemparseplot.plot.optimization.save_standard_figure",
@@ -275,10 +274,17 @@ class TestConvergence:
             title="",
         )
         (fig,) = saved
-        lines = fig.axes[0].get_lines()
-        assert len(lines) == len(trajs)
+        return style, fig.axes[0].get_lines()
+
+    def test_single_ended_profile_sizes_follow_the_rcparams(self, run, profile_lines):
+        style, lines = profile_lines
+        assert len(lines) == len(run["neb"])
         assert {line.get_linewidth() for line in lines} == {style.wide}
         assert {line.get_markersize() for line in lines} == {style.marker}
+
+    def test_single_ended_profile_marks_the_last_iteration(self, profile_lines):
+        _, lines = profile_lines
+        assert [line.get_markevery() for line in lines] == [[-1]] * len(lines)
 
     def test_other_figures_are_cropped(self, tmp_path):
         fig = plt.figure(figsize=(10, 10))
