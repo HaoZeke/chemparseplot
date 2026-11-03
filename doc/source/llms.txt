@@ -60,6 +60,7 @@ eOn configuration options are not listed here. The option schema is published wi
 - [ORCA NEB API reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api): ORCA NEB parse and plot guide
 - [eOn NEB API reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api): eOn NEB parse and plot guide
 - [Plotting API reference](https://chemparseplot.rgoswami.me/reference/plotting_api): plotting guide
+- [Structure render](https://chemparseplot.rgoswami.me/reference/structure_render): clusters, cells, and paths
 - [Release process](https://chemparseplot.rgoswami.me/release): towncrier and release steps
 - [Generated API reference](https://chemparseplot.rgoswami.me/apidocs/): module pages built from the package; not copied into this map
 
