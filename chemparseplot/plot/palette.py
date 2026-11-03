@@ -25,6 +25,7 @@ implement them.
 
 from __future__ import annotations
 
+import itertools
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -520,6 +521,54 @@ def _cvd_distance(color, others: Iterable) -> float:
 
 RUHI_LINE_ORDER = tuple(order_for_lines(RUHI_COLORS))
 RUHI_CYCLE = tuple(RUHI_COLORS[name] for name in RUHI_LINE_ORDER)
+
+
+# --- Element colours --------------------------------------------------------
+
+# Corey and Pauling, Rev. Sci. Instrum. 24, 621 (1953), p. 622: the
+# space-filling models the CPK colours come from were of carbon, nitrogen,
+# oxygen and hydrogen atoms.
+CPK_ANCHORS = ("H", "C", "N", "O")
+
+
+def assign_element_colors(
+    reference: Mapping[str, ColorType],
+    colors: Mapping[str, str],
+    anchors: Sequence[str] = CPK_ANCHORS,
+) -> dict[str, str]:
+    """Give each element of ``reference`` one of ``colors``.
+
+    ``reference`` holds the usual colour of each element, such as its Jmol
+    colour. The anchors take ``colors`` one to one, by the pairing with the
+    least summed CIEDE2000 difference between each anchor's reference
+    colour and its new colour. Every other element takes the colour of the
+    anchor whose reference colour is nearest its own, so an element drawn
+    like carbon in the reference is drawn like carbon here.
+
+    ```{versionadded} 1.14.0
+    ```
+    """
+    names = list(colors)
+    anchors = list(anchors)
+    if len(names) != len(anchors):
+        msg = f"{len(names)} colours do not pair one to one with {len(anchors)} anchors"
+        raise ValueError(msg)
+    missing = [a for a in anchors if a not in reference]
+    if missing:
+        msg = f"The reference has no colour for {', '.join(missing)}"
+        raise KeyError(msg)
+    symbols = list(reference)
+    lab = srgb_to_lab([reference[s] for s in symbols])
+    anchor_lab = srgb_to_lab([reference[a] for a in anchors])
+    target_lab = srgb_to_lab([colors[n] for n in names])
+    cost = delta_e_2000(anchor_lab[:, None, :], target_lab[None, :, :])
+    rows = np.arange(len(anchors))
+    pairing = min(
+        itertools.permutations(range(len(names))),
+        key=lambda p: cost[rows, list(p)].sum(),
+    )
+    nearest = delta_e_2000(lab[:, None, :], anchor_lab[None, :, :]).argmin(axis=1)
+    return {s: colors[names[pairing[k]]] for s, k in zip(symbols, nearest, strict=True)}
 
 
 # --- Perceptually ordered colour maps -------------------------------------

@@ -694,6 +694,26 @@ Returns a =ColormapReport= holding L* and the CIEDE2000 step between neighbourin
 Its methods =lightness_monotonic(kind)=, =arms_monotonic(kind)= (for diverging maps) and =step_cv(kind)= summarise them.
 =step_cv= is the coefficient of variation of the steps.
 
+** Element colours
+
+#+begin_src python
+assign_element_colors(reference, colors, anchors=CPK_ANCHORS)
+#+end_src
+
+Returns a map from each symbol of =reference= to one of the hex values in =colors=.
+=reference= maps each element to its usual colour, such as its Jmol colour.
+The anchors take =colors= one to one.
+Their pairing is the one with the least summed CIEDE2000 difference from their reference colours.
+Every other element takes the colour of the anchor whose reference colour is nearest its own.
+=colors= needs one entry per anchor, or a =ValueError= is raised.
+An anchor missing from =reference= raises a =KeyError=.
+
+| Name | Value | Source |
+|------+-------+--------|
+| =CPK_ANCHORS= | =("H", "C", "N", "O")= | The atoms of the Corey and Pauling models (1953), p. 622 |
+
+=chemparseplot.plot.render.ELEMENT_COLORS= is this map for the Jmol colours in ASE and the four Ruhi colours other than coral.
+
 ** Colour science
 
 =background= defaults to white.

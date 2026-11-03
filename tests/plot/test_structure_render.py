@@ -7,7 +7,6 @@ import io
 import logging
 import math
 import re
-from itertools import permutations
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +14,9 @@ import pytest
 from ase import Atoms
 from PIL import Image, ImageDraw, ImageFont
 
+from chemparseplot.plot.palette import CPK_ANCHORS, assign_element_colors
 from chemparseplot.plot.render import (
+    BODY_COLORS,
     BOND_MIN_A,
     BOND_TOLERANCE_A,
     CANVAS,
@@ -37,7 +38,6 @@ from chemparseplot.plot.render import (
     _caption_px_range,
     _fit_caption,
     _front_water,
-    _hex_to_rgb,
     _lj_highlight,
     _paint,
     _single_frames,
@@ -70,12 +70,10 @@ from chemparseplot.plot.theme import (
 HOY_BUNKER_OH_A = 0.9578
 HOY_BUNKER_ANGLE_DEG = 104.4776
 
-# IEC 61966-2-1 (sRGB): the D65 RGB-to-XYZ matrix. CIE 15 (CIELAB): the
-# linear segment of f starts at (6/29)**3.
+# IEC 61966-2-1 (sRGB): the D65 RGB-to-XYZ matrix.
 SRGB_TO_XYZ = np.array(
     [[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722], [0.0193, 0.1192, 0.9505]]
 )
-LAB_DELTA = 6.0 / 29.0
 # WCAG 2.1 SC 1.4.11: 3:1 between a graphic and the colours next to it.
 WCAG_GRAPHIC_CONTRAST = 3.0
 
@@ -88,13 +86,6 @@ def _linear(rgb) -> np.ndarray:
     """IEC 61966-2-1 decoding of an sRGB triple in 0..1."""
     c = np.asarray(rgb, dtype=float)
     return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
-
-
-def _lab(rgb: np.ndarray) -> np.ndarray:
-    """CIELAB of an sRGB triple in 0..1, D65 white."""
-    t = (SRGB_TO_XYZ @ _linear(rgb)) / SRGB_TO_XYZ.sum(axis=1)
-    f = np.where(t > LAB_DELTA**3, np.cbrt(t), t / (3.0 * LAB_DELTA**2) + 4.0 / 29.0)
-    return np.array([116.0 * f[1] - 16.0, 500.0 * (f[0] - f[1]), 200.0 * (f[1] - f[2])])
 
 
 def _contrast(first: str, second: str) -> float:
@@ -248,38 +239,31 @@ class TestRender:
         assert np.any(image[:, :, :3] != 255)
 
 
-class TestElementColours:
-    def test_default_map_gives_each_element_its_own_ruhi_colour(self):
-        values = list(ELEMENT_COLORS.values())
-        assert len(set(values)) == len(values)
-        assert set(values) <= set(RUHI_COLORS.values())
-        # Coral is the highlight and sky the hydrogen-bond dash.
-        assert RUHI_COLORS["coral"] not in values
-        assert RUHI_COLORS["sky"] not in values
+def _past_the_jmol_table() -> str:
+    from ase.data import chemical_symbols
+    from ase.data.colors import jmol_colors
 
-    def test_default_map_is_the_closest_one_to_one_pairing_with_jmol(self):
-        from ase.data import atomic_numbers
+    return chemical_symbols[len(jmol_colors)]
+
+
+class TestElementColours:
+    def test_default_map_is_the_cpk_rule_on_the_jmol_colours(self):
+        from ase.data import chemical_symbols
         from ase.data.colors import jmol_colors
 
-        free = [
-            value for name, value in RUHI_COLORS.items() if name not in {"coral", "sky"}
-        ]
-        symbols = sorted(ELEMENT_COLORS)
-        assert len(symbols) == len(free)
-
-        def distance(pairing: tuple[str, ...]) -> float:
-            return sum(
-                float(
-                    np.linalg.norm(
-                        _lab(jmol_colors[atomic_numbers[symbol]])
-                        - _lab(_hex_to_rgb(value))
-                    )
-                )
-                for symbol, value in zip(symbols, pairing, strict=True)
-            )
-
-        best = min(permutations(free), key=distance)
-        assert ELEMENT_COLORS == dict(zip(symbols, best, strict=True))
+        jmol = dict(
+            zip(chemical_symbols[1 : len(jmol_colors)], jmol_colors[1:], strict=True)
+        )
+        assert ELEMENT_COLORS == assign_element_colors(jmol, BODY_COLORS)
+        assert set(ELEMENT_COLORS.values()) == set(BODY_COLORS.values())
+        # Coral is the highlight.
+        assert RUHI_COLORS["coral"] not in ELEMENT_COLORS.values()
+        assert {a: ELEMENT_COLORS[a] for a in CPK_ANCHORS} == {
+            "H": RUHI_COLORS["sunshine"],
+            "C": RUHI_COLORS["teal"],
+            "N": RUHI_COLORS["sky"],
+            "O": RUHI_COLORS["magenta"],
+        }
 
     def test_colour_is_an_explicit_entry(self):
         colours = {"H": "#010203", "B": "#040506", "O": "#aabbcc"}
@@ -288,8 +272,9 @@ class TestElementColours:
         assert element_color("H", colours) != element_color("B", colours)
         with pytest.raises(KeyError, match="No body colour is set for C"):
             element_color("C", colours)
-        with pytest.raises(KeyError, match="No body colour is set for N"):
-            element_color("N")
+        past = _past_the_jmol_table()
+        with pytest.raises(KeyError, match=f"No body colour is set for {past}"):
+            element_color(past)
         assert frame_color_overrides(["O", "H", "H"]) == {
             "O": ELEMENT_COLORS["O"],
             "H": ELEMENT_COLORS["H"],
@@ -303,14 +288,28 @@ class TestElementColours:
         mask = np.zeros(2, dtype=bool)
         with pytest.raises(KeyError, match="No body colour is set for O"):
             _paint(["H", "O"], mask, None, {"H": "#010203"})
-        with pytest.raises(KeyError, match="No body colour is set for N"):
-            _paint(["N", "H"], mask, None)
+        with pytest.raises(KeyError, match=f"No body colour is set for {past}"):
+            _paint([past, "H"], mask, None)
 
     def test_an_element_outside_the_default_map_raises_from_render_structure(self):
+        past = _past_the_jmol_table()
+        # Water with its oxygen replaced, so only the symbol is off the table.
+        atoms = Atoms([past, "H", "H"], positions=_hoy_bunker_water()[1])
+        with pytest.raises(KeyError, match=f"No body colour is set for {past}"):
+            render_structure(atoms, kind="snapshot", canvas=40)
+
+    def test_default_map_reaches_xyzrender(self):
+        pytest.importorskip("xyzrender")
         from ase.build import molecule
 
-        with pytest.raises(KeyError, match="No body colour is set for N"):
-            render_structure(molecule("NH3"), kind="snapshot", canvas=40)
+        def draw(colors=None):
+            return render_structure(
+                molecule("NH3"), kind="snapshot", canvas=80, element_colors=colors
+            )
+
+        named = {s: ELEMENT_COLORS[s] for s in ("N", "H")}
+        np.testing.assert_array_equal(draw(), draw(named))
+        assert not np.array_equal(draw(), draw({**named, "N": ELEMENT_COLORS["C"]}))
 
 
 def _column_point_size(image_width: int, em_px: int, width_mm: float) -> float:

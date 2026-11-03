@@ -330,3 +330,51 @@ class TestColormaps:
         assert not pal.colormap_report("ruhi_diverging").lightness_monotonic()
         assert not pal.colormap_report(pal.RUHI_DIVERGING).lightness_monotonic()
         assert not pal.colormap_report(pal.RUHI_SEQUENTIAL).arms_monotonic()
+
+
+class TestElementColors:
+    @staticmethod
+    def _body():
+        return {k: v for k, v in pal.RUHI_COLORS.items() if k != "coral"}
+
+    def test_anchors_keep_colours_they_already_have(self):
+        body = self._body()
+        reference = dict(zip(pal.CPK_ANCHORS, body.values(), strict=True))
+        reference["S"] = reference["O"]
+        shuffled = {name: body[name] for name in reversed(list(body))}
+        table = pal.assign_element_colors(reference, shuffled)
+        assert {a: table[a] for a in pal.CPK_ANCHORS} == {
+            a: reference[a] for a in pal.CPK_ANCHORS
+        }
+        assert table["S"] == table["O"]
+
+    def test_carbon_and_nitrogen_part_on_the_jmol_colours(self):
+        data = pytest.importorskip("ase.data")
+        jmol_colors = pytest.importorskip("ase.data.colors").jmol_colors
+        jmol = dict(
+            zip(data.chemical_symbols[1 : len(jmol_colors)], jmol_colors[1:], strict=True)
+        )
+        body = self._body()
+        names = list(body)
+        body_lab = pal.srgb_to_lab([body[n] for n in names])
+        nearest = {
+            a: names[int(pal.delta_e_2000(pal.srgb_to_lab(jmol[a]), body_lab).argmin())]
+            for a in ("C", "N")
+        }
+        assert nearest == {"C": "sky", "N": "sky"}
+        table = pal.assign_element_colors(jmol, body)
+        assert {a: table[a] for a in pal.CPK_ANCHORS} == {
+            "H": body["sunshine"],
+            "C": body["teal"],
+            "N": body["sky"],
+            "O": body["magenta"],
+        }
+        assert len(table) == len(jmol_colors) - 1
+
+    def test_one_colour_per_anchor(self):
+        with pytest.raises(ValueError, match="pair one to one"):
+            pal.assign_element_colors({"H": "white"}, {"a": "black"}, anchors=("H", "C"))
+        with pytest.raises(KeyError, match="no colour for C"):
+            pal.assign_element_colors(
+                {"H": "white"}, {"a": "black", "b": "grey"}, anchors=("H", "C")
+            )
