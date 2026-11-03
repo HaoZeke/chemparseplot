@@ -58,6 +58,11 @@ scripts that CI runs are under `skills/`.
   `uv sync` and `uv run` rewrite it; restore it with
   `git checkout -- uv.lock` unless the change is about dependencies.
   The lock pins rgpycrumbs 1.3.0; PyPI has 1.13.0.
+- The rewritten lock leaves the tree dirty, so hatch-vcs gives the
+  package a dev version. At the v1.13.2 tag `uv sync --extra doc`
+  installs `1.13.3.dev0+gd5e1b77cd.d` and the date instead of 1.13.2,
+  and the title of the published site reads
+  `chemparseplot 1.13.3.dev0+gd5e1b77cd.d20261031 documentation`.
 
 ## Test
 
@@ -106,6 +111,10 @@ uv run sphinx-build doc/source doc/build/html
   `tutorials/orca/geomscan` never imports `TwoDimPlot`).
 - `python skills/chemparseplot-docs/scripts/where_is.py PAGE` names the
   file behind a page.
+- The site answers every address it does not have with its home page
+  and HTTP 200, never a 404, so a fetched page is only real if its
+  title matches. `llms-full.txt` is not published there; read it from
+  the repository.
 - `python scripts/llms/build_llms.py` rewrites `llms-full.txt` after a
   change to the pages, `AGENTS.md` or `skills/`; `--check`, which CI
   runs, exits 1 while it is stale. Its tests:
