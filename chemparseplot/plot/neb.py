@@ -886,14 +886,17 @@ def plot_energy_path(
         Marker edge colour, default the line colour. The background colour
         keeps neighbouring markers apart.
     samples :
-        Points on the interpolant (default 300).
+        Points on the interpolant. The default is one per pixel across the
+        figure at ``savefig.dpi``, or at the figure's dpi when that is
+        ``"figure"``, plus one.
 
     ```{versionadded} 0.1.0
     ```
 
     ```{versionchanged} 1.14.0
     Marker size and edge width follow the rcParams; added *markersize*,
-    *markeredgewidth*, *markeredgecolor* and *samples*.
+    *markeredgewidth*, *markeredgecolor* and *samples*. The number of
+    samples follows ``savefig.dpi``; it was 300.
     ```
     """
     if smoothing is None:
@@ -922,10 +925,14 @@ def plot_energy_path(
 
     # Derivative is negative force
     deriv = -f_para
+    if samples is None:
+        dpi = mpl.rcParams["savefig.dpi"]
+        dpi = ax.figure.dpi if dpi == "figure" else dpi
+        samples = math.ceil(ax.figure.get_figwidth() * dpi) + 1
 
     try:
         x_fine, y_fine = _energy_interpolant(
-            rc, energy, deriv, method, smoothing, 300 if samples is None else samples
+            rc, energy, deriv, method, smoothing, samples
         )
         ax.plot(x_fine, y_fine, color=color, alpha=alpha, zorder=zorder, label=label)
         ax.plot(rc, energy, ls="None", **marker_kw)

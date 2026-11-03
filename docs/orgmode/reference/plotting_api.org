@@ -57,7 +57,7 @@ Plots a 1D energy profile with optional Hermite spline interpolation.
 | =markersize= | =float= or =None= | =None= | Image marker size in points; =lines.markersize= when =None= |
 | =markeredgewidth= | =float= or =None= | =None= | Marker edge width in points; =lines.markeredgewidth= when =None= |
 | =markeredgecolor= | colour or =None= | =None= | Marker edge colour; the line colour when =None= |
-| =samples= | =int= or =None= | =None= | Points on the interpolant; 300 when =None= |
+| =samples= | =int= or =None= | =None= | Points on the interpolant; when =None=, one per pixel across the figure at =savefig.dpi=, plus one |
 
 **** Notes
 
@@ -68,6 +68,9 @@ Plots a 1D energy profile with optional Hermite spline interpolation.
 - Falls back to raw line plot if spline fitting raises an exception.
 - Marker size and edge width follow the rcParams, which =chemparseplot.plot.journal.apply_style= sets.
   Before 1.14.0 they were fixed at 6 and 0.5 points.
+- With =samples= left at =None= the curve has a point for every pixel column at =savefig.dpi=.
+  =apply_style= sets that to the journal's line-art resolution, so the count matches =plot_neb_profile=.
+  Before 1.14.0 the curve always had 300 points.
 
 *** =plot_neb_profile=
 

@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.colors import to_hex
+from matplotlib.lines import Line2D
 
 pl = pytest.importorskip("polars")
 pytest.importorskip("scipy")
@@ -29,7 +30,7 @@ pytest.importorskip("ase")
 
 from chemparseplot.plot import journal as jr
 from chemparseplot.plot.chemgp import plot_surface_contour
-from chemparseplot.plot.neb import _tick_decimals, plot_neb_profile
+from chemparseplot.plot.neb import _tick_decimals, plot_energy_path, plot_neb_profile
 from chemparseplot.plot.optimization import (
     plot_relative_error,
     plot_single_ended_convergence,
@@ -142,6 +143,26 @@ class TestNebProfile:
         assert len(_band_line(fig.axes[0]).get_xdata()) > len(rc)
         fig = plot_neb_profile(rc[:3], energy[:3], method="spline")
         assert len(_band_line(fig.axes[0]).get_xdata()) == len(rc[:3])
+
+
+class TestEnergyPath:
+    @pytest.mark.parametrize("savefig_dpi", ["figure", jr.ACS.raster_dpi])
+    def test_default_samples_follow_the_output_resolution(self, final, savefig_dpi):
+        mpl.rcParams["savefig.dpi"] = savefig_dpi
+        fig, ax = plt.subplots()
+        plot_energy_path(ax, *final, RUHI_CYCLE[0], 1.0, Line2D.zorder)
+        dpi = fig.dpi if savefig_dpi == "figure" else savefig_dpi
+        pixels = math.ceil(fig.get_figwidth() * dpi)
+        assert len(_band_line(ax).get_xdata()) == pixels + 1
+
+    def test_journal_style_matches_the_neb_profile(self, final):
+        style = jr.apply_style()
+        fig, ax = jr.journal_figure(style=style)
+        plot_energy_path(ax, *final, RUHI_CYCLE[0], 1.0, Line2D.zorder)
+        profile = plot_neb_profile(*final)
+        assert len(_band_line(ax).get_xdata()) == len(
+            _band_line(profile.axes[0]).get_xdata()
+        )
 
 
 class TestSurfaceContour:
