@@ -225,6 +225,17 @@ class TestRender:
         assert image.shape[2] == 4
         assert np.any(image[:, :, :3] != 255)
 
+    def test_xyzrender_panel_must_be_wider_than_twice_its_padding(self):
+        pytest.importorskip("xyzrender")
+        from xyzrender.config import build_config
+
+        blank = int(2 * build_config("paton").padding)
+        atoms = Atoms("H2O", positions=_hoy_bunker_water()[1])
+        with pytest.raises(ValueError, match="wider than twice its padding"):
+            render_structure(atoms, kind="snapshot", canvas=blank)
+        image = render_structure(atoms, kind="snapshot", canvas=blank + 1)
+        assert np.any(image[:, :, :3] != 255)
+
     def test_solvis_cluster_screenshot(self):
         pytest.importorskip("solvis")
         pytest.importorskip("pyvista")
@@ -496,7 +507,7 @@ class TestCaption:
         theme = get_theme("ruhi", caption_font="No Such Caption Face")
         with caplog.at_level(logging.WARNING, logger="chemparseplot.plot.render"):
             face = _caption_face(theme)
-            image = render_structure(atoms, kind="snapshot", canvas=40, theme=theme)
+            image = render_structure(atoms, kind="snapshot", canvas=80, theme=theme)
         assert face == findfont(FontProperties(family=["sans-serif"]))
         assert "No Such Caption Face" in caplog.text
         assert image.shape[0] > image.shape[1]
