@@ -27,6 +27,12 @@ Structure strips use **xyzrender** via the Python API
 (`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
 `[xyzrender]` extra. Prefer bare install + AUTO_DEPS / suite pins for new work.
 
+Lennard-Jones clusters use **solvis**.
+Install it with `pip install "chemparseplot[solvis]"`.
+The test extra installs that stack too, including pyvista and vtk.
+Structure captions use Atkinson Hyperlegible when that font is installed.
+Without it they fall back to the matplotlib sans-serif face.
+
 ## Development install
 
 Local clones of the GitHub repo are best served setting up the maximally
