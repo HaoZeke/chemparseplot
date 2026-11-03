@@ -1,0 +1,228 @@
+#+TITLE: How-to: Make Journal Figures
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil ^:nil
+
+* Problem
+
+A journal figure has to be exactly one or two columns wide, with lettering at the size of the journal's text.
+Its lines can be no thinner than the journal accepts, and every reader has to be able to tell its colours apart.
+=chemparseplot.plot.journal= has those numbers for journals of four publishers.
+Two of them are the American Chemical Society (ACS) and the Royal Society of Chemistry (RSC).
+Every other length in the figure is derived from those numbers by the drafting standards of the International Organization for Standardization (ISO).
+
+* Pick a journal
+
+| Key        | Aliases        | Single (in) | Double (in) | Text (pt)        | Smallest text (pt) | Raster (dpi) |
+|------------+----------------+-------------+-------------+------------------+--------------------+--------------|
+| =acs=      | =jctc=, =jcim= |        3.33 |        7.00 | 10, 9, 8         |                4.5 |         1200 |
+| =aip=      | =jcp=          |        3.35 |        6.69 | 9.96, 8.97, 8    |                  8 |         1200 |
+| =elsevier= | =cpc=          |        3.54 |        7.48 | 9.96, 8.97, 7.97 |                  7 |         1000 |
+| =rsc=      | =pccp=         |        3.27 |        6.73 | 8.97, 7.97, 7    |                  7 |          600 |
+
+The text sizes are the body, =\small= and =\footnotesize= sizes of the journal's two-column LaTeX layout.
+For ACS they are those of the published page.
+They are in the PostScript points matplotlib uses, and never below the journal's smallest lettering.
+The x and y labels and the panel letters are set at the first size, tick labels and legends at the second.
+Elsevier also has a one-and-a-half column width (=columns="onehalf"=, 5.51 in).
+The default journal is =acs=.
+
+* Make a figure
+
+#+begin_src python
+from chemparseplot.plot.journal import journal_figure, label_panels, save_figure
+
+fig, (ax_a, ax_b) = journal_figure("jctc", "double", ncols=2)
+ax_a.plot(iterations, fmax, label="BFGS")
+ax_b.plot(iterations, step, label="BFGS")
+label_panels(fig)
+save_figure(fig, "convergence.pdf")
+#+end_src
+
+=journal_figure= puts the journal style into the global rcParams, as =setup_publication_theme= does.
+It returns a constrained-layout figure of exactly the column width.
+Each panel is two thirds as tall as it is wide unless =aspect= or =height= is given.
+A height above the journal's page limit raises a =ValueError=.
+=label_panels= letters the panels in order from "(a)" at the body size.
+Each letter goes on the left edge of its panel's labels.
+
+=journal_style= leaves the global rcParams alone when the figure is drawn and saved inside it:
+
+#+begin_src python
+from chemparseplot.plot.journal import journal_figure, journal_style, save_figure
+
+with journal_style("pccp") as style:
+    fig, ax = journal_figure(style=style)
+    ax.plot(rc, energy)
+    save_figure(fig, "profile.pdf")
+#+end_src
+
+Save inside the block: font embedding and the raster resolution are read from the rcParams when the file is written.
+
+The theme module applies the same style:
+
+#+begin_src python
+from chemparseplot.plot.theme import get_theme, setup_publication_theme
+
+setup_publication_theme(get_theme("ruhi"), journal="jcp")
+#+end_src
+
+* NEB energy profile
+
+#+begin_src python
+from chemparseplot.plot.journal import save_figure
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+save_figure(fig, "neb_profile.pdf")
+#+end_src
+
+=rc= is the path length of each image of the nudged elastic band (NEB).
+=energy= is its energy and =f_para= the force along the path.
+The curve is a cubic Hermite interpolant whose slopes are minus those forces, and the barrier is written above the peak.
+Earlier bands go in =history=, oldest first, each as =(rc, energy)= or =(rc, energy, f_para)=.
+They are drawn as fading lines with an iteration colour bar.
+=reference= is a saddle energy known by other means, drawn as a dashed line.
+
+#+begin_src python
+fig = plot_neb_profile(
+    rc, energy, f_para,
+    history=earlier_bands,
+    iterations=band_iterations,
+    reference=saddle_energy,
+    reference_label="Dimer saddle",
+)
+#+end_src
+
+Pass =ax= to draw into an existing panel; the figure's rcParams are then left as they are.
+
+* Energy landscape
+
+#+begin_src python
+from chemparseplot.plot.chemgp import plot_surface_contour
+from chemparseplot.plot.journal import save_figure
+
+fig = plot_surface_contour(
+    grid_x, grid_y, grid_z,
+    paths={"NEB": (path_x, path_y)},
+    points={"minima": (min_x, min_y), "saddles": (sad_x, sad_y)},
+    journal="jctc",
+)
+save_figure(fig, "landscape.pdf")
+#+end_src
+
+The map is one column wide, and equal x and y scales set its height.
+Bands, contour lines and colour-bar ticks share one set of levels.
+Each contour line is black or white, whichever contrasts more with the bands it separates.
+Minima are lettered from A and saddles numbered from S1.
+
+* Convergence
+
+#+begin_src python
+from pathlib import Path
+
+from chemparseplot.plot.journal import get_preset
+from chemparseplot.plot.optimization import plot_single_ended_convergence
+
+plot_single_ended_convergence(
+    trajs,
+    ["BFGS", "FIRE"],
+    Path("convergence.pdf"),
+    get_preset("jctc").raster_dpi,
+    journal="jctc",
+    threshold=0.05,
+    force_label=r"$F_{\max}$" + " (eV/\u00c5)",
+    step_label="Step (\u00c5)",
+)
+#+end_src
+
+Each trajectory has a =dat_df= with =iteration=, =convergence= and =step_size= columns.
+The eOn trajectory loaders return them in that form.
+Both panels have log scales.
+Lines are labelled at their ends where the labels touch no data, and in a legend otherwise.
+=threshold= adds the convergence criterion as a dashed, labelled line.
+The style applies only while the figure is drawn and saved.
+
+=plot_relative_error= puts relative errors against a reference value on a log scale.
+An exact result is drawn at machine epsilon instead of dropping off the plot.
+In the example, =barrier_history= gives each optimizer's iterations and the band's barrier at each:
+
+#+begin_src python
+from chemparseplot.plot.journal import journal_figure, label_lines
+from chemparseplot.plot.optimization import plot_relative_error
+
+fig, ax = journal_figure("jctc")
+for index, (name, (steps, barriers)) in enumerate(barrier_history.items()):
+    plot_relative_error(ax, steps, barriers, reference_barrier, label=name, index=index)
+label_lines(ax)
+#+end_src
+
+* Labels and legends
+
+- =label_lines(ax)= writes each line's label at its right end, in a shade of the line colour with a 4.5:1 contrast.
+  That is the contrast the Web Content Accessibility Guidelines ask of text.
+  Labels that would collide move just far enough apart (least squares).
+  When a label would touch data, the panel gets a legend instead.
+- =smart_legend(ax)= puts the legend inside the panel where it covers no data, and in one row above the panel otherwise.
+  Entries of a legend already on the panel are kept.
+- =label_hline(ax, line, "Threshold")= labels a horizontal reference line at whichever end is free.
+- =series_style(i)= gives series =i= a Ruhi line colour and an ISO 128-2 line type, so series stay apart in greyscale too.
+
+* Tick numbers
+
+Tick labels from 0.1 to 1000 are plain numbers.
+Outside that range they switch to powers of ten, and no offset is ever used.
+=sci_axis(ax)= sets the same formatting where another formatter is already set.
+=log_error_axis(ax)= labels decades as powers of ten and leaves the minor ticks unlabelled.
+
+* Save
+
+=save_figure(fig, "figure.pdf")= writes the page at the figure's exact size, with TrueType fonts embedded.
+There is no tight bounding box, so the width stays the column width.
+PDF and SVG files carry no creation date, and SVG ids come from a fixed salt.
+A script therefore writes the same bytes on every run.
+Raster files are written at the journal's resolution.
+
+=chemparseplot.plot.provenance.save_with_provenance= also records the SHA-256 of the inputs in the file.
+Pass it =dpi=get_preset("jctc").raster_dpi=.
+It follows =savefig.bbox=.
+Inside the journal style the page keeps its exact size.
+After =setup_publication_theme= without a journal, the page is cropped to its content.
+
+* Fonts
+
+Every preset sets text in the theme's face, Atkinson Hyperlegible for =ruhi=.
+The journals name faces as well: ACS Helvetica or Arial, Elsevier Arial and RSC Arial or Helvetica.
+To use one, name it:
+
+#+begin_src python
+from chemparseplot.plot.journal import apply_style
+
+style = apply_style("jctc", font="Helvetica")
+style.font  # Helvetica, or Nimbus Sans, Liberation Sans or Arimo
+#+end_src
+
+A named face that is not installed is replaced by one with the same advance widths, so text takes the same room.
+The journal's faces stand in the same way when the theme's face is missing.
+When none of them is installed, text falls back to DejaVu Sans, which comes with matplotlib.
+On Debian and Ubuntu the =fonts-atkinson-hyperlegible-ttf= package provides Atkinson Hyperlegible and =fonts-liberation= provides Liberation Sans.
+
+* Check colours
+
+#+begin_src python
+from chemparseplot.plot.palette import colormap_report, palette_report
+
+report = palette_report()
+report.contrast        # WCAG contrast of each Ruhi colour on white
+report.min_delta_e     # smallest CIEDE2000 difference, by vision type
+colormap_report("ruhi_seq").lightness_monotonic("deutan")
+#+end_src
+
+[[file:../explanation/figure_style.org][Figure Style]] explains these numbers and why lines use teal, sky and magenta.
+
+* See Also
+
+- [[file:../tutorials/journal_figure.org][Tutorial: A Journal Figure from a Nudged Elastic Band]]
+- [[file:create_neb_figures.org][How-to: Create Publication NEB Figures]]
+- [[file:../explanation/figure_style.org][Figure Style]]
+- [[file:../reference/plotting_api.org][Plotting API Reference]]

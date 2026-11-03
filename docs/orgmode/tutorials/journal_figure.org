@@ -1,0 +1,208 @@
+#+TITLE: Tutorial: A Journal Figure from a Nudged Elastic Band
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil author:t title:t ^:nil
+
+#+begin_export rst
+.. versionadded:: 1.14.0
+   Journal presets and the nudged elastic band energy profile in the journal style.
+#+end_export
+
+* Prerequisites
+
+The tutorial needs Python 3.11 or newer.
+It runs a nudged elastic band (NEB) with ASE and draws it with matplotlib.
+The =neb= and =plot= extras install both:
+
+#+begin_src bash
+pip install "chemparseplot[plot,neb]"
+#+end_src
+
+ASE has to be 3.23 or newer, since the tutorial imports =NEB= from =ase.mep=.
+The figures set text in Atkinson Hyperlegible where that font is installed.
+On Debian and Ubuntu the =fonts-atkinson-hyperlegible-ttf= package installs it.
+
+* Learning objectives
+
+By the end of this tutorial you will be able to:
+
+1. Run a small NEB with ASE and take the energy and the force along the path from it
+2. Draw its energy profile exactly one journal column wide
+3. Save the figure without changing its size
+4. Draw the same figure for another journal
+5. Check that the colours stay apart for readers with a colour-vision deficiency
+
+* Step 1: Run a small band
+
+A gold atom hops between two hollow sites of an Al(100) surface.
+The effective medium theory (EMT) calculator of ASE gives the energies, so no electronic-structure code is needed.
+The set-up is that of the ASE tutorial "Diffusion of gold atom on Al(100) surface (NEB)".
+
+#+begin_src python :eval no
+import numpy as np
+from ase.build import add_adsorbate, fcc100
+from ase.calculators.emt import EMT
+from ase.constraints import FixAtoms
+from ase.mep import NEB
+from ase.optimize import BFGS, QuasiNewton
+
+slab = fcc100("Al", size=(2, 2, 3))
+add_adsorbate(slab, "Au", 1.7, "hollow")
+slab.center(axis=2, vacuum=4.0)
+fixed = FixAtoms(mask=[atom.tag > 1 for atom in slab])
+
+
+def relaxed(atoms):
+    atoms = atoms.copy()
+    atoms.set_constraint(fixed)
+    atoms.calc = EMT()
+    QuasiNewton(atoms, logfile=None).run(fmax=0.05)
+    return atoms
+
+
+initial = relaxed(slab)
+hop = initial.copy()
+hop[-1].x += hop.get_cell()[0, 0] / 2
+final = relaxed(hop)
+
+images = [initial] + [initial.copy() for _ in range(3)] + [final]
+for image in images:
+    image.set_constraint(fixed)
+    image.calc = EMT()
+band = NEB(images, method="improvedtangent")
+band.interpolate()
+converged = BFGS(band, logfile=None).run(fmax=0.05)
+#+end_src
+
+The two lower layers of the slab are fixed.
+The band uses the improved tangent of Henkelman and Jonsson (J. Chem. Phys. 113, 9978, 2000).
+ASE made it the default in version 3.28, and naming it gives the same band on older versions.
+=converged= is =True= once the largest force on the band is below 0.05 eV/Angstrom.
+
+* Step 2: Path length, energy and force along the path
+
+The profile needs three numbers for each image.
+=rc= is the distance along the band from the first image.
+=energy= is the energy of the image, here relative to the first.
+=f_para= is the force along the path.
+The tangent at an image points from its neighbour behind to its neighbour ahead, and one-sided at the two ends.
+
+#+begin_src python :eval no
+positions = np.array([image.positions for image in images])
+energy = np.array([image.get_potential_energy() for image in images])
+forces = np.array([image.get_forces() for image in images])
+
+flat = positions.reshape(len(images), -1)
+rc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(flat, axis=0), axis=1))])
+tangent = np.gradient(flat, axis=0)
+tangent /= np.linalg.norm(tangent, axis=1, keepdims=True)
+f_para = np.sum(forces.reshape(len(images), -1) * tangent, axis=1)
+energy -= energy[0]
+#+end_src
+
+=get_forces= gives the forces of the calculator, without the springs of the band.
+
+* Step 3: Draw the profile
+
+#+begin_src python :eval no
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+fig.get_size_inches()  # array([3.33, 2.22])
+#+end_src
+
+The figure is one column of the Journal of Chemical Theory and Computation (JCTC) wide, 3.33 in.
+Its height is two thirds of its width.
+The x and y labels are set at 10 pt and the tick labels at 9 pt, the sizes of the JCTC page.
+The curve between the images is a cubic Hermite interpolant whose slopes are minus =f_para=.
+The barrier, 0.37 eV for this band, is written above the peak.
+
+* Step 4: Save it
+
+#+begin_src python :eval no
+from chemparseplot.plot.journal import get_preset, save_figure
+
+save_figure(fig, "profile.pdf")
+png = save_figure(fig, "profile.png")
+#+end_src
+
+=save_figure= writes the page at the exact figure size, with the fonts embedded.
+It writes the Portable Network Graphics (PNG) file at the journal's raster resolution, 1200 dpi for JCTC.
+The width of the PNG in pixels divided by that resolution gives the width back:
+
+#+begin_src python :eval no
+from PIL import Image
+
+with Image.open(png) as image:
+    width = image.width / get_preset("jctc").raster_dpi  # 3.33
+#+end_src
+
+* Step 5: Another journal
+
+The same call draws the figure for Physical Chemistry Chemical Physics (PCCP):
+
+#+begin_src python :eval no
+fig = plot_neb_profile(rc, energy, f_para, journal="pccp")
+fig.get_size_inches()  # array([3.27, 2.18]), to two decimals
+save_figure(fig, "profile-pccp.pdf")
+#+end_src
+
+The column is 8.3 cm, 3.27 in.
+The text is at the 9 pt and 8 pt sizes of the article template of the Royal Society of Chemistry.
+Line widths and tick lengths follow from the text size, so they shrink with it.
+[[file:../howto/journal_figures.org][How-to: Make Journal Figures]] lists every journal.
+
+* Step 6: Check the colours
+
+#+begin_src python :eval no
+from chemparseplot.plot.palette import palette_report
+
+report = palette_report()
+report.passes_graphics_contrast()  # ('teal', 'sky', 'magenta')
+report.min_delta_e["deutan"]       # 16.02
+#+end_src
+
+=passes_graphics_contrast= names the Ruhi colours with a contrast of at least 3:1 on white.
+That is what the Web Content Accessibility Guidelines ask of lines and markers.
+The band is drawn in teal, the first of them.
+=min_delta_e= gives the smallest CIEDE2000 difference between two Ruhi colours.
+It has one number for normal vision and one for each simulated deficiency.
+=reference_min_delta_e= gives the same numbers for the Okabe-Ito palette.
+
+* Troubleshooting
+
+** ASE is missing
+
+Python stops with =ModuleNotFoundError: No module named 'ase'= when ASE is not installed.
+The NEB extra installs it:
+
+#+begin_src bash
+pip install "chemparseplot[plot,neb]"
+#+end_src
+
+** The saved file is not a column wide
+
+A tight bounding box crops the page to what is drawn, so the file comes out narrower or wider than the column.
+Saving with =bbox_inches= set to tight does that, and so does =setup_publication_theme= without a journal.
+=save_figure= never crops.
+
+** The band has not converged
+
+=converged= is =False= when the optimizer stopped before the forces fell below =fmax=.
+Run it again on the same band to continue from where it stopped.
+
+* Next steps
+
+- [[file:../howto/journal_figures.org][How-to: Make Journal Figures]] - landscapes, convergence panels and labels
+- [[file:../explanation/figure_style.org][Figure Style]] - where each size, line width and colour comes from
+- [[file:../reference/plotting_api.org][Plotting API Reference]] - the journal and palette modules
+
+* Summary
+
+You learned to:
+
+1. Run a NEB with ASE and take the path length, energy and force along the path from it
+2. Draw its energy profile one JCTC column wide with =plot_neb_profile=
+3. Save it at that exact size with =save_figure=
+4. Draw it again for PCCP by changing =journal=
+5. Check the Ruhi colours with =palette_report=

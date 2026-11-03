@@ -1,5 +1,5 @@
 #+TITLE: Explanation
-#+OPTIONS: toc:nil num:nil
+#+OPTIONS: toc:nil num:nil ^:nil
 
 * Explanation
 
@@ -12,6 +12,7 @@ Explanation documents are understanding-oriented. Use them to understand concept
 | [[file:orca_neb_design.org][ORCA NEB Integration Design]] | Why OPI, lazy loading, compatible formats |
 | [[file:lazy_imports.org][Lazy Import Pattern]] | How ensure_import() works |
 | [[file:neb_parsing_design.org][NEB Parsing Design]] | Unified data format rationale |
+| [[file:figure_style.org][Figure Style]] | Where each size, line width and colour of the journal style comes from |
 
 ** Structure
 

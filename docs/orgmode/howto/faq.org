@@ -71,6 +71,23 @@ plot_orca_neb_energy_profile(data, "profile.pdf")
 
 See: [[file:../tutorials/orca_neb.org][ORCA NEB Tutorial]]
 
+*** How do I make a figure exactly one journal column wide?
+
+#+begin_src python
+from chemparseplot.plot.journal import save_figure
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+save_figure(fig, "profile.pdf")
+#+end_src
+
+Pass the journal to the plotting function, or draw on a figure from =journal_figure=.
+Save with =save_figure=, which keeps the page at the figure's size.
+A tight bounding box crops the page, and the file is then no longer a column wide.
+[[file:journal_figures.org][Make Journal Figures]] lists the journals.
+
+See: [[file:../tutorials/journal_figure.org][Journal Figure Tutorial]]
+
 *** How do I parse eOn NEB output?
 
 #+begin_src python

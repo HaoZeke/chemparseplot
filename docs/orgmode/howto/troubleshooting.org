@@ -1,7 +1,7 @@
 #+TITLE: Troubleshooting Guide
 #+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
 #+EMAIL: rgoswami@ieee.org
-#+OPTIONS: toc:t num:nil
+#+OPTIONS: toc:t num:nil ^:nil
 
 * Troubleshooting Guide
 

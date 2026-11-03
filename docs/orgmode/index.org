@@ -112,6 +112,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
 
    tutorials/index
    tutorials/orca_neb
+   tutorials/journal_figure
    tutorials/contribdoc
 
 .. toctree::
@@ -123,6 +124,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
    howto/parse_orca_neb
    howto/parse_eon_neb
    howto/create_neb_figures
+   howto/journal_figures
    howto/faq
    howto/troubleshooting
    howto/dev_testing
@@ -136,6 +138,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
    explanation/lazy_imports
    explanation/neb_parsing_design
    explanation/orca_neb_design
+   explanation/figure_style
    explanation/citation
 
 .. toctree::

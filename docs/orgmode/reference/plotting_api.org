@@ -1,7 +1,7 @@
 #+TITLE: Plotting API Reference
 #+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
 #+EMAIL: rgoswami@ieee.org
-#+OPTIONS: toc:t num:nil
+#+OPTIONS: toc:t num:nil ^:nil
 
 * Module: =chemparseplot.plot.neb=
 
@@ -117,7 +117,11 @@ Returns the figure.
 - Without =ax= the journal style goes into the global rcParams, as =journal_figure= does.
   With =ax= the caller's rcParams are kept and the journal sets only line and marker sizes.
 
-*** =plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white")=
+*** =plot_eigenvalue_path=
+
+#+begin_src python
+plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white")
+#+end_src
 
 Plots a 1D eigenvalue profile with cubic spline interpolation.
 
@@ -144,17 +148,19 @@ Plots a 1D eigenvalue profile with cubic spline interpolation.
 
 Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
 
-Signature (core args abbreviated)::
+The signature below shows the core arguments only.
 
-  plot_landscape_surface(
-      ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
-      step_data=None, method="grad_matern", rbf_smooth=None,
-      cmap="ruhi_seq", show_pts=True, variance_threshold=0.05,
-      project_path=True, extra_points=None, n_inducing=None,
-      xlim=None, ylim=None, basis=None,
-      auto_thin=False, max_surface_points=64,
-      surface_fit=None,
-  )
+#+begin_src python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    step_data=None, method="grad_matern", rbf_smooth=None,
+    cmap="ruhi_seq", show_pts=True, variance_threshold=0.05,
+    project_path=True, extra_points=None, n_inducing=None,
+    xlim=None, ylim=None, basis=None,
+    auto_thin=False, max_surface_points=64,
+    surface_fit=None,
+)
+#+end_src
 
 **** Parameters
 
@@ -262,7 +268,14 @@ Renders an ASE Atoms object to a numpy RGBA image array using ASE's built-in PNG
 
 =np.ndarray= -- RGBA image array with shape =(H, W, 4)= and float dtype.
 
-*** =plot_structure_strip(ax, atoms_list, labels=None, zoom=0.3, rotation="0x,90y,0z", theme_color="black", max_cols=6, renderer="xyzrender", label_ax=None)=
+*** =plot_structure_strip=
+
+#+begin_src python
+plot_structure_strip(
+    ax, atoms_list, labels=None, zoom=0.3, rotation="0x,90y,0z", theme_color="black",
+    max_cols=6, renderer="xyzrender", label_ax=None
+)
+#+end_src
 
 Renders a horizontal gallery of atomic structures.
 
@@ -288,7 +301,14 @@ Renders a horizontal gallery of atomic structures.
 - =StructurePlacement= lets callers pass a typed strip payload instead of parallel =atoms_list= / =labels= lists
 - Supplying =label_ax= keeps captions out of the structure-image axis and uses matching normalized row and column positions
 
-*** =plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None, renderer="ase")=
+*** =plot_structure_inset=
+
+#+begin_src python
+plot_structure_inset(
+    ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None,
+    renderer="ase"
+)
+#+end_src
 
 Plots a single structure as an annotation inset with an arrow.
 
@@ -369,7 +389,14 @@ Simple ORCA NEB energy profile. Plots image index vs energy with labeled reactan
 | =height= | =float= | =5.0= | Figure height (inches) |
 | =dpi= | =int= | =200= | Output resolution |
 
-*** =plot_orca_neb_energy_profile(neb_data, output, *, width=5.37, height=5.37, dpi=200, method="hermite", smoothing=None)=
+*** =plot_orca_neb_energy_profile=
+
+#+begin_src python
+plot_orca_neb_energy_profile(
+    neb_data, output, *, width=5.37, height=5.37, dpi=200, method="hermite",
+    smoothing=None
+)
+#+end_src
 
 Publication ORCA NEB energy profile using the eOn-style =plot_energy_path()= function.
 
@@ -391,7 +418,14 @@ Publication ORCA NEB energy profile using the eOn-style =plot_energy_path()= fun
 - Applies the =ruhi= theme
 - Labels reactant, product, and saddle points
 
-*** =plot_orca_neb_landscape(neb_data, output, *, width=5.37, height=5.37, dpi=200, method="grad_matern", project_path=True)=
+*** =plot_orca_neb_landscape=
+
+#+begin_src python
+plot_orca_neb_landscape(
+    neb_data, output, *, width=5.37, height=5.37, dpi=200, method="grad_matern",
+    project_path=True
+)
+#+end_src
 
 Publication ORCA NEB 2D landscape using =plot_landscape_surface()= and =plot_landscape_path_overlay()=.
 
@@ -702,7 +736,14 @@ Full single-ended pipeline (min/saddle CLIs). Accepts the same surface-fit
 knobs (=auto_thin= default false, =max_surface_points= 64, =surface_fit=).
 See =plot_landscape_surface= above.
 
-** =plot_optimization_profile(ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color="#004D40", eigen_color="#FF655D")=
+** =plot_optimization_profile=
+
+#+begin_src python
+plot_optimization_profile(
+    ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color="#004D40",
+    eigen_color="#FF655D"
+)
+#+end_src
 
 Plots energy (and optionally eigenvalue) vs iteration.
 
@@ -747,9 +788,13 @@ Errors below machine epsilon are drawn at epsilon, so an exact result stays on t
 The line takes the colour and line type of =series_style(index)=.
 Returns the line.
 
-** =plot_dimer_mode_evolution(ax, mode_vectors, *, color="#004D40")=
+** =plot_dimer_mode_evolution=
 
-Plots alignment of per-iteration dimer mode with the final converged mode (|cos(mode, final)|).
+#+begin_src python
+plot_dimer_mode_evolution(ax, mode_vectors, *, color="#004D40")
+#+end_src
+
+Plots alignment of per-iteration dimer mode with the final converged mode (=|cos(mode, final)|=).
 
 * Module: =chemparseplot.plot.chemgp=
 
@@ -821,5 +866,7 @@ Inverse transform for grid evaluation on projected surfaces.
 * See Also
 
 - [[file:../howto/create_neb_figures.org][How-to: Create Publication Figures]]
+- [[file:../howto/journal_figures.org][How-to: Make Journal Figures]]
+- [[file:../explanation/figure_style.org][Figure Style]]
 - [[file:orca_neb_api.org][ORCA NEB API Reference]]
 - [[file:eon_neb_api.org][eOn NEB API Reference]]
