@@ -377,9 +377,10 @@ Retrieves a theme by name, applying optional field overrides.
 
 Sets =plt.rcParams= from the theme (font, colors, sizes).
 
-** =setup_publication_theme(theme)=
+** =setup_publication_theme(theme, journal=None)=
 
 Extends =setup_global_theme()= with publication defaults: spine removal, line widths, DPI 300, tight bbox.
+With =journal= (a preset key or alias such as ="jctc"=), applies the style of =chemparseplot.plot.journal= instead.
 
 ** =apply_axis_theme(ax, theme)=
 
@@ -388,6 +389,153 @@ Applies theme properties to a specific axes instance (facecolor, spine colors, t
 ** =build_cmap(hex_list, name)=
 
 Builds and registers a =LinearSegmentedColormap= from hex color strings.
+
+* Module: =chemparseplot.plot.journal=
+
+Journal presets and the figure style derived from them.
+Lengths follow the lettering and line standards of the International Organization for Standardization (ISO).
+All sizes are in PostScript points (72 per inch) unless marked as inches.
+
+** Presets
+
+| Key | Aliases | Widths (in) | Height limit (in) | Text (pt) | Smallest text (pt) | Thinnest line (pt) | Raster (dpi) |
+|-----+---------+-------------+-------------------+-----------+--------------------+--------------------+--------------|
+| =acs= | =jctc=, =jcim= | single 3.33, double 7.00 | 9.17 | 10, 9, 8 | 4.5 | 0.5 | 1200 |
+| =aip= | =jcp= | single 3.35, double 6.69 | 8.25 | 9.96, 8.97, 8 | 8 | 0.5 | 1200 |
+| =elsevier= | =cpc= | single 3.54, onehalf 5.51, double 7.48 | none | 9.96, 8.97, 7.97 | 7 | 0.25 | 1000 |
+| =rsc= | =pccp= | single 3.27, double 6.73 | 9.17 | 8.97, 7.97, 7 | 7 | none | 600 |
+
+Text sizes are the body, =\small= and =\footnotesize= sizes, at least the smallest text.
+=DEFAULT_JOURNAL= is ="acs"=; =PRESETS= maps keys to presets and =ALIASES= journal abbreviations to keys.
+
+** =JournalPreset=
+
+Frozen dataclass of what a journal fixes for its figures.
+
+| Field | Type | Description |
+|-------+------+-------------|
+| =key= | =str= | Preset key |
+| =name= | =str= | Publisher and journals |
+| =widths= | =Mapping[str, float]= | Figure width in inches by column span |
+| =max_height= | =float= or =None= | Tallest figure in inches; =None= when not stated |
+| =class_sizes= | =tuple[float, float, float]= | =\normalsize=, =\small=, =\footnotesize= in TeX points |
+| =min_text= | =float= | Smallest lettering |
+| =min_line= | =float= or =None= | Thinnest line; =None= when not stated |
+| =raster_dpi= | =int= | Resolution for raster output |
+| =fonts= | =tuple[str, ...]= | Faces the journal names |
+| =panel_label= | =str= | Panel letter format |
+| =sources= | =tuple[str, ...]= | Author guidelines the values come from |
+
+=width(columns)= returns the width for a column span and raises =ValueError= for spans the journal lacks.
+
+** =get_preset(journal)=
+
+Looks up a preset by key or alias, case-insensitively; raises =ValueError= for unknown names.
+
+** =figure_style=
+
+#+begin_src python
+figure_style(journal="acs", *, font=None, theme="ruhi")
+#+end_src
+
+Returns a =JournalStyle=, the lengths derived from the preset.
+Here h is the capital height of the face at the body size.
+
+| Field | Derivation |
+|-------+------------|
+| =body=, =small=, =footnote= | Class sizes in PostScript points, at least =min_text= |
+| =cap= | h, measured from the outline of "H" |
+| =narrow= | ISO 3098-1 stroke 0.1 h divided by sqrt(2) (one ISO 128-2 step), at least =min_line= |
+| =wide=, =extra= | 2 and 4 times =narrow= (ISO 128-2) |
+| =tick=, =minor_tick= | 0.7 h and 0.3 h (x-height and descender) |
+| =pad=, =gap= | 0.6 h and 0.2 h (word and character space) |
+| =marker= | h |
+| =textcolor=, =facecolor= | From =theme= |
+
+Text is set in =font=, by default the theme's face.
+Where that face is not installed the faces the journal names stand in.
+Missing ones give way to their metric clones (Nimbus Sans, Liberation Sans, Arimo), and DejaVu Sans comes last.
+=rc()= returns the rcParams and =halo(color)= path effects that outline text.
+=pitch= is the baseline spacing of stacked =\small= labels, 1.5 h at that size.
+=marker_large= is one sqrt(2) step larger than =marker=.
+
+** =apply_style= and =journal_style=
+
+#+begin_src python
+apply_style(journal="acs", **kwargs)
+journal_style(journal="acs", **kwargs)
+#+end_src
+
+=apply_style= puts the style into the global rcParams and returns it.
+=journal_style= is a context manager that yields the style and restores the rcParams on exit.
+Keyword arguments go to =figure_style=.
+
+** =journal_figure=
+
+#+begin_src python
+journal_figure(journal="acs", columns="single", *, nrows=1, ncols=1,
+               aspect=None, height=None, style=None, **subplots_kw)
+#+end_src
+
+Returns =(fig, axes)= as =plt.subplots= does, for a constrained-layout figure at the exact column width.
+Without =style= the journal style is applied globally.
+The height is =height= inches.
+Without =height= it is the width times =aspect= times =nrows / ncols=.
+=aspect= is the panel height over width, by default =PANEL_ASPECT= (2/3).
+A height above the journal's limit raises =ValueError=.
+
+** =fit_height(fig, *, dpi=None)=
+
+Shrinks the figure height to its content, keeping the width, for equal-aspect maps that leave empty bands.
+Stops when the height changes by less than one output pixel.
+Returns the new height in inches.
+
+** =save_figure(fig, path, *, dpi=None, **savefig_kw)=
+
+Saves at the exact figure size (no tight bounding box) with TrueType fonts embedded.
+PDF and SVG files carry no creation date and SVG ids use a fixed salt, so the bytes are the same on every run.
+Returns the path.
+
+** =label_panels=
+
+#+begin_src python
+label_panels(target, labels=None, *, fmt=None, journal=None, fontweight="normal")
+#+end_src
+
+Letters the panels of a figure, or a sequence of panels, in order from "(a)".
+Each letter goes above the top left of its panel, on the left edge of the panel's tick labels and y label.
+Panels in one grid column share that edge.
+Returns the texts.
+
+** Labels and legends
+
+| Function | Description |
+|----------+-------------|
+| =direct_labels(ax, lines, *, side)= | Labels at the line ends (default right) in a shade of the line colour that reaches 4.5:1, moved apart by least squares where they would collide |
+| =label_lines(ax, lines, *, fallback)= | Direct labels where they touch no data, otherwise =smart_legend=; with =fallback=False= nothing is drawn instead |
+| =label_hline(ax, line, label, *, color, ignore)= | Label at a free end of a horizontal reference line, otherwise a legend entry |
+| =smart_legend(ax, handles, labels, **kwargs)= | Legend inside the panel where it covers no data, otherwise in one row above it |
+| =series_style(index, background)= | Colour and ISO 128-2 line type of series =index= |
+
+Arguments after =ax= are optional except =line= and =label=; =lines= default to the labelled lines of =ax=.
+
+** Scales
+
+| Function | Description |
+|----------+-------------|
+| =relative_error(value, reference)= | =abs(value - reference) / abs(reference)=, at least machine epsilon |
+| =log_error_axis(ax, axis)= | Log scale with decades labelled as powers of ten and unlabelled minor ticks |
+| =sci_axis(ax, axis)= | Plain numbers from 0.1 to 1000, powers of ten outside, never an offset |
+
+=axis= is ="x"=, ="y"= (default) or ="both"=.
+
+** Constants
+
+| Name | Value | Source |
+|------+-------+--------|
+| =LINE_TYPES= | ISO 128-2 types 01, 02, 07, 10 and 04 as =(number, name, dash pattern)= | ISO 128-2:2020 |
+| =SI_POWERLIMITS= | =(-2, 3)= | National Institute of Standards and Technology Special Publication 811 (2008), section 7.9 |
+| =PANEL_ASPECT= | 2/3 | Tufte (1983), p. 190 |
 
 * Module: =chemparseplot.plot.palette=
 

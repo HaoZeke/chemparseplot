@@ -168,16 +168,29 @@ def apply_axis_theme(ax: plt.Axes, theme: PlotTheme):
     ax.title.set_color(theme.textcolor)
 
 
-def setup_publication_theme(theme: PlotTheme):
+def setup_publication_theme(theme: PlotTheme, journal: str | None = None):
     """Extended theme setup for publication-quality figures.
 
     Calls ``setup_global_theme`` and adds line widths, spine removal,
-    DPI, and tight bounding box defaults.
+    DPI, and tight bounding box defaults. With ``journal`` (``"jctc"``,
+    ``"jcp"``, ``"cpc"``, ``"pccp"`` or a preset key), applies the journal
+    style of :mod:`chemparseplot.plot.journal` instead, whose sizes all
+    derive from the journal's column widths and LaTeX font sizes.
 
     ```{versionadded} 1.3.0
     ```
+
+    ```{versionchanged} 1.14.0
+    Added *journal*.
+    ```
     """
     setup_global_theme(theme)
+    if journal is not None:
+        # Deferred because journal imports this module.
+        from chemparseplot.plot.journal import apply_style  # noqa: PLC0415
+
+        apply_style(journal, theme=theme)
+        return
     plt.rcParams.update(
         {
             "axes.linewidth": 0.8,
