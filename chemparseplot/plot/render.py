@@ -15,6 +15,7 @@ radius.
 
 from __future__ import annotations
 
+import functools
 import logging
 import math
 import os
@@ -25,6 +26,7 @@ from pathlib import Path
 
 import numpy as np
 
+from chemparseplot.plot.palette import assign_element_colors
 from chemparseplot.plot.theme import RUHI_COLORS, RUHI_THEME, PlotTheme
 
 log = logging.getLogger(__name__)
@@ -75,17 +77,11 @@ VTK_PARALLEL_SCALE = 0.5
 CORAL = RUHI_COLORS["coral"]
 TEAL = RUHI_COLORS["teal"]
 SKY = RUHI_COLORS["sky"]
-# Coral marks the highlight and sky the hydrogen-bond dash, which leaves
-# three Ruhi colours for atom bodies. Hydrogen, carbon, and oxygen, the
-# elements of water and malonaldehyde, take one each. The pairing is the
-# one-to-one assignment with the smallest summed CIELAB distance to the
-# Jmol colours. A fourth element would repeat a colour, so any other
-# element needs a colour from the caller.
-ELEMENT_COLORS: dict[str, str] = {
-    "H": RUHI_COLORS["sunshine"],
-    "C": TEAL,
-    "O": RUHI_COLORS["magenta"],
-}
+# Coral marks the highlight, so atom bodies take the other four Ruhi
+# colours, one for each CPK anchor (palette.assign_element_colors). Sky is
+# also the hydrogen-bond dash. Nitrogen shares it as an outlined body, since
+# keeping sky for the dash alone would draw nitrogen in carbon's teal.
+BODY_COLORS = {name: value for name, value in RUHI_COLORS.items() if value != CORAL}
 
 # solvis turns both on by default. Depth peeling only orders translucent
 # layers, and these spheres are opaque: on the LJ38 figure it changes no
@@ -125,6 +121,24 @@ CORAL_RGB = _hex_to_rgb(CORAL)
 TEAL_RGB = _hex_to_rgb(TEAL)
 
 
+@functools.cache
+def _ruhi_element_colors() -> dict[str, str]:
+    from ase.data import chemical_symbols
+    from ase.data.colors import jmol_colors
+
+    # Row Z of jmol_colors is element Z; row 0 is the dummy X.
+    jmol = dict(zip(chemical_symbols[1 : len(jmol_colors)], jmol_colors[1:], strict=True))
+    return assign_element_colors(jmol, BODY_COLORS)
+
+
+def __getattr__(name: str):
+    # ELEMENT_COLORS needs ASE's Jmol table, so it is built when first read.
+    if name == "ELEMENT_COLORS":
+        return dict(_ruhi_element_colors())
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
+
+
 @dataclass
 class Frame:
     """One oriented picture: positions are already in the camera frame."""
@@ -148,11 +162,11 @@ def covalent_radius(symbol: str) -> float:
 
 
 def element_color(symbol: str, colors: Mapping[str, str] | None = None) -> str:
-    """Hex body colour for one element from an explicit map.
+    """Hex body colour for one element.
 
     The default map is ``ELEMENT_COLORS``. A symbol outside the map raises.
     """
-    table = ELEMENT_COLORS if colors is None else colors
+    table = _ruhi_element_colors() if colors is None else colors
     try:
         return table[symbol]
     except KeyError:
@@ -169,7 +183,7 @@ def frame_color_overrides(
     symbols: list[str], colors: Mapping[str, str] | None = None
 ) -> dict[str, str]:
     """Symbol-to-hex map for one frame. A symbol outside the map raises."""
-    table = ELEMENT_COLORS if colors is None else colors
+    table = _ruhi_element_colors() if colors is None else colors
     missing = sorted({symbol for symbol in symbols if symbol not in table})
     if missing:
         msg = f"No body colour is set for {', '.join(missing)}"
@@ -1082,9 +1096,9 @@ def render_structure(
         absent.
     element_colors:
         Map from element symbol to hex colour. The default is
-        ``ELEMENT_COLORS``, three distinct Ruhi colours for hydrogen,
-        carbon, and oxygen. A map must name every element in the
-        figure, so a figure with any other element needs this map.
+        ``ELEMENT_COLORS``: each element takes the Ruhi colour of the
+        CPK anchor (H, C, N or O) whose Jmol colour is nearest its own.
+        A map must name every element in the figure.
     theme:
         Caption face, ground, and ink. The default is the ruhi theme.
         Every atom is outlined in the ink. A ``caption_font`` that is

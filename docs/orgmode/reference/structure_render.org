@@ -23,7 +23,7 @@ The four channels are red green blue alpha (RGBA).
 | =highlight= | Zero-based indices painted in Ruhi coral. |
 | =output= | Optional portable network graphics (PNG) path. |
 | =canvas= | Figure width in pixels. Panels share that width. |
-| =element_colors= | Symbol to hex. The default covers hydrogen, carbon, and oxygen. |
+| =element_colors= | Symbol to hex, =ELEMENT_COLORS= by default. |
 | =theme= | Caption face, ground, and ink. The default is ruhi. |
 
 The figure width is a Nature single column.
@@ -67,15 +67,18 @@ The caption then uses the matplotlib sans-serif face.
 
 Every colour comes from the Ruhi palette.
 Coral is the highlight, and sky is the hydrogen-bond dash.
-Sunshine, teal, and magenta are left for atom bodies.
-Hydrogen, carbon, and oxygen make up water and malonaldehyde.
-Each of the three takes one of those colours.
-The pairing is the one-to-one assignment closest to the Jmol colours.
-Closeness is the summed CIELAB distance (CIE76).
-Hydrogen is sunshine, carbon is teal, and oxygen is magenta.
-A fourth element would repeat a colour, so the default map stops at three.
+Atom bodies take the four colours other than coral.
+The default map, =ELEMENT_COLORS=, comes from =palette.assign_element_colors= and the Jmol colours in ASE.
+Hydrogen is sunshine, carbon teal, nitrogen sky and oxygen magenta.
+These four are the anchors.
+Every other element takes the colour of the anchor nearest it in Jmol colour.
+Gold is sunshine, aluminium teal and iron magenta.
+The map covers the 109 elements of the Jmol table in ASE, hydrogen to meitnerium.
+Nitrogen shares sky with the dash.
+An atom is a disc outlined in ink and the dash is a broken line, so their shapes tell them apart.
+Keeping sky for the dash alone would give nitrogen carbon's teal.
 An element outside the map raises a =KeyError= that names it.
-A figure with another element passes its own =element_colors=.
+A map passed as =element_colors= must name every element in the figure.
 A cluster is teal, with the highlight in coral.
 
 On white, sunshine is 1.4:1 and coral is 2.9:1.
