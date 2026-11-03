@@ -1,0 +1,9 @@
+# The package's rules, with the allowances pyproject.toml gives scripts/
+# and tests/: skill scripts are command-line programs that print, run
+# subprocesses and compare with the values they expect, and the assets
+# are copied into the package and its tests by the add-parser skill.
+extend = "../pyproject.toml"
+
+[lint.per-file-ignores]
+"*/scripts/*" = ["PLC0415", "PLR2004", "S101", "S603", "T201"]
+"*/assets/test_*" = ["PLR2004", "S101"]
