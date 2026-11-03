@@ -73,12 +73,15 @@ uv run sphinx-build doc/source doc/build/html
 - Notebooks run during the build. A cell that fails is a warning, the
   build still succeeds, and the traceback is written under
   `doc/build/html/reports/`, which CI deploys with the rest of
-  `doc/build/html`. With
-  `uv sync --all-extras` on main three fail:
-  `tutorials/chemgp/convergence` and `tutorials/chemgp/surfaces` import
-  pandas and plotnine, which no extra installs, and
-  `tutorials/orca/geomscan` uses `TwoDimPlot` without importing it. CI
-  installs the doc extra only.
+  `doc/build/html`. CI installs the doc extra only, so all five
+  notebooks stop at their first cell on a missing module (h5py,
+  rgpycrumbs, ase or matplotlib). With `uv sync --all-extras` on main
+  three fail: `tutorials/chemgp/convergence` and
+  `tutorials/chemgp/surfaces` import pandas and plotnine, which no
+  extra installs, and `tutorials/orca/geomscan` uses `TwoDimPlot`
+  without importing it. With pandas and plotnine added,
+  `tutorials/chemgp/surfaces` still fails: it passes `true_energy=` to
+  `plot_gp_progression`, whose parameter is `_true_energy`.
 - `uv run` and `uv sync` may rewrite `uv.lock`; restore it with
   `git checkout -- uv.lock` unless the dependencies changed.
 
@@ -86,6 +89,10 @@ uv run sphinx-build doc/source doc/build/html
 
 - Add a line for a new page to `doc/source/llms.txt`, in its section:
   `- [Title](https://chemparseplot.rgoswami.me/PAGE): what it is for`.
+- Fetched without a browser, the pages of the site answer HTTP 403
+  with a Cloudflare challenge ("Just a moment..."); only `llms.txt`
+  comes back. Check a page in your own build,
+  `doc/build/html/PAGE.html`, not on the site.
 - `python scripts/llms/build_llms.py` writes `llms-full.txt`: every page
   in toctree order, converted to Markdown from its Org or MyST source,
   then `AGENTS.md` and the skills. Its settings are in

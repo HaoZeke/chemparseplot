@@ -105,16 +105,26 @@ uv run sphinx-build doc/source doc/build/html
 - The export needs Emacs 30 (Org 9.7); CI installs 30.1. Emacs 29.3,
   the Ubuntu 24.04 package, stops at the first page (see the
   `chemparseplot-docs` skill). With Emacs 30.2 the export wrote 27
-  pages in 4 s and Sphinx took 25 s: "build succeeded, 13 warnings".
-- Sphinx runs the tutorial notebooks. A failing cell is a warning, not
-  an error; on main three tutorials fail (two need pandas and plotnine,
-  `tutorials/orca/geomscan` never imports `TwoDimPlot`).
+  pages in 4 s; Sphinx, with the doc extra only, took 21 s: "build
+  succeeded, 17 warnings".
+- Sphinx runs five notebooks: the two under `tutorials/chemgp/`,
+  `tutorials/eon/saddle`, `tutorials/orca/geomscan` and
+  `worklog/graphTrials`. A failing cell is a warning, not an error, and
+  its traceback goes under `doc/build/html/reports/`. With the doc
+  extra only, as CI installs it, all five stop at their first cell on
+  a missing module (h5py, rgpycrumbs, ase or matplotlib). With
+  `uv sync --all-extras` three still fail: the chemgp pages need pandas
+  and plotnine, which no extra installs, and `tutorials/orca/geomscan`
+  never imports `TwoDimPlot`.
 - `python skills/chemparseplot-docs/scripts/where_is.py PAGE` names the
   file behind a page.
-- The site answers every address it does not have with its home page
-  and HTTP 200, never a 404, so a fetched page is only real if its
-  title matches. `llms-full.txt` is not published there; read it from
-  the repository.
+- Fetched without a browser in November 2026, the site served
+  `llms.txt` but none of the 39 pages it links: each answered HTTP 403
+  with a Cloudflare challenge titled "Just a moment...". An address the
+  site does not have answers HTTP 200 with the home page, never a 404,
+  so a fetched page is only real if its title matches. Read the pages
+  from the repository, or `llms-full.txt`, which the site does not
+  publish.
 - `python scripts/llms/build_llms.py` rewrites `llms-full.txt` after a
   change to the pages, `AGENTS.md` or `skills/`; `--check`, which CI
   runs, exits 1 while it is stale. Its tests:
@@ -176,6 +186,10 @@ uv run sphinx-build doc/source doc/build/html
 - `TwoDimPlot.add_data` takes `XYData`, not `EnergyPath`.
 - `BasePlotter` calls `plt.style.use("bmh")` for the whole session.
 - `import chemparseplot.plot.chemgp` fails without pandas and plotnine.
+- `chemgp.plot_gp_progression` takes the true surface as its second
+  positional argument, `_true_energy`. Its docstring and
+  `tutorials/chemgp/surfaces` call it `true_energy`, and
+  `true_energy=...` raises `TypeError`.
 - Some docs say what the code does not:
   - `doc/source/installation.md` and `doc/source/quickstart.md` say
     that installing chemparseplot, or its `all` extra, pulls in
