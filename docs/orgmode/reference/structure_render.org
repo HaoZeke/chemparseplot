@@ -60,9 +60,7 @@ The g in an image label stays inside that row.
 
 The caption face is =caption_font= on the theme.
 The default is Atkinson Hyperlegible, the ruhi face.
-Nature prefers Helvetica or Arial.
-Liberation Sans has the Arial metrics.
-A switch of the default to Liberation Sans is pending.
+For Nature, which prefers Helvetica or Arial, set =caption_font= to Liberation Sans, which has the Arial metrics.
 A missing caption font logs a warning that names the face.
 The caption then uses the matplotlib sans-serif face.
 

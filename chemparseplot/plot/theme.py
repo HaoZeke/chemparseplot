@@ -43,8 +43,7 @@ class PlotTheme:
     cmap_landscape: str
     highlight_color: str
     # Structure captions. Every theme takes this default, so it is the one
-    # switch. Atkinson Hyperlegible is the ruhi face. Liberation Sans, with
-    # the Arial metrics Nature prefers, is pending. A default also keeps
+    # switch. Atkinson Hyperlegible is the ruhi face. A default also keeps
     # existing PlotTheme(...) calls working.
     caption_font: str = "Atkinson Hyperlegible"
 
