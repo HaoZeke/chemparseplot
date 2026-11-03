@@ -90,6 +90,8 @@ GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp
   progression panels, MAP-NLL landscape, variance overlay with hatching,
   trust region illustration, hyperparameter sensitivity grid
 
+plotnine and pandas are imported when a line chart is first drawn, so the surfaces need only matplotlib.
+
 ### Surrogate-assisted searches
 
 Records and figures for searches that spend a counted number of oracle calls

@@ -6,39 +6,32 @@ convergence, surfaces, and diagnostics.
 
 Surface plots use matplotlib contourf with the RUHI colormap,
 matching the Julia CairoMakie originals. Line charts use plotnine
-for ggplot2 grammar.
+for ggplot2 grammar; plotnine and pandas are imported when a line
+chart is first drawn, so the surface plots need neither.
 
 ```{versionadded} 1.4.0
 ```
 """
 
+from __future__ import annotations
+
 import logging
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 import matplotlib.patheffects as mpe
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from plotnine import (
-    aes,
-    element_text,
-    facet_wrap,
-    geom_hline,
-    geom_line,
-    geom_point,
-    ggplot,
-    labs,
-    scale_color_manual,
-    scale_y_log10,
-    theme,
-    theme_minimal,
-)
 
 from chemparseplot.plot.theme import (
     RUHI_COLORS,
     get_theme,
     setup_publication_theme,
 )
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from plotnine import ggplot
 
 log = logging.getLogger(__name__)
 
@@ -51,14 +44,25 @@ _METHOD_PALETTE = [
     RUHI_COLORS["sunshine"],
 ]
 
-_JOST_THEME = theme_minimal() + theme(
-    text=element_text(family="Jost"),
-    plot_title=element_text(family="Jost", size=12),
-    axis_title=element_text(family="Jost", size=11),
-    strip_text=element_text(family="Jost", size=10),
-)
-
 _STROKE = [mpe.withStroke(linewidth=1.5, foreground="black")]
+
+
+@lru_cache(maxsize=1)
+def _gg():
+    import plotnine
+
+    return plotnine
+
+
+@lru_cache(maxsize=1)
+def _jost_theme():
+    gg = _gg()
+    return gg.theme_minimal() + gg.theme(
+        text=gg.element_text(family="Jost"),
+        plot_title=gg.element_text(family="Jost", size=12),
+        axis_title=gg.element_text(family="Jost", size=11),
+        strip_text=gg.element_text(family="Jost", size=10),
+    )
 
 
 def _ensure_ruhi_cmap():
@@ -141,6 +145,7 @@ def plot_convergence_curve(
 
     .. versionadded:: 1.4.0
     """
+    gg = _gg()
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE, strict=False))
 
@@ -152,25 +157,25 @@ def plot_convergence_curve(
     }.get(y, y)
 
     p = (
-        ggplot(df, aes(x=x, y=y, color=color))
-        + geom_line(size=0.9)
-        + geom_point(size=1.5, alpha=0.7)
-        + scale_color_manual(values=palette)
-        + labs(
+        gg.ggplot(df, gg.aes(x=x, y=y, color=color))
+        + gg.geom_line(size=0.9)
+        + gg.geom_point(size=1.5, alpha=0.7)
+        + gg.scale_color_manual(values=palette)
+        + gg.labs(
             x="Oracle calls",
             y=y_label,
             color="Method",
         )
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
+        + _jost_theme()
+        + gg.theme(figure_size=(width, height))
     )
     if log_y:
-        p = p + scale_y_log10()
+        p = p + gg.scale_y_log10()
     if conv_tol is not None:
         if isinstance(conv_tol, dict):
             for method_name, tol_val in conv_tol.items():
                 method_color = palette.get(method_name, "grey")
-                p = p + geom_hline(
+                p = p + gg.geom_hline(
                     yintercept=tol_val,
                     linetype="dashed",
                     color=method_color,
@@ -178,7 +183,7 @@ def plot_convergence_curve(
                     alpha=0.6,
                 )
         else:
-            p = p + geom_hline(
+            p = p + gg.geom_hline(
                 yintercept=conv_tol,
                 linetype="dashed",
                 color="grey",
@@ -222,6 +227,9 @@ def plot_rff_quality(
 
     .. versionadded:: 1.4.0
     """
+    import pandas as pd
+
+    gg = _gg()
     e_df = (
         df[["d_rff", "energy_mae"]]
         .rename(columns={"energy_mae": "mae"})
@@ -242,20 +250,20 @@ def plot_rff_quality(
     )
 
     p = (
-        ggplot(long, aes(x="d_rff", y="mae"))
-        + geom_line(color=RUHI_COLORS["teal"], size=0.9)
-        + geom_point(color=RUHI_COLORS["teal"], size=1.5)
-        + geom_hline(
+        gg.ggplot(long, gg.aes(x="d_rff", y="mae"))
+        + gg.geom_line(color=RUHI_COLORS["teal"], size=0.9)
+        + gg.geom_point(color=RUHI_COLORS["teal"], size=1.5)
+        + gg.geom_hline(
             data=baselines,
-            mapping=aes(yintercept="exact"),
+            mapping=gg.aes(yintercept="exact"),
             linetype="dashed",
             color=RUHI_COLORS["coral"],
             size=0.5,
         )
-        + facet_wrap("metric", ncol=2, scales="free_y")
-        + labs(x=r"$D_{\mathrm{RFF}}$", y="MAE")
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
+        + gg.facet_wrap("metric", ncol=2, scales="free_y")
+        + gg.labs(x=r"$D_{\mathrm{RFF}}$", y="MAE")
+        + _jost_theme()
+        + gg.theme(figure_size=(width, height))
     )
     return p
 
@@ -538,6 +546,9 @@ def plot_fps_projection(
 
     .. versionadded:: 1.4.0
     """
+    import pandas as pd
+
+    gg = _gg()
     sel_df = pd.DataFrame(
         {
             "pc1": np.asarray(selected_pc1),
@@ -560,12 +571,12 @@ def plot_fps_projection(
     }
 
     p = (
-        ggplot(all_df, aes(x="pc1", y="pc2", color="group"))
-        + geom_point(size=1.5, alpha=0.7)
-        + scale_color_manual(values=palette)
-        + labs(x=r"$\mathrm{PC}_1$", y=r"$\mathrm{PC}_2$", color="")
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
+        gg.ggplot(all_df, gg.aes(x="pc1", y="pc2", color="group"))
+        + gg.geom_point(size=1.5, alpha=0.7)
+        + gg.scale_color_manual(values=palette)
+        + gg.labs(x=r"$\mathrm{PC}_1$", y=r"$\mathrm{PC}_2$", color="")
+        + _jost_theme()
+        + gg.theme(figure_size=(width, height))
     )
     return p
 
@@ -607,21 +618,22 @@ def plot_energy_profile(
 
     .. versionadded:: 1.4.0
     """
+    gg = _gg()
     methods = df[color].unique()
     palette = dict(zip(methods, _METHOD_PALETTE, strict=False))
 
     p = (
-        ggplot(df, aes(x=x, y=y, color=color))
-        + geom_line(size=0.9)
-        + geom_point(size=2.0)
-        + scale_color_manual(values=palette)
-        + labs(
+        gg.ggplot(df, gg.aes(x=x, y=y, color=color))
+        + gg.geom_line(size=0.9)
+        + gg.geom_point(size=2.0)
+        + gg.scale_color_manual(values=palette)
+        + gg.labs(
             x="Image index",
             y=r"$\Delta E$ (eV)",
             color="Method",
         )
-        + _JOST_THEME
-        + theme(figure_size=(width, height))
+        + _jost_theme()
+        + gg.theme(figure_size=(width, height))
     )
     return p
 

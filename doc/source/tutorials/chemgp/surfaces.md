@@ -109,7 +109,7 @@ points are added. Each panel is a separate training size.
 ```{code-cell} ipython3
 fig = plot_gp_progression(
     gp_grids,
-    true_energy=energy,
+    energy,
     x_range=x_range,
     y_range=y_range,
     clamp_lo=-1.0,
