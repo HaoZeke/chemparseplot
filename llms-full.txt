@@ -1,0 +1,5144 @@
+# chemparseplot
+
+> chemparseplot is a pure-Python library that parses the output of computational chemistry codes (eOn, ORCA, Sella, ChemGP, PLUMED and surrogate-assisted searches) into structured, unit-aware data and draws publication figures from it. Surface fits and the command-line plot tools live in its sibling package rgpycrumbs.
+
+Every page of the manual at https://chemparseplot.rgoswami.me/ follows, converted to Markdown from its Org source under `docs/orgmode/` or its MyST source under `doc/source/`; each section names the address it was taken from. Tutorial code cells appear as Python blocks, without their output. The API reference that sphinx-autodoc2 builds from the docstrings, https://chemparseplot.rgoswami.me/apidocs/, is not included. The map of the site is https://chemparseplot.rgoswami.me/llms.txt.
+
+The pages follow in the order of the site's navigation. Pages that no toctree lists come last.
+
+## `chemparseplot`
+
+Source: https://chemparseplot.rgoswami.me/
+
+**`chemparseplot`: Chemical Parsers and Plotters**
+
+![chemparseplot logo](https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/branding/logo/chemparseplot_logo.png)
+
+**Parse**
+
+[Quickstart](https://chemparseplot.rgoswami.me/quickstart)
+
+Structured extractors for ORCA, eOn, Sella, and ChemGP outputs.
+
+**Project**
+
+[Features](https://chemparseplot.rgoswami.me/features)
+
+RMSD reaction-valley coordinates and unit-aware energy scales.
+
+**Plot**
+
+[Tutorial Introduction](https://chemparseplot.rgoswami.me/tutorials/)
+
+Publication-ready profiles, landscapes, and structure strips.
+
+### About
+
+A **pure-python** parsing and plotting library for computational chemistry
+outputs. `chemparseplot` extracts structured data from quantum chemistry
+codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality,
+unit-aware visualizations with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/).
+
+Computational tasks (surface fitting, interpolation, structure analysis)
+are delegated to [rgpycrumbs](https://rgpycrumbs.rgoswami.me), a required
+dependency for landscape GPs. Input files for the same engines are written
+by [pychum](https://pychum.rgoswami.me). The header **Ecosystem** menu jumps
+between the three Shibuya sites.
+
+### Suite stack
+
+How parsers, plot helpers, and the CLI suite relate:
+
+```mermaid
+flowchart TB
+  subgraph engines["Engines"]
+    EON[eOn]
+    ORCA[ORCA]
+    SELLA[Sella]
+  end
+  subgraph cpp["chemparseplot"]
+    PARSE[parse.*]
+    PLOT[plot.neb / plot.optimization]
+    SFC[SurfaceFitConfig]
+  end
+  subgraph rgp["rgpycrumbs"]
+    SURF[surfaces GP]
+    CLI[eon plt-neb / plt-min]
+    TOML["plot.toml --config"]
+  end
+  subgraph pch["pychum"]
+    INP[ORCA / NWChem inputs]
+  end
+  INP --> engines
+  engines --> PARSE
+  PARSE --> PLOT
+  PLOT --> SURF
+  SFC --> PLOT
+  TOML --> CLI
+  CLI --> PLOT
+  CLI --> SFC
+```
+
+> **Tip:** Dense landscape fits: keep `auto_thin` **off** by default; opt in via
+> `SurfaceFitConfig` or rgpycrumbs plot TOML
+> keys `auto_thin` / `max_surface_points`.
+
+### Documentation structure
+
+This documentation follows the [Diataxis](https://diataxis.fr/) framework.
+
+### Related projects
+
+- **[rgpycrumbs](https://rgpycrumbs.rgoswami.me)**: Core types, surfaces, CLI orchestrator
+- **[pychum](https://pychum.rgoswami.me)**: ORCA / NWChem input generators
+- **[eOn](https://eondocs.org)**: Long-timescale MD / NEB engine
+- **[ORCA](https://www.faccts.de/orca/)**: Quantum chemistry program
+- **[OPI](https://github.com/faccts/opi)**: ORCA Python Interface
+
+### License
+
+MIT. Cite via the [Zenodo DOI](https://doi.org/10.5281/zenodo.18529752)
+and the `wailord` paper for ORCA usage.
+
+**Indices and tables**
+
+* genindex
+* modindex
+* search
+
+## Quickstart
+
+Source: https://chemparseplot.rgoswami.me/quickstart
+
+This guide walks through installing `chemparseplot` and running a minimal
+parsing and plotting example.
+
+```mermaid
+flowchart LR
+  A[Install extras] --> B[Parse engine output]
+  B --> C[Build RMSD / energy arrays]
+  C --> D[plot_landscape_surface]
+  D --> E[PDF / PNG]
+```
+
+**Library path**
+
+`chemparseplot.plot` + optional `SurfaceFitConfig` for dense clouds.
+
+**CLI suite path**
+
+`rgpycrumbs eon plt-* --config plot.toml` for multi-knob runs.
+
+### Installation
+
+The simplest route is via `pip`:
+
+```bash
+pip install chemparseplot
+```
+
+For plotting support, add the `plot` extra:
+
+```bash
+pip install "chemparseplot[plot]"
+```
+
+Or install everything at once:
+
+```bash
+pip install "chemparseplot[all]"
+```
+
+This pulls in [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+automatically, which provides the computational backend (surface fitting,
+interpolation, structure analysis).
+
+#### Development install
+
+```bash
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+uv sync --all-extras
+```
+
+### Parsing an ORCA geometry scan
+
+`chemparseplot` ships parsers for several computational chemistry codes.
+Here is a minimal example extracting energies from an ORCA geometry scan
+output:
+
+```python
+from chemparseplot.parse.orca import geomscan
+
+# Read the ORCA output (plain text)
+with open("scan_output.out") as f:
+    orca_text = f.read()
+
+# Extract actual energies with units attached
+distance, energy = geomscan.extract_energy_data(orca_text, "Actual")
+
+# Units are pint Quantities
+print(distance.units)  # bohr
+print(energy.units)    # hartree
+
+# Convert freely
+print(distance.to("angstrom"))
+```
+
+### Plotting with unit awareness
+
+The `TwoDimPlot` class handles unit-aware axes and scientific colormaps:
+
+```python
+from chemparseplot.plot.structs import TwoDimPlot, EnergyPath
+
+plot = TwoDimPlot()
+plot.set_units("angstrom", "hartree")
+
+path = EnergyPath("H2 scan", distance, energy)
+plot.add_data(path)
+plot.show_plot("H2 Bond Length Scan")
+```
+
+Changing units redraws the axes automatically:
+
+```python
+plot.set_units("bohr", "electron_volt")
+plot.fig  # updated figure
+```
+
+### Parsing eOn saddle searches
+
+```python
+from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
+
+result = parse_eon_saddle(
+    eresp="results_saddle.dat",
+    rloc="saddle/"
+)
+print(result.status)     # EONSaddleStatus
+print(result.energy)     # saddle point energy
+print(result.method)     # Dimer, GPRD, or LBFGS
+```
+
+### Next steps
+
+- Browse the tutorials for full worked examples
+- See the features page for all supported engines
+- Check the API reference for detailed module documentation
+
+## Installation
+
+Source: https://chemparseplot.rgoswami.me/installation
+
+The easiest way to install `chemparseplot` is via `pip`:
+
+```bash
+pip install chemparseplot
+```
+
+This will automatically install [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+as a dependency, which provides the computational modules used by `chemparseplot`
+(surface fitting, interpolation, data types, etc.).
+
+### Optional extras (transitional)
+
+```bash
+# Plotting support (matplotlib, cmcrameri colormaps)
+pip install "chemparseplot[plot]"
+
+# NEB analysis (ase, h5py, polars, readcon)
+pip install "chemparseplot[neb]"
+
+# Everything transitional
+pip install "chemparseplot[all]"
+```
+
+Structure strips use **xyzrender** via the Python API
+(`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
+`[xyzrender]` extra. Prefer bare install + AUTO_DEPS / suite pins for new work.
+
+### Development install
+
+Local clones of the GitHub repo are best served setting up the maximally
+reproducible development environment:
+
+```bash
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+# Install with all dev dependencies
+uv sync --all-extras
+```
+
+### Auxiliary Software
+
+Since `chemparseplot` is meant to facilitate working with the results of
+computational chemistry / atomic physics codes, some links to commonly used
+tools are enumerated below. Note that technically it is the **outputs** of these
+codes which is required, not the codes themselves.
+
+- `ORCA` can be obtained (freely) after [registering on their forum](https://orcaforum.kofo.mpg.de/app.php/portal)
+- `ASE`, the [atomic simulation environment](https://wiki.fysik.dtu.dk/ase/), is also on PyPI and can be installed via `pip`
+- `eON` is [freely available](https://eondocs.org/) and on `conda-forge`.
+
+### Plot stack and lazy deps
+
+Structure strips use the **xyzrender Python API** via
+`rgpycrumbs.ensure_import` when `RGPYCRUMBS_AUTO_DEPS=1` (no PATH binary).
+Feature extras (`plot`, `neb`, …) remain transitional; prefer bare install +
+suite pins / AUTO_DEPS for new work. ConFrame series helpers live in
+`chemparseplot.parse.eon.frame_series` (v1.9.14+).
+
+## Features
+
+Source: https://chemparseplot.rgoswami.me/features
+
+**Parse**
+
+Extract structured tables and ASE structures from engine outputs.
+
+**Units**
+
+`pint` quantities end-to-end — no silent eV/kcal mix-ups.
+
+**Surfaces**
+
+Gradient-enhanced GPs via `rgpycrumbs.surfaces`, optional `SurfaceFitConfig`.
+
+**CLI suite**
+
+Call from `rgpycrumbs eon plt-*` with TOML `--config` for dense option sets.
+
+**Primitive rings**
+
+`rgpycrumbs geom plt-rings` draws the faces `ringNetwork` returns, and the bridges between them, through `chemparseplot.plot.rings` and xyzrender. `rgpycrumbs geom plt-rings-track` labels a centre on each frame and counts hops of the terminal ring.
+
+### Data flow
+
+```mermaid
+flowchart LR
+  OUT[Engine outputs] --> PARSE[chemparseplot.parse]
+  PARSE --> COORDS[RMSD / energy arrays]
+  COORDS --> FIT{SurfaceFitConfig auto_thin?}
+  FIT -->|default off| FULL[Full cloud fit]
+  FIT -->|opt-in| THIN[Even subsample + endpoints]
+  FULL --> GP[rgpycrumbs.surfaces]
+  THIN --> GP
+  GP --> FIG[Publication figure]
+```
+
+> **Important:** `auto_thin` defaults to **false**. Enable via `SurfaceFitConfig` or the
+> matching keys in rgpycrumbs plot TOML when dense force-eval movies make
+> `grad_imq` non-finite.
+
+- **Parsing** computational chemistry output files into structured data
+- **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
+  (camera-ready)
+- **Unit preserving** throughout via `pint`
+- **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+  for surface fitting, interpolation, and structure analysis
+- **Concurrent** RMSD landscape calculations via `ThreadPoolExecutor`
+
+### Supported Engines
+
+#### ORCA (5.x)
+
+- Geometry scan (`OPT`) energy profiles
+- Nudged elastic band (`NEB`) path visualization over the linearized reaction
+  coordinate
+
+#### eOn
+
+- Saddle search parsing (Dimer, GPRD, LBFGS methods) with status tracking
+- NEB path energy profiles with RMSD landscape projections
+
+#### Sella
+
+- Saddle point optimization result parsing
+
+#### ChemGP
+
+GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp`):
+
+- **1D plotnine charts**: convergence curves, RFF quality sweeps, NEB energy
+  profiles, FPS subset scatter (PCA projection)
+- **2D matplotlib surfaces**: PES contour with NEB path overlay, GP surrogate
+  progression panels, MAP-NLL landscape, variance overlay with hatching,
+  trust region illustration, hyperparameter sensitivity grid
+
+#### Surrogate-assisted searches
+
+Records and figures for searches that spend a counted number of oracle calls
+and answer the rest from a fitted surrogate
+(`chemparseplot.parse.surrogate`, `chemparseplot.plot.surrogate`):
+
+- **Records**: band history, search history by oracle call, single-ended
+  (dimer) history, campaign table; filled by a gpr_optim campaign parser and
+  an ASE/CatLearn ML-NEB parser
+- **Figures**: energy profile with posterior mean and true evaluations, band
+  evolution, convergence against oracle calls with acquisition events, model
+  diagnostics, reaction-valley view of the observations, dimer curvature and
+  force, campaign dumbbell, pass matrix and wall time, scaling and efficiency
+- **Output**: `chemparseplot.plot.provenance.save_with_provenance` writes
+  byte-reproducible PNG, PDF and SVG that embed the SHA-256 of the inputs
+
+#### Trajectory Formats
+
+- HDF5 trajectories from ChemGP output (pre-computed forces and reaction
+  coordinates)
+- Generic ASE-readable formats (extxyz, `.traj`) for NEB analysis with
+  tangent force computation and RMSD landscape coordinates
+
+- **eOn ConFrame series** (`parse.eon.frame_series`): energies and trajectory DTOs from stamped frames for object-plot adapters.
+
+## Tutorial Introduction
+
+Source: https://chemparseplot.rgoswami.me/tutorials/
+
+Here we focus on standard workflows for `chemparseplot`.
+
+### Quick Start
+
+#### Parsing ORCA Output
+
+```python
+from chemparseplot.parse.orca import geomscan
+
+# Extract geometry scan data
+energy_data = geomscan.extract_energy_data(orca_output, "Actual")
+```
+
+#### Parsing eOn Saddle Searches
+
+```python
+from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
+from rgpycrumbs.basetypes import SpinID
+
+result = parse_eon_saddle(results_dir, SpinID(mol_id="test", spin=0))
+print(f"Barrier: {result.barrier}")
+```
+
+#### Plotting NEB Profiles
+
+```python
+from chemparseplot.plot.neb import plot_energy_path
+import matplotlib.pyplot as plt
+import numpy as np
+
+fig, ax = plt.subplots()
+rc = np.array([0.0, 1.0, 2.0, 3.0])
+energy = np.array([-123.5, -123.4, -123.3, -123.5])
+f_para = np.array([0.1, 0.05, -0.05, -0.1])
+
+plot_energy_path(ax, rc, energy, f_para, "blue", alpha=0.8, zorder=10)
+```
+
+## ChemGP Tutorials
+
+Source: https://chemparseplot.rgoswami.me/tutorials/chemgp/
+
+Plotting functions for GP-based optimization output from
+ChemGP. These tutorials cover
+all 10 public functions in `chemparseplot.plot.chemgp`.
+
+## ChemGP 1D Plots (Convergence, RFF, Profile, FPS)
+
+Source: https://chemparseplot.rgoswami.me/tutorials/chemgp/convergence
+
+This tutorial produces four plotnine-based figures from ChemGP HDF5 data:
+a convergence curve, an RFF quality comparison, an energy profile, and
+an FPS scatter plot.
+
+```python
+import h5py
+import numpy as np
+import pandas as pd
+from pathlib import Path
+
+from chemparseplot.plot.chemgp import (
+    plot_convergence_curve,
+    plot_rff_quality,
+    plot_energy_profile,
+    plot_fps_projection,
+)
+```
+
+### Load sample data
+
+The sample HDF5 file contains a `table/convergence` group with columns
+`oracle_calls`, `max_fatom`, and `method` for three NEB methods.
+
+```python
+DATA = Path("data")
+
+# --- Convergence data ---
+with h5py.File(DATA / "sample_convergence.h5") as f:
+    tbl = f["table/convergence"]
+    conv_df = pd.DataFrame({
+        "oracle_calls": tbl["oracle_calls"][:],
+        "max_fatom": tbl["max_fatom"][:],
+        "method": [m.decode() if isinstance(m, bytes) else m for m in tbl["method"][:]],
+    })
+    conv_tol = float(f.attrs["conv_tol"])
+
+conv_df.head()
+```
+
+### Convergence curve
+
+`plot_convergence_curve` draws oracle calls on the x-axis and a force metric
+on the y-axis, with log-scale by default. Pass `conv_tol` to add a
+convergence threshold line.
+
+```python
+fig = plot_convergence_curve(conv_df, conv_tol=conv_tol)
+fig
+```
+
+#### Per-method thresholds
+
+Pass a dict to `conv_tol` to draw per-method dashed lines in matching colors:
+
+```python
+fig = plot_convergence_curve(
+    conv_df,
+    conv_tol={"GP-NEB": 0.5, "AIE": 0.3, "OIE": 0.3},
+)
+fig
+```
+
+### RFF quality
+
+`plot_rff_quality` takes a DataFrame with `d_rff`, `energy_mae`, and
+`gradient_mae` columns, plus exact GP baselines. Here we generate synthetic
+sweep data.
+
+```python
+# Synthetic RFF sweep: MAE decreases as D_rff grows
+rng = np.random.default_rng(7)
+d_vals = [50, 100, 200, 300, 500]
+rff_df = pd.DataFrame({
+    "d_rff": d_vals,
+    "energy_mae": [0.5, 0.25, 0.12, 0.08, 0.06],
+    "gradient_mae": [1.2, 0.6, 0.3, 0.18, 0.12],
+})
+
+fig = plot_rff_quality(rff_df, exact_e_mae=0.04, exact_g_mae=0.08)
+fig
+```
+
+### Energy profile
+
+`plot_energy_profile` draws NEB image energies. The sample data below has
+two methods with 7 images each.
+
+```python
+n_img = 7
+idx = list(range(n_img))
+profile_df = pd.DataFrame({
+    "image": idx * 2,
+    "energy": [0.0, 0.2, 0.5, 0.8, 0.5, 0.2, 0.0,
+               0.0, 0.15, 0.4, 0.75, 0.4, 0.15, 0.0],
+    "method": ["NEB"] * n_img + ["GP-NEB"] * n_img,
+})
+
+fig = plot_energy_profile(profile_df)
+fig
+```
+
+### FPS projection
+
+`plot_fps_projection` shows PCA coordinates of FPS-selected vs pruned points.
+
+```python
+rng = np.random.default_rng(42)
+sel_pc1 = rng.normal(0, 1, 15)
+sel_pc2 = rng.normal(0, 1, 15)
+prn_pc1 = rng.normal(0, 1.5, 40)
+prn_pc2 = rng.normal(0, 1.5, 40)
+
+fig = plot_fps_projection(sel_pc1, sel_pc2, prn_pc1, prn_pc2)
+fig
+```
+
+### Next steps
+
+- [2D surface plots tutorial](https://chemparseplot.rgoswami.me/tutorials/chemgp/surfaces) covers contour, GP progression, NLL landscape, variance overlay, trust region, and sensitivity
+- [rgpycrumbs plt-gp CLI](https://rgpycrumbs.rgoswami.me/tools/chemgp/plt_gp.html) for batch figure generation from HDF5 files
+
+## ChemGP 2D Plots (Surfaces, GP Progression, NLL, Variance, Trust, Sensitivity)
+
+Source: https://chemparseplot.rgoswami.me/tutorials/chemgp/surfaces
+
+This tutorial produces six matplotlib-based figures from ChemGP HDF5 data:
+a PES contour, GP surrogate progression, NLL landscape, variance overlay,
+trust region illustration, and hyperparameter sensitivity grid.
+
+```python
+import h5py
+import numpy as np
+from pathlib import Path
+
+from chemparseplot.plot.chemgp import (
+    plot_surface_contour,
+    plot_gp_progression,
+    plot_nll_landscape,
+    plot_variance_overlay,
+    plot_trust_region,
+    plot_hyperparameter_sensitivity,
+)
+```
+
+### Load sample data
+
+Two HDF5 fixtures provide the grids and metadata:
+
+- `sample_surface.h5`: 40x40 double-well PES, GP progression grids, NEB path,
+  stationary points, training points, variance grid
+- `sample_nll.h5`: 25x25 NLL grid with gradient norm overlay and MAP optimum
+
+```python
+DATA = Path("data")
+
+# --- Surface data ---
+with h5py.File(DATA / "sample_surface.h5") as f:
+    eg = f["grids/energy"]
+    x_range = np.linspace(*eg.attrs["x_range"], eg.attrs["x_length"])
+    y_range = np.linspace(*eg.attrs["y_range"], eg.attrs["y_length"])
+    energy = eg[:]
+    X, Y = np.meshgrid(x_range, y_range)
+
+    # Variance grid
+    variance = f["grids/variance"][:]
+
+    # NEB path
+    path_x = f["paths/neb/x"][:]
+    path_y = f["paths/neb/y"][:]
+
+    # Stationary points
+    min_x = f["points/minima/x"][:]
+    min_y = f["points/minima/y"][:]
+    sad_x = f["points/saddles/x"][:]
+    sad_y = f["points/saddles/y"][:]
+
+    # Training points
+    train_x = f["points/training/x"][:]
+    train_y = f["points/training/y"][:]
+
+    # GP progression grids
+    gp_grids = {}
+    for n_train in [5, 10, 20]:
+        gp_mean = f[f"grids/gp_mean_{n_train}"][:]
+        tx = f[f"points/training_{n_train}/x"][:]
+        ty = f[f"points/training_{n_train}/y"][:]
+        gp_grids[n_train] = {"gp_mean": gp_mean, "train_x": tx, "train_y": ty}
+
+print(f"Grid shape: {energy.shape}, {len(gp_grids)} GP snapshots loaded")
+```
+
+### PES contour with NEB path
+
+`plot_surface_contour` draws filled contours with optional path and point
+overlays. Pass `paths` as a dict of label -> (xs, ys) and `points` with
+special keys `"minima"`, `"saddles"`, or `"endpoints"`.
+
+```python
+fig = plot_surface_contour(
+    X, Y, energy,
+    paths={"NEB": (path_x, path_y)},
+    points={
+        "minima": (min_x, min_y),
+        "saddles": (sad_x, sad_y),
+    },
+    clamp_lo=-1.0,
+    clamp_hi=5.0,
+    contour_step=0.5,
+)
+fig
+```
+
+### GP surrogate progression
+
+`plot_gp_progression` shows how the GP approximation improves as more training
+points are added. Each panel is a separate training size.
+
+```python
+fig = plot_gp_progression(
+    gp_grids,
+    true_energy=energy,
+    x_range=x_range,
+    y_range=y_range,
+    clamp_lo=-1.0,
+    clamp_hi=5.0,
+    n_cols=3,
+    width=12.0,
+    height=4.0,
+)
+fig
+```
+
+### NLL landscape
+
+`plot_nll_landscape` visualizes the MAP negative log-likelihood in
+hyperparameter space. The colormap is reversed (warm = low NLL = good fit).
+An optional gradient norm overlay adds dashed contours.
+
+```python
+with h5py.File(DATA / "sample_nll.h5") as f:
+    ng = f["grids/nll"]
+    nll_x = np.linspace(*ng.attrs["x_range"], ng.attrs["x_length"])
+    nll_y = np.linspace(*ng.attrs["y_range"], ng.attrs["y_length"])
+    NX, NY = np.meshgrid(nll_x, nll_y)
+    nll = ng[:]
+    grad_norm = f["grids/gradient_norm"][:]
+    optimum = (float(f.attrs["log_sigma2"]), float(f.attrs["log_theta"]))
+
+fig = plot_nll_landscape(
+    NX, NY, nll,
+    grid_grad_norm=grad_norm,
+    optimum=optimum,
+)
+fig
+```
+
+### Variance overlay
+
+`plot_variance_overlay` draws the energy surface with diagonal hatching over
+high-variance regions and a magenta boundary contour at the 75th percentile
+of the variance.
+
+```python
+fig = plot_variance_overlay(
+    X, Y, energy, variance,
+    train_points=(train_x, train_y),
+    stationary={
+        "min0": (float(min_x[0]), float(min_y[0])),
+        "min1": (float(min_x[1]), float(min_y[1])),
+        "saddle0": (float(sad_x[0]), float(sad_y[0])),
+    },
+    clamp_lo=-1.0,
+    clamp_hi=5.0,
+)
+fig
+```
+
+### Trust region
+
+`plot_trust_region` illustrates GP prediction quality inside and outside a
+trust region. Points inside the trust boundary (magenta dotted lines) have
+low uncertainty; a hypothetical bad step outside shows where the GP diverges
+from the oracle.
+
+```python
+# 1D slice through the surface at y=0
+x_slice = x_range
+e_true = (x_slice**2 - 1)**2  # double well at y=0
+e_pred = e_true + 0.3 * np.sin(3 * x_slice)  # GP with some error
+e_std = 0.1 + 0.5 * np.abs(x_slice)  # uncertainty grows away from center
+in_trust = (np.abs(x_slice) < 1.2).astype(float)
+slice_train_x = np.array([-0.8, -0.3, 0.0, 0.3, 0.8])
+
+fig = plot_trust_region(
+    x_slice, e_true, e_pred, e_std, in_trust,
+    train_x=slice_train_x,
+)
+fig
+```
+
+### Hyperparameter sensitivity
+
+`plot_hyperparameter_sensitivity` draws a 3x3 grid. Columns are lengthscale
+values, rows are signal variance values. Each panel shows the GP mean,
+confidence band, and true surface along a 1D slice.
+
+```python
+# Build 9 panels: 3 lengthscales x 3 signal variances
+panels = {}
+ls_values = [0.05, 0.3, 2.0]
+sv_values = [0.1, 1.0, 100.0]
+
+for j, ls in enumerate(ls_values, 1):
+    for i, sv in enumerate(sv_values, 1):
+        # Simulate GP with varying hyperparameters
+        pred = e_true * (1 + 0.1 * (3 - j))  # lengthscale affects smoothness
+        std = np.full_like(x_slice, 0.05 * sv)  # variance scales uncertainty
+        panels[f"gp_ls{j}_sv{i}"] = {"E_pred": pred, "E_std": std}
+
+fig = plot_hyperparameter_sensitivity(x_slice, e_true, panels)
+fig
+```
+
+### Next steps
+
+- [1D plots tutorial](https://chemparseplot.rgoswami.me/tutorials/chemgp/convergence) covers convergence curves, RFF quality, energy profiles, and FPS scatter
+- [rgpycrumbs plt-gp CLI](https://rgpycrumbs.rgoswami.me/tools/chemgp/plt_gp.html) for batch generation from the command line
+- [HDF5 schema reference](https://rgpycrumbs.rgoswami.me/tools/chemgp/hdf5_schema.html) for the expected data layout
+
+## Geometry Scan
+
+Source: https://chemparseplot.rgoswami.me/tutorials/orca/geomscan
+
+```python
+import gzip
+from pathlib import Path
+from ase.build import molecule
+import matplotlib.pyplot as plt
+
+from chemparseplot.parse.orca import geomscan
+```
+
+Often it is of interest to scan for energies over a particular aspect of
+molecular geometry. Here we consider the example of scanning over the bond
+length of the H2 molecule.
+
+#### System construction
+
+For simplicity, we will just use `ase` for this:
+
+```python
+h2 = molecule("H2")
+h2.write("data/h2_base.xyz", comment="\n")
+```
+
+This can be visualized via `ase gui h2_base.xyz` or similar, to see[^1]:
+
+![H2 Molecule](https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/doc/source/tutorials/orca/img/h2mol.png)
+
+Note that for `ORCA`, we need the "plain" `.xyz` file, so we need to remove the
+metadata added by `ase`, hence the newline comment.
+
++++
+
+##### ORCA Input
+
+To run `orca`, we can use an input file such as:
+
+```yaml
+!OPT UHF def2-SVP
+%geom Scan
+ # B <atmid1> <atmid2> = init, final, npoints
+ # Converted from Angstrom to Bohr
+ B 0 1 = 7.5589039543, 0.2116708996, 33
+ end
+end
+*xyzfile 0 1 h2_base.xyz
+```
+
+#### Execution
+
+Following the best practices for running ORCA, we have[^2]:
+
+```bash
+export PATH=$PATH:/blah/orca_5_0_4_linux_x86-64_openmpi411/
+mkdir uhf
+cp orca.inp h2_base.xyz uhf
+cd uhf
+($(which orca) orca.inp 2>&1) | tee scan_uhf
+```
+
+Also because it is annoying to keep blobs of text, and because it is large:
+
+```bash
+gzip -9 -c scan_uhf > scanuhf.gz
+mv scanuhf.gz ../data/
+```
+
+### Analysis with `chemparseplot`
+
+Now we can finally get to the good bit. Rather than painstakingly parsing "by
+eye" the `scan_uhf` file, we will simply use `chemparseplot`:
+
+```python
+orcaout = gzip.open(Path("data/scanuhf.gz"), 'rt').read()
+act_energy = geomscan.extract_energy_data(orcaout, "Actual")
+print(act_energy)
+```
+
+Note that there are units attached, which makes subsequent analysis much easier,
+since `pint` will ensure that the correct units are always used.
+
+```python
+act_energy[0].to('angstrom')
+```
+
+#### Plotting
+
++++
+
+This is simple enough to plot.
+
+```python
+fig, ax = plt.subplots(figsize=(4, 4), dpi=100)
+ax.scatter(act_energy[0].magnitude, act_energy[1].magnitude)
+```
+
+However, this is not super satisfying, and since this is a "supported" workflow, we can leverage `chemparseplot` instead.
+
+```python
+```
+
+```python
+# Create an instance of TwoDimPlot
+twodim_plot = TwoDimPlot()
+
+# Set the units for the plot
+twodim_plot.set_units('angstrom', 'hartree')
+
+# Add data (EnergyPath instances) to the plot
+energy_path1 = EnergyPath('Path 1', np.linspace(0, 10, 30) * ureg.angstrom, np.random.uniform(-1, 0, 30) * ureg.hartree)
+energy_path2 = EnergyPath('Path 2', np.linspace(1, 9, 25) * ureg.angstrom, np.random.uniform(-0.5, 0.5, 25) * ureg.hartree)
+twodim_plot.add_data(energy_path1)
+twodim_plot.add_data(energy_path2)
+
+# Display the plot
+twodim_plot.show_plot("Energy Paths")
+```
+
+```python
+twodim_plot.set_units('bohr', 'electron_volt')
+```
+
+```python
+twodim_plot.fig
+```
+
+[^1]: I use [ChemCraft](https://chemcraftprog.com/) for visualization
+[^2]: Discussed in more detail in computational chemistry documentation
+
+```python
+```
+
+## eOn Saddle Search Analysis
+
+Source: https://chemparseplot.rgoswami.me/tutorials/eon/saddle
+
+This tutorial shows how to parse saddle search results from eOn calculations.
+
+### Prerequisites
+
+```python
+from pathlib import Path
+from chemparseplot.parse.eon.saddle_search import parse_eon_saddle
+from rgpycrumbs.basetypes import SpinID
+```
+
+### Parsing Saddle Search Results
+
+eOn stores saddle search results in directories with `results.dat` and log files.
+
+### Example Usage
+
+```python
+# Point to your eOn results directory
+# results_dir = Path("/path/to/eon/results/")
+
+# Create a SpinID for the location
+# rloc = SpinID(mol_id="H2O", spin=0)
+
+# Parse the saddle search results
+# saddle_data = parse_eon_saddle(results_dir, rloc)
+
+# Access results
+# print(f"Success: {saddle_data.success}")
+# print(f"Barrier: {saddle_data.barrier}")
+# print(f"Method: {saddle_data.method}")
+```
+
+### Accessing Saddle Search Data
+
+```python
+# SaddleMeasure provides:
+# - success: bool - whether the search converged
+# - barrier: Q_ - energy barrier with units
+# - saddle_energy: Q_ - saddle point energy
+# - init_energy: Q_ - initial state energy
+# - pes_calls: int - number of PES evaluations
+# - iter_steps: int - optimization iterations
+# - tot_time: float - wall time in seconds
+# - method: DimerOpt - optimization method details
+# - termination_status: str - reason for termination
+```
+
+### Batch Processing
+
+```python
+# Process multiple saddle searches
+# from glob import glob
+#
+# results_dirs = glob("saddle_searches/*/")
+# all_results = []
+#
+# for i, res_dir in enumerate(results_dirs):
+#     rloc = SpinID(mol_id=f"mol_{i}", spin=0)
+#     result = parse_eon_saddle(Path(res_dir), rloc)
+#     all_results.append(result)
+#
+# print(f"Processed {len(all_results)} saddle searches")
+# print(f"Success rate: {sum(r.success for r in all_results) / len(all_results):.1%}")
+```
+
+## Tutorial: ORCA NEB Parsing and Plotting
+
+Source: https://chemparseplot.rgoswami.me/tutorials/orca_neb
+
+> **Added in version 0.2.0:** OPI-based ORCA NEB parsing and plotting.
+
+### Prerequisites
+
+- ORCA 6.1+ installed and on PATH
+- Python 3.10+
+- chemparseplot installed: `pip install chemparseplot`
+- OPI (ORCA Python Interface): `pip install orca-pi`
+
+### Learning Objectives
+
+By the end of this tutorial you will be able to:
+
+1. Parse ORCA NEB calculation output using OPI
+2. Create publication-quality energy profile plots
+3. Create 2D reaction landscape plots
+4. Understand the data format for custom plotting
+
+### Step 1: Run ORCA NEB Calculation
+
+First, run an ORCA NEB calculation. Example input file (`job.inp`):
+
+```text
+! B3LYP def2-SVP NEB-CI
+%neb
+  nimages = 7
+  Product "prod.xyz"
+end
+*xyzfile 0 1 react.xyz
+```
+
+Run ORCA:
+
+```bash
+orca job.inp > job.out
+```
+
+This creates output files:
+- `job.json` - Main output data (ORCA 6.1+)
+- `job.property.json` - Properties and energies
+- `job.gbw` - Wavefunction file
+- `job.001.gbw`, `job.002.gbw`, ... - NEB image wavefunctions
+
+### Step 2: Parse ORCA NEB Output
+
+Create a Python script (`plot_neb.py`):
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+# Parse the ORCA NEB calculation
+data = parse_orca_neb("job", working_dir=Path("."))
+
+# Inspect the typed result (mapping-style access is preserved)
+print(f"Number of images: {data['n_images']}")
+print(f"Converged: {data['converged']}")
+print(f"Energies (eV): {data['energies']}")
+print(f"Barrier (forward): {data['barrier_forward']:.2f} eV")
+print(f"Barrier (reverse): {data['barrier_reverse']:.2f} eV")
+```
+
+Run the script:
+
+```bash
+python plot_neb.py
+```
+
+Expected output:
+
+```text
+Number of images: 8
+Converged: True
+Energies (eV): [0.0, 0.52, 0.89, 1.15, 0.98, 0.67, 0.34, 0.0]
+Barrier (forward): 1.15 eV
+Barrier (reverse): 1.15 eV
+```
+
+### Step 3: Create Energy Profile Plot
+
+Add plotting code to your script:
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+# Create energy profile plot
+plot_orca_neb_energy_profile(
+    data,
+    output=Path("neb_profile.pdf"),
+    width=5.37,      # inches
+    height=5.37,     # inches
+    dpi=200,         # resolution
+    method="hermite" # interpolation: 'hermite' or 'spline'
+)
+
+print("Created neb_profile.pdf")
+```
+
+Run the script again:
+
+```bash
+python plot_neb.py
+```
+
+This creates `neb_profile.pdf` with:
+- Energy profile with Hermite spline interpolation
+- Reactant (green), Product (red), and Saddle (yellow) labeled
+- Barrier height annotated
+- Professional styling with ruhi theme
+
+### Step 4: Create 2D Landscape Plot (Optional)
+
+If your ORCA calculation includes geometry output, you can create a 2D landscape:
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.plot.neb import plot_orca_neb_landscape
+
+# Create 2D landscape plot
+plot_orca_neb_landscape(
+    data,
+    output=Path("neb_landscape.pdf"),
+    width=5.37,
+    height=5.37,
+    dpi=200,
+    method="grad_matern",  # Surface interpolation
+    project_path=True,      # Project to reaction valley coordinates
+)
+
+print("Created neb_landscape.pdf")
+```
+
+The landscape plot shows:
+- 2D surface in RMSD coordinates (or reaction valley)
+- NEB path overlaid with energy coloring
+- Saddle point marked
+
+### Step 5: Customize the Plot
+
+You can customize plots using matplotlib after creation:
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+import matplotlib.pyplot as plt
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+# Create figure and axis
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+# Plot using our function
+plot_orca_neb_energy_profile(data, output=Path("tmp.pdf"), width=5.37, height=5.37)
+
+# Now customize with matplotlib
+ax.set_title("My Custom NEB Profile", fontsize=14, fontweight='bold')
+ax.set_xlabel("Reaction Coordinate", fontsize=12)
+ax.set_ylabel("Relative Energy (eV)", fontsize=12)
+
+# Save
+fig.savefig("custom_neb_profile.pdf", dpi=300, bbox_inches="tight")
+plt.close(fig)
+```
+
+### Complete Example Script
+
+Here's a complete script you can use as a template:
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+#!/usr/bin/env python3
+"""Plot ORCA NEB calculation results."""
+
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+from chemparseplot.plot.neb import (
+    plot_orca_neb_energy_profile,
+    plot_orca_neb_landscape,
+)
+
+def main():
+    # Configuration
+    basename = "job"
+    work_dir = Path(".")
+    output_dir = Path("figures")
+    output_dir.mkdir(exist_ok=True)
+
+    # Parse ORCA output
+    print(f"Parsing {basename}...")
+    data = parse_orca_neb(basename, working_dir=work_dir)
+
+    # Print summary
+    print(f"\nNEB Calculation Summary:")
+    print(f"  Images: {data['n_images']}")
+    print(f"  Converged: {data['converged']}")
+    print(f"  Barrier (forward): {data['barrier_forward']:.2f} eV")
+    print(f"  Barrier (reverse): {data['barrier_reverse']:.2f} eV")
+
+    # Create energy profile
+    profile_out = output_dir / "neb_profile.pdf"
+    print(f"\nCreating energy profile: {profile_out}")
+    plot_orca_neb_energy_profile(
+        data,
+        output=profile_out,
+        width=5.37,
+        height=5.37,
+        dpi=300,
+    )
+
+    # Create landscape (if RMSD data available)
+    if data['rmsd_r'] is not None:
+        landscape_out = output_dir / "neb_landscape.pdf"
+        print(f"Creating landscape: {landscape_out}")
+        plot_orca_neb_landscape(
+            data,
+            output=landscape_out,
+            width=5.37,
+            height=5.37,
+            dpi=300,
+            project_path=True,
+        )
+    else:
+        print("\nNo RMSD data available - skipping landscape plot")
+        print("Re-run ORCA with geometry output enabled.")
+
+    print("\nDone!")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Troubleshooting
+
+#### ImportError: No module named 'opi'
+
+Install OPI:
+
+```bash
+pip install orca-pi
+```
+
+#### ORCA version < 6.1
+
+OPI requires ORCA 6.1+. For older versions, use the legacy parser:
+
+```python
+# SKIP-DOCTEST -- requires ORCA output files
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("."))
+```
+
+This parses `.interp` files instead of JSON.
+
+#### No RMSD data for landscape plot
+
+RMSD coordinates require geometry output. Ensure your ORCA calculation includes:
+
+```text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+```
+
+#### Calculation did not converge
+
+Check `data['converged']`. If False, the NEB optimization may not have finished. Check the ORCA output file for errors.
+
+### Next Steps
+
+- [Parse eOn NEB calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb) - Similar workflow for eOn
+- [Create publication-quality NEB figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures) - Advanced plotting tips
+- [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api) - Complete API documentation
+
+### Summary
+
+You learned to:
+1. ✓ Parse ORCA NEB output using OPI
+2. ✓ Create energy profile plots
+3. ✓ Create 2D landscape plots
+4. ✓ Customize plots with matplotlib
+
+The parsed data format is compatible with eOn NEB plotting, allowing consistent visualization across different quantum chemistry codes.
+
+## Contributing tutorials
+
+Source: https://chemparseplot.rgoswami.me/tutorials/contribdoc
+
+The documentation for the `tutorials` mimics that of `numpy-tutorials` to a
+large extent. The required notebook dependencies are in the `nbdoc` optional
+dependency group.
+
+```bash
+uv run jupyter lab --ServerApp.allow_remote_access=1 \
+    --ServerApp.open_browser=False --port=8889
+```
+
+## How-to Guides
+
+Source: https://chemparseplot.rgoswami.me/howto/
+
+### How-to Guides
+
+How-to guides are goal-oriented. Use them to solve specific problems.
+
+#### Available How-tos
+
+| Guide | Description |
+|---|---|
+| [Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb) | Extract energies and barriers from ORCA NEB |
+| [Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb) | Extract data from eOn NEB calculations |
+| [Create Publication-quality Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures) | NEB, dimer, and minimization plotting tips |
+| [Draw Surrogate-assisted Searches](https://chemparseplot.rgoswami.me/howto/surrogate_search_figures) | Band, convergence, dimer and campaign figures from gpr_optim or ML-NEB output |
+
+#### Structure
+
+Each how-to guide follows this structure:
+1. Problem statement
+2. Solution with code examples
+3. Data format (if applicable)
+4. See also links
+
+#### Getting Help
+
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn from scratch
+- [Reference](https://chemparseplot.rgoswami.me/reference/) - API documentation
+- [Explanation](https://chemparseplot.rgoswami.me/explanation/) - Understand concepts
+
+## Installation Guide
+
+Source: https://chemparseplot.rgoswami.me/howto/install
+
+### Installation Guide
+
+Install chemparseplot using your preferred package manager.
+
+#### Requirements
+
+- Python 3.10, 3.11, or 3.12
+- pip, uv, pixi, or conda
+
+#### Quick Install
+
+##### Using pip
+
+```bash
+# Basic installation
+pip install chemparseplot
+
+# With plotting support
+pip install "chemparseplot[plot]"
+
+# With all optional dependencies
+pip install "chemparseplot[all]"
+```
+
+##### Using uv
+
+```bash
+uv add chemparseplot
+```
+
+##### Using pixi
+
+```bash
+pixi add chemparseplot
+```
+
+##### Using conda
+
+```bash
+conda install -c conda-forge chemparseplot
+```
+
+#### Platform-Specific Instructions
+
+##### Linux
+
+No special requirements. All features work on Linux.
+
+```bash
+# Recommended: use uv for fastest installation
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv add chemparseplot
+```
+
+##### macOS
+
+No special requirements. All features work on macOS.
+
+```bash
+# Using Homebrew Python
+brew install python
+pip install chemparseplot
+```
+
+##### Windows
+
+Most features work on Windows. Note:
+- OPI requires ORCA 6.1+ for Windows
+- Some parallel features work best with WSL2
+
+```bash
+# Using pip
+pip install chemparseplot
+
+# Or using conda
+conda install -c conda-forge chemparseplot
+```
+
+#### Optional Dependencies
+
+##### Plotting (Recommended)
+
+```bash
+pip install "chemparseplot[plot]"
+```
+
+Includes:
+- matplotlib
+- cmcrameri (scientific colormaps)
+
+##### NEB Processing
+
+```bash
+pip install "chemparseplot[neb]"
+```
+
+Includes:
+- ase (Atomic Simulation Environment)
+- h5py (HDF5 support)
+- polars (fast dataframes)
+
+##### ORCA 6.1+ Support
+
+```bash
+pip install orca-pi
+```
+
+Official ORCA Python Interface for parsing ORCA 6.1+ JSON output.
+
+##### All Dependencies
+
+```bash
+pip install "chemparseplot[all]"
+```
+
+#### Verification
+
+Test your installation:
+
+```bash
+python -c "import chemparseplot; print(chemparseplot.__version__)"
+```
+
+Expected output: version number (e.g., "0.2.0")
+
+#### Troubleshooting
+
+##### "ModuleNotFoundError: No module named 'chemparseplot'"
+
+Ensure you installed in the correct Python environment:
+
+```bash
+# Check which Python is being used
+which python
+python --version
+
+# Install in correct environment
+/path/to/python -m pip install chemparseplot
+```
+
+##### "ImportError: No module named 'matplotlib'"
+
+Install plotting dependencies:
+
+```bash
+pip install "chemparseplot[plot]"
+```
+
+##### "ImportError: No module named 'opi'"
+
+Install OPI for ORCA 6.1+ support:
+
+```bash
+pip install orca-pi
+```
+
+Or use legacy parser for ORCA < 6.1.
+
+##### Installation fails with permission error
+
+Use user installation:
+
+```bash
+pip install --user chemparseplot
+```
+
+Or use virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install chemparseplot
+```
+
+#### Development Installation
+
+For contributing to chemparseplot:
+
+```bash
+# Clone repository
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+
+# Install in editable mode with all dependencies
+uv sync --all-extras
+
+# Run tests
+uv run pytest
+```
+
+See: [Contributing Guidelines](https://chemparseplot.rgoswami.me/dev/contributing)
+
+#### Next Steps
+
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn how to use chemparseplot
+- [FAQ](https://chemparseplot.rgoswami.me/howto/faq) - Common questions
+- [Reference](https://chemparseplot.rgoswami.me/reference/) - API documentation
+
+#### See Also
+
+- [Official Documentation](https://chemparseplot.rgoswami.me)
+- [GitHub Repository](https://github.com/HaoZeke/chemparseplot)
+- [Glossary](https://chemparseplot.rgoswami.me/reference/glossary) - Terms and definitions
+
+## How-to: Parse ORCA NEB Calculations
+
+Source: https://chemparseplot.rgoswami.me/howto/parse_orca_neb
+
+### Problem
+
+You have an ORCA NEB calculation and want to extract energies, geometries, and barriers.
+
+### Solution
+
+#### For ORCA 6.1+ (Recommended)
+
+Use OPI-based parser:
+
+```python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+data = parse_orca_neb("job", working_dir=Path("calculation"))
+
+# Access parsed data
+energies = data["energies"]  # eV
+n_images = data["n_images"]
+barrier = data["barrier_forward"]
+converged = data["converged"]
+```
+
+#### For ORCA < 6.1
+
+Use legacy .interp file parser:
+
+```python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("calculation"))
+
+if data is None:
+    print("Parsing failed - check .interp file exists")
+```
+
+#### Automatic Fallback
+
+Let the parser choose automatically:
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb, HAS_OPI
+
+if HAS_OPI:
+    data = parse_orca_neb("job", Path("calc"))
+else:
+    data = parse_orca_neb_fallback("job", Path("calc"))
+```
+
+### Data Format
+
+Returned dictionary contains:
+
+| Key | Type | Description |
+|---|---|---|
+| `energies` | `np.ndarray` | Energies in eV |
+| `rmsd_r` | `np.ndarray` or `None` | RMSD from reactant |
+| `rmsd_p` | `np.ndarray` or `None` | RMSD from product |
+| `grad_r` | `np.ndarray` or `None` | Gradients (RMSD-r) |
+| `grad_p` | `np.ndarray` or `None` | Gradients (RMSD-p) |
+| `forces` | `list` or `None` | Force vectors |
+| `converged` | `bool` | Normal termination |
+| `n_images` | `int` | Number of NEB images |
+| `barrier_forward` | `float` or `None` | Forward barrier (eV) |
+| `barrier_reverse` | `float` or `None` | Reverse barrier (eV) |
+| `source` | `str` | `'opi'` or `'legacy_interp'` |
+| `orca_version` | `str` | ORCA version string |
+
+### See Also
+
+- [Tutorial: ORCA NEB Parsing and Plotting](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+- [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
+- [How-to: Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb)
+
+## How-to: Parse eOn NEB Calculations
+
+Source: https://chemparseplot.rgoswami.me/howto/parse_eon_neb
+
+### Problem
+
+You have eOn NEB output (CON/DAT file pairs) and want to extract energies, RMSD coordinates, and gradients for plotting.
+
+### Solution
+
+#### Load Structures and Compute RMSD
+
+```python
+from pathlib import Path
+from chemparseplot.parse.eon.neb import (
+    NebOverlayStructure,
+    load_structures_and_calculate_additional_rmsd,
+)
+
+bundle = load_structures_and_calculate_additional_rmsd(
+    con_file=Path("neb.con"),
+    additional_con=[
+        (Path("saddle.con"), "Saddle Point"),
+        (Path("minima.con"), "Local Minimum"),
+    ],
+    ira_kmax=1.8,
+    sp_file=Path("sp.con"),  # explicit saddle point (optional)
+)
+```
+
+This returns:
+- `bundle.atoms_list`: ASE Atoms objects from the main trajectory
+- `bundle.additional_structures`: list of `NebOverlayStructure` records
+- `bundle.saddle_point`: explicit saddle-point overlay, or `None`
+
+```python
+for overlay in bundle.additional_structures:
+    print(overlay.label, overlay.r, overlay.p)
+
+if bundle.saddle_point is not None:
+    print(
+        "Explicit saddle:",
+        bundle.saddle_point.label,
+        bundle.saddle_point.r,
+        bundle.saddle_point.p,
+    )
+```
+
+Landscape-style RMSD coordinates require IRA. If `ira_mod` is unavailable,
+`load_structures_and_calculate_additional_rmsd()` and other landscape helpers
+now raise `ImportError` instead of silently switching to order-dependent
+alignment.
+
+#### Aggregate Landscape Data from Multiple Steps
+
+eOn NEB runs produce one DAT/CON pair per optimization step. Aggregate them into a single Polars DataFrame:
+
+```python
+from pathlib import Path
+import ira_mod
+from chemparseplot.parse.eon.neb import aggregate_neb_landscape_data
+
+dat_paths = sorted(Path("neb_run").glob("*.dat"))
+con_paths = sorted(Path("neb_run").glob("*.con"))
+
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,          # column index for energy in DAT files
+    ira_instance=ira_mod.IRA(),  # provide a real IRA backend
+    ira_kmax=1.8,
+)
+
+print(df.columns)  # ['r', 'p', 'grad_r', 'grad_p', 'z', 'step']
+print(df.shape)
+```
+
+#### Use Parquet Caching
+
+Landscape aggregation is expensive (RMSD calculation per image). Cache the result:
+
+```python
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,
+    ira_instance=ira_mod.IRA(),
+    cache_file=Path("landscape_cache.parquet"),
+    force_recompute=False,    # set True to bypass cache
+    ira_kmax=1.8,
+)
+```
+
+On subsequent runs, the function loads from `landscape_cache.parquet` and validates the schema (checks for `p` and `grad_r` columns).
+
+#### Augment with External NEB Paths
+
+Add data from other NEB runs to improve landscape surface fits:
+
+```python
+from ase.io import read as ase_read
+
+ref_atoms = ase_read("reactant.con")
+prod_atoms = ase_read("product.con")
+
+df = aggregate_neb_landscape_data(
+    all_dat_paths=dat_paths,
+    all_con_paths=con_paths,
+    y_data_column=1,
+    ira_instance=ira_mod.IRA(),
+    cache_file=Path("landscape_cache.parquet"),
+    augment_dat="extra_run/*.dat",
+    augment_con="extra_run/*.con",
+    ref_atoms=ref_atoms,
+    prod_atoms=prod_atoms,
+)
+```
+
+Augmented paths get `step`-1= in the DataFrame, distinguishing them from the primary path.
+
+#### Compute 1D Profile RMSD
+
+For simple energy profiles (no landscape), compute RMSD from reactant only:
+
+```python
+from chemparseplot.parse.eon.neb import compute_profile_rmsd
+
+atoms_list = ase_read("neb.con", index=":")
+df_profile = compute_profile_rmsd(
+    atoms_list,
+    cache_file=Path("profile_cache.parquet"),
+    force_recompute=False,
+    ira_kmax=1.8,
+)
+# df_profile has column: 'r' (RMSD from first frame)
+```
+
+#### Estimate RBF Smoothing
+
+Before fitting a landscape surface, estimate a smoothing parameter:
+
+```python
+from chemparseplot.parse.eon.neb import estimate_rbf_smoothing
+
+smoothing = estimate_rbf_smoothing(df)
+print(f"Estimated smoothing: {smoothing:.4f}")
+```
+
+This calculates the median inter-image distance in (r, p) space for each step.
+
+### Data Format
+
+The aggregated DataFrame uses this schema:
+
+| Column | Type | Description |
+|---|---|---|
+| `r` | `Float64` | RMSD from reactant (Angstrom) |
+| `p` | `Float64` | RMSD from product (Angstrom) |
+| `grad_r` | `Float64` | Synthetic gradient in R direction |
+| `grad_p` | `Float64` | Synthetic gradient in P direction |
+| `z` | `Float64` | Energy or eigenvalue |
+| `step` | `Int64` | Optimization step index (-1 for augmented) |
+
+### See Also
+
+- [Tutorial: ORCA NEB Parsing and Plotting](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+- [eOn NEB API Reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api)
+- [How-to: Create Publication NEB Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures)
+- [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
+
+#### In-memory ConFrame sequences (object plot)
+
+When frames already exist as `readcon.ConFrame` (for example
+`neb.path_frames()` from pyeonclient, or a multi-frame CON read with
+`readcon`), build plot series without re-reading job directories:
+
+```python
+from chemparseplot.parse.eon.frame_series import (
+    energies_from_frames,
+    neb_path_arrays,
+    min_trajectory_from_frames,
+    dimer_trajectory_from_frames,
+)
+
+energies = energies_from_frames(frames)
+path = neb_path_arrays(frames)  # atoms_list, energies, optional NEB stamps
+# min_traj = min_trajectory_from_frames(frames)
+# dimer_traj = dimer_trajectory_from_frames(frames)
+```
+
+Wire into rgpycrumbs with:
+
+```python
+from rgpycrumbs.eon import plot
+
+plot(frames, kind="neb", plot_type="profile", output_file="1d.pdf")
+```
+
+#### Frames from a stored corpus
+
+A `readcon-db` corpus stores frames under trajectory and frame indices.
+`iter_corpus_frames` opens that corpus read-only and decodes selected frames
+as they are consumed. This example selects trajectory 9 and requires an
+energy for each frame:
+
+```python
+from chemparseplot.parse.eon.con_io import iter_corpus_frames
+from chemparseplot.parse.eon.frame_series import energies_from_frames
+
+frames = list(iter_corpus_frames("observations.lmdb", trajectory=9, require_energy=True))
+energies = energies_from_frames(frames)
+```
+
+The frames follow increasing frame index within the selected trajectory.
+`energies` contains one value in eV per frame, converted from its declared
+energy unit. Ordinary CON file helpers read files without opening a corpus.
+
+## How-to: Create Publication NEB Figures
+
+Source: https://chemparseplot.rgoswami.me/howto/create_neb_figures
+
+### Problem
+
+You have parsed NEB data (eOn or ORCA) and want publication-quality figures for energy profiles, 2D landscapes, and structure galleries.
+
+### 1D Energy Profiles
+
+#### Hermite Spline (Default)
+
+Uses cubic Hermite splines with Savitzky-Golay smoothed force derivatives:
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+from chemparseplot.plot.neb import plot_energy_path, SmoothingParams
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+plot_energy_path(
+    ax,
+    rc=rmsd_r,             # reaction coordinate (RMSD from reactant)
+    energy=energies,       # energy array
+    f_para=f_parallel,     # parallel force component
+    color="#1f77b4",
+    alpha=1.0,
+    zorder=10,
+    method="hermite",
+    smoothing=SmoothingParams(window_length=5, polyorder=2),
+)
+
+ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+ax.set_ylabel("Energy (eV)")
+fig.savefig("profile.pdf", dpi=300, bbox_inches="tight")
+```
+
+#### Standard Cubic Spline
+
+Use `method`"spline"= for B-spline interpolation without force information:
+
+```python
+plot_energy_path(
+    ax, rc, energy, f_para,
+    color="#1f77b4", alpha=1.0, zorder=10,
+    method="spline",
+)
+```
+
+#### Eigenvalue Profile
+
+Plot the lowest eigenvalue along the path (useful for saddle point characterization):
+
+```python
+from chemparseplot.plot.neb import plot_eigenvalue_path
+
+plot_eigenvalue_path(
+    ax,
+    rc=rmsd_r,
+    eigenvalue=eigenvalues,
+    color="#d62728",
+    alpha=0.8,
+    zorder=10,
+    grid_color="white",    # horizontal zero-line color
+)
+```
+
+### 2D Landscape Surfaces
+
+```mermaid
+flowchart LR
+  RMSD[RMSD-A / RMSD-B] --> PROJ{project_path?}
+  PROJ -->|true| SD["(s, d) valley"]
+  PROJ -->|false| RAW["raw RMSD axes"]
+  SD --> FIT[Surface fit]
+  RAW --> FIT
+  CFG[SurfaceFitConfig] --> FIT
+  FIT --> CONT[contourf + variance]
+  CONT --> STRIP[optional structure strip]
+```
+
+> **Tip:** Prefer `SurfaceFitConfig` / TOML keys over ad-hoc kwargs when wiring
+> suite plots. `auto_thin` stays **off** unless dense movies force it.
+
+#### Gradient-Enhanced Matern (Default)
+
+```python
+from chemparseplot.plot.neb import plot_landscape_surface, plot_landscape_path_overlay
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+
+plot_landscape_surface(
+    ax,
+    rmsd_r=df["r"].to_numpy(),
+    rmsd_p=df["p"].to_numpy(),
+    grad_r=df["grad_r"].to_numpy(),
+    grad_p=df["grad_p"].to_numpy(),
+    z_data=df["z"].to_numpy(),
+    step_data=df["step"].to_numpy(),
+    method="grad_matern",
+    cmap="viridis",
+    show_pts=True,
+    variance_threshold=0.05,
+    project_path=True,       # reaction valley projection
+)
+
+# Overlay the colored NEB path
+plot_landscape_path_overlay(
+    ax,
+    r=latest_r, p=latest_p, z=latest_z,
+    cmap="viridis",
+    z_label="Energy (eV)",
+    project_path=True,
+)
+```
+
+#### Gradient-Enhanced IMQ
+
+For very large NEB histories, `grad_imq` can switch to Nystrom approximation
+above the suite threshold. Dense **single-ended** force-eval movies are a
+different problem: prefer opt-in thinning (below) rather than always thinning.
+
+```python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    n_inducing=200,          # number of inducing points for Nystrom
+)
+```
+
+#### Dense clouds: `SurfaceFitConfig` / `auto_thin` (default off)
+
+eOn `write_movies` can dump every force evaluation. On `100+` nearly collinear
+points, GradientIMQ may raise
+`ValueError: Surface prediction produced no finite values for contourf`.
+Thinning is **opt-in** so historical calls stay unchanged.
+
+```python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+# TOML-friendly mapping (same keys as rgpycrumbs plot.toml)
+cfg = SurfaceFitConfig.from_mapping({
+    "auto_thin": True,
+    "max_surface_points": 64,
+})
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=cfg,
+)
+# Equivalent kwargs: auto_thin=True, max_surface_points=64
+```
+
+When enabled, only the GP **training** set is subsampled (first/last + evenly
+spaced intermediates). Path scatter and viewport still use the full cloud.
+
+From the CLI suite, set the same keys in plot TOML (not CLI flags):
+
+```toml
+[shared]
+auto_thin = true
+max_surface_points = 64
+```
+
+#### Standard RMSD Axes (No Projection)
+
+Set `project_path=False` to plot in raw (RMSD-R, RMSD-P) coordinates:
+
+```python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    project_path=False,
+)
+ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+ax.set_ylabel(r"RMSD from Product ($\AA$)")
+```
+
+#### Extra Points on the Surface
+
+Plot additional structures (saddle points, local minima) on the landscape:
+
+```python
+import numpy as np
+
+extra = np.array([
+    [sp_rmsd_r, sp_rmsd_p],
+    [min_rmsd_r, min_rmsd_p],
+])
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    extra_points=extra,
+)
+```
+
+### Structure Rendering
+
+#### Structure Strip (Gallery)
+
+Renders a horizontal gallery of atomic structures below the energy profile:
+
+```python
+from chemparseplot.plot.neb import plot_structure_strip
+
+fig, (ax_energy, ax_struct) = plt.subplots(
+    2, 1, figsize=(7, 6), height_ratios=[3, 1]
+)
+
+plot_structure_strip(
+    ax_struct,
+    atoms_list=[atoms_list[0], atoms_list[3], atoms_list[-1]],
+    labels=["Reactant", "TS", "Product"],
+    zoom=0.3,
+    rotation="0x,90y,0z",
+    theme_color="black",
+    max_cols=6,
+    renderer="ase",          # or "xyzrender" for ray-traced images
+)
+```
+
+#### Inset Structure Annotation
+
+Place a structure image as an annotation on an energy profile:
+
+```python
+from chemparseplot.plot.neb import plot_structure_inset
+
+plot_structure_inset(
+    ax,
+    atoms=atoms_list[3],
+    x=rmsd_r[3],             # data x coordinate
+    y=energies[3],           # data y coordinate
+    xybox=(40, 40),          # offset in points
+    rad=0.3,                 # arrow curvature
+    zoom=0.4,
+    rotation="0x,90y,0z",
+    renderer="ase",          # or "xyzrender"
+)
+```
+
+#### xyzrender Backend
+
+For ray-traced structure images, use the xyzrender renderer:
+
+```python
+# xyzrender stages via rgpycrumbs ensure_import when AUTO_DEPS is on
+# (or: pip install 'xyzrender>=0.1.3'). Uses the Python API, not a PATH binary.
+plot_structure_strip(
+    ax, atoms_list, labels,
+    renderer="xyzrender",
+)
+```
+
+### Theme System
+
+#### Built-in Themes
+
+```python
+from chemparseplot.plot.theme import get_theme, setup_global_theme
+
+# Available themes: "ruhi", "cmc.batlow"
+theme = get_theme("ruhi")
+setup_global_theme(theme)
+```
+
+#### Custom Theme Overrides
+
+```python
+theme = get_theme("ruhi", font_size=14, facecolor="#f5f5f5")
+setup_global_theme(theme)
+```
+
+#### Publication Preset
+
+Adds line width, spine removal, and DPI defaults on top of the base theme:
+
+```python
+from chemparseplot.plot.theme import setup_publication_theme
+
+theme = get_theme("ruhi")
+setup_publication_theme(theme)
+```
+
+#### Per-Axis Theming
+
+```python
+from chemparseplot.plot.theme import apply_axis_theme
+
+apply_axis_theme(ax, theme)
+```
+
+### Journal Export
+
+#### DPI and Size for Common Journals
+
+```python
+# ACS journals: single column = 3.25 in, double = 7.0 in
+fig, ax = plt.subplots(figsize=(3.25, 3.25), dpi=300)
+
+# Nature: single column = 89 mm = 3.5 in
+fig, ax = plt.subplots(figsize=(3.5, 3.5), dpi=300)
+```
+
+#### Save as Vector (PDF/EPS)
+
+```python
+fig.savefig("figure.pdf", dpi=300, bbox_inches="tight", pad_inches=0.05)
+fig.savefig("figure.eps", dpi=300, bbox_inches="tight")
+```
+
+#### Save as Raster (PNG/TIFF)
+
+```python
+fig.savefig("figure.png", dpi=600, bbox_inches="tight")
+fig.savefig("figure.tiff", dpi=600, bbox_inches="tight")
+```
+
+### Single-Ended Method Visualization
+
+The same 2D reaction valley projection works for dimer/saddle search and minimization trajectories. The interpretation changes: `s` becomes optimization progress and `d` becomes lateral deviation.
+
+#### Dimer/Saddle Search Landscape
+
+Requires eOn output with `write_movies=true` and a `climb` movie file.
+Metadata-rich full CON movies are treated as the canonical structured source;
+`climb.dat` remains available as a fallback/export table when the embedded
+metadata is incomplete.
+
+```python
+from chemparseplot.parse.eon.dimer_trajectory import load_dimer_trajectory
+from chemparseplot.parse.neb_utils import calculate_landscape_coords, compute_synthetic_gradients
+from chemparseplot.plot.optimization import plot_optimization_landscape
+import numpy as np
+import matplotlib.pyplot as plt
+
+traj = load_dimer_trajectory(Path("saddle_job/"))
+
+# Use IRA for RMSD (if available)
+try:
+    from rgpycrumbs._aux import _import_from_parent_env
+    ira_mod = _import_from_parent_env("ira_mod")
+    ira_instance = ira_mod.IRA()
+except ImportError:
+    ira_instance = None
+
+rmsd_a, rmsd_b = calculate_landscape_coords(
+    traj.atoms_list, ira_instance, ira_kmax=1.8,
+    ref_a=traj.initial_atoms,     # initial structure
+    ref_b=traj.saddle_atoms,      # saddle point
+)
+
+energies = traj.dat_df["delta_e"].to_numpy()
+f_para = -np.gradient(energies)
+grad_a, grad_b = compute_synthetic_gradients(rmsd_a, rmsd_b, f_para)
+
+fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+plot_optimization_landscape(
+    ax, rmsd_a, rmsd_b, grad_a, grad_b, energies,
+    project_path=True,
+    label_mode="optimization",
+)
+fig.savefig("saddle_landscape.pdf", dpi=300, bbox_inches="tight")
+```
+
+#### Minimization Landscape
+
+```python
+from chemparseplot.parse.eon.min_trajectory import load_min_trajectory
+
+traj = load_min_trajectory(Path("min_job/"))
+rmsd_a, rmsd_b = calculate_landscape_coords(
+    traj.atoms_list, ira_instance, ira_kmax=1.8,
+    ref_a=traj.initial_atoms,
+    ref_b=traj.final_atoms,
+)
+# ... same pattern as above with plot_optimization_landscape
+```
+
+#### Energy/Convergence Profiles
+
+```python
+from chemparseplot.plot.optimization import plot_optimization_profile, plot_convergence_panel
+
+fig, (ax_e, ax_ev) = plt.subplots(1, 2, figsize=(10, 4))
+dat = traj.dat_df
+plot_optimization_profile(
+    ax_e,
+    dat["iteration"].to_numpy(),
+    dat["delta_e"].to_numpy(),
+    eigenvalues=dat["eigenvalue"].to_numpy(),
+    ax_eigen=ax_ev,
+)
+```
+
+#### OCI-NEB/RONEB: MMF Peak Overlay
+
+When OCI-NEB produces `peak{NN}_pos.con` files, overlay them on the landscape.
+If a metadata-rich `climb` / `climb.con` refinement movie is also present in the
+same directory, higher-level tools can distinguish the dimer/MMF samples from
+the base NEB band on the same 2D projection:
+
+```python
+from chemparseplot.plot.neb import plot_mmf_peaks_overlay
+
+plot_mmf_peaks_overlay(
+    ax, peak_rmsd_r, peak_rmsd_p, peak_energies,
+    project_path=True,
+)
+```
+
+#### CLI Shortcuts
+
+```shell
+# Saddle search landscape
+rgpycrumbs eon plt-saddle --job-dir saddle_job/ --plot-type landscape
+
+# Minimization profile
+rgpycrumbs eon plt-min --job-dir min_job/ --plot-type profile
+
+# NEB with MMF peaks
+rgpycrumbs eon plt-neb --mmf-peaks --peak-dir . --plot-type landscape
+```
+
+### See Also
+
+- [How-to: Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb)
+- [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
+- [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design)
+
+## Frequently Asked Questions
+
+Source: https://chemparseplot.rgoswami.me/howto/faq
+
+### Frequently Asked Questions
+
+Common questions about chemparseplot with answers and solutions.
+
+#### Installation
+
+##### How do I install chemparseplot?
+
+```bash
+# Basic installation
+pip install chemparseplot
+
+# With plotting dependencies
+pip install "chemparseplot[plot]"
+
+# With all optional dependencies
+pip install "chemparseplot[all]"
+```
+
+See: [Installation Guide](https://chemparseplot.rgoswami.me/howto/install)
+
+##### How do I install with conda/pixi?
+
+```bash
+# Using pixi
+pixi add chemparseplot
+
+# Using conda (via conda-forge)
+conda install -c conda-forge chemparseplot
+```
+
+##### I get "ModuleNotFoundError: No module named 'chemparseplot'"
+
+Ensure you installed in the correct Python environment:
+
+```bash
+# Check Python path
+python -c "import sys; print(sys.executable)"
+
+# Install in correct environment
+/path/to/python -m pip install chemparseplot
+```
+
+#### Usage
+
+##### How do I parse ORCA NEB output?
+
+```python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+data = parse_orca_neb("job", working_dir=Path("calculation"))
+print(f"Energies: {data['energies']}")
+print(f"Barrier: {data['barrier_forward']:.2f} eV")
+```
+
+See: [ORCA NEB Tutorial](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+
+##### How do I create an energy profile plot?
+
+```python
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+plot_orca_neb_energy_profile(data, "profile.pdf")
+```
+
+See: [ORCA NEB Tutorial](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+
+##### How do I parse eOn NEB output?
+
+```python
+from chemparseplot.parse.eon.neb import aggregate_neb_landscape_data
+
+data = aggregate_neb_landscape_data(dat_paths, con_paths, y_col=2)
+```
+
+See: [Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb)
+
+#### Errors
+
+##### "ImportError: No module named 'opi'"
+
+OPI (ORCA Python Interface) is required for ORCA 6.1+ parsing:
+
+```bash
+pip install orca-pi
+```
+
+Or use legacy parser for ORCA < 6.1:
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+
+data = parse_orca_neb_fallback("job", Path("calc"))
+```
+
+##### "RMSD coordinates required for landscape plot"
+
+Landscape plots require geometry output. Ensure your calculation includes:
+
+```text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+```
+
+##### "Contour levels must be increasing"
+
+Energy data may have numerical issues. Check for:
+- Duplicate energy values
+- NaN or Inf values
+- Very small energy differences
+
+Fix by filtering or smoothing data.
+
+#### Performance
+
+##### How can I speed up batch plotting?
+
+Use parallel processing:
+
+```bash
+rgpycrumbs chemgp batch -c config.toml -j 4
+```
+
+The `-j 4` flag uses 4 parallel workers.
+
+##### Why is landscape plotting slow?
+
+Surface fitting is computationally expensive. Options:
+- Use fewer points (downsample)
+- Opt-in `auto_thin` / `SurfaceFitConfig` (default off) to cap fit size
+- Use simpler interpolation method (RBF instead of GP)
+- Use Nystrom approximation for large datasets
+
+##### How do I thin dense minimization movies without changing defaults?
+
+Use `SurfaceFitConfig` (TOML key names match rgpycrumbs plot config):
+
+```python
+from chemparseplot.plot.neb import SurfaceFitConfig
+
+cfg = SurfaceFitConfig.from_mapping({"auto_thin": True, "max_surface_points": 64})
+```
+
+Default `auto_thin` is `False` so existing scripts keep full-cloud fits.
+
+#### Compatibility
+
+##### Which ORCA versions are supported?
+
+- ORCA 6.1+: Full support via OPI
+- ORCA < 6.1: Limited support via .interp file parsing
+
+##### Which Python versions are supported?
+
+Python 3.10, 3.11, 3.12
+
+##### Does chemparseplot work on Windows?
+
+Yes, but some features may have limited support:
+- Plotting works on all platforms
+- OPI requires ORCA 6.1+ (Windows available)
+- Some parallel features work best on Linux/macOS
+
+#### Development
+
+##### How do I contribute?
+
+See: [Contributing Guidelines](https://chemparseplot.rgoswami.me/dev/contributing)
+
+##### How do I report a bug?
+
+Create an issue on GitHub: [GitHub Issues](https://github.com/HaoZeke/chemparseplot/issues)
+
+Include:
+- chemparseplot version
+- Python version
+- ORCA/eOn version
+- Minimal reproducible example
+- Error message
+
+##### How do I request a feature?
+
+Create an issue on GitHub with:
+- Feature description
+- Use case
+- Example input/output
+- Priority (nice-to-have vs critical)
+
+#### See Also
+
+- [Glossary](https://chemparseplot.rgoswami.me/reference/glossary) - Definitions of terms
+- [Installation Guide](https://chemparseplot.rgoswami.me/howto/install) - Detailed installation
+- [Troubleshooting](https://chemparseplot.rgoswami.me/howto/troubleshooting) - Common problems and solutions
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn how to use chemparseplot
+
+## Troubleshooting Guide
+
+Source: https://chemparseplot.rgoswami.me/howto/troubleshooting
+
+### Troubleshooting Guide
+
+Common problems and their solutions.
+
+#### Installation Issues
+
+##### Problem: "ModuleNotFoundError: No module named 'chemparseplot'"
+
+***Cause:*** Package not installed in current Python environment.
+
+***Solution:***
+
+```bash
+# Check which Python is active
+which python
+python --version
+
+# Install in correct environment
+python -m pip install chemparseplot
+
+# Or use full path
+/path/to/python -m pip install chemparseplot
+```
+
+##### Problem: "ImportError: No module named 'matplotlib'"
+
+***Cause:*** Plotting dependencies not installed.
+
+***Solution:***
+
+```bash
+pip install "chemparseplot[plot]"
+```
+
+##### Problem: "ImportError: No module named 'opi'"
+
+***Cause:*** OPI not installed (needed for ORCA 6.1+ parsing).
+
+***Solution:***
+
+```bash
+pip install orca-pi
+```
+
+Or use legacy parser for ORCA < 6.1:
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb_fallback
+data = parse_orca_neb_fallback("job", Path("calc"))
+```
+
+#### Parsing Issues
+
+##### Problem: "FileNotFoundError: [Errno 2] No such file or directory: 'job.json'"
+
+***Cause:*** ORCA 6.1+ JSON output not found.
+
+***Solution:***
+1. Ensure ORCA 6.1+ was used
+2. Check ORCA input includes JSON output:
+
+```text
+%output
+  Print[JSON] true
+end
+```
+
+3. Verify job completed successfully
+
+##### Problem: "ValueError: No energy data in neb_data"
+
+***Cause:*** NEB calculation did not produce energy data.
+
+***Solution:***
+1. Check ORCA/eOn output for errors
+2. Verify NEB calculation completed
+3. Check .interp file exists (for legacy parser)
+
+##### Problem: "ValueError: Surface prediction produced no finite values for contourf"
+
+***Cause:*** Gradient surface models (often `grad_imq`) returned a non-finite
+grid—common on very dense single-ended movies (e.g. eOn LBFGS force-eval dumps).
+
+***Solution:*** Opt in to fit thinning (default remains off):
+
+```python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=SurfaceFitConfig(auto_thin=True, max_surface_points=64),
+)
+```
+
+Or pass `auto_thin=True` / `max_surface_points=64` kwargs. From rgpycrumbs CLIs,
+set the same keys in `--config` TOML under `[shared]` or `[min]` / `[neb]`
+(not as CLI flags).
+
+##### Problem: "RMSD coordinates required for landscape plot"
+
+***Cause:*** Geometry output not available.
+
+***Solution:***
+Add to ORCA input:
+
+```text
+%output
+  Print[P_Molden] true
+  Print[MOs] true
+end
+```
+
+#### Plotting Issues
+
+##### Problem: "Contour levels must be increasing"
+
+***Cause:*** Energy data has numerical issues or duplicate values.
+
+***Solution:***
+
+```python
+import numpy as np
+
+# Check for issues
+print(f"Min energy: {energies.min()}")
+print(f"Max energy: {energies.max()}")
+print(f"Unique values: {len(np.unique(energies))}")
+
+# Filter or smooth if needed
+from scipy.ndimage import gaussian_filter1d
+energies_smooth = gaussian_filter1d(energies, sigma=1)
+```
+
+##### Problem: "Spline failed (only integer scalar arrays can be converted to a scalar index)"
+
+***Cause:*** Spline interpolation issue with array indices.
+
+***Solution:***
+Use alternative interpolation method:
+
+```python
+plot_orca_neb_energy_profile(
+    data, "profile.pdf",
+    method="spline"  # Instead of "hermite"
+)
+```
+
+##### Problem: "Module 'jax' is not installed"
+
+***Cause:*** JAX required for GP surface fitting.
+
+***Solution:***
+
+```bash
+pip install "jax[cpu]"  # CPU-only
+# or
+pip install "jax[cuda12]"  # With CUDA support
+```
+
+Or use simpler interpolation:
+
+```python
+plot_orca_neb_landscape(
+    data, "landscape.pdf",
+    method="rbf"  # Instead of "grad_matern"
+)
+```
+
+#### Performance Issues
+
+##### Problem: Batch plotting is very slow
+
+***Cause:*** Sequential processing of many plots.
+
+***Solution:***
+Use parallel processing:
+
+```bash
+rgpycrumbs chemgp batch -c config.toml -j 8
+```
+
+##### Problem: Landscape plotting takes too long
+
+***Cause:*** Surface fitting is computationally expensive.
+
+***Solution:***
+1. Reduce number of points (downsample)
+2. Use simpler method:
+
+```python
+plot_orca_neb_landscape(
+    data, "landscape.pdf",
+    method="rbf",  # Faster than GP methods
+    n_inducing=100  # Fewer inducing points
+)
+```
+
+#### Common Error Messages
+
+| Error | Cause | Solution |
+|---|---|---|
+| "No images found" | NEB calculation incomplete | Check ORCA output for errors |
+| "Barrier is negative" | Product higher than saddle | Check calculation converged |
+| "RMSD values are identical" | Structures not loaded | Verify .xyz/.con files exist |
+| "Color map not found" | Invalid colormap name | Use "cmc.batlow" or "viridis" |
+
+#### Getting Help
+
+If these solutions don't help:
+
+1. Check [FAQ](https://chemparseplot.rgoswami.me/howto/faq) for common questions
+2. Search [Glossary](https://chemparseplot.rgoswami.me/reference/glossary) for term definitions
+3. Create issue on [GitHub Issues](https://github.com/HaoZeke/chemparseplot/issues)
+
+Include:
+- chemparseplot version
+- Python version
+- ORCA/eOn version
+- Minimal reproducible example
+- Full error message
+
+#### See Also
+
+- [FAQ](https://chemparseplot.rgoswami.me/howto/faq) - Common questions
+- [Installation Guide](https://chemparseplot.rgoswami.me/howto/install) - Installation troubleshooting
+- [Glossary](https://chemparseplot.rgoswami.me/reference/glossary) - Term definitions
+
+## How-to: Run Tests and Check Coverage
+
+Source: https://chemparseplot.rgoswami.me/howto/dev_testing
+
+### Problem
+
+You want to run tests and check coverage across all optional dependency sets.
+
+### Quick Start
+
+#### Single Environment (uv)
+
+For basic development without the heavier optional plotting stacks:
+
+```shell
+cd chemparseplot
+uv sync --extra test
+uv run pytest tests/ --ignore=tests/tutorials
+```
+
+This installs the base test floor used by the main parser and NEB suites. The remaining coverage still needs the heavier optional stacks: jax, pandas, and plotnine.
+
+#### Full Coverage (pixi)
+
+pixi manages multiple environments with different optional deps. Each env runs its test subset, then results combine:
+
+```shell
+pixi run cov
+```
+
+This runs:
+
+| Environment | Deps | What it tests |
+|---|---|---|
+| test | ase, polars, scipy, matplotlib | Core parsers, projection, NEB, trajectory |
+| plot | + jax, cmcrameri | Surface fitting, landscape rendering |
+| chemgp | + pandas, plotnine | ChemGP HDF5/JSONL parsers, plotnine plots |
+| plumed | + pandas | PLUMED FES parsing and reconstruction |
+
+The `cov` task cleans stale files, runs all four env tasks, then calls `coverage combine` and `coverage report --fail-under=90`.
+
+#### Individual Environments
+
+```shell
+pixi run -e test test-base     # base tests only
+pixi run -e plot test-plot     # with jax + cmcrameri
+pixi run -e chemgp test-chemgp # with pandas + plotnine
+pixi run -e plumed test-plumed # plumed tests only
+```
+
+#### Coverage Report
+
+After any test run:
+
+```shell
+uv run coverage report --show-missing
+```
+
+Or for HTML:
+
+```shell
+uv run coverage html
+# open htmlcov/index.html
+```
+
+### How Coverage Combine Works
+
+1. Each pixi env task runs `pytest --cov` which writes `.coverage`
+2. The task renames it to `.coverage.<env>` (e.g. `.coverage.test`)
+3. `coverage combine` merges all `.coverage.*` into one `.coverage`
+4. `coverage report` reads the combined file
+
+The `[tool.coverage.run]` in `pyproject.toml` has `parallel = true` and `source_pkgs = ["chemparseplot"]`. The `[tool.coverage.paths]` maps different install prefixes back to the source tree.
+
+### Writing Tests
+
+#### Test Markers
+
+```python
+import pytest
+
+@pytest.mark.neb       # needs ase, polars, h5py
+@pytest.mark.pure      # needs only numpy
+```
+
+#### Smoke Tests for Plot Functions
+
+Plot functions are tested by creating a figure, calling the function, and checking axes properties:
+
+```python
+import matplotlib
+matplotlib.use("Agg")  # headless
+import matplotlib.pyplot as plt
+
+def test_some_plot():
+    fig, ax = plt.subplots()
+    some_plot_function(ax, data)
+    assert len(ax.lines) > 0
+    plt.close(fig)
+```
+
+### Quality Guidelines
+
+- New modules must have tests in the same PR
+- Coverage threshold: 90% (enforced by `pixi run cov`)
+- Plot functions: at least smoke tests (figure creation + basic assertions)
+- Parsers: synthetic input data + output schema validation
+- Keep base-env tests free of the heavier optional stacks (jax, pandas, plotnine)
+
+### See Also
+
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
+- [Contributing Guide](https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/docs/CONTRIBUTING.md)
+
+## Explanation
+
+Source: https://chemparseplot.rgoswami.me/explanation/
+
+### Explanation
+
+Explanation documents are understanding-oriented. Use them to understand concepts and design.
+
+#### Available Explanations
+
+| Explanation | Description |
+|---|---|
+| [ORCA NEB Integration Design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design) | Why OPI, lazy loading, compatible formats |
+| [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports) | How ensure_import() works |
+| [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design) | Unified data format rationale |
+
+#### Structure
+
+Each explanation includes:
+- Problem statement
+- Solution rationale
+- Design trade-offs
+- Future improvements
+
+#### Getting Help
+
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn from scratch
+- [How-to Guides](https://chemparseplot.rgoswami.me/howto/) - Solve problems
+- [Reference](https://chemparseplot.rgoswami.me/reference/) - API documentation
+
+## Architecture Overview
+
+Source: https://chemparseplot.rgoswami.me/explanation/architecture
+
+### Ecosystem position
+
+```mermaid
+flowchart TB
+  subgraph rgpkgs["rgpkgs suite"]
+    RGP[rgpycrumbs]
+    CPP[chemparseplot]
+    PYC[pychum]
+  end
+  ENG[eOn / ORCA / Sella] --> CPP
+  CPP -->|parse + plot APIs| USER[Notebooks / docs recipes]
+  RGP -->|CLI plt-* + surfaces| USER
+  RGP -->|plot.toml config| CPP
+  PYC -->|inputs| ENG
+```
+
+**chemparseplot**
+
+Library: parsers, landscape APIs, `SurfaceFitConfig`.
+
+**rgpycrumbs**
+
+CLI dispatch, GP surfaces, TOML plot config.
+
+### Architecture Overview
+
+This document explains the high-level architecture of chemparseplot.
+
+#### System Overview
+
+```text
+                chemparseplot Architecture
+                ==========================
+
++------------------+     +------------------+     +------------------+
+|   Input Files    |     |  chemparseplot   |     |   Output Files   |
++------------------+     +------------------+     +------------------+
+|                  |     |                  |     |                  |
+| ORCA output      |---->|   PARSERS        |     | PDF figures      |
+| eOn output       |     |   - orca/        |---->| HDF5 data        |
+| Sella output     |     |   - eon/         |     | JSON data        |
+| ChemGP HDF5      |     |   - sella/       |     |                  |
+|                  |     |   - trajectory/  |     |                  |
++------------------+     +--------+---------+     +------------------+
+                                  |
+                                  v
+                         +--------+---------+
+                         |   PLOTTING       |
+                         |   - chemgp.py    |
+                         |   - neb.py       |
+                         |   - geomscan.py  |
+                         +--------+---------+
+                                  |
+                                  v
+                         +--------+---------+
+                         |   UTILITIES      |
+                         |   - units.py     |
+                         |   - converter.py |
+                         |   - patterns.py  |
+                         +------------------+
+```
+
+#### Module Structure
+
+```text
+chemparseplot/
+|-- __init__.py          # Package initialization
+|-- units.py             # Pint unit registry
+|-- util.py              # Utilities with lazy imports
+|-- parse/               # PARSERS
+|   |-- __init__.py
+|   |-- orca/            # ORCA output parsing
+|   |   |-- __init__.py
+|   |   |-- geomscan.py
+|   |   `-- neb/
+|   |       |-- __init__.py
+|   |       |-- interp.py
+|   |       `-- opi_parser.py  # OPI-based parser
+|   |-- eon/             # eOn output parsing
+|   |   |-- __init__.py
+|   |   |-- neb.py
+|   |   `-- saddle_search.py
+|   |-- sella/           # Sella output parsing
+|   |   `-- saddle_search.py
+|   |-- trajectory/      # Trajectory parsing
+|   |   |-- __init__.py
+|   |   |-- hdf5.py
+|   |   `-- neb.py
+|   |-- file_.py         # File utilities
+|   |-- patterns.py      # Regex patterns
+|   |-- converter.py     # Unit conversions
+|   `-- neb_utils.py     # NEB utilities
+`-- plot/                # PLOTTING
+    |-- __init__.py
+    |-- theme.py         # Plot themes (ruhi, etc.)
+    |-- structs.py       # Structure rendering
+    |-- chemgp.py        # ChemGP plotting
+    |-- neb.py           # NEB plotting
+    `-- geomscan.py      # Geometry scan plotting
+```
+
+#### Data Flow
+
+```text
+ORCA/eOn Output
+     |
+     v
++---------+
+| PARSER  |  (parse/orca/, parse/eon/)
++----+----+
+     |
+     v
+Structured Data (dict/DataFrame)
+     |
+     v
++---------+
+| PLOTTER |  (plot/neb.py, plot/chemgp.py)
++----+----+
+     |
+     v
+PDF/PNG Figure
+```
+
+#### Key Design Decisions
+
+##### Lazy Imports
+
+Optional dependencies loaded on first use:
+
+```python
+from rgpycrumbs._aux import ensure_import
+
+def _get_opi():
+    global _opi
+    if _opi is None:
+        _opi = ensure_import("opi.output.core")
+    return _opi
+```
+
+Benefits:
+- Smaller installation
+- Graceful degradation
+- Auto-install option
+
+##### Unified Data Format
+
+All parsers return compatible data structures:
+
+```python
+{
+    "energies": np.array([...]),  # eV
+    "rmsd_r": np.array([...]),    # Angstrom
+    "rmsd_p": np.array([...]),    # Angstrom
+    "grad_r": np.array([...]),    # eV/Angstrom
+    "grad_p": np.array([...]),    # eV/Angstrom
+    "converged": bool,
+    "n_images": int,
+}
+```
+
+Benefits:
+- Same plotting code for all codes
+- Easy to add new parsers
+- Consistent API
+
+##### Separation of Concerns
+
+- Parsers: Extract data from output files
+- Plotters: Create visualizations
+- Utilities: Unit handling, conversions
+
+Benefits:
+- Testable components
+- Reusable code
+- Clear boundaries
+
+#### Dependencies
+
+```text
+Required:
+- numpy
+- pint (units)
+
+Optional (lazy-loaded):
+- matplotlib (plotting)
+- cmcrameri (colormaps)
+- ase (structure handling)
+- polars (dataframes)
+- h5py (HDF5)
+- orca-pi (ORCA 6.1+ parsing)
+- jax (GP surface fitting, via rgpycrumbs)
+```
+
+#### Integration with rgpycrumbs
+
+chemparseplot delegates heavy computation to rgpycrumbs:
+
+```text
+chemparseplot          rgpycrumbs
+=============          ==========
+parse.orca.neb  ---->  (none)
+parse.eon.neb   ---->  (none)
+plot.neb        ---->  surfaces (GP fitting)
+plot.chemgp     ---->  interpolation
+```
+
+#### See Also
+
+- [Reference Documentation](https://chemparseplot.rgoswami.me/reference/)
+- [Developer Documentation](https://chemparseplot.rgoswami.me/dev/)
+- [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports)
+- [Glossary](https://chemparseplot.rgoswami.me/reference/glossary)
+
+## Lazy Import Pattern
+
+Source: https://chemparseplot.rgoswami.me/explanation/lazy_imports
+
+### Overview
+
+chemparseplot uses lazy imports to keep its installation footprint small while supporting optional features. This document explains how the pattern works and why it exists.
+
+### The `ensure_import` Pattern
+
+`ensure_import()` from `rgpycrumbs._aux` handles optional dependency loading:
+
+```python
+from rgpycrumbs._aux import ensure_import
+
+_opi_output = None
+
+def _get_opi_output():
+    global _opi_output
+    if _opi_output is None:
+        _opi_output = ensure_import("opi.output.core").Output
+    return _opi_output
+```
+
+On first call:
+1. Attempts `importlib.import_module("opi.output.core")`
+2. If the module is missing and `RGPYCRUMBS_AUTO_DEPS=1` is set, runs `pip install orca-pi` in a subprocess
+3. Retries the import
+4. Raises `ImportError` with a clear message if both attempts fail
+
+The module-level global (`_opi_output`) ensures the import and any auto-install happen exactly once.
+
+### The `_import_from_parent_env` Pattern
+
+For compiled extensions that cannot be pip-installed (e.g., `ira_mod`), a different function handles environment discovery:
+
+```python
+from rgpycrumbs._aux import _import_from_parent_env
+
+ira_mod = _import_from_parent_env("ira_mod")
+```
+
+This searches parent conda/pixi environments for the module. If not found, `ira_mod` is `None` and callers fall back to alternative implementations.
+
+### Why Lazy Loading
+
+#### Installation Size
+
+chemparseplot's core requirement is numpy and pint. Making all optional dependencies hard requirements would pull in:
+- `orca-pi`: ORCA 6.1+ only, useless without ORCA installed
+- `ase`: large package, only needed for structure handling
+- `matplotlib`: only needed for plotting (some users only parse)
+- `polars`: only needed for landscape DataFrames
+- `jax`: large GPU-capable package, only needed for GP surface fitting (via rgpycrumbs)
+
+#### Graceful Degradation
+
+Users who only parse eOn output never need OPI. Users who only make 1D profiles never need polars or jax. Lazy loading means each feature activates only the dependencies it requires.
+
+#### Auto-Install Mechanism
+
+Setting `RGPYCRUMBS_AUTO_DEPS=1` enables automatic installation of missing Python packages. This is useful in notebook environments where users want to run examples without manual pip commands.
+
+The mechanism only triggers for packages that can be pip-installed. Compiled extensions like `ira_mod` (which requires a Fortran compiler and specific build setup) are never auto-installed.
+
+### Fallback Strategies
+
+#### OPI to Legacy Parsing
+
+`parse/orca/neb/opi_parser.py` uses `ensure_import` for OPI. If OPI is unavailable, `parse_orca_neb_fallback()` parses `.interp` text files instead:
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb, parse_orca_neb_fallback, HAS_OPI
+
+if HAS_OPI:
+    data = parse_orca_neb("job", Path("calc"))
+else:
+    data = parse_orca_neb_fallback("job", Path("calc"))
+```
+
+The fallback produces the same dict format, with `source`"legacy_interp"= instead of `source`"opi"`. RMSD fields are =None` because `.interp` files do not contain geometry data.
+
+#### IRA to Simple RMSD
+
+`parse/eon/neb.py` tries to import `ira_mod` at module level:
+
+```python
+try:
+    from rgpycrumbs._aux import _import_from_parent_env
+    from rgpycrumbs.geom.api.alignment import calculate_rmsd_from_ref
+    ira_mod = _import_from_parent_env("ira_mod")
+except ImportError:
+    ira_mod = None
+```
+
+When `ira_mod` is `None`, functions that create an IRA instance get `None` and fall through to simpler RMSD calculations. The `opi_parser.py` fallback uses a direct coordinate-difference RMSD (`_calculate_rmsd()`) that does not require IRA.
+
+#### ASE Optional for Some Paths
+
+The ORCA parser converts OPI geometry data to ASE Atoms for RMSD calculation. If ASE is not installed, the parser still returns valid energy data -- the RMSD and gradient fields are `None`. Plotting functions check for `None` and adjust accordingly (using image index as reaction coordinate instead of RMSD).
+
+### Where Lazy Imports Are Used
+
+| Module | Lazy Dependency | Fallback |
+|---|---|---|
+| `parse/orca/neb/opi_parser.py` | `opi.output.core` | `parse_orca_neb_fallback()` |
+| `parse/eon/neb.py` | `ira_mod` | `ira_instance = None` |
+| `parse/trajectory/neb.py` | `ira_mod` | `ira_instance = None` |
+| `parse/trajectory/hdf5.py` | `ira_mod` | `ira_instance = None` |
+| `plot/neb.py` | `rgpycrumbs.surfaces` | hard import (required for surface fitting) |
+
+### Related
+
+- [ORCA NEB Integration Design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design)
+- [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design)
+- [Architecture Overview](https://chemparseplot.rgoswami.me/explanation/architecture)
+
+### Plot stack (structure strips and surfaces)
+
+Structure strips use the `xyzrender` **Python API** via `ensure_import("xyzrender")`
+when `RGPYCRUMBS_AUTO_DEPS=1` (rgpycrumbs library plot entry points enable that
+by default). Gradient surfaces (`grad_imq`, …) call `ensure_import("jax")`
+through `rgpycrumbs.surfaces`. Feature extras such as `chemparseplot[neb,plot]`
+remain transitional install convenience; prefer bare install + suite pins /
+AUTO_DEPS for new work.
+
+## NEB Parsing Design
+
+Source: https://chemparseplot.rgoswami.me/explanation/neb_parsing_design
+
+### Overview
+
+chemparseplot parses NEB output from multiple codes (eOn, ORCA) into a unified data format. This document explains the design decisions behind the parsing layer.
+
+### Unified Data Format Across Codes
+
+#### The Problem
+
+eOn and ORCA produce different file formats:
+- eOn: paired DAT/CON files per optimization step, with columns for energy, eigenvalue, parallel force, and perpendicular force
+- ORCA: JSON output via OPI, or legacy `.interp` text files
+
+Without a common format, every plotting function needs code-specific branches.
+
+#### The Solution
+
+Both parsers produce compatible output. eOn produces a Polars DataFrame with columns `[r, p, grad_r, grad_p, z, step]`. ORCA produces a dict with fields `energies`, `rmsd_r`, `rmsd_p`, `grad_r`, `grad_p`, `n_images`, `converged`. The shared columns (`r`, `rmsd_r`, etc.) represent the same physical quantities: RMSD from reactant and product in Angstrom.
+
+This means `plot_energy_path()` and `plot_landscape_surface()` work identically for both codes. Adding a new parser (VASP, Quantum ESPRESSO) requires only producing the same columns.
+
+### RMSD Calculation
+
+#### Simple vs IRA
+
+Two RMSD methods exist:
+
+- **Simple RMSD**: `sqrt(mean(|r_ref - r_mob|^2))` without alignment. Used in `opi_parser.py` as a fallback.
+- **IRA RMSD**: Iterative Rotations and Assignments (from `rgpycrumbs.geom.api.alignment`). Handles permutational symmetry and optimal rotation. Used in `parse/eon/neb.py` and `parse/neb_utils.py`.
+
+IRA is the preferred method because NEB images along a reaction path can have large rotational differences from the reference. Simple RMSD inflates the coordinate values and distorts the landscape surface.
+
+#### Threading
+
+`calculate_landscape_coords()` in `neb_utils.py` computes RMSD-R and RMSD-P in parallel using `ThreadPoolExecutor(max_workers=2)`. The two calculations are independent (different reference atoms), so this halves the wall time.
+
+### Synthetic Gradient Projection
+
+The 2D landscape needs gradient information for the GP surface fit. NEB codes provide `f_para` (force parallel to the path) but not gradients in (RMSD-R, RMSD-P) space.
+
+The projection formula in `compute_synthetic_gradients()`:
+
+1. Compute the tangent direction in RMSD space: `dr = gradient(rmsd_r)`, `dp = gradient(rmsd_p)`
+2. Normalize: `norm = sqrt(dr^2 + dp^2)`, then `t_r = dr/norm`, `t_p = dp/norm`
+3. Project: `grad_r = -f_para * t_r`, `grad_p = -f_para * t_p`
+
+The negation converts force to gradient (`grad = -force`). This produces approximate 2D gradients that guide the surface interpolator. The gradient-enhanced kernel (`grad_matern`, `grad_imq`) uses these to produce smoother surfaces, particularly in regions with sparse data.
+
+The landscape surface also uses two augmentation strategies:
+- **Minima collars**: Synthetic points in a ring around endpoints with slightly higher energy, forcing the interpolator to curve upward (preventing artificial wells)
+- **Gradient helpers**: Four offset points per data point (`+/- epsilon` in R and P), with energy adjusted by `epsilon * gradient`, encoding the local slope
+
+### Caching Strategy
+
+#### Why Parquet
+
+RMSD calculation via IRA is the bottleneck. For a 200-image NEB with 50 optimization steps, computing RMSD for all images takes minutes. Parquet caching avoids this on re-runs.
+
+Parquet over other formats:
+- **vs HDF5**: No h5py dependency required. Polars reads/writes parquet natively.
+- **vs CSV**: Parquet preserves column types (Float64, Int64) without parsing overhead. Compressed by default.
+- **vs pickle**: Format-stable across Python/Polars versions. Not vulnerable to arbitrary code execution.
+
+#### Validation
+
+Cached DataFrames are validated before use:
+- Landscape cache: must contain `p` and `grad_r` columns (rejects old-format caches that lack gradient data)
+- Profile cache: must NOT contain `p` column (rejects landscape data), and row count must match `len(atoms_list)`
+
+If validation fails, the cache is discarded and data is recomputed.
+
+#### Generic Caching
+
+`load_or_compute_data()` provides the caching pattern used by all eOn NEB functions. It takes a `validation_check` callable and a `computation_callback` callable, so each caller defines its own schema requirements.
+
+### Generalization to Single-Ended Methods
+
+The parsing and projection code was originally NEB-specific: RMSD references were always `atoms_list[0]` (reactant) and `atoms_list[-1]` (product). This was generalized to support arbitrary reference structures.
+
+#### Explicit References in `calculate_landscape_coords()`
+
+The `ref_a` and `ref_b` parameters allow callers to specify any two reference structures. For NEB, these default to first/last atoms. For dimer searches, pass the initial structure and saddle point. For minimization, pass the initial and final minimum.
+
+#### Extracted Projection Module
+
+The (s, d) rotation math was duplicated in `plot/neb.py` (surface and overlay functions). It now lives in `parse/projection.py` as `compute_projection_basis()`, `project_to_sd()`, and `inverse_sd_to_ab()`. The projection is a pure coordinate transform independent of the physical interpretation -- the calling code decides whether s means "reaction progress" or "optimization progress".
+
+#### New Parsers
+
+`parse/eon/dimer_trajectory.py` and `parse/eon/min_trajectory.py` read eOn's structured trajectory output with metadata-rich full CON movies as the canonical source, falling back to the `climb.dat` / `min.dat` TSV sidecars only when the embedded metadata is incomplete. These produce dataclasses (`DimerTrajectoryData`, `MinTrajectoryData`) holding atoms lists, metric DataFrames, and reference structures -- everything needed to call `calculate_landscape_coords()` with explicit refs.
+
+### Related
+
+- [ORCA NEB Integration Design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design)
+- [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports)
+- [eOn NEB API Reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api)
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
+
+## ORCA NEB Integration Design
+
+Source: https://chemparseplot.rgoswami.me/explanation/orca_neb_design
+
+### Overview
+
+This document explains the design decisions behind ORCA NEB integration in chemparseplot.
+
+### Why OPI?
+
+#### Problem: Fragile Text Parsing
+
+Previous ORCA parsing used regex-based text extraction:
+
+```python
+# Old approach - fragile
+pattern = r"Iteration:\s*(?P<iteration>\d+)\s*\n.*?" + THREE_COL_NUM
+match = re.search(pattern, text, re.DOTALL)
+```
+
+Issues:
+- Breaks when ORCA output format changes
+- Hard to maintain
+- No type safety
+- Manual unit conversion
+
+#### Solution: OPI JSON Parsing
+
+OPI (ORCA Python Interface) is the official FACCTs package for ORCA 6.1+:
+
+```python
+# New approach - robust
+from opi.output.core import Output
+output = Output("job")
+output.parse()
+energies = [output.get_final_energy(i) for i in range(output.num_results_gbw)]
+```
+
+Benefits:
+- Official support from ORCA developers
+- JSON-based (stable format)
+- Type-safe with Pydantic models
+- Automatic unit handling
+- Actively maintained
+
+### Why Lazy Loading?
+
+#### Problem: Hard Dependencies
+
+Making OPI a hard dependency would:
+- Force all users to install orca-pi
+- Break installations without ORCA
+- Increase package size
+
+#### Solution: Lazy Loading via `ensure_import()`
+
+```python
+from rgpycrumbs._aux import ensure_import
+
+_opi_output = None
+
+def _get_opi_output():
+    global _opi_output
+    if _opi_output is None:
+        _opi_output = ensure_import("opi.output.core").Output
+    return _opi_output
+```
+
+Benefits:
+- No hard dependency
+- Auto-installs if `RGPYCRUMBS_AUTO_DEPS=1`
+- Clear error messages if missing
+- Follows existing chemparseplot pattern
+
+### Why Compatible Data Format?
+
+#### Problem: Code Duplication
+
+eOn NEB and ORCA NEB produce similar data:
+- Energy profiles
+- RMSD coordinates
+- Gradients
+
+Without compatible format:
+- Separate plotting code for each
+- Duplicate effort
+- Inconsistent figures
+
+#### Solution: Unified Data Format
+
+Both parsers return compatible dict:
+
+```python
+# eOn NEB data
+data_eon = parse_eon_neb(...)
+# ORCA NEB data
+data_orca = parse_orca_neb(...)
+
+# Same plotting functions work for both!
+plot_energy_path(ax, data_eon['rc'], data_eon['energies'], ...)
+plot_energy_path(ax, data_orca['rmsd_r'], data_orca['energies'], ...)
+```
+
+Benefits:
+- Single plotting codebase
+- Consistent figures across methods
+- Easy to add new parsers (VASP, Quantum ESPRESSO, etc.)
+- Users learn one API
+
+### Design Trade-offs
+
+#### RMSD Calculation
+
+- `parse_orca_neb()` calculates RMSD from geometries
+- Requires ASE library
+- Falls back to `None` if ASE unavailable
+- Alternative: Use IRA for proper alignment (future work)
+
+#### Synthetic Gradients
+
+- Projected forces onto RMSD coordinates
+- Simplified version (not full IRA)
+- Sufficient for landscape visualization
+- Full implementation would require IRA integration
+
+#### ORCA Version Support
+
+- OPI: ORCA 6.1+ only
+- Legacy: ORCA < 6.1 via .interp files
+- Automatic fallback
+- Clear version reporting in output
+
+### Future Improvements
+
+1. ***IRA Integration***: Proper reaction path alignment
+2. ***More Parsers***: VASP, Quantum ESPRESSO, Gaussian NEB
+3. ***Batch Processing***: Parse multiple calculations at once
+4. ***Caching***: Cache parsed results for faster re-plots
+5. ***Interactive Plots***: Plotly/Bokeh backend option
+
+### Related
+
+- [Tutorial: ORCA NEB Parsing and Plotting](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+- [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
+- [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
+- [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports)
+
+## How to Cite chemparseplot
+
+Source: https://chemparseplot.rgoswami.me/explanation/citation
+
+### How to Cite chemparseplot
+
+If you use chemparseplot in your research, please cite the relevant papers based on functionality used.
+
+#### Software Citation
+
+cite:[goswami2024chemparseplot]
+
+#### Visualization Methods
+
+When using 2D reaction valley projection (landscape plotting with `project_path=True`, `grad_imq`, `grad_matern`):
+
+cite:[goswami2026valley]
+
+The method maps NEB trajectories onto a two-dimensional projection defined by
+permutation-corrected RMSD from reactant and product configurations, with a
+rotated coordinate frame decomposing into reaction progress (`s`) and orthogonal
+deviation (`d`).
+
+#### NEB Methods
+
+When using NEB-related parsing, visualization, or enhanced CI-NEB:
+
+cite:[goswami2026neb]
+
+Enhanced Climbing Image NEB method with Hessian eigenmode alignment for improved saddle point convergence.
+
+#### Gaussian Process Methods
+
+When using GP-based surface fitting, interpolation, or saddle search acceleration:
+
+cite:[goswami2025gpr goswami2025pruning]
+
+- GPR-accelerated saddle point searches with efficient implementation
+- Adaptive pruning for increased robustness and reduced computational overhead
+
+#### Statistical Analysis
+
+When using Bayesian hierarchical models for performance analysis:
+
+cite:[goswami2025bayesian]
+
+#### Combined Citation
+
+For papers using chemparseplot with full functionality:
+
+cite:[goswami2024chemparseplot goswami2026valley goswami2026neb goswami2025gpr goswami2025pruning goswami2025bayesian]
+
+#### Acknowledgments
+
+```text
+Computational chemistry data was parsed and visualized using chemparseplot
+(https://github.com/HaoZeke/chemparseplot). Reaction path visualization employed
+the 2D reaction valley projection method [cite:@goswami2026valley]. NEB calculations
+used the enhanced CI-NEB method [cite:@goswami2026neb]. Gaussian process surface
+fitting followed [cite:@goswami2025gpr @goswami2025pruning].
+```
+
+#### Related Software
+
+##### ORCA
+
+cite:[neese2022]
+
+##### eOn
+
+cite:[peterson2016]
+
+##### rgpycrumbs
+
+cite:[goswami2024rgpycrumbs]
+
+##### metatensor/metatomic
+
+cite:[bigiMetatensorMetatomicFoundational2026]
+
+#### See Also
+
+- [Reference Documentation](https://chemparseplot.rgoswami.me/reference/)
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/)
+- [ORCA NEB Design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design)
+
+## Reference
+
+Source: https://chemparseplot.rgoswami.me/reference/
+
+### API Reference
+
+Reference documentation is information-oriented. Use it to find technical details.
+
+#### Available Reference
+
+| Reference | Description |
+|---|---|
+| [ORCA NEB API](https://chemparseplot.rgoswami.me/reference/orca_neb_api) | `parse_orca_neb()`, plotting functions |
+| [eOn NEB API](https://chemparseplot.rgoswami.me/reference/eon_neb_api) | eOn NEB parsing and plotting |
+| [Plotting API](https://chemparseplot.rgoswami.me/reference/plotting_api) | All plotting functions |
+
+#### Structure
+
+Each reference page includes:
+- Function signatures
+- Parameter tables
+- Return values
+- Exceptions
+- Examples
+- Notes
+
+#### Getting Help
+
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn from scratch
+- [How-to Guides](https://chemparseplot.rgoswami.me/howto/) - Solve problems
+- [Explanation](https://chemparseplot.rgoswami.me/explanation/) - Understand concepts
+
+## Glossary
+
+Source: https://chemparseplot.rgoswami.me/reference/glossary
+
+### Glossary of Computational Chemistry Terms
+
+This glossary defines technical terms used throughout chemparseplot documentation.
+
+#### A
+
+##### ASE
+
+Atomic Simulation Environment. Python library for atomistic simulations. Used for structure handling and RMSD calculations.
+
+See: [ASE Documentation](https://wiki.fysik.dtu.dk/ase/)
+
+##### Auto-install
+
+Feature that automatically installs optional dependencies when first needed. Enabled via `RGPYCRUMBS_AUTO_DEPS=1` environment variable.
+
+#### B
+
+##### Barrier
+
+Energy difference between reactant/product and saddle point. Forward barrier = E_saddle - E_reactant. Reverse barrier = E_saddle - E_product.
+
+#### C
+
+##### CI-NEB
+
+Climbing Image Nudged Elastic Band. NEB variant where highest energy image climbs to saddle point.
+
+##### Convergence
+
+State where optimization algorithm has found stationary point. Typically defined by force threshold (e.g., 0.01 eV/Angstrom).
+
+#### E
+
+##### Energy Profile
+
+Plot of energy vs reaction coordinate (image index or RMSD). Shows energy changes along reaction path.
+
+##### eOn
+
+Python framework for automated saddle point searches using NEB and dimer methods.
+
+See: [eOn Website](https://eon.zih.tu-dresden.de/)
+
+#### G
+
+##### GBW
+
+Gaussian Basis Wavefunction. ORCA binary file format containing wavefunction data.
+
+##### Gradient
+
+First derivative of energy with respect to coordinates. Points in direction of steepest ascent.
+
+##### GPRD
+
+Gaussian Process Regression Dimer. Saddle search method using GP surrogate models.
+
+#### H
+
+##### HDF5
+
+Hierarchical Data Format version 5. File format for storing large numerical datasets. Used by ChemGP for output.
+
+##### Hartree
+
+Atomic unit of energy. 1 Hartree = 27.211386245988 eV. Symbol: E_h.
+
+#### I
+
+##### Image
+
+In NEB context, a replica of the system at a point along reaction path. Typical calculations use 5-20 images.
+
+##### Interpolation
+
+Estimation of values between known data points. Used for smoothing energy profiles.
+
+#### J
+
+##### JAX
+
+High-performance numerical computing library. Used for Gaussian Process surface fitting in rgpycrumbs.
+
+See: [JAX Documentation](https://jax.readthedocs.io/)
+
+#### L
+
+##### Landscape
+
+2D plot of energy surface in RMSD coordinates (RMSD from reactant vs RMSD from product).
+
+##### Lazy Import
+
+Pattern that defers module import until first use. Reduces startup time and optional dependencies.
+
+#### N
+
+##### NEB
+
+Nudged Elastic Band. Method for finding minimum energy path between reactant and product.
+
+##### Nudged
+
+Projection of spring forces along path and true forces perpendicular to path. Prevents corner-cutting.
+
+##### Nystrom
+
+Approximation method for Gaussian Processes using inducing points. Reduces O(n^3) to O(m^2 n) where m << n.
+
+#### O
+
+##### OPI
+
+ORCA Python Interface. Official Python library for parsing ORCA 6.1+ output.
+
+See: [OPI GitHub](https://github.com/faccts/opi)
+
+##### ORCA
+
+Quantum chemistry software package. Supports DFT, wavefunction methods, NEB calculations.
+
+See: [ORCA Website](https://www.faccts.de/orca/)
+
+#### P
+
+##### PES
+
+Potential Energy Surface. Energy as function of nuclear coordinates.
+
+##### PEP 723
+
+Python Enhancement Proposal for inline script metadata. Allows specifying dependencies in script comments.
+
+##### Profile
+
+1D plot showing energy or other property along reaction coordinate.
+
+#### R
+
+##### RBF
+
+Radial Basis Function. Interpolation method using radially symmetric basis functions.
+
+##### RMSD
+
+Root Mean Square Deviation. Measure of structural difference. RMSD = sqrt(sum((r1-r2)^2)/N).
+
+##### Reaction Coordinate
+
+Parameter that describes progress along reaction path. Can be image index, RMSD, or interpolated arc length.
+
+##### Reactant
+
+Starting structure of chemical reaction. Local minimum on PES.
+
+##### RFF
+
+Random Fourier Features. Approximation method for kernel methods using random feature maps.
+
+#### S
+
+##### Saddle Point
+
+First-order saddle point on PES. Maximum along reaction coordinate, minimum in all other directions. Also called transition state.
+
+##### SCF
+
+Self-Consistent Field. Iterative method for solving Hartree-Fock or Kohn-Sham equations.
+
+##### Spring
+
+In NEB, fictitious springs between images that maintain equal spacing.
+
+#### T
+
+##### Transition State
+
+See Saddle Point.
+
+##### TS
+
+Abbreviation for Transition State.
+
+#### U
+
+##### Unit Registry
+
+Pint object that handles unit conversions. chemparseplot uses `ureg` for unit-aware quantities.
+
+#### See Also
+
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/) - Learn how to use these concepts
+- [How-to Guides](https://chemparseplot.rgoswami.me/howto/) - Solve problems with these concepts
+- [Explanation](https://chemparseplot.rgoswami.me/explanation/) - Understand these concepts in depth
+
+### auto_thin
+
+Optional surface-fit switch (default false). When true,
+`plot_landscape_surface` evenly subsamples dense observation clouds for the
+GP **fit** only (endpoints kept). Prefer `SurfaceFitConfig` or a mapping with
+the same keys as rgpycrumbs plot TOML.
+
+### SurfaceFitConfig
+
+Frozen dataclass (`chemparseplot.plot.neb`) holding `auto_thin` and
+`max_surface_points`. Construct with kwargs or `from_mapping`; pass as
+`surface_fit` to landscape APIs (v1.9.10+).
+
+## ORCA NEB API Reference
+
+Source: https://chemparseplot.rgoswami.me/reference/orca_neb_api
+
+### Module: `chemparseplot.parse.orca.neb`
+
+#### `parse_orca_neb(basename, working_dir=None)`
+
+Parse ORCA NEB calculation using OPI (ORCA 6.1+).
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `basename` | `str` | - | ORCA job basename (without extension) |
+| `working_dir` | `Path` | `None` | Working directory (default: cwd) |
+
+##### Returns
+
+`dict` - Structured NEB data (see [Data Format](https://chemparseplot.rgoswami.me/howto/parse_orca_neb))
+
+##### Raises
+
+| Exception | Condition |
+|---|---|
+| `ImportError` | OPI (orca-pi) not installed |
+| `FileNotFoundError` | ORCA output files not found |
+
+##### Example
+
+```python
+from pathlib import Path
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+data = parse_orca_neb("job", working_dir=Path("calculation"))
+print(f"Energies: {data['energies']}")
+print(f"Barrier: {data['barrier_forward']:.2f} eV")
+```
+
+##### Notes
+
+- Requires ORCA 6.1+ with JSON output
+- Uses lazy loading via `ensure_import()`
+- OPI package installed on first use if `RGPYCRUMBS_AUTO_DEPS=1`
+
+#### `parse_orca_neb_fallback(basename, working_dir=None)`
+
+Parse ORCA NEB using legacy .interp file parsing (ORCA < 6.1).
+
+##### Parameters
+
+Same as `parse_orca_neb()`
+
+##### Returns
+
+`dict` or `None` - NEB data if successful, `None` if parsing fails
+
+##### Notes
+
+- Parses `.interp` files from ORCA NEB calculations
+- Less robust than OPI-based parsing
+- Use for ORCA versions < 6.1
+
+#### `HAS_OPI`
+
+`bool` - True if OPI package is available (lazy-loaded).
+
+### Module: `chemparseplot.plot.neb`
+
+#### `plot_orca_neb_energy_profile(neb_data, output, ...)`
+
+Plot ORCA NEB energy profile using eOn-style plotting.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `neb_data` | `OrcaNebResult` / `Mapping` | - | Typed result from `parse_orca_neb()` |
+| `output` | `Path` | - | Output file path |
+| `width` | `float` | `5.37` | Figure width (inches) |
+| `height` | `float` | `5.37` | Figure height (inches) |
+| `dpi` | `int` | `200` | Output resolution |
+| `method` | `str` | `'hermite'` | Interpolation method |
+| `smoothing` | `Any` | `None` | Smoothing parameters |
+
+##### Returns
+
+`None` - Saves plot to `output`
+
+##### Example
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb
+from chemparseplot.plot.neb import plot_orca_neb_energy_profile
+
+data = parse_orca_neb("job")
+plot_orca_neb_energy_profile(data, "profile.pdf")
+```
+
+#### `plot_orca_neb_landscape(neb_data, output, ...)`
+
+Plot ORCA NEB 2D landscape using eOn-style plotting.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `neb_data` | `OrcaNebResult` / `Mapping` | - | Typed result from `parse_orca_neb()` |
+| `output` | `Path` | - | Output file path |
+| `width` | `float` | `5.37` | Figure width (inches) |
+| `height` | `float` | `5.37` | Figure height (inches) |
+| `dpi` | `int` | `200` | Output resolution |
+| `method` | `str` | `'grad_matern'` | Surface interpolation |
+| `project_path` | `bool` | `True` | Project to reaction valley |
+
+##### Returns
+
+`None` - Saves plot to `output`
+
+##### Raises
+
+| Exception | Condition |
+|---|---|
+| `ValueError` | RMSD coordinates not available |
+
+##### Notes
+
+- Requires `rmsd_r` and `rmsd_p` in `neb_data`
+- Uses same plotting functions as eOn NEB for consistency
+
+### See Also
+
+- [Tutorial: ORCA NEB Parsing and Plotting](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+- [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
+
+## eOn NEB API Reference
+
+Source: https://chemparseplot.rgoswami.me/reference/eon_neb_api
+
+### Module: `chemparseplot.parse.eon.neb`
+
+#### `load_structures_and_calculate_additional_rmsd(con_file, additional_con, ira_kmax, sp_file=None)`
+
+Loads the main NEB trajectory and calculates RMSD for additional comparison structures.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `con_file` | `Path` | - | Path to main trajectory CON file |
+| `additional_con` | `list[tuple[Path, str]]` | - | List of (path, label) pairs for extra structures |
+| `ira_kmax` | `float` | - | kmax factor for IRA alignment |
+| `sp_file` | `Path` or `None` | `None` | Path to explicit saddle point CON file |
+
+##### Returns
+
+`NebOverlayBundle` with fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `atoms_list` | `list[Atoms]` | ASE Atoms from main trajectory |
+| `additional_structures` | `list[NebOverlayStructure]` | Typed overlay records with `atoms`, `r`, `p`, and `label` |
+| `saddle_point` | `NebOverlayStructure` or `None` | Explicit saddle-point overlay record |
+
+##### Notes
+
+- Uses IRA (Iterative Rotations and Assignments) for RMSD
+- Raises `ImportError` if `ira_mod` is not available, because landscape coordinates without IRA are chemically misleading for permutationally symmetric systems
+- RMSD computed relative to first frame (reactant) and last frame (product)
+- Empty labels default to the file stem
+
+##### Overlay Record
+
+`NebOverlayStructure` is a frozen typed record with four fields:
+- `atoms`: ASE structure to render
+- `r`: RMSD to the reactant
+- `p`: RMSD to the product
+- `label`: legend / annotation label
+
+#### `aggregate_neb_landscape_data(all_dat_paths, all_con_paths, y_data_column, ira_instance, *, cache_file=None, force_recompute=False, ira_kmax=1.8, augment_dat=None, augment_con=None, ref_atoms=None, prod_atoms=None)`
+
+Aggregates data from multiple NEB optimization steps for 2D landscape visualization.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `all_dat_paths` | `list[Path]` | - | Sorted list of DAT file paths |
+| `all_con_paths` | `list[Path]` | - | Sorted list of CON file paths (must match DAT order) |
+| `y_data_column` | `int` | - | Column index in DAT file for energy/eigenvalue |
+| `ira_instance` | object or `None` | - | IRA instance. Landscape coordinate generation requires a real IRA backend. |
+| `cache_file` | `Path` or `None` | `None` | Parquet file for caching results |
+| `force_recompute` | `bool` | `False` | Bypass cache and recompute |
+| `ira_kmax` | `float` | `1.8` | Factor on the IRA basis cutoff |
+| `augment_dat` | `str` or `None` | `None` | Glob pattern for augmentation DAT files |
+| `augment_con` | `str` or `None` | `None` | Glob pattern for augmentation CON files |
+| `ref_atoms` | `Atoms` or `None` | `None` | Reference reactant for augmentation projection |
+| `prod_atoms` | `Atoms` or `None` | `None` | Reference product for augmentation projection |
+
+##### Returns
+
+`pl.DataFrame` with columns `[r, p, grad_r, grad_p, z, step]`
+
+##### Raises
+
+| Exception | Condition |
+|---|---|
+| `RuntimeError` | No data could be aggregated from any step |
+
+##### Notes
+
+- DAT files contain columns: image index, energy, eigenvalue, parallel force, perpendicular force
+- Column index 1 selects energy, column index 2 selects eigenvalue
+- Cache validation checks for `p` and `grad_r` columns (rejects outdated caches)
+- Augmentation paths receive `step`-1= to distinguish from primary data
+- Mismatched DAT/CON counts are truncated to the shorter list with a warning
+
+#### `load_augmenting_neb_data(dat_pattern, con_pattern, ref_atoms, prod_atoms, y_data_column, ira_kmax)`
+
+Loads external NEB paths to augment the landscape surface fit.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `dat_pattern` | `str` | - | Glob pattern for DAT files |
+| `con_pattern` | `str` | - | Glob pattern for CON files |
+| `ref_atoms` | `Atoms` | - | Reactant atoms for RMSD reference |
+| `prod_atoms` | `Atoms` | - | Product atoms for RMSD reference |
+| `y_data_column` | `int` | - | Column index for energy in DAT files |
+| `ira_kmax` | `float` | - | kmax factor for IRA |
+
+##### Returns
+
+`pl.DataFrame` -- Same schema as `aggregate_neb_landscape_data()`, or empty DataFrame if no files match.
+
+##### Notes
+
+- Forces RMSD projection onto the main path's reactant/product coordinate frame
+- All augmented data gets `step`-1=
+
+#### `compute_profile_rmsd(atoms_list, *, cache_file, force_recompute, ira_kmax)`
+
+Computes RMSD from reactant for a 1D energy profile.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `atoms_list` | `list[Atoms]` | - | NEB trajectory as ASE Atoms |
+| `cache_file` | `Path` or `None` | - | Parquet cache path |
+| `force_recompute` | `bool` | - | Bypass cache |
+| `ira_kmax` | `float` | - | kmax factor for IRA |
+
+##### Returns
+
+`pl.DataFrame` with column `[r]` (RMSD from first frame)
+
+##### Notes
+
+- Cache validation rejects DataFrames that contain a `p` column (landscape data)
+- Cache validation checks row count matches `len(atoms_list)`
+
+#### `estimate_rbf_smoothing(df)`
+
+Estimates a smoothing parameter for RBF surface interpolation.
+
+##### Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `df` | `pl.DataFrame` | Landscape DataFrame with `r`, `p`, `step` columns |
+
+##### Returns
+
+`float` -- Median Euclidean distance between sequential images within each step. Returns `0.0` if the median is None or zero.
+
+#### `load_or_compute_data(cache_file, *, force_recompute, validation_check, computation_callback, context_name)`
+
+Generic caching helper. Loads from parquet or computes via callback.
+
+##### Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `cache_file` | `Path` or `None` | Parquet path (`None` disables caching) |
+| `force_recompute` | `bool` | Skip cache and compute |
+| `validation_check` | `Callable[[pl.DataFrame], None]` | Raises on invalid cache |
+| `computation_callback` | `Callable[[], pl.DataFrame]` | Called when cache misses |
+| `context_name` | `str` | Label for log messages |
+
+##### Returns
+
+`pl.DataFrame`
+
+### DataFrame Schema
+
+All landscape DataFrames follow this schema:
+
+| Column | Polars Type | Unit | Description |
+|---|---|---|---|
+| `r` | `Float64` | Angstrom | RMSD from reactant reference |
+| `p` | `Float64` | Angstrom | RMSD from product reference |
+| `grad_r` | `Float64` | (projected) | Synthetic gradient in R direction |
+| `grad_p` | `Float64` | (projected) | Synthetic gradient in P direction |
+| `z` | `Float64` | eV or unitless | Energy or eigenvalue |
+| `step` | `Int64` | - | Optimization step index (-1 = augmented) |
+
+### Module: `chemparseplot.parse.eon.dimer_trajectory`
+
+Parses dimer/saddle search trajectory output from eOn (`write_movies=true`).
+
+#### `DimerTrajectoryData`
+
+Dataclass containing the full trajectory:
+
+| Field | Type | Description |
+|---|---|---|
+| `atoms_list` | `list[Atoms]` | Per-iteration structures from movie file |
+| `dat_df` | `pl.DataFrame` | Metrics reconstructed from per-frame CON metadata when available, otherwise from `climb.dat` (iteration, step_size, delta_e, convergence, eigenvalue, torque, angle, rotations) |
+| `initial_atoms` | `Atoms` | Starting structure (`reactant.con` or `pos.con`) |
+| `saddle_atoms` | `Atoms` or `None` | Saddle point (`saddle.con`) |
+| `mode_vector` | `np.ndarray` or `None` | Eigenvector (`mode.dat`) |
+
+#### `load_dimer_trajectory(job_dir) -> DimerTrajectoryData`
+
+Loads the complete trajectory from an eOn saddle search job directory. Expects a `climb` movie file; the parser prefers per-frame CON metadata and falls back to `climb.dat` only when the embedded metadata is incomplete.
+
+#### `parse_climb_dat(path) -> pl.DataFrame`
+
+Reads the `climb.dat` TSV file into a DataFrame. This is a compatibility
+utility; metadata-native callers should prefer `load_dimer_trajectory(...)`.
+
+#### `parse_climb_con(path) -> list[Atoms]`
+
+Reads the concatenated `climb` movie file via ASE. This is a lower-level
+compatibility helper; metadata-native callers should prefer
+`load_dimer_trajectory(...)`.
+
+### Module: `chemparseplot.parse.eon.min_trajectory`
+
+Parses minimization trajectory output from eOn (`write_movies=true`).
+
+#### `MinTrajectoryData`
+
+Dataclass containing the full trajectory:
+
+| Field | Type | Description |
+|---|---|---|
+| `atoms_list` | `list[Atoms]` | Per-iteration structures from movie file |
+| `dat_df` | `pl.DataFrame` | Metrics reconstructed from per-frame CON metadata when available, otherwise from `minimization.dat` (or `<prefix>.dat`) with columns iteration, step_size, convergence, energy |
+| `initial_atoms` | `Atoms` | Starting structure (first frame) |
+| `final_atoms` | `Atoms` | Final minimized structure (prefers `<prefix>.con`, then legacy `min.con`, otherwise last movie frame) |
+
+#### `load_min_trajectory(job_dir, prefix`"minimization") -> MinTrajectoryData=
+
+Loads the complete trajectory from an eOn minimization job directory. The movie file is required; the parser prefers per-frame CON metadata and falls back to the sidecar `.dat` table only when the embedded metadata is incomplete.
+
+#### `parse_min_dat(path) -> pl.DataFrame`
+
+Reads the minimization TSV data file. This remains available as a
+compatibility utility; metadata-native callers should prefer
+`load_min_trajectory(...)`.
+
+### Module: `chemparseplot.parse.neb_utils` (updated)
+
+#### `calculate_landscape_coords(atoms_list, ira_instance, ira_kmax, ref_a=None, ref_b=None)`
+
+Calculates RMSD-A and RMSD-B coordinates for landscape plots.
+
+##### Notes
+
+- This function now requires a non-`None` IRA instance
+- If `ira_instance` is missing it raises `ImportError` instead of silently falling back to order-dependent alignment
+- `ref_a` and `ref_b` allow single-ended methods to reuse the same coordinate machinery with explicit endpoint references
+
+Now accepts explicit `ref_a` and `ref_b` reference structures. Defaults to first/last atoms for backward compatibility. For single-ended methods, pass the initial and final structures explicitly.
+
+### See Also
+
+- [How-to: Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb)
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
+- [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design)
+
+## Plotting API Reference
+
+Source: https://chemparseplot.rgoswami.me/reference/plotting_api
+
+### Module: `chemparseplot.plot.neb`
+
+#### Data Structures
+
+##### `InsetImagePos`
+
+Frozen dataclass for inset structure image placement with fields `x`, `y`, and `rad`.
+
+| Field | Type | Description |
+|---|---|---|
+| `x` | `float` | Data x coordinate |
+| `y` | `float` | Data y coordinate |
+| `rad` | `float` | Arrow curvature radius |
+
+##### `SmoothingParams`
+
+Dataclass for Savitzky-Golay smoothing of NEB force profiles.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `window_length` | `int` | `5` | Savitzky-Golay window length |
+| `polyorder` | `int` | `2` | Polynomial order |
+
+#### 1D Profile Functions
+
+##### `plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method`"hermite", smoothing=None)=
+
+Plots a 1D energy profile with optional Hermite spline interpolation.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `rc` | `np.ndarray` | - | Reaction coordinate (RMSD or image index) |
+| `energy` | `np.ndarray` | - | Energy values |
+| `f_para` | `np.ndarray` | - | Parallel force component |
+| `color` | `str` | - | Line and marker color |
+| `alpha` | `float` | - | Opacity |
+| `zorder` | `int` | - | Drawing order |
+| `method` | `str` | `"hermite"` | Interpolation method: `"hermite"` or `"spline"` |
+| `smoothing` | `SmoothingParams` or `None` | `None` | Savitzky-Golay parameters (defaults to `SmoothingParams()`) |
+
+###### Notes
+
+- `hermite`: CubicHermiteSpline using Savitzky-Golay smoothed force derivatives. Produces physically meaningful interpolation when forces are available.
+- `spline`: Standard B-spline via `splrep/splev` (cubic, k=3). Does not use force information.
+- Normalizes reaction coordinate to [0, 1] before fitting, then maps back.
+- Falls back to raw line plot if spline fitting raises an exception.
+
+##### `plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color`"white")=
+
+Plots a 1D eigenvalue profile with cubic spline interpolation.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `rc` | `np.ndarray` | - | Reaction coordinate |
+| `eigenvalue` | `np.ndarray` | - | Eigenvalue array |
+| `color` | `str` | - | Line and marker color |
+| `alpha` | `float` | - | Opacity |
+| `zorder` | `int` | - | Drawing order |
+| `grid_color` | `str` | `"white"` | Color of the horizontal zero-line |
+
+###### Notes
+
+- Adds a horizontal dashed line at eigenvalue = 0
+- Uses square markers (`"s"`)
+
+#### 2D Landscape Functions
+
+##### `plot_landscape_surface(...)`
+
+Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
+
+Signature (core args abbreviated)::
+
+  plot_landscape_surface(
+      ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+      step_data=None, method="grad_matern", rbf_smooth=None,
+      cmap="viridis", show_pts=True, variance_threshold=0.05,
+      project_path=True, extra_points=None, n_inducing=None,
+      xlim=None, ylim=None, basis=None,
+      auto_thin=False, max_surface_points=64,
+      surface_fit=None,
+  )
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `rmsd_r` | `np.ndarray` | - | RMSD from reactant |
+| `rmsd_p` | `np.ndarray` | - | RMSD from product |
+| `grad_r` | `np.ndarray` | - | Synthetic gradient (R direction) |
+| `grad_p` | `np.ndarray` | - | Synthetic gradient (P direction) |
+| `z_data` | `np.ndarray` | - | Energy or eigenvalue |
+| `step_data` | `np.ndarray` or `None` | `None` | Step indices per point |
+| `method` | `str` | `"grad_matern"` | Surface model (see table below) |
+| `rbf_smooth` | `float` or `None` | `None` | Length scale hint (auto-optimized) |
+| `cmap` | `str` | `"viridis"` | Matplotlib colormap name |
+| `show_pts` | `bool` | `True` | Scatter data points on surface |
+| `variance_threshold` | `float` | `0.05` | Variance contour threshold (fraction of range) |
+| `project_path` | `bool` | `True` | Project to reaction valley coordinates |
+| `extra_points` | `np.ndarray` or `None` | `None` | Shape `(N, 2)` array of extra points for grid extent |
+| `n_inducing` | `int` or `None` | `None` | Inducing points for Nystrom approximation |
+| `auto_thin` | `bool` | `False` | Opt-in: subsample dense clouds for the **fit** only |
+| `max_surface_points` | `int` | `64` | Cap when `auto_thin` is true |
+| `surface_fit` | `SurfaceFitConfig` / mapping / `None` | `None` | TOML-friendly config; overrides the two keys above when set |
+
+###### `SurfaceFitConfig` (v1.9.10+)
+
+Prefer a small config object over growing kwargs. Key names match rgpycrumbs
+eOn plot TOML (`auto_thin`, `max_surface_points`):
+
+```python
+from chemparseplot.plot.neb import SurfaceFitConfig, plot_landscape_surface
+
+cfg = SurfaceFitConfig.from_mapping({"auto_thin": True, "max_surface_points": 64})
+# or: SurfaceFitConfig(auto_thin=True, max_surface_points=64)
+
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    method="grad_imq",
+    surface_fit=cfg,
+)
+```
+
+Defaults keep historical behaviour (~auto_thin=False=).
+
+###### Interpolation Methods
+
+| Method | Description |
+|---|---|
+| `"grad_matern"` | Gradient-enhanced Matern kernel (default) |
+| `"grad_imq"` | Gradient-enhanced Inverse MultiQuadric |
+| `"grad_imq_ny"` | Nystrom-approximated `grad_imq` (auto for large N) |
+| `"rbf"` | Value-only RBF (no gradients) |
+
+###### Notes
+
+- Hyperparameters (length scale, noise) optimized on the latest step's data only
+- Variance contours drawn at 5%, `variance_threshold`, and 95% of the range
+- When Nystrom is active, non-inducing points are drawn with reduced opacity (alpha=0.15)
+- Reaction valley projection rotates (RMSD-R, RMSD-P) into (progress `s`, deviation `d`) along the R-to-P line
+- Surface models come from `rgpycrumbs.surfaces`
+- With `auto_thin`, the GP trains on a thinned set; scatter and viewport still use the full cloud
+- Dense force-eval movies can yield non-finite `grad_imq` grids without thinning; opt in explicitly
+
+##### `plot_landscape_path_overlay(ax, r, p, z, cmap, z_label, project_path=True)`
+
+Overlays a colored NEB path line on the landscape surface.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `r` | `np.ndarray` | - | RMSD from reactant (path images) |
+| `p` | `np.ndarray` | - | RMSD from product (path images) |
+| `z` | `np.ndarray` | - | Energy coloring values |
+| `cmap` | `str` | - | Colormap name |
+| `z_label` | `str` | - | Colorbar label |
+| `project_path` | `bool` | `True` | Apply reaction valley projection |
+
+###### Returns
+
+`matplotlib.colorbar.Colorbar` -- The created colorbar instance.
+
+###### Notes
+
+- Draws a `LineCollection` colored by the average energy of adjacent images
+- Scatter points with black edge at each image position
+- Creates and returns a colorbar
+
+#### Structure Rendering Functions
+
+##### `render_structure_to_image(atoms, zoom, rotation)`
+
+Renders an ASE Atoms object to a numpy RGBA image array using ASE's built-in PNG writer.
+
+###### Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `atoms` | `ase.Atoms` | Structure to render |
+| `zoom` | `float` | Zoom level (used by callers for OffsetImage scaling) |
+| `rotation` | `str` | ASE rotation string, e.g. `"0x,90y,0z"` |
+
+###### Returns
+
+`np.ndarray` -- RGBA image array with shape `(H, W, 4)` and float dtype.
+
+##### `plot_structure_strip(ax, atoms_list, labels=None, zoom=0.3, rotation`"0x,90y,0z", theme_color="black", max_cols=6, renderer="xyzrender", label_ax=None)=
+
+Renders a horizontal gallery of atomic structures.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes (turned off) |
+| `atoms_list` | `list[Atoms]` or `list[StructurePlacement]` | - | Structures to render, or typed strip entries |
+| `labels` | `list[str]` or `None` | `None` | Labels below each image; inferred from `StructurePlacement` entries when omitted |
+| `zoom` | `float` | `0.3` | Image zoom level |
+| `rotation` | `str` | `"0x,90y,0z"` | ASE rotation string |
+| `theme_color` | `str` | `"black"` | Label text color |
+| `max_cols` | `int` | `6` | Maximum columns before wrapping |
+| `renderer` | `str` | `"xyzrender"` | Structure rendering backend |
+| `label_ax` | `matplotlib.axes.Axes` or `None` | `None` | Optional caption-only axis aligned with the structure gallery |
+
+###### Notes
+
+- Adaptive font size: shrinks for more than 4 items
+- Multi-row layout with `max_cols` wrapping
+- `xyzrender` renderer requires `pip install 'xyzrender>=0.1.3'`
+- `StructurePlacement` lets callers pass a typed strip payload instead of parallel `atoms_list` / `labels` lists
+- Supplying `label_ax` keeps captions out of the structure-image axis and uses matching normalized row and column positions
+
+##### `plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation`"0x,90y,0z", arrow_props=None, renderer="ase")=
+
+Plots a single structure as an annotation inset with an arrow.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `atoms` | `ase.Atoms` | - | Structure to render |
+| `x` | `float` | - | Data x coordinate for arrow target |
+| `y` | `float` | - | Data y coordinate for arrow target |
+| `xybox` | `tuple` | - | Offset in points for image placement |
+| `rad` | `float` | - | Arrow curvature (`arc3,rad`...=) |
+| `zoom` | `float` | `0.4` | Image zoom level |
+| `rotation` | `str` | `"0x,90y,0z"` | ASE rotation string |
+| `arrow_props` | `dict` or `None` | `None` | Override default arrow properties |
+| `renderer` | `str` | `"ase"` | `"ase"` or `"xyzrender"` |
+
+###### Notes
+
+- Default arrow style: Fancy with `head_length=0.4`, `head_width=0.4`, `tail_width=0.1`
+- Image zorder set to 80 (above most plot elements)
+
+#### OCI-NEB/RONEB Functions
+
+##### `plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True)`
+
+Overlays MMF (mode-following) refinement peak positions on the landscape. Used for OCI-NEB/RONEB to show where dimer refinement was applied.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes (same as landscape) |
+| `peak_rmsd_r` | `np.ndarray` | - | RMSD-R coordinates of peak structures |
+| `peak_rmsd_p` | `np.ndarray` | - | RMSD-P coordinates of peak structures |
+| `peak_energies` | `np.ndarray` | - | Energy at each peak |
+| `project_path` | `bool` | `True` | Apply reaction valley projection |
+
+###### Notes
+
+- Draws a dark outer halo marker below each peak and an energy-colored core on top
+- Colors peak cores by energy using `coolwarm` colormap
+
+##### `plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap`"Blues")=
+
+Shows NEB band evolution across optimization iterations with fading older bands.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `ax` | `matplotlib.axes.Axes` | - | Target axes |
+| `step_rmsd_r_list` | `list[np.ndarray]` | - | RMSD-R arrays per NEB iteration |
+| `step_rmsd_p_list` | `list[np.ndarray]` | - | RMSD-P arrays per NEB iteration |
+| `project_path` | `bool` | `True` | Apply reaction valley projection |
+| `cmap` | `str` | `"Blues"` | Colormap for band fading |
+
+#### High-Level ORCA Functions
+
+##### `plot_orca_neb_profile(neb_data, output, *, width=7.0, height=5.0, dpi=200)`
+
+Simple ORCA NEB energy profile. Plots image index vs energy with labeled reactant, product, and saddle.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `neb_data` | `OrcaNebResult` / `Mapping` | - | Typed result from `parse_orca_neb()` |
+| `output` | `Path` | - | Output file path |
+| `width` | `float` | `7.0` | Figure width (inches) |
+| `height` | `float` | `5.0` | Figure height (inches) |
+| `dpi` | `int` | `200` | Output resolution |
+
+##### `plot_orca_neb_energy_profile(neb_data, output, *, width=5.37, height=5.37, dpi=200, method`"hermite", smoothing=None)=
+
+Publication ORCA NEB energy profile using the eOn-style `plot_energy_path()` function.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `neb_data` | `OrcaNebResult` / `Mapping` | - | Typed result from `parse_orca_neb()` |
+| `output` | `Path` | - | Output file path |
+| `width` | `float` | `5.37` | Figure width (inches) |
+| `height` | `float` | `5.37` | Figure height (inches) |
+| `dpi` | `int` | `200` | Output resolution |
+| `method` | `str` | `"hermite"` | Interpolation method |
+| `smoothing` | `Any` | `None` | Smoothing parameters |
+
+###### Notes
+
+- Uses RMSD as reaction coordinate if available, image index otherwise
+- Applies the `ruhi` theme
+- Labels reactant, product, and saddle points
+
+##### `plot_orca_neb_landscape(neb_data, output, *, width=5.37, height=5.37, dpi=200, method`"grad_matern", project_path=True)=
+
+Publication ORCA NEB 2D landscape using `plot_landscape_surface()` and `plot_landscape_path_overlay()`.
+
+###### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `neb_data` | `OrcaNebResult` / `Mapping` | - | Typed result from `parse_orca_neb()` |
+| `output` | `Path` | - | Output file path |
+| `width` | `float` | `5.37` | Figure width (inches) |
+| `height` | `float` | `5.37` | Figure height (inches) |
+| `dpi` | `int` | `200` | Output resolution |
+| `method` | `str` | `"grad_matern"` | Surface interpolation method |
+| `project_path` | `bool` | `True` | Project to reaction valley coordinates |
+
+###### Raises
+
+| Exception | Condition |
+|---|---|
+| `ValueError` | `rmsd_r` or `rmsd_p` not available in `neb_data` |
+
+### Module: `chemparseplot.plot.theme`
+
+#### `PlotTheme`
+
+Frozen dataclass holding all aesthetic parameters.
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `str` | Theme identifier |
+| `font_family` | `str` | Font family name |
+| `font_size` | `int` | Base font size |
+| `facecolor` | `str` | Figure/axes background |
+| `textcolor` | `str` | Text and label color |
+| `edgecolor` | `str` | Axes edge color |
+| `gridcolor` | `str` | Grid line color |
+| `cmap_profile` | `str` | Default colormap for profiles |
+| `cmap_landscape` | `str` | Default colormap for landscapes |
+| `highlight_color` | `str` | Accent color |
+
+#### Built-in Themes
+
+| Name | Font | Colormap | Notes |
+|---|---|---|---|
+| `"ruhi"` | Atkinson Hyperlegible | `ruhi_diverging` | Default theme |
+| `"cmc.batlow"` | Atkinson Hyperlegible | `cmc.batlow` | Crameri scientific colormap |
+
+#### `get_theme(name, **overrides)`
+
+Retrieves a theme by name, applying optional field overrides.
+
+#### `setup_global_theme(theme)`
+
+Sets `plt.rcParams` from the theme (font, colors, sizes).
+
+#### `setup_publication_theme(theme)`
+
+Extends `setup_global_theme()` with publication defaults: spine removal, line widths, DPI 300, tight bbox.
+
+#### `apply_axis_theme(ax, theme)`
+
+Applies theme properties to a specific axes instance (facecolor, spine colors, tick colors).
+
+#### `build_cmap(hex_list, name)`
+
+Builds and registers a `LinearSegmentedColormap` from hex color strings.
+
+### Module: `chemparseplot.plot.optimization`
+
+Functions for single-ended method (dimer, minimization) visualization.
+
+#### `plot_optimization_landscape(ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode`"optimization", project_path=True, method="grad_matern", cmap="viridis", z_label="Energy (eV)", **surface_kwargs)=
+
+Wraps `plot_landscape_surface()` and `plot_landscape_path_overlay()` with semantically correct axis labels for single-ended methods.
+
+##### Parameters
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `label_mode` | `str` | `"optimization"` | `"optimization"` or `"reaction"` for axis labels |
+
+All other parameters (including `auto_thin`, `max_surface_points`, `surface_fit`)
+are passed through to `plot_landscape_surface()`.
+
+#### `render_single_ended_landscape(...)`
+
+Full single-ended pipeline (min/saddle CLIs). Accepts the same surface-fit
+knobs (`auto_thin` default false, `max_surface_points` 64, `surface_fit`).
+See `plot_landscape_surface` above.
+
+#### `plot_optimization_profile(ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color`"#004D40", eigen_color="#FF655D")=
+
+Plots energy (and optionally eigenvalue) vs iteration.
+
+#### `plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col`"convergence", step_col="step_size", iter_col="iteration", color="#004D40")=
+
+Plots convergence metrics (force norm and step size) from a trajectory DataFrame.
+
+#### `plot_dimer_mode_evolution(ax, mode_vectors, *, color`"#004D40")=
+
+Plots alignment of per-iteration dimer mode with the final converged mode (|cos(mode, final)|).
+
+### Module: `chemparseplot.parse.projection`
+
+Shared (s, d) reaction valley projection utilities.
+
+#### `ProjectionBasis`
+
+Frozen dataclass storing the orthonormal basis vectors for the projection.
+
+| Field | Type | Description |
+|---|---|---|
+| `a_start`, `b_start` | `float` | RMSD origin (first point) |
+| `u_a`, `u_b` | `float` | Unit vector along path direction |
+| `v_a`, `v_b` | `float` | Unit vector perpendicular to path |
+| `path_norm` | `float` | Path length in RMSD space |
+
+#### `compute_projection_basis(rmsd_a, rmsd_b) -> ProjectionBasis`
+
+Computes basis from first/last points of the arrays.
+
+#### `project_to_sd(rmsd_a, rmsd_b, basis) -> (s, d)`
+
+Forward projection from RMSD space to reaction valley coordinates.
+
+#### `inverse_sd_to_ab(s, d, basis) -> (rmsd_a, rmsd_b)`
+
+Inverse transform for grid evaluation on projected surfaces.
+
+### See Also
+
+- [How-to: Create Publication Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures)
+- [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
+- [eOn NEB API Reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api)
+
+## Release Process
+
+Source: https://chemparseplot.rgoswami.me/release
+
+### Release Workflow
+
+This project keeps release notes in `towncrier` fragments and uses
+`cocogitto` (`cog`) to determine the next semantic version from Conventional
+Commits.
+
+The package version itself is derived from Git tags via `hatch-vcs`, so there
+is no manual version file to edit.
+
+The actual publish step is handled by `.github/workflows/release.yml` after a
+`v*` tag is pushed.
+
+#### Canonical Docs Note
+
+Org sources are authoritative. Generated Markdown or rendered docs should not
+be edited separately.
+
+#### Steps
+
+```bash
+# 1. Run the same checks the tag workflow expects
+uv sync --extra test --extra plot --extra lint --extra doc --extra release
+uv run pytest --cov=chemparseplot tests
+uv run ruff check .
+uv run ruff format --check .
+uv run sphinx-build doc/source/ doc/build
+
+# 2. Preview the next semantic version
+cog bump --dry-run --auto
+
+# 3. Aggregate towncrier fragments into CHANGELOG.md
+uvx towncrier build --version "1.7.1"
+
+# 4. Commit the release notes and consumed fragments
+git add CHANGELOG.md doc/release/upcoming_changes
+git commit -m "release: v1.7.1"
+
+# 5. Tag the release and push
+cog bump --auto
+git push origin main --tags
+
+# 6. GitHub Actions publishes from the pushed tag
+```
+
+#### Rationale
+
+- `towncrier` remains the structured release-notes source.
+- `cog` gives a cleaner semantic-version selection step than manual tag math.
+- `hatch-vcs` continues to derive the installable package version from the tag.
+- The changelog heading stays on plain `X.Y.Z` even when the pushed Git tag is
+  `vX.Y.Z`.
+- The release workflow already runs tests, lint, docs, build, PyPI publish, and
+  GitHub release creation after the tag is pushed.
+
+## Used By
+
+Source: https://chemparseplot.rgoswami.me/used_by
+
+The following projects use `chemparseplot` as a dependency or tool.
+
+### Libraries
+
+- **[rgpycrumbs](https://rgpycrumbs.rgoswami.me)**: Core types, surfaces, and
+  CLI dispatcher. `chemparseplot` imports `rgpycrumbs` for GP landscapes and
+  interpolation; rgpycrumbs CLI dispatches back here for plotting.
+- **[pychum](https://pychum.rgoswami.me)**: Input file generators for
+  computational chemistry. Companion: `pychum` writes inputs,
+  `chemparseplot` reads outputs.
+
+### Reproducibility Packages
+
+- **[brms_idrot_repro](https://github.com/HaoZeke/brms_idrot_repro)**: Bayesian
+  reaction mechanism studies reproduction package. Uses both `chemparseplot`
+  and `rgpycrumbs` for parsing and analysis.
+
+### Academic Work
+
+- Rohit Goswami, *Efficient Exploration of Chemical Kinetics*, Doctoral
+  dissertation, University of Iceland, 2025.
+  arXiv: [2510.21368](https://arxiv.org/abs/2510.21368),
+  doi: [10.48550/arXiv.2510.21368](https://doi.org/10.48550/arXiv.2510.21368).
+  Uses `chemparseplot` for parsing and plotting computational chemistry outputs.
+
+## Overview
+
+Source: https://chemparseplot.rgoswami.me/worklog/graphTrials
+
+```python
+from chemparseplot.plot.structs import EnergyPath, BasePlotter, TwoDimPlot, XYData
+from chemparseplot.plot.geomscan import plot_energy_paths
+from chemparseplot.units import ureg
+import numpy as np
+import matplotlib.pyplot as plt
+```
+
+We plan to facilitate two kinds of plots:
+- One-shot paths on multiple files / data sources
+- Interactive plots
+
+The reason why is simple, often one wishes to plot a couple of paths and add or remove paths which aren't very useful.
+
++++
+
+### One-shot multi-plot
+
+```python
+path1 = EnergyPath('Path 1', np.linspace(0, 10, 30) * ureg.angstrom, np.random.uniform(-1, 0, 30) * ureg.hartree)
+path2 = EnergyPath('Path 2', np.linspace(1, 9, 25) * ureg.angstrom, np.random.uniform(-0.5, 0.5, 25) * ureg.hartree)
+```
+
+```python
+plot_energy_paths([path1, path2], {'distance': 'angstrom', 'energy': 'hartree'}, colormap_fraction=0.4);
+```
+
+### Interactive plots
+
+```python
+twodim_plot = TwoDimPlot()
+twodim_plot.set_labels('Distance', 'Energy')
+twodim_plot.set_units('angstrom', 'hartree')
+
+# Add XYData
+data1 = XYData('Path 1', np.linspace(0, 10, 30) * ureg.angstrom, np.random.uniform(-1, 0, 30) * ureg.hartree)
+data2 = XYData('Path 2', np.linspace(1, 9, 25) * ureg.angstrom, np.random.uniform(-0.5, 0.5, 25) * ureg.hartree)
+data3 = XYData('Path 3', np.linspace(1, 9, 25) * ureg.bohr, np.random.uniform(-0.5, 0.5, 25) * ureg.hartree)
+twodim_plot.add_data(data1)
+twodim_plot.add_data(data2)
+
+twodim_plot.add_title("Two Dimensional Data Plot")
+```
+
+```python
+twodim_plot.set_units('angstrom', 'electron_volt')
+twodim_plot.fig
+```
+
+```python
+twodim_plot.add_data(data3)
+```
+
+```python
+twodim_plot.fig
+```
+
+```python
+max(data3.x.to("angstrom"))
+```
+
+## Developer Documentation
+
+Source: https://chemparseplot.rgoswami.me/dev/
+
+### Developer Documentation
+
+Technical documentation for developers working on chemparseplot.
+
+#### Architecture
+
+| Document | Description |
+|---|---|
+| Parsing Architecture | How parsers extract data from quantum chemistry output |
+| Plotting Architecture | Separation of data parsing and visualization |
+| OPI Integration | ORCA Python Interface integration design |
+
+#### Patterns
+
+| Pattern | Description |
+|---|---|
+| Lazy Imports | Defer optional dependency loading |
+| Unified Data Format | Compatible data format across different codes |
+| Diataxis Documentation | Documentation structure and organization |
+
+#### Contributing
+
+- Contributing Guidelines
+- [Release Process](https://chemparseplot.rgoswami.me/release)
+- Testing Guidelines
+
+### Quick Start for Developers
+
+#### Setup**
+
+```bash
+git clone https://github.com/HaoZeke/chemparseplot
+cd chemparseplot
+uv sync --all-extras
+```
+
+#### Run Tests**
+
+```bash
+uv run pytest -m pure  # Pure Python tests
+uv run pytest -m neb   # NEB-related tests
+```
+
+#### Add New Parser**
+
+1. Create `chemparseplot/parse/<code>/<method>.py`
+2. Return data compatible with existing format
+3. Add tests in `tests/parse/<code>/`
+4. Update documentation
+
+See Parsing Architecture for details.
+
+### Related
+
+- [Main Documentation](https://chemparseplot.rgoswami.me/)
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/)
+- [GitHub Repository](https://github.com/HaoZeke/chemparseplot)
+
+## Best Practices
+
+Source: https://chemparseplot.rgoswami.me/dev/best_practices
+
+### Best Practices for Using chemparseplot
+
+#### Parsing
+
+##### Always Check Convergence
+
+```python
+data = parse_orca_neb("job")
+if not data["converged"]:
+    print("Warning: Calculation did not converge!")
+```
+
+##### Use Context Managers for Files
+
+```python
+from pathlib import Path
+
+work_dir = Path("calculation")
+data = parse_orca_neb("job", working_dir=work_dir)
+```
+
+##### Handle Missing Data Gracefully
+
+```python
+energies = data.get("energies")
+if energies is None or len(energies) == 0:
+    print("No energy data available")
+    return
+```
+
+#### Plotting
+
+##### Use Consistent Figure Sizes
+
+```python
+# Standard single plot
+width, height = 5.37, 5.37  # inches
+
+# Wide plot for comparisons
+width, height = 7.0, 5.0
+
+# Tall plot for profiles
+width, height = 5.0, 7.0
+```
+
+##### Use Scientific Colormaps
+
+```python
+# Good choices
+cmap = "cmc.batlow"      # Perceptually uniform
+cmap = "cmc.berlin"      # Diverging
+cmap = "cmc.oslo"        # Sequential
+
+# Avoid
+cmap = "jet"             # Not perceptually uniform
+cmap = "rainbow"         # Misleading
+```
+
+##### Set Appropriate DPI
+
+```python
+# For presentations
+dpi = 150
+
+# For publications
+dpi = 300
+
+# For web
+dpi = 72
+```
+
+#### Performance
+
+##### Use Parallel Processing for Batches
+
+```bash
+# Sequential (slow for many files)
+rgpycrumbs chemgp batch -c config.toml
+
+# Parallel (4 workers)
+rgpycrumbs chemgp batch -c config.toml -j 4
+
+# Parallel (8 workers, fast)
+rgpycrumbs chemgp batch -c config.toml -j 8
+```
+
+##### Cache Parsed Data
+
+```python
+import pickle
+from pathlib import Path
+
+cache_file = Path("data_cache.pkl")
+
+if cache_file.exists():
+    with open(cache_file, "rb") as f:
+        data = pickle.load(f)
+else:
+    data = parse_orca_neb("job")
+    with open(cache_file, "wb") as f:
+        pickle.dump(data, f)
+```
+
+##### Downsample Large Datasets
+
+```python
+import numpy as np
+
+# Original data with 1000 points
+energies = data["energies"]
+
+# Downsample to 100 points
+indices = np.linspace(0, len(energies)-1, 100, dtype=int)
+energies_ds = energies[indices]
+```
+
+#### Error Handling
+
+##### Catch Specific Exceptions
+
+```python
+from chemparseplot.parse.orca.neb import parse_orca_neb
+
+try:
+    data = parse_orca_neb("job")
+except ImportError as e:
+    print(f"Missing dependency: {e}")
+    print("Install with: pip install orca-pi")
+except FileNotFoundError as e:
+    print(f"File not found: {e.filename}")
+except ValueError as e:
+    print(f"Invalid data: {e}")
+```
+
+##### Validate Input Data
+
+```python
+def validate_neb_data(data: dict) -> bool:
+    """Validate NEB data structure."""
+    required_keys = ["energies", "n_images", "converged"]
+    for key in required_keys:
+        if key not in data:
+            return False
+
+    if len(data["energies"]) != data["n_images"]:
+        return False
+
+    return True
+```
+
+#### Documentation
+
+##### Include Examples in Docstrings
+
+```python
+def plot_profile(data, output):
+    """Plot energy profile.
+
+    Parameters
+    ----------
+    data : dict
+        Parsed NEB data
+    output : Path
+        Output file path
+
+    Example
+    -------
+    >>> data = parse_orca_neb("job")
+    >>> plot_profile(data, "profile.pdf")
+    """
+    ...
+```
+
+##### Use Cross-References
+
+```org
+See [[file:../howto/parse_orca_neb.org][Parse ORCA NEB Calculations]] for details.
+```
+
+#### Testing
+
+##### Test with Mock Data
+
+```python
+import numpy as np
+
+mock_data = {
+    "energies": np.array([0.0, 0.5, 1.0, 0.5, 0.0]),
+    "n_images": 5,
+    "converged": True,
+}
+
+plot_profile(mock_data, "test_profile.pdf")
+```
+
+##### Test Edge Cases
+
+```python
+# Empty data
+plot_profile({"energies": [], "n_images": 0}, "empty.pdf")
+
+# Single image
+plot_profile({"energies": [0.0], "n_images": 1}, "single.pdf")
+
+# Very large barrier
+plot_profile({"energies": [0.0, 100.0, 0.0], "n_images": 3}, "large.pdf")
+```
+
+#### Version Control
+
+##### Pin Dependencies in Production
+
+```toml
+# pyproject.toml
+[project]
+dependencies = [
+    "chemparseplot>=0.2.0,<0.3.0",
+]
+```
+
+##### Use Semantic Versioning
+
+- MAJOR.MINOR.PATCH
+- MAJOR: Breaking changes
+- MINOR: New features (backward compatible)
+- PATCH: Bug fixes
+
+#### Security
+
+##### Validate File Paths
+
+```python
+from pathlib import Path
+
+# Good: Validate path
+output = Path(user_input).resolve()
+if not output.is_relative_to(working_dir):
+    raise ValueError("Path outside working directory")
+```
+
+##### Don't Execute Untrusted Code
+
+```python
+# BAD: Never do this
+exec(user_input)
+
+# GOOD: Use safe parsing
+import tomllib
+with open(config_file, "rb") as f:
+    config = tomllib.load(f)
+```
+
+#### See Also
+
+- [Contributing Guidelines](https://chemparseplot.rgoswami.me/dev/contributing)
+- [How-to Guides](https://chemparseplot.rgoswami.me/howto/)
+- [Reference](https://chemparseplot.rgoswami.me/reference/)
+
+## How-to: Draw Surrogate-assisted Searches
+
+Source: https://chemparseplot.rgoswami.me/howto/surrogate_search_figures
+
+### Problem
+
+A saddle search answers most force calls from a Gaussian-process surrogate and
+spends a counted number of calls on the true potential (the oracle). You want
+to see where those calls went, from the output of a gpr_optim campaign or an
+ASE/CatLearn ML-NEB run.
+
+### Solution
+
+#### Read a search into the neutral records
+
+```python
+from chemparseplot.parse.surrogate import read_search
+
+cell = read_search("results/rec/baker/25_hcnh2")            # gpr_optim cell
+mlneb = read_search("run/", "ml-neb", force_tolerance=0.05)  # ASE ML-NEB run
+cell.band, cell.search, cell.single_ended, cell.cell
+```
+
+`band` holds the final band (and snapshots when the producer wrote them),
+`search` the per-iteration series keyed by oracle call, `single_ended` the
+dimer series and `cell` the row of the campaign table. A quantity the producer
+did not write is absent or NaN, never zero.
+
+#### Draw it
+
+```python
+from chemparseplot.plot import surrogate as sp
+from chemparseplot.plot.provenance import save_with_provenance
+
+fig = sp.plot_band_profile(cell.band)
+save_with_provenance(fig, "profile.svg", {}, hashes=cell.provenance)
+sp.plot_search_convergence(cell.search)
+sp.plot_search_comparison([old, new], ["625 calls", "58 calls"])
+```
+
+| Function | Shows |
+|---|---|
+| `plot_band_profile` | posterior mean along the path, sigma ribbon, true evaluations |
+| `plot_band_evolution` | snapshots over outer iterations, or the acquisition record |
+| `plot_search_convergence` | force against oracle calls, acquisition events, training rows |
+| `plot_search_comparison` | two runs of one reaction and their calls by phase |
+| `plot_model_diagnostics` | kernel variances, length scales, training rows, seconds |
+| `plot_reduced_landscape` | the NEB progress/deviation landscape: GP surface, evaluations, path, climbing image, saddle |
+| `plot_single_ended` | dimer curvature and force against oracle calls |
+| `plot_campaign_calls`, `_matrix`, `_walls` | calls per reaction against baselines, pass matrix, wall time |
+| `plot_scaling`, `plot_efficiency_table` | speedup with the ideal line, efficiency as a heat table |
+
+The same figures are available as commands: `rgpycrumbs surrogate plt-band`,
+`plt-history`, `plt-dimer`, `plt-campaign`, `plt-cases`, `plt-scaling`.
+`plt-cases` reads a tidy cases table. `plot_cases_wall` draws an optional
+`pipeline_wall_sd` column as a horizontal bar and writes that sample standard
+deviation beside the time.
+
+#### Add the structure strip
+
+`plot_band_profile` and `plot_reduced_landscape` take `structures`"crit_points"`,
+="all"` or `n_structures=N` and draw the strip of `rgpycrumbs eon plt-neb`
+(R, SP or CI, P) beneath the plot. The atom types are `band.numbers`, read from
+`band/band.con` or `saddle/pos.con`, or from `read_atom_types(FILE)`; without
+them the call raises `ValueError` naming the files looked at. Elements are
+never guessed.
+
+#### Add a producer
+
+Fill the dataclasses of `chemparseplot.parse.surrogate.model` from your code's
+output: a `BandHistory` (one `BandSnapshot` per iteration, with `sigma` when
+the model gives one), a `SearchHistory` with the standard series names, or a
+`SingleEndedHistory`. Every figure takes those records and nothing else.
+
+### See also
+
+- [Create Publication-quality Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures)

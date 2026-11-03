@@ -1,0 +1,1 @@
+`llms-full.txt` at the repository root holds the whole manual in one Markdown file, every page in the order of the site's navigation, converted from the Org and MyST sources by `python scripts/llms/build_llms.py` (settings in `scripts/llms/llms.toml`). `--check` exits 1 while the file is stale, and 2 when the site map `doc/source/llms.txt` links a page that does not exist.
