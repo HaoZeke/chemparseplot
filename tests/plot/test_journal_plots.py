@@ -34,6 +34,7 @@ from chemparseplot.plot.neb import _tick_decimals, plot_energy_path, plot_neb_pr
 from chemparseplot.plot.optimization import (
     plot_relative_error,
     plot_single_ended_convergence,
+    plot_single_ended_profile,
     save_standard_figure,
 )
 from chemparseplot.plot.palette import RUHI_CYCLE
@@ -244,6 +245,40 @@ class TestConvergence:
         plot_single_ended_convergence(trajs, list(run["neb"]), out, jr.ACS.raster_dpi)
         assert out.stat().st_size > 0
         assert dict(mpl.rcParams) == before
+
+    def test_single_ended_profile_sizes_follow_the_rcparams(
+        self, run, tmp_path, monkeypatch
+    ):
+        saved = []
+        monkeypatch.setattr(
+            "chemparseplot.plot.optimization.save_standard_figure",
+            lambda fig, output, *, dpi: saved.append(fig),
+        )
+        trajs = []
+        for neb in run["neb"].values():
+            rows = neb["history"]
+            frame = pl.DataFrame(
+                {
+                    "iteration": [r["iteration"] for r in rows],
+                    "barrier": [max(r["energies"]) - run["e_initial"] for r in rows],
+                }
+            )
+            trajs.append(SimpleNamespace(dat_df=frame))
+        style = jr.apply_style()
+        plot_single_ended_profile(
+            trajs,
+            list(run["neb"]),
+            tmp_path / "profile.pdf",
+            mpl.rcParams["figure.dpi"],
+            energy_unit="eV",
+            energy_column="barrier",
+            title="",
+        )
+        (fig,) = saved
+        lines = fig.axes[0].get_lines()
+        assert len(lines) == len(trajs)
+        assert {line.get_linewidth() for line in lines} == {style.wide}
+        assert {line.get_markersize() for line in lines} == {style.marker}
 
     def test_other_figures_are_cropped(self, tmp_path):
         fig = plt.figure(figsize=(10, 10))
