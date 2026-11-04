@@ -2,7 +2,7 @@
 
 <!-- towncrier release notes start -->
 
-## [1.14.1](https://github.com/HaoZeke/chemparseplot/tree/1.14.1) - 2026-11-08
+## [1.14.1](https://github.com/HaoZeke/chemparseplot/tree/v1.14.1) - 2026-11-08
 
 ### Added
 
@@ -37,7 +37,7 @@ One pitfall lists the documentation pages that disagree with the code.
 - The release steps run the Emacs 30 export that writes `doc/source/index.rst` before Sphinx.
 
 
-## [1.14.0](https://github.com/HaoZeke/chemparseplot/tree/1.14.0) - 2026-11-04
+## [1.14.0](https://github.com/HaoZeke/chemparseplot/tree/v1.14.0) - 2026-11-04
 
 ### Added
 
@@ -122,28 +122,28 @@ The baseline images come from effective medium theory runs of Au on Al(100).
 `tests/plot/data/au_al100.py` records the runs.
 
 
-## [1.13.2](https://github.com/HaoZeke/chemparseplot/tree/1.13.2) - 2026-10-31
+## [1.13.2](https://github.com/HaoZeke/chemparseplot/tree/v1.13.2) - 2026-10-31
 
 ### Fixed
 
 - The Wiberg edge reach is two and a half covalent-radius sums, so forming H-H contacts of dissociation saddles (1.3 to 1.6 A) keep their edge while separated radical centres stay unbonded.
 
 
-## [1.13.1](https://github.com/HaoZeke/chemparseplot/tree/1.13.1) - 2026-10-31
+## [1.13.1](https://github.com/HaoZeke/chemparseplot/tree/v1.13.1) - 2026-10-31
 
 ### Fixed
 
 - Reaction panels draw no Wiberg edge between atoms farther apart than twice their covalent-radius sum (`max_contact`), so a closed-shell density at a diradical-like geometry no longer shows separated radical centres as bonded; reaction atlas rows grow with their bond annotations and the colour bar keeps its own margin.
 
 
-## [1.13.0](https://github.com/HaoZeke/chemparseplot/tree/1.13.0) - 2026-10-31
+## [1.13.0](https://github.com/HaoZeke/chemparseplot/tree/v1.13.0) - 2026-10-31
 
 ### Added
 
 - `plot_reaction_gallery` lays out one structure per reaction in a grid of tiles, each titled with the reaction's name, an optional chemistry line and its measured bond-order annotations.
 
 
-## [1.12.0](https://github.com/HaoZeke/chemparseplot/tree/1.12.0) - 2026-10-30
+## [1.12.0](https://github.com/HaoZeke/chemparseplot/tree/v1.12.0) - 2026-10-30
 
 ### Added
 
@@ -172,7 +172,7 @@ The surrogate landscape fades the GP surface where the relative variance exceeds
 - Cost-frontier panels label their log axes with plain major ticks, so minor-tick labels no longer overprint; axes narrower than one decade get unit subdivisions.
 
 
-## [1.11.0](https://github.com/HaoZeke/chemparseplot/tree/1.11.0) - 2026-08-10
+## [1.11.0](https://github.com/HaoZeke/chemparseplot/tree/v1.11.0) - 2026-08-10
 
 ### Added
 
@@ -180,21 +180,21 @@ The surrogate landscape fades the GP surface where the relative variance exceeds
 labels cannot overlap rendered structures.
 
 
-## [1.10.2](https://github.com/HaoZeke/chemparseplot/tree/1.10.2) - 2026-08-09
+## [1.10.2](https://github.com/HaoZeke/chemparseplot/tree/v1.10.2) - 2026-08-09
 
 ### Fixed
 
 - Sketch-map landmark pinning is now guaranteed: pinned rows are unioned into the landmark set after farthest-point selection, which otherwise skips points near an already-kept reference.
 
 
-## [1.10.1](https://github.com/HaoZeke/chemparseplot/tree/1.10.1) - 2026-08-09
+## [1.10.1](https://github.com/HaoZeke/chemparseplot/tree/v1.10.1) - 2026-08-09
 
 ### Fixed
 
 - Structure-strip label bands size to the tallest multiline label, so two-line gallery captions no longer overlap the rendered structures.
 
 
-## [1.10.0](https://github.com/HaoZeke/chemparseplot/tree/1.10.0) - 2026-08-08
+## [1.10.0](https://github.com/HaoZeke/chemparseplot/tree/v1.10.0) - 2026-08-08
 
 ### Added
 
@@ -239,7 +239,7 @@ labels cannot overlap rendered structures.
 - `plot/neb.py`: add `from __future__ import annotations` so `SurfaceFitConfig`
   return annotations do not raise `NameError` on Python 3.11+ (broke 1.9.10–1.9.12).
 
-## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/1.9.12) - 2026-07-15
+## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/v1.9.12) - 2026-07-15
 
 ### Documentation
 
@@ -249,7 +249,7 @@ labels cannot overlap rendered structures.
 - Org howto/architecture: mermaid data-flow for landscape fits and suite stack.
 
 
-## [1.9.11](https://github.com/HaoZeke/chemparseplot/tree/1.9.11) - 2026-07-15
+## [1.9.11](https://github.com/HaoZeke/chemparseplot/tree/v1.9.11) - 2026-07-15
 
 ### Documentation
 
@@ -258,7 +258,7 @@ labels cannot overlap rendered structures.
   howto, FAQ, troubleshooting, and glossary.
 
 
-## [1.9.10](https://github.com/HaoZeke/chemparseplot/tree/1.9.10) - 2026-07-15
+## [1.9.10](https://github.com/HaoZeke/chemparseplot/tree/v1.9.10) - 2026-07-15
 
 ### Added
 
@@ -268,7 +268,7 @@ labels cannot overlap rendered structures.
 ``auto_thin`` still defaults to off. ([#surface_fit_config](https://github.com/HaoZeke/chemparseplot/issues/surface_fit_config))
 
 
-## [1.9.9](https://github.com/HaoZeke/chemparseplot/tree/1.9.9) - 2026-07-15
+## [1.9.9](https://github.com/HaoZeke/chemparseplot/tree/v1.9.9) - 2026-07-15
 
 ### Added
 
@@ -348,7 +348,7 @@ shims ``chemparseplot.api.parse_xyz`` and ``parse_orca_final_energy``. ([#gramma
 - Avoid recursion when lazy-loading ``chemparseplot.parse``; vectorize stitch RMSD path.
 
 
-## [1.8.0](https://github.com/HaoZeke/chemparseplot/tree/1.8.0) - 2026-06-27
+## [1.8.0](https://github.com/HaoZeke/chemparseplot/tree/v1.8.0) - 2026-06-27
 
 ### Added
 
@@ -372,7 +372,7 @@ shims ``chemparseplot.api.parse_xyz`` and ``parse_orca_final_energy``. ([#gramma
 
 
 
-## [1.7.0](https://github.com/HaoZeke/chemparseplot/tree/1.7.0) - 2026-04-07
+## [1.7.0](https://github.com/HaoZeke/chemparseplot/tree/v1.7.0) - 2026-04-07
 
 ### Changed
 
@@ -386,7 +386,7 @@ to the ``neb`` extra. ([#readcon-v2](https://github.com/HaoZeke/chemparseplot/is
 - Resolved all ruff lint errors: added ``__all__`` for re-exports, fixed import ordering, removed unused imports.
 
 
-## [1.5.3](https://github.com/HaoZeke/chemparseplot/tree/1.5.3) - 2026-03-26
+## [1.5.3](https://github.com/HaoZeke/chemparseplot/tree/v1.5.3) - 2026-03-26
 
 ### Fixed
 
@@ -414,7 +414,7 @@ to the ``neb`` extra. ([#readcon-v2](https://github.com/HaoZeke/chemparseplot/is
   surfaces), `flat`, `tube`, `wire`, `skeletal`.
 - `BaseGradientSurface` accepts `noise_per_obs` kwarg for heteroscedastic GP.
 
-## [1.5.0](https://github.com/HaoZeke/chemparseplot/tree/1.5.0) - 2026-03-23
+## [1.5.0](https://github.com/HaoZeke/chemparseplot/tree/v1.5.0) - 2026-03-23
 
 ### Added
 
@@ -457,7 +457,9 @@ to the ``neb`` extra. ([#readcon-v2](https://github.com/HaoZeke/chemparseplot/is
 - Fixed flat variance contour crash (`v_range < 1e-10` now skips contours).
 - Fixed solvis renderer API (hex colors, actor_name, transparent background).
 
-## [1.4.0](https://github.com/HaoZeke/chemparseplot/tree/1.4.0) - 2026-03-15
+## 1.4.0 - 2026-03-15
+
+No v1.4.0 tag was cut, and v1.4.1 is the first tag that carries these notes.
 
 ### Added
 
