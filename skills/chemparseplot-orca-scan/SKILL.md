@@ -1,6 +1,6 @@
 ---
 name: chemparseplot-orca-scan
-description: Read a relaxed surface scan from the quantum chemistry program (ORCA), a `%geom Scan` over a bond, with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and packages no chemparseplot extra installs. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
+description: Read a relaxed surface scan from the quantum chemistry program (ORCA), a `%geom Scan` over a bond, with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and two packages that the plot extra lacks. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
 license: See LICENSE in the chemparseplot repository
 compatibility: scripts/scan_table.py needs chemparseplot alone (numpy and pint). scripts/plot_scan.py also needs matplotlib and cmcrameri (the plot extra), rgpycrumbs and scipy. Python 3.11 or newer. Checked on Linux against ORCA 5.0.4 output.
 ---
@@ -106,7 +106,8 @@ plotter.fig.savefig("scan.png")
 - Sort first.
   ORCA scans run in the order of the input, here from long to short, and the spline then fails with `ValueError: Error on input data`.
 - It imports `rgpycrumbs.interpolation` when called, and that needs scipy.
-  Neither is in any chemparseplot extra, `[all]` included.
+  Neither comes with the plot extra or with `[all]`.
+  Of the chemparseplot extras, only `test` installs them.
   Without rgpycrumbs the call stops with `ModuleNotFoundError`.
   Without scipy, rgpycrumbs raises `ImportError: Module 'scipy.interpolate' is required`.
   Install the plot extra and both packages in one command:
