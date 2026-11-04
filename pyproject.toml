@@ -3,7 +3,7 @@ build-backend = "hatchling.build"
 requires = ["hatch-vcs", "hatchling"]
 
 [tool.hatch.build.hooks.vcs]
-version-file = "_version.py"
+version-file = "chemparseplot/_version.py"
 
 [tool.hatch.build]
 include = ["chemparseplot/**/*.py", "chemparseplot/*.py", "/tests"]
@@ -277,7 +277,7 @@ ban-relative-imports = "all"
 source_pkgs = ["chemparseplot"]
 branch = true
 parallel = false
-omit = ["_version.py", "chemparseplot/util.py"]
+omit = ["chemparseplot/_version.py", "chemparseplot/util.py"]
 
 [tool.coverage.paths]
 chemparseplot = ["chemparseplot", "*/chemparseplot/chemparseplot"]
