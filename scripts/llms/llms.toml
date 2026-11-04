@@ -1,0 +1,60 @@
+# Input for scripts/llms/build_llms.py. It writes llms-full.txt at the
+# repository root: every page of the manual in toctree order but those
+# under [docs] full_exclude, which its header names, converted to
+# Markdown from the Org sources under docs/orgmode/ and the MyST pages
+# under doc/source/, then AGENTS.md and the skills. The map of the site,
+# doc/source/llms.txt, is written by hand; [map] checks its links against
+# the manual.
+
+[project]
+branch = "main"
+full_note = "The pages follow in the order of the site's navigation. Pages that no toctree lists come last."
+links = "raw"
+name = "chemparseplot"
+notes = [
+  "The pages of the manual at https://chemparseplot.rgoswami.me/ follow, converted to Markdown from their Org sources under `docs/orgmode/` or their MyST sources under `doc/source/`; each section names the address it was taken from. Tutorial code cells appear as Python blocks, without their output. The API reference that sphinx-autodoc2 builds from the docstrings, https://chemparseplot.rgoswami.me/apidocs/, is not included. The map of the site is https://chemparseplot.rgoswami.me/llms.txt.",
+  "Build, test and documentation commands, and the mistakes that are easy to make, are in `AGENTS.md`; worked tasks with runnable scripts are under `skills/`. Both are reproduced at the end.",
+]
+repo = "https://github.com/HaoZeke/chemparseplot"
+summary = """
+chemparseplot is a pure-Python library that parses the output of
+computational chemistry codes (eOn, ORCA, Sella, ChemGP, PLUMED and
+surrogate-assisted searches) into structured, unit-aware data and draws
+publication figures from it. Surface fits and the command-line plot
+tools live in its sibling package rgpycrumbs.
+"""
+
+[output]
+full = "llms-full.txt"
+index = ""
+
+[docs]
+# conf.py leaves contributing.md out of the build.
+exclude = ["contributing"]
+# Its tutorial test command runs a script from a temporary directory,
+# which the private-path guard refuses. Drop this entry once the page
+# names a script in the repository.
+full_exclude = ["dev/contributing"]
+# Written by sphinx-autodoc2 from the package, not from a source page.
+generated = ["apidocs/"]
+index = "index.org"
+md_root = "doc/source"
+# docs/export.el publishes every Org file but this one; the tutorials
+# index on the site is doc/source/tutorials/index.md.
+org_exclude = ["tutorials/index"]
+page_url = "https://chemparseplot.rgoswami.me/{page}"
+root = "docs/orgmode"
+
+[map]
+path = "doc/source/llms.txt"
+site = "https://chemparseplot.rgoswami.me/"
+
+[[links]]
+description = "Build, test and documentation commands, common tasks and pitfalls for working in this repository."
+full = true
+path = "AGENTS.md"
+title = "AGENTS.md"
+
+[skills]
+dir = "skills"
+full = true
