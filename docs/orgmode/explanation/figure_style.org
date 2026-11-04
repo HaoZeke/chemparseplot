@@ -132,6 +132,43 @@ Each next colour is the one farthest from those already chosen, by the smallest 
 The colours that fail follow in the same way.
 The order is teal, sky, magenta, sunshine, coral.
 
+** Element colours
+
+Structure renders colour each atom by its element.
+The usual scheme is named after the Corey-Pauling-Koltun (CPK) space-filling models.
+Corey and Pauling (1953) and Koltun (1965) describe them.
+The Jmol table extends the scheme, and the copy in the Atomic Simulation Environment runs from hydrogen to meitnerium.
+The renders keep the grouping of that table and draw it in Ruhi colours.
+Coral marks the highlighted atoms, so element bodies use the other four.
+
+The Corey and Pauling models were of hydrogen, carbon, nitrogen and oxygen atoms.
+Those four are the anchors, and they take the four colours one to one.
+Of the 24 pairings, one is closest to their Jmol colours.
+It gives hydrogen sunshine, carbon teal, nitrogen sky and oxygen magenta.
+Its summed CIEDE2000 difference is 106.1.
+The next pairing swaps carbon and nitrogen, at 115.9.
+Every other element takes the colour of the anchor whose Jmol colour is nearest its own.
+Gold and platinum go with hydrogen, aluminium with carbon, sodium with nitrogen, and phosphorus and iron with oxygen.
+Of the 109 elements in the table, teal goes to 34, sunshine to 32, sky to 27 and magenta to 16.
+Silver is the closest call: its Jmol colour is 14.05 from carbon's and 14.12 from hydrogen's.
+
+Giving each element the Ruhi colour nearest its own Jmol colour does not work.
+Carbon's grey and nitrogen's blue are both nearest sky, and teal would go to only 5 elements.
+
+Sky is also the dash of a hydrogen bond.
+Keeping sky for the dash alone would leave three colours for hydrogen, carbon and oxygen.
+Nitrogen would then take carbon's teal, and 61 elements would share it.
+Nitrogen keeps sky instead.
+An atom is a disc outlined in ink and the dash is a broken line, so their shapes tell them apart.
+
+Four colours cannot keep every element apart.
+Hydrogen shares sunshine with sulfur, chlorine, gold and platinum.
+Without coral, the closest pair for normal vision is teal and sky, 39.8 apart.
+For protan vision it is teal and magenta, 11.4 apart, so carbon and oxygen come close.
+A figure that has to tell such elements apart passes its own =element_colors= map to =render_structure=.
+Hydrogen's Jmol colour, white, has a contrast of 1.0 on a white ground, and sunshine has 1.4.
+Every atom is outlined in the theme ink, so neither depends on the ground.
+
 ** Colour maps
 
 =ruhi_seq= runs from a dark wine (teal's lightness and chroma at magenta's hue) through magenta and coral to sunshine.
@@ -194,6 +231,9 @@ The same script therefore writes the same bytes on every run.
 - World Wide Web Consortium, Web Content Accessibility Guidelines 2.1 (2018).
 - M. Okabe and K. Ito, Color Universal Design: how to make figures and presentations that are friendly to colorblind people (2008).
 - B. Wong, Points of view: color blindness, Nature Methods 8, 441 (2011).
+- R. B. Corey and L. Pauling, Molecular models of amino acids, peptides, and proteins, Review of Scientific Instruments 24, 621 (1953).
+- W. L. Koltun, Precision space-filling atomic models, Biopolymers 3, 665 (1965).
+- Jmol, Jmol colors, https://jmol.sourceforge.net/jscolors/.
 - P. Kovesi, Good colour maps: how to design them, arXiv:1509.03700 (2015).
 - K. Moreland, Diverging color maps for scientific visualization, in Advances in Visual Computing, Lecture Notes in Computer Science 5876, 92 (Springer, 2009).
 - ISO 3098-1:2015, Technical product documentation, Lettering, Part 1: General requirements.
