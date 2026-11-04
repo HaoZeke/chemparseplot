@@ -12,7 +12,7 @@ try:
 
     version = pkg_version("chemparseplot")
 except Exception:
-    version = "1.11.0"
+    version = "1.14.0"
 release = version
 
 # -- General configuration ---------------------------------------------------

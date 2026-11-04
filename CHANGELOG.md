@@ -1,45 +1,91 @@
 # Changelog
 
+<!-- towncrier release notes start -->
 
-## 1.9.17
-
-### Fixed
-
-- Lazy ``parse.eon.frame_series`` so bare ``import chemparseplot.parse`` no
-  longer requires the ``neb`` / ``readcon`` extra (tutorial + pure imports).
-- Tests: xyzrender missing-package checks use import blocking (Python API),
-  not ``shutil.which``; landscape save / strip height expectations match
-  current tight-crop layout.
-
-## 1.9.16
-
-### Fixed
-
-- Test: CLI vs Python API xyzrender strip images must be pixel-identical
-  (same package version).
-
-## 1.9.15
-
-### Fixed
-
-- Structure strips: use xyzrender **Python API** via ``ensure_import`` /
-  ``RGPYCRUMBS_AUTO_DEPS`` (no PATH binary / hard env pin).
-
-## 1.9.14
+## [1.14.0](https://github.com/HaoZeke/chemparseplot/tree/1.14.0) - 2026-11-04
 
 ### Added
 
-- ``parse.eon.frame_series``: ConFrame sequence → energies / NEB path arrays /
-  ``MinTrajectoryData`` / ``DimerTrajectoryData`` for object-plot adapters.
+- A tutorial runs a small nudged elastic band with ASE and draws its energy profile for two journals.
+A how-to covers journal figures, and the FAQ says how to keep a figure one column wide.
+An explanation traces each size, line width and colour of the journal style to its source.
+The reference gains entries for the journal, palette and ChemGP surface modules.
+- `chemparseplot.plot.journal` sizes and styles figures for five journals.
+The `acs` preset covers the Journal of Chemical Theory and Computation and the Journal of Chemical Information and Modeling.
+`elsevier` covers Computer Physics Communications and `rsc` Physical Chemistry Chemical Physics.
+`aip` covers The Journal of Chemical Physics.
+`journal_figure` makes a figure of the exact single- or double-column width.
+Its panels are half again as wide as they are tall unless the data give them a shape.
+Text is set at the body, `\small` and `\footnotesize` sizes of each journal's two-column page, in the theme's face.
+For `ruhi` that face is Atkinson Hyperlegible, and the faces the journal names stand in where it is not installed.
+Line widths, tick lengths, gaps and marker sizes follow from the text size.
+They follow the lettering standard ISO 3098-1 and the line standard ISO 128-2 of the International Organization for Standardization (ISO).
+`series_style` pairs each series' Ruhi colour with a line type from `LINE_TYPES`, where the ISO 128-2 types with one kind of mark come before those with two.
+`label_panels` letters the panels, and `label_lines` and `label_hline` label lines at their ends.
+`smart_legend` places a legend where it covers no data.
+`sci_axis` writes numbers from 0.1 to 1000 plain.
+`relative_error` and `log_error_axis` put relative errors on log scales.
+`save_figure` writes PDF, SVG and raster files at the exact figure size, with TrueType fonts embedded and no timestamps.
+`setup_publication_theme` takes `journal` to apply the same style.
+- `chemparseplot.plot.palette` defines the Ruhi colours and the checks behind their use.
+`palette_report` gives each colour's contrast on the background by the Web Content Accessibility Guidelines 2.1.
+It gives the smallest CIEDE2000 difference between any two colours for normal vision and three simulated deficiencies.
+The simulation follows Machado and co-workers, and the Okabe-Ito palette is the reference.
+`colormap_report` gives the CIELAB lightness profile of a colour map.
+`ruhi_seq` is a perceptually ordered map whose lightness is monotone for every vision type.
+`ruhi_div` is monotone on each side of its light grey centre.
+- `plot_neb_profile` draws the energy profile of a nudged elastic band in the journal style.
+The curve is a cubic Hermite interpolant whose slopes are minus the forces along the path.
+It is sampled once per output pixel.
+The barrier is written above the peak.
+Earlier bands run from light to dark, with an iteration colour bar.
+A reference energy is drawn as a dashed, labelled line.
+- `plot_relative_error` plots the relative error of a series against a reference value on a log scale.
+Decades are labelled as powers of ten, and exact results are drawn at machine epsilon.
 
-## 1.9.13
+### Changed
+
+- The default colour maps are Ruhi maps.
+`ruhi_seq` replaces viridis in the nudged elastic band and optimization landscapes and their path overlays.
+It also replaces coolwarm in `plot_mmf_peaks_overlay`, which takes `cmap`.
+It replaces the `ruhi_diverging` blend, whose lightness is not monotone, in the theme and the ChemGP surfaces.
+`chemparseplot.plot.landscape.plot_landscape_surface` uses `ruhi_seq` in place of that blend too.
+Earlier bands in `plot_neb_evolution` and Wiberg bond orders use only the part of `ruhi_seq` with a 3:1 contrast on the background.
+`mark_saddle_point` draws its marker in a Ruhi colour.
+`plot_orca_neb_profile` and `plot_orca_neb_energy_profile` mark their key points in Ruhi colours.
+`plot_orca_neb_energy_profile` also draws its line in the first Ruhi line colour by default.
+`setup_global_theme` sets the Ruhi line colours as the colour cycle and the theme's map as `image.cmap`.
+- `plot_energy_path` takes the image marker size and edge width from the `lines.markersize` and `lines.markeredgewidth` rcParams.
+The journal style sets both; they were fixed at 6 pt and 0.5 pt before.
+With matplotlib's defaults the edge is 1 pt.
+It takes `markersize`, `markeredgewidth`, `markeredgecolor` and `samples`.
+Without `samples` the curve has a point for every pixel column at `savefig.dpi`, where it had 300 points.
+- `plot_single_ended_convergence` draws in the journal style, with panel letters.
+The convergence measure and the step size are on log scales.
+Lines are labelled at their ends or in a legend off the data, and `threshold` draws a dashed, labelled threshold.
+`plot_convergence_panel` puts the step size on a log scale too and marks only the last iteration.
+`plot_single_ended_profile` gives each trajectory a Ruhi colour and its own line type.
+It takes line width and marker size from the rcParams, where they were fixed numbers.
+Like `plot_convergence_panel`, it marks only the last iteration, so markers no longer hide the line types.
+The line types are those of the drawing standard ISO 128-2 of the International Organization for Standardization (ISO).
+`save_standard_figure` saves constrained-layout figures at their exact size.
+- `plot_surface_contour` draws the energy landscape in the journal style at the column width, with the `ruhi_seq` map.
+The bands, contour lines and colour-bar ticks share one set of levels.
+Each contour line is black or white, whichever contrasts more with the bands beside it.
+Minima are lettered from A and saddles numbered from S1.
+It takes `journal`, `columns`, `cmap`, `xlabel`, `ylabel` and `zlabel`.
 
 ### Fixed
 
-- `plot/neb.py`: add `from __future__ import annotations` so `SurfaceFitConfig`
-  return annotations do not raise `NameError` on Python 3.11+ (broke 1.9.10–1.9.12).
+- `chemparseplot.plot.chemgp` imports plotnine and pandas only when a line chart is first drawn.
+The surface plots import and draw with matplotlib alone, and the ChemGP surfaces tutorial runs to the end.
 
-<!-- towncrier release notes start -->
+### Miscellaneous
+
+- Image comparisons check the nudged elastic band profile, the energy landscape and the convergence figures.
+The baseline images come from effective medium theory runs of Au on Al(100).
+`tests/plot/data/au_al100.py` records the runs.
+
 
 ## [1.13.2](https://github.com/HaoZeke/chemparseplot/tree/1.13.2) - 2026-10-31
 
@@ -119,6 +165,44 @@ labels cannot overlap rendered structures.
 
 - Sketch-map landscape figures (``chemparseplot.plot.landscape``: coordination-number and SOAP descriptors, the published dimlandmark/dimred schedule, ruhi contour surfaces, margin structure insets) and approximate disconnectivity graphs (``chemparseplot.plot.disconnectivity``: superbasin merge trees over descriptor k-NN graphs with spectral basin colouring) for global-optimization minima databases.
 
+
+## 1.9.17
+
+### Fixed
+
+- Lazy ``parse.eon.frame_series`` so bare ``import chemparseplot.parse`` no
+  longer requires the ``neb`` / ``readcon`` extra (tutorial + pure imports).
+- Tests: xyzrender missing-package checks use import blocking (Python API),
+  not ``shutil.which``; landscape save / strip height expectations match
+  current tight-crop layout.
+
+## 1.9.16
+
+### Fixed
+
+- Test: CLI vs Python API xyzrender strip images must be pixel-identical
+  (same package version).
+
+## 1.9.15
+
+### Fixed
+
+- Structure strips: use xyzrender **Python API** via ``ensure_import`` /
+  ``RGPYCRUMBS_AUTO_DEPS`` (no PATH binary / hard env pin).
+
+## 1.9.14
+
+### Added
+
+- ``parse.eon.frame_series``: ConFrame sequence → energies / NEB path arrays /
+  ``MinTrajectoryData`` / ``DimerTrajectoryData`` for object-plot adapters.
+
+## 1.9.13
+
+### Fixed
+
+- `plot/neb.py`: add `from __future__ import annotations` so `SurfaceFitConfig`
+  return annotations do not raise `NameError` on Python 3.11+ (broke 1.9.10–1.9.12).
 
 ## [1.9.12](https://github.com/HaoZeke/chemparseplot/tree/1.9.12) - 2026-07-15
 
