@@ -9,39 +9,19 @@ from dataclasses import dataclass, replace
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from cycler import cycler
 from matplotlib.colors import LinearSegmentedColormap
+
+from chemparseplot.plot.palette import RUHI_COLORS, RUHI_CYCLE, RUHI_SEQUENTIAL
 
 log = logging.getLogger(__name__)
 
-# --- Color Definitions ---
-RUHI_COLORS = {
-    "coral": "#FF655D",
-    "sunshine": "#F1DB4B",
-    "teal": "#004D40",
-    "sky": "#1E88E5",
-    "magenta": "#D81B60",
-}
-
-# --- Accessibility notes (added for paper + repro figure usage) ---
-# WCAG: Base theme uses white background + black text (excellent >18:1 contrast).
-# The 5 RUHI_COLORS are chosen to be reasonably separable under common CVD
-# (deuteranopia/protanopia/tritanopia):
-#   - teal (#004D40 dark teal-green) vs sky (#1E88E5 blue) : blue vs green axis.
-#   - coral (#FF655D warm red-pink) vs sunshine (#F1DB4B yellow) : yellow preserved
-#     better in RG CVD; not a pure red/green pair.
-#   - magenta (#D81B60) provides additional red-blue distinction.
-# Best practice (enforced in usage): never rely on color alone.
-#   - Use in combination with: marker styles (circle, square, triangle, diamond),
-#     line styles (solid, dashed, dotted, dashdot), hatches, direct text labels,
-#     or position.
-#   - For lines on white: prefer dimmed variants (e.g. color!70!black) if thin lines
-#     needed for contrast.
-#   - Test figures with simulators (Coblis, Photoshop, or colorspacious + matplotlib).
-# The ruhi_diverging and ruhi_full cmaps are multi-hue (better than jet/rainbow for
-# most viewers including CVD).
-# See also the TikZ usage in the rsx_bmc paper, which pairs these colors with
-# explicit "yes/no", "Frequentist/Bayesian", shape (box vs diamond), and labels.
-# --- end accessibility notes ---
+# Accessibility: chemparseplot.plot.palette.palette_report() gives the WCAG
+# contrast of each Ruhi colour on white and its CIEDE2000 separation under
+# simulated colour-vision deficiency. Sunshine and coral are below the 3:1
+# contrast for graphics, and teal/magenta (protan) and coral/magenta (tritan)
+# are the closest pairs, so figures should not rely on colour alone: label
+# lines directly or vary markers and dashes as well.
 
 
 @dataclass(frozen=True)
@@ -86,8 +66,8 @@ RUHI_THEME = PlotTheme(
     textcolor="black",
     edgecolor="black",
     gridcolor="floralwhite",
-    cmap_profile="ruhi_diverging",
-    cmap_landscape="ruhi_diverging",
+    cmap_profile=RUHI_SEQUENTIAL,
+    cmap_landscape=RUHI_SEQUENTIAL,
     highlight_color="black",
 )
 
@@ -112,7 +92,8 @@ def build_cmap(hex_list, name):
     return cmap
 
 
-# Register default colormaps
+# Linear-RGB blends kept so older figures can be redrawn. Their lightness is
+# not monotone; new figures use ruhi_seq and ruhi_div from the palette module.
 build_cmap(
     [
         RUHI_COLORS["teal"],
@@ -169,8 +150,11 @@ def setup_global_theme(theme: PlotTheme):
             "legend.fontsize": theme.font_size,
             "savefig.facecolor": theme.facecolor,
             "savefig.transparent": False,
+            "axes.prop_cycle": cycler(color=list(RUHI_CYCLE)),
         }
     )
+    if theme.cmap_landscape in mpl.colormaps:
+        plt.rcParams["image.cmap"] = theme.cmap_landscape
 
 
 def apply_axis_theme(ax: plt.Axes, theme: PlotTheme):
@@ -189,16 +173,29 @@ def apply_axis_theme(ax: plt.Axes, theme: PlotTheme):
     ax.title.set_color(theme.textcolor)
 
 
-def setup_publication_theme(theme: PlotTheme):
+def setup_publication_theme(theme: PlotTheme, journal: str | None = None):
     """Extended theme setup for publication-quality figures.
 
     Calls ``setup_global_theme`` and adds line widths, spine removal,
-    DPI, and tight bounding box defaults.
+    DPI, and tight bounding box defaults. With ``journal`` (``"jctc"``,
+    ``"jcp"``, ``"cpc"``, ``"pccp"`` or a preset key), applies the journal
+    style of :mod:`chemparseplot.plot.journal` instead, whose sizes all
+    derive from the journal's column widths and LaTeX font sizes.
 
     ```{versionadded} 1.3.0
     ```
+
+    ```{versionchanged} 1.14.0
+    Added *journal*.
+    ```
     """
     setup_global_theme(theme)
+    if journal is not None:
+        # Deferred because journal imports this module.
+        from chemparseplot.plot.journal import apply_style  # noqa: PLC0415
+
+        apply_style(journal, theme=theme)
+        return
     plt.rcParams.update(
         {
             "axes.linewidth": 0.8,

@@ -89,6 +89,17 @@ def changed_bonds(reactant, product, limit=3):
     return [(i, j) for _, i, j in sorted(pairs, reverse=True)[:limit]]
 
 
+def _bond_order_cmap():
+    """Bond-order colours: the part of ``ruhi_seq`` that reaches the WCAG 3:1
+    contrast for graphics on white, light for weak bonds to dark for strong."""
+    from chemparseplot.plot.palette import (  # noqa: PLC0415
+        RUHI_SEQUENTIAL,
+        contrast_limited,
+    )
+
+    return contrast_limited(RUHI_SEQUENTIAL).reversed()
+
+
 def apply_wbo_style(
     molecule, bond_orders, *, minimum=0.1, weak=0.5, vmax=3.0, max_contact=2.5
 ):
@@ -101,7 +112,6 @@ def apply_wbo_style(
     assign bond order to separated radical centres, which is not a bond.
     """
     from ase.data import covalent_radii  # noqa: PLC0415
-    from matplotlib import colormaps  # noqa: PLC0415
     from matplotlib.colors import to_hex  # noqa: PLC0415
 
     result = molecule.copy()
@@ -119,7 +129,7 @@ def apply_wbo_style(
             msg = "Invalid Wiberg bond-order index or value"
             raise ValueError(msg)
     graph.remove_edges_from(list(graph.edges))
-    palette = colormaps["viridis"]
+    palette = _bond_order_cmap()
     for (i, j), value in bond_orders.items():
         if value < minimum:
             continue
@@ -256,7 +266,7 @@ def plot_reaction_atlas(cases, *, density=False, width=7.2):
 
     cax = fig.add_axes([0.30, 0.3 / height, 0.40, 0.12 / height])
     cbar = fig.colorbar(
-        ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
+        ScalarMappable(norm=Normalize(0, 3), cmap=_bond_order_cmap()),
         cax=cax,
         orientation="horizontal",
     )
@@ -330,7 +340,7 @@ def plot_reaction_gallery(tiles, *, columns=4, density=False, width=7.2):
         )
     cax = fig.add_axes([0.30, 0.18 / height, 0.40, 0.12 / height])
     cbar = fig.colorbar(
-        ScalarMappable(norm=Normalize(0, 3), cmap="viridis"),
+        ScalarMappable(norm=Normalize(0, 3), cmap=_bond_order_cmap()),
         cax=cax,
         orientation="horizontal",
     )

@@ -57,10 +57,30 @@ matching keys in rgpycrumbs plot TOML when dense force-eval movies make
 - **Parsing** computational chemistry output files into structured data
 - **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
   (camera-ready)
+- **Journal figures** at the exact column widths and text sizes of five journals, in the Ruhi palette
 - **Unit preserving** throughout via `pint`
 - **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
   for surface fitting, interpolation, and structure analysis
 - **Concurrent** RMSD landscape calculations via `ThreadPoolExecutor`
+
+## Journal figures
+
+Figures sized and styled for the journal they go to (`chemparseplot.plot.journal`, `chemparseplot.plot.palette`):
+
+- **Presets**: column widths, LaTeX text sizes, smallest lettering, thinnest line and raster resolution
+  - `acs`: Journal of Chemical Theory and Computation, Journal of Chemical Information and Modeling
+  - `aip`: The Journal of Chemical Physics
+  - `elsevier`: Computer Physics Communications
+  - `rsc`: Physical Chemistry Chemical Physics
+- **Derived style**: line widths, tick lengths, gaps and marker sizes from the text size
+- **Standards**: proportions from ISO 3098-1 and ISO 128-2 of the International Organization for Standardization (ISO)
+- **Labels**: direct line labels, legends placed off the data and panel letters
+- **Numbers**: plain from 0.1 to 1000, and log scales for relative errors
+- **Colour**: the Ruhi palette and the perceptually ordered `ruhi_seq` and `ruhi_div` maps
+- **Contrast**: checked against the Web Content Accessibility Guidelines
+- **Colour-vision deficiency**: CIEDE2000 separation checked under simulated protan, deutan and tritan vision
+- **Figures**: nudged elastic band energy profile with earlier bands, energy landscape and convergence panels
+- **Output**: PDF, SVG and raster files at the exact figure size with TrueType fonts embedded
 
 ## Supported Engines
 
@@ -89,6 +109,8 @@ GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp
 - **2D matplotlib surfaces**: PES contour with NEB path overlay, GP surrogate
   progression panels, MAP-NLL landscape, variance overlay with hatching,
   trust region illustration, hyperparameter sensitivity grid
+
+plotnine and pandas are imported when a line chart is first drawn, so the surfaces need only matplotlib.
 
 ### Surrogate-assisted searches
 

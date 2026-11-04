@@ -16,19 +16,35 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from matplotlib.gridspec import GridSpec
+from matplotlib.layout_engine import ConstrainedLayoutEngine
 
 from chemparseplot.parse.projection import compute_projection_basis, project_to_sd
+from chemparseplot.plot.journal import (
+    DEFAULT_JOURNAL,
+    LINE_TYPES,
+    journal_figure,
+    journal_style,
+    label_hline,
+    label_lines,
+    label_panels,
+    log_error_axis,
+    relative_error,
+    save_figure,
+    series_style,
+    smart_legend,
+)
 from chemparseplot.plot.neb import (
     plot_landscape_path_overlay,
     plot_landscape_surface,
     plot_structure_strip,
 )
+from chemparseplot.plot.palette import RUHI_SEQUENTIAL
 from chemparseplot.plot.structs import (
     convert_energy,
     convert_energy_curvature,
@@ -36,6 +52,13 @@ from chemparseplot.plot.structs import (
     energy_axis_label,
 )
 from chemparseplot.plot.theme import apply_axis_theme
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.lines import Line2D
+    from numpy.typing import ArrayLike
+
+    from chemparseplot.plot.journal import JournalPreset
 
 # One sample has no path tangent, so a numerical gradient needs two.
 _MIN_GRADIENT_POINTS = 2
@@ -54,7 +77,10 @@ _LABELS = {
     },
 }
 
-OVERLAY_COLORS = ["#004D40", "#FF655D", "#3F51B5", "#FF9800", "#9C27B0", "#009688"]
+# Ruhi line colours that reach the WCAG 3:1 graphics contrast on white.
+OVERLAY_COLORS = list(
+    dict.fromkeys(series_style(i)["color"] for i in range(len(LINE_TYPES)))
+)
 
 
 def create_landscape_axes(
@@ -235,10 +261,23 @@ def save_landscape_figure(
 
 
 def save_standard_figure(fig, output: Path, *, dpi: int) -> None:
-    """Save a standard figure with tight layout."""
+    """Save a standard figure.
 
-    fig.tight_layout()
-    fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
+    Figures laid out by constrained layout, as
+    :func:`~chemparseplot.plot.journal.journal_figure` makes them,
+    keep their exact size (:func:`~chemparseplot.plot.journal.save_figure`);
+    others get tight layout and a tight bounding box.
+
+    ```{versionchanged} 1.14.0
+    Constrained-layout figures are saved at their exact size.
+    ```
+    """
+
+    if isinstance(fig.get_layout_engine(), ConstrainedLayoutEngine):
+        save_figure(fig, output, dpi=dpi)
+    else:
+        fig.tight_layout()
+        fig.savefig(str(output), dpi=dpi, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -253,7 +292,22 @@ def plot_single_ended_profile(
     title: str,
     eigen_column: str | None = None,
 ) -> None:
-    """Plot shared single-ended optimization profiles."""
+    """Plot shared single-ended optimization profiles.
+
+    Each trajectory takes a Ruhi colour and an ISO 128-2 line type from
+    :func:`~chemparseplot.plot.journal.series_style`. Line width and marker
+    size are the ``lines.linewidth`` and ``lines.markersize`` rcParams,
+    which :func:`~chemparseplot.plot.journal.apply_style` sets. As in
+    :func:`plot_convergence_panel`, a marker shows the last iteration only:
+    markers on iterations closer than a marker plus one dash and gap would
+    hide the line type.
+
+    ```{versionchanged} 1.14.0
+    Ruhi colours, ISO 128-2 line types, sizes from the rcParams and a
+    marker on the last iteration; markers were on every iteration, at 4
+    and 1.5 points, 3 and 1.2 for eigenvalues.
+    ```
+    """
 
     has_eigen = bool(eigen_column) and any(
         eigen_column in trajectory.dat_df.columns for trajectory in trajs
@@ -266,25 +320,17 @@ def plot_single_ended_profile(
 
     for idx, (traj, lbl) in enumerate(zip(trajs, labels, strict=False)):
         dat = traj.dat_df
-        color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
+        series = series_style(idx)
         iters = dat["iteration"].to_numpy()
         energies = convert_energy(dat[energy_column].to_numpy(), energy_unit)
-        axes[0].plot(
-            iters, energies, "o-", color=color, markersize=4, linewidth=1.5, label=lbl
-        )
+        axes[0].plot(iters, energies, marker="o", markevery=[-1], label=lbl, **series)
 
         if has_eigen and eigen_column and eigen_column in dat.columns:
             eigenvalues = convert_energy_curvature(
                 dat[eigen_column].to_numpy(), energy_unit
             )
             axes[1].plot(
-                iters,
-                eigenvalues,
-                "s-",
-                color=color,
-                markersize=3,
-                linewidth=1.2,
-                label=lbl,
+                iters, eigenvalues, marker="s", markevery=[-1], label=lbl, **series
             )
 
     axes[0].set_xlabel("Iteration")
@@ -304,17 +350,94 @@ def plot_single_ended_profile(
     save_standard_figure(fig, output, dpi=dpi)
 
 
-def plot_single_ended_convergence(trajs, labels, output: Path, dpi: int) -> None:
-    """Plot shared convergence panels for single-ended optimizers."""
+def plot_single_ended_convergence(
+    trajs,
+    labels,
+    output: Path,
+    dpi: int,
+    *,
+    journal: str | JournalPreset | None = None,
+    columns: str = "double",
+    threshold: float | None = None,
+    threshold_label: str = "Threshold",
+    force_label: str = "Convergence",
+    step_label: str = "Step size",
+) -> None:
+    """Plot shared convergence panels for single-ended optimizers.
 
-    fig, (ax_force, ax_step) = plt.subplots(1, 2, figsize=(10, 4), dpi=dpi)
-    for idx, (traj, lbl) in enumerate(zip(trajs, labels, strict=False)):
-        color = OVERLAY_COLORS[idx % len(OVERLAY_COLORS)]
-        plot_convergence_panel(ax_force, ax_step, traj.dat_df, color=color)
-        ax_force.plot([], [], color=color, label=lbl)
-    if len(trajs) > 1:
-        ax_force.legend(frameon=False)
-    save_standard_figure(fig, output, dpi=dpi)
+    Two panels, (a) the convergence measure and (b) the step size against
+    iteration, both on log axes, in the style of ``journal`` and one
+    ``columns`` of it wide. Each optimizer has its own Ruhi colour and ISO
+    128-2 line type and is labelled at the end of its line, or in a legend
+    placed off the data when the labels would touch it. ``threshold`` adds
+    the convergence criterion as a dashed line. The style holds only while
+    the figure is drawn and saved; the global rcParams are left as they were.
+
+    ```{versionchanged} 1.14.0
+    Journal style, log step-size axis, direct labels and panel letters;
+    added *journal*, *columns*, *threshold*, *threshold_label*,
+    *force_label* and *step_label*.
+    ```
+    """
+
+    with journal_style(journal or DEFAULT_JOURNAL) as style:
+        fig, (ax_force, ax_step) = journal_figure(columns=columns, ncols=2, style=style)
+        for idx, (traj, lbl) in enumerate(zip(trajs, labels, strict=False)):
+            series = series_style(idx, style.facecolor)
+            drawn = {ax: len(ax.lines) for ax in (ax_force, ax_step)}
+            plot_convergence_panel(ax_force, ax_step, traj.dat_df, color=series["color"])
+            for ax, start in drawn.items():
+                for line in ax.lines[start:]:
+                    line.set_linestyle(series["linestyle"])
+                    line.set_label(lbl)
+        ax_force.set_ylabel(force_label)
+        ax_step.set_ylabel(step_label)
+        if threshold is not None:
+            line = ax_force.axhline(
+                threshold,
+                color=style.textcolor,
+                linewidth=style.narrow,
+                linestyle=LINE_TYPES[1][2],
+                zorder=1,
+            )
+            label_hline(ax_force, line, threshold_label)
+        # The panels share their series, so they are labelled once: directly
+        # in the first panel where the labels touch no data, else in a legend.
+        panels = (ax_force, ax_step)
+        if len(trajs) > 1 and not any(label_lines(ax, fallback=False) for ax in panels):
+            smart_legend(ax_force)
+        label_panels(fig, journal=journal)
+        save_standard_figure(fig, output, dpi=dpi)
+
+
+def plot_relative_error(
+    ax: Axes,
+    x: ArrayLike,
+    values: ArrayLike,
+    reference: float,
+    *,
+    label: str | None = None,
+    index: int = 0,
+    xlabel: str = "Iteration",
+    ylabel: str = "Relative error",
+) -> Line2D:
+    """Relative error ``|values - reference| / |reference|`` on a log axis.
+
+    Errors below machine epsilon are drawn at epsilon
+    (:func:`~chemparseplot.plot.journal.relative_error`), so an exact result
+    stays on the plot; decades are labelled as powers of ten. The series
+    takes the colour and line type of :func:`~chemparseplot.plot.journal.series_style`
+    for ``index``. Returns the line.
+
+    ```{versionadded} 1.14.0
+    ```
+    """
+    err = relative_error(values, reference)
+    (line,) = ax.plot(x, err, label=label, **series_style(index, ax.get_facecolor()))
+    log_error_axis(ax)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    return line
 
 
 def render_single_ended_landscape(
@@ -334,7 +457,7 @@ def render_single_ended_landscape(
     energy_cap_window: float | None = None,
     relative_energy: bool = True,
     title: str | None = None,
-    cmap: str = "viridis",
+    cmap: str = RUHI_SEQUENTIAL,
     output: Path,
     dpi: int = 150,
     theme: Any | None = None,
@@ -386,6 +509,10 @@ def render_single_ended_landscape(
 
     ```{versionadded} 1.9.10
     Added *surface_fit*.
+    ```
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
     ```
     """
     from matplotlib import ticker
@@ -579,7 +706,7 @@ def plot_optimization_landscape(
     label_mode: str = "optimization",
     project_path: bool = True,
     method: str = "grad_matern",
-    cmap: str = "viridis",
+    cmap: str = RUHI_SEQUENTIAL,
     energy_unit: str = "eV",
     z_label: str | None = None,
     **surface_kwargs,
@@ -615,6 +742,10 @@ def plot_optimization_landscape(
     Returns
     -------
     colorbar or None
+
+    ```{versionchanged} 1.14.0
+    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
+    ```
     """
     z_values = convert_energy(z_data, energy_unit)
     grad_a_values = convert_energy(grad_a, energy_unit)
@@ -737,16 +868,30 @@ def plot_convergence_panel(
         Column names.
     color
         Line color.
+
+    Both quantities shrink by orders of magnitude as an optimizer converges,
+    so both axes are logarithmic, with decades labelled as powers of ten.
+    Steps of zero length (the starting point) have no logarithm and are left
+    out. A marker shows the last iteration. Line width and marker size come
+    from the rcParams, which the journal style sets.
+
+    ```{versionchanged} 1.14.0
+    Log step-size axis; markers only on the last iteration.
+    ```
     """
     iters = dat_df[iter_col].to_numpy()
-    forces = dat_df[force_col].to_numpy()
-    steps = dat_df[step_col].to_numpy()
+    forces = np.abs(dat_df[force_col].to_numpy().astype(float))
+    steps = dat_df[step_col].to_numpy().astype(float)
+    steps = np.where(steps > 0.0, steps, np.nan)
 
-    ax_force.semilogy(iters, np.abs(forces), "o-", color=color, markersize=3)
+    line_kw = {"color": color, "marker": "o", "markevery": [-1]}
+    ax_force.plot(iters, forces, **line_kw)
+    log_error_axis(ax_force)
     ax_force.set_xlabel("Iteration")
     ax_force.set_ylabel("Convergence")
 
-    ax_step.plot(iters, steps, "o-", color=color, markersize=3)
+    ax_step.plot(iters, steps, **line_kw)
+    log_error_axis(ax_step)
     ax_step.set_xlabel("Iteration")
     ax_step.set_ylabel("Step size")
 

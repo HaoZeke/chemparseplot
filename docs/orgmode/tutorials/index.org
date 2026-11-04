@@ -10,6 +10,7 @@ Tutorials are learning-oriented. Follow them step-by-step to learn chemparseplot
 | Tutorial | Description |
 |----------+-------------|
 | [[file:orca_neb.org][ORCA NEB Parsing and Plotting]] | Complete end-to-end tutorial for ORCA NEB |
+| [[file:journal_figure.org][A Journal Figure from a Nudged Elastic Band]] | From an ASE band to a profile one journal column wide |
 
 ** What Makes a Good Tutorial?
 

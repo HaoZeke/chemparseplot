@@ -1,0 +1,203 @@
+#+TITLE: Figure Style
+#+AUTHOR: [[https://rgoswami.me][Rohit Goswami]]
+#+EMAIL: rgoswami@ieee.org
+#+OPTIONS: toc:nil num:nil ^:nil
+
+* Overview
+
+The journal style has no hand-set sizes.
+A preset records what a journal states: its column widths, the font sizes of its LaTeX class and its smallest lettering.
+It also records the journal's minimum line weight, its raster resolution and the faces it names.
+=figure_style()= derives every other length from those numbers and from the drafting standards of the International Organization for Standardization (ISO).
+The colours come from the Ruhi palette (Ruhila Goswami).
+They are checked under simulated colour-vision deficiency with the colour-difference formula of the International Commission on Illumination (CIE).
+This page follows each number back to its source.
+
+* Sizes from the journal
+
+| Preset     | Journals                                                                                                | Publisher                                      |
+|------------+---------------------------------------------------------------------------------------------------------+------------------------------------------------|
+| =acs=      | Journal of Chemical Theory and Computation (JCTC), Journal of Chemical Information and Modeling (JCIM) | American Chemical Society (ACS)                |
+| =aip=      | The Journal of Chemical Physics                                                                         | American Institute of Physics (AIP) Publishing |
+| =elsevier= | Computer Physics Communications                                                                         | Elsevier                                       |
+| =rsc=      | Physical Chemistry Chemical Physics                                                                     | Royal Society of Chemistry (RSC)               |
+
+Column widths and page heights come from each publisher's author guidelines.
+A guideline may give a length in two units, such as 240 pt and 3.33 in for an ACS column.
+The two are then rounded conversions of each other.
+The preset takes the smaller, so the figure fits both.
+
+Text sizes are the =\normalsize=, =\small= and =\footnotesize= of each journal's LaTeX class in its two-column layout:
+
+| Preset     | Class and layout              | Sizes (TeX pt) |
+|------------+-------------------------------+----------------|
+| =aip=      | revtex4-2, =reprint=          | 10, 9, 8       |
+| =elsevier= | elsarticle, =5p=              | 10, 9, 8       |
+| =rsc=      | RSC article template          | 9, 8, 7        |
+
+The achemso class sets JCTC and JCIM only in a 12 pt submission layout.
+The ACS sizes are therefore those of the published page, 10, 9 and 8 PostScript points.
+TeX points (72.27 per inch) are converted to PostScript points (72 per inch).
+No size goes below the journal's smallest lettering.
+The x and y labels use the body size, and tick labels and legends =\small=.
+
+* Panel shape
+
+A panel takes its shape from the data where they give one, as an energy landscape does with equal x and y scales.
+Otherwise it is half again as wide as it is tall.
+Tufte advises graphics "about 50 percent wider than tall" when the data suggest no shape (1983, p. 190).
+
+* Lettering and lines
+
+Text is set in the theme's face, Atkinson Hyperlegible.
+The Braille Institute released it in 2019 for readers with low vision.
+It gives easily confused characters such as I, l and 1 distinct shapes.
+The ACS, Elsevier and RSC guidelines name Helvetica or Arial.
+Those faces replace Atkinson Hyperlegible where it is not installed.
+
+ISO 3098-1:2015 gives the proportions of lettering as fractions of the capital height h.
+With h measured from the outline of "H" in the chosen face at the body size, the style sets:
+
+| Length                      | ISO 3098-1 type B | Used for                      |
+|-----------------------------+-------------------+-------------------------------|
+| letter stroke d             | 0.1 h             | base of the line widths       |
+| x-height                    | 0.7 h             | major tick length             |
+| descender                   | 0.3 h             | minor tick length             |
+| word space                  | 0.6 h             | tick-to-label and label pads  |
+| character space             | 0.2 h             | gaps around panels and labels |
+| baseline pitch (mixed case) | 1.5 h             | spacing of stacked labels     |
+
+Markers are as tall as a capital.
+ISO 128-2:2020 steps line widths by a factor of the square root of two.
+It pairs them as narrow, wide and extra-wide in the ratio 1 : 2 : 4.
+The narrow width is one step below the letter stroke, d/sqrt(2), so spines and ticks are lighter than the text.
+It never goes below the journal's minimum line weight.
+Data lines are wide.
+In Atkinson Hyperlegible at the ACS body size, h is 6.68 pt and d/sqrt(2) is 0.47 pt, below the ACS minimum of 0.5 pt.
+The minimum therefore binds: spines and ticks are 0.5 pt, data lines 1 pt and major ticks 4.7 pt long.
+
+Dashed series use the ISO 128-2 line types 02 (dashed), 07 (dotted), 04 (long-dashed dotted) and 10 (dashed dotted), in that order.
+Types with one kind of mark come before types with two, and each group follows the standard's numbering.
+Their dashes, gaps and dots are 12, 3 and 0.5 line widths long, and long dashes 24.
+Matplotlib scales dash patterns by the line width, so the patterns stay in proportion at any width.
+
+* Numbers
+
+The National Institute of Standards and Technology (NIST) advises choosing prefixes so that numerical values lie between 0.1 and 1000.
+That advice is in section 7.9 of its Special Publication 811.
+Tick labels keep that range in plain numbers and switch to powers of ten, written with mathtext, outside it.
+They never print an offset.
+Errors that span decades go on log scales, with decades labelled as powers of ten.
+A relative error below machine epsilon cannot be resolved and would vanish from a log scale, so it is drawn at epsilon.
+
+* Colour
+
+** The Ruhi palette
+
+| Colour   | sRGB      | Contrast on white |
+|----------+-----------+-------------------|
+| teal     | =#004D40= |               9.8 |
+| magenta  | =#D81B60= |               4.9 |
+| sky      | =#1E88E5= |               3.7 |
+| coral    | =#FF655D= |               2.9 |
+| sunshine | =#F1DB4B= |               1.4 |
+
+The Web Content Accessibility Guidelines (WCAG) 2.1 ask for a contrast of 3:1 for graphical objects (criterion 1.4.11).
+For text they ask for 4.5:1 (criterion 1.4.3).
+Teal, sky and magenta pass the first on white; coral and sunshine do not.
+=series_style= therefore colours lines with teal, sky and magenta only.
+The default colour cycle puts sunshine and coral last.
+Direct labels take their line's colour.
+Where needed it is darkened at the same hue until it reaches 4.5:1 after rounding to 8-bit values.
+
+** Colour-vision deficiency
+
+Colours are compared with CIEDE2000 (ISO/CIE 11664-6) in CIELAB.
+Protan, deutan and tritan vision are simulated by the full-severity matrices of Machado, Oliveira and Fernandes (2009).
+Each palette's most confusable pair is the one with the smallest difference:
+
+| Vision | Ruhi | Okabe-Ito | Closest Ruhi pair |
+|--------+------+-----------+-------------------|
+| normal | 19.8 |      21.7 | coral, magenta    |
+| protan | 11.4 |      12.2 | teal, magenta     |
+| deutan | 16.0 |      11.6 | coral, magenta    |
+| tritan |  9.5 |      10.9 | coral, magenta    |
+
+The Ruhi palette keeps its colours further apart than the Okabe-Ito palette for deutan vision.
+It keeps them less far apart for normal, protan and tritan vision.
+Colour alone is therefore not enough to tell series apart.
+=series_style= pairs each colour with an ISO 128-2 line type, and lines are labelled directly where there is room.
+The colours that pass 3:1 come first, the highest contrast leading.
+Each next colour is the one farthest from those already chosen, by the smallest difference over all four vision types.
+The colours that fail follow in the same way.
+The order is teal, sky, magenta, sunshine, coral.
+
+** Colour maps
+
+=ruhi_seq= runs from a dark wine (teal's lightness and chroma at magenta's hue) through magenta and coral to sunshine.
+Chroma and hue follow monotone cubic curves in the CIELAB lightness L*.
+The table is spaced evenly in CIEDE2000 arc length (Kovesi, 2015).
+Teal and sky are left out.
+Sky's lightness lies between magenta's and coral's.
+A map through sky therefore turns the hue by 94 and then 116 degrees over 15.5 units of L*.
+Its lightness is then no longer monotone for protan, deutan or tritan vision.
+A map that starts at teal itself turns the hue by 166 degrees on the way to magenta.
+For protan vision its lightness is then not monotone either.
+=ruhi_div= runs from teal through sky to a neutral grey at sunshine's lightness.
+From there it runs through coral and magenta to the dark wine.
+Both arms share one lightness schedule (Moreland, 2009).
+An entry on one arm has the same L* as its mirror image on the other.
+
+=colormap_report= measures both, with viridis for comparison:
+
+| Map        | L* monotone, all four vision types | Step uniformity, normal vision |
+|------------+------------------------------------+--------------------------------|
+| =ruhi_seq= | yes                                |                          0.003 |
+| =ruhi_div= | each arm                           |                          0.159 |
+| =viridis=  | yes                                |                          0.149 |
+
+Step uniformity is the coefficient of variation of the CIEDE2000 steps between neighbouring entries.
+A value of 0 means every step looks the same size.
+=ruhi_seq= is the default for surfaces and landscapes.
+=ruhi_div= is for signed quantities centred on zero.
+Its steps are less even than those of =ruhi_seq=.
+Lines coloured from a map use only the entries with a 3:1 contrast on the background (=contrast_limited=).
+The earlier bands of a nudged elastic band run are such lines.
+
+* Labels and legends
+
+Direct labels sit at the end of each line, one character space plus half a marker away.
+Labels closer than one baseline pitch are moved apart as little as possible in the least-squares sense.
+Subtracting k pitches from the k-th label turns the spacing constraint into an ordering constraint.
+The pool-adjacent-violators algorithm solves that exactly.
+Constrained layout then makes room for the labels and moves the line ends.
+The labels are spread again until the ends move by less than one output pixel.
+
+A legend is placed inside the panel at the first of matplotlib's locations that is clear.
+A location is clear when the legend's box touches no line, marker, filled area, image or text.
+When every location covers data, the legend goes in one row above the panel.
+
+* Files
+
+=save_figure= keeps the figure's exact size, so the width stays the column width.
+Fonts are embedded, as The Journal of Chemical Physics asks of every figure.
+They are embedded as TrueType (=pdf.fonttype= 42) rather than matplotlib's default Type 3.
+PDF and SVG files carry no creation date, and SVG ids come from a fixed salt.
+The same script therefore writes the same bytes on every run.
+
+* References
+
+- International Electrotechnical Commission (IEC) 61966-2-1:1999, the sRGB colour space.
+- ISO/CIE 11664-4:2019, the CIELAB colour space; ISO/CIE 11664-6:2014, the CIEDE2000 colour-difference formula.
+- G. Sharma, W. Wu and E. N. Dalal, The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations, Color Research and Application 30, 21 (2005).
+- G. M. Machado, M. M. Oliveira and L. A. F. Fernandes, A physiologically-based model for simulation of color vision deficiency, Institute of Electrical and Electronics Engineers (IEEE) Transactions on Visualization and Computer Graphics 15, 1291 (2009).
+- World Wide Web Consortium, Web Content Accessibility Guidelines 2.1 (2018).
+- M. Okabe and K. Ito, Color Universal Design: how to make figures and presentations that are friendly to colorblind people (2008).
+- B. Wong, Points of view: color blindness, Nature Methods 8, 441 (2011).
+- P. Kovesi, Good colour maps: how to design them, arXiv:1509.03700 (2015).
+- K. Moreland, Diverging color maps for scientific visualization, in Advances in Visual Computing, Lecture Notes in Computer Science 5876, 92 (Springer, 2009).
+- ISO 3098-1:2015, Technical product documentation, Lettering, Part 1: General requirements.
+- ISO 128-2:2020, Technical product documentation, General principles of representation, Part 2: Basic conventions for lines.
+- Braille Institute of America, Atkinson Hyperlegible (2019).
+- A. Thompson and B. N. Taylor, Guide for the Use of the International System of Units (SI), NIST Special Publication 811 (2008).
+- E. R. Tufte, The Visual Display of Quantitative Information (Graphics Press, 1983).
