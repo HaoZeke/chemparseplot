@@ -13,7 +13,18 @@ from __future__ import annotations
 import importlib
 from typing import TYPE_CHECKING, Any
 
-__all__ = ["parse", "units"]
+try:
+    from chemparseplot._version import __version__
+except ImportError:
+    # A source tree that hatch-vcs has not built yet has no _version.py.
+    from importlib.metadata import PackageNotFoundError, version
+
+    try:
+        __version__ = version("chemparseplot")
+    except PackageNotFoundError:
+        __version__ = "0.0.0+unknown"
+
+__all__ = ["__version__", "parse", "units"]
 
 if TYPE_CHECKING:
     from chemparseplot import parse as parse
