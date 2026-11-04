@@ -119,7 +119,10 @@ NEXT="${NEXT#v}"
 uvx towncrier build --version "$NEXT"
 
 # 4. Commit the release notes (historically: release: vX.Y.Z)
-git add CHANGELOG.md doc/release/upcoming_changes
+#    towncrier stages CHANGELOG.md and git-removes the consumed fragments;
+#    --ignore-unmatch keeps git rm from failing once that removal is staged
+git add CHANGELOG.md
+git rm -r -q --ignore-unmatch doc/release/upcoming_changes
 git commit -m "release: v$NEXT"
 
 # 5. Apply the release tag (hatch-vcs reads the version from tags)
