@@ -22,23 +22,36 @@ be edited separately.
 
 ** Steps
 
-#+begin_src bash
-# 1. Run the same checks the tag workflow expects
-uv sync --extra test --extra plot --extra lint --extra doc --extra release
-uv run pytest --cov=chemparseplot tests
-uv run ruff check .
-uv run ruff format --check .
-uv run sphinx-build doc/source/ doc/build
+Run the block as one bash script, since it exits at the first failing command.
 
-# 2. Preview the next semantic version
-cog bump --dry-run --auto
+#+begin_src bash
+set -euo pipefail
+
+# 1. Run the same checks the tag workflow expects
+#    --frozen uses uv.lock as committed and never rewrites it
+uv sync --frozen --extra test --extra plot --extra lint --extra doc --extra release
+uv run --frozen pytest --cov=chemparseplot tests
+uv run --frozen ruff check .
+uv run --frozen ruff format --check .
+uv run --frozen sphinx-build doc/source/ doc/build
+
+# 2. Preview the next semantic version; the heading drops the v
+if ! NEXT="$(cog bump --dry-run --auto)"; then
+  echo "release: cog bump --dry-run --auto failed, stopping" >&2
+  exit 1
+fi
+if [[ ! "$NEXT" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "release: cog gave '$NEXT', not vX.Y.Z, stopping" >&2
+  exit 1
+fi
+NEXT="${NEXT#v}"
 
 # 3. Aggregate towncrier fragments into CHANGELOG.md
-uvx towncrier build --version "1.7.1"
+uvx towncrier build --version "$NEXT"
 
 # 4. Commit the release notes and consumed fragments
 git add CHANGELOG.md doc/release/upcoming_changes
-git commit -m "release: v1.7.1"
+git commit -m "release: v$NEXT"
 
 # 5. Tag the release and push
 cog bump --auto
