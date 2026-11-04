@@ -5153,31 +5153,35 @@ Source: https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/AGENTS.md
 
 Working notes for changing or scripting against chemparseplot.
 The manual is published at <https://chemparseplot.rgoswami.me/>, built from Org pages under `docs/orgmode/` and MyST Markdown pages under `doc/source/`.
-`doc/source/llms.txt` is its hand-written map, served as <https://chemparseplot.rgoswami.me/llms.txt>, and `llms-full.txt` at the repository root holds the manual in one file and names what it leaves out.
+`doc/source/llms.txt` is its hand-written map, served as <https://chemparseplot.rgoswami.me/llms.txt>.
+`llms-full.txt` at the repository root has the manual in one file and names what it leaves out.
 Task guides with scripts that CI runs are under `skills/`.
 
 ### What chemparseplot is
 
-- Parsers that turn the output of computational chemistry codes into numpy arrays, pint quantities and small dataclasses: eOn (NEB, saddle searches, minimisations, `.con` frames through readcon), ORCA (relaxed surface scans, NEB through orca-pi or `.interp` files), Sella, ChemGP (HDF5 and JSONL), PLUMED, and surrogate-assisted searches (gpr_optim, ML-NEB).
+- Parsers that turn the output of computational chemistry codes into numpy arrays, pint quantities and small dataclasses.
+  For eOn they read nudged elastic band (NEB) runs, saddle searches, minimisations and `.con` frames (through readcon).
+  For the quantum chemistry program (ORCA) they read relaxed surface scans, and NEB runs through orca-pi or `.interp` files.
+  They also read Sella, ChemGP output in HDF5 and JSON Lines files, PLUMED, and surrogate-assisted searches (gpr_optim, ML-NEB).
 - Plotting functions under `chemparseplot.plot`, on matplotlib, and on plotnine for `chemparseplot.plot.chemgp`.
 - `chemparseplot.api` collects the entry points meant to stay stable: `parse_xyz`, `parse_orca_final_energy`, `extract_orca_geomscan_energy`, `load_trajectory`, `plot_con_overview`, `plot_con_overlay`, `suite_pins`.
 - The command-line tools that draw these figures (`rgpycrumbs eon plt-neb` and the rest) and the surface fits live in rgpycrumbs, which chemparseplot imports inside a few plotting functions.
 
 ### Layout
 
-| Path | Contents |
-|---|---|
-| `chemparseplot/parse/` | Parsers; a directory per code that has several (`eon`, `orca`, `sella`, `surrogate`, `trajectory`, `grammar`) |
-| `chemparseplot/plot/` | Plotting; `structs.py` holds `EnergyPath`, `XYData`, `BasePlotter`, `TwoDimPlot` |
-| `chemparseplot/units.py` | The pint registry: `Q_`, `ureg` and the energy-unit helpers |
-| `tests/` | The pytest suite; small outputs in `tests/fixtures/` |
-| `docs/orgmode/`, `docs/export.el` | Org pages and their export to reStructuredText |
-| `doc/source/` | Sphinx: `conf.py`, MyST pages and notebooks, `llms.txt`; the exported `.rst` files and `apidocs/` are generated and ignored |
-| `readme_src.org`, `readme.md` | The README and its Markdown export, which is also the PyPI description |
-| `scripts/llms/` | The `llms-full.txt` generator, its settings `llms.toml` and its tests |
-| `scripts/skills/run_skills.py` | Checks every skill and runs its examples |
-| `skills/` | Task guides: `chemparseplot-orca-scan`, `chemparseplot-add-parser`, `chemparseplot-docs` |
-| `doc/release/upcoming_changes/` | towncrier fragments; `CHANGELOG.md` is built from them |
+- `chemparseplot/parse/`: the parsers, with a directory for each code that has more than one (`eon`, `orca`, `sella`, `surrogate`, `trajectory`, `grammar`).
+- `chemparseplot/plot/`: the plotting functions.
+  `structs.py` defines `EnergyPath`, `XYData`, `BasePlotter` and `TwoDimPlot`.
+- `chemparseplot/units.py`: the pint registry, with `Q_`, `ureg` and the energy-unit helpers.
+- `tests/`: the pytest suite, with small outputs in `tests/fixtures/`.
+- `docs/orgmode/` and `docs/export.el`: the Org pages and their export to reStructuredText.
+- `doc/source/`: the Sphinx side, with `conf.py`, the MyST pages and notebooks, and `llms.txt`.
+  The exported `.rst` files and `apidocs/` are generated and ignored.
+- `readme_src.org` and `readme.md`: the README and its Markdown export, which is also the PyPI description.
+- `scripts/llms/`: the `llms-full.txt` generator, its settings `llms.toml` and its tests.
+- `scripts/skills/run_skills.py`: the script that checks every skill and runs its examples.
+- `skills/`: the task guides `chemparseplot-orca-scan`, `chemparseplot-add-parser` and `chemparseplot-docs`.
+- `doc/release/upcoming_changes/`: the towncrier fragments that `CHANGELOG.md` is built from.
 
 ### Install
 
@@ -5186,31 +5190,36 @@ Task guides with scripts that CI runs are under `skills/`.
 - The extras are `plot`, `neb`, `xyzrender`, `rings`, `opi`, `grammar`, `all` (those six), `doc`, `test`, `lint` and `release`.
   No extra installs rgpycrumbs except `test`, and none installs pandas or plotnine.
 - For development, as CI does: `uv sync --all-extras` (Python 3.11 or 3.12).
-  `uv.lock` is out of date on main (`uv lock --check` fails), so `uv sync` and `uv run` rewrite it; restore it with `git checkout -- uv.lock` unless the change is about dependencies.
-  The lock pins rgpycrumbs 1.3.0; PyPI has 1.13.0.
+  `uv.lock` is out of date on main (`uv lock --check` fails), so `uv sync` and `uv run` rewrite it.
+  Restore it with `git checkout -- uv.lock` unless the change is about dependencies.
+  The lock pins rgpycrumbs 1.3.0, while PyPI has 1.13.0.
 - The rewritten lock leaves the tree dirty, so hatch-vcs gives the package a dev version.
   At the v1.13.2 tag `uv sync --extra doc` installs `1.13.3.dev0+gd5e1b77cd.d` and the date instead of 1.13.2, and the title of the published site reads `chemparseplot 1.13.3.dev0+gd5e1b77cd.d20261031 documentation`.
 
 ### Test
 
-- `uv run pytest tests`; CI runs `uv run pytest --cov=chemparseplot tests` on Python 3.11 and 3.12.
+- `uv run pytest tests` runs the suite.
+  CI runs `uv run pytest --cov=chemparseplot tests` on Python 3.11 and 3.12.
   At `d5e1b77` with all extras on Python 3.12: 528 passed and 59 skipped in 67 s.
   58 of the skips are for pandas or plotnine.
 - Run pytest through `uv run`, or with `.venv/bin` on `PATH`.
   `test_xyzrender_not_installed` takes a missing `xyzrender` command to mean that xyzrender is not installed.
   With the extra installed, `.venv/bin/python -m pytest` alone makes it fail: 527 passed, 59 skipped and 1 failed.
 - The markers select little.
-  Of 585 tests, 25 are marked `pure`, 77 `neb` and none `grammar`; 483 have no marker.
-  `pytest -m pure` (22 passed, 5 skipped, 2 s) is a smoke test, not the suite.
-- The pandas and plotnine tests run in the pixi environments of `pixi.toml` (`test`, `plot`, `chemgp`, `plumed`), which the Coverage workflow combines; `pixi run cov` does the same locally.
+  Of 585 tests, 25 are marked `pure`, 77 `neb` and none `grammar`, and 483 have no marker.
+  `pytest -m pure` (22 passed, 5 skipped, 2 s) runs a small part of the suite.
+- The pandas and plotnine tests are run in the pixi environments of `pixi.toml` (`test`, `plot`, `chemgp`, `plumed`).
+  The Coverage workflow combines those runs, and `pixi run cov` does the same locally.
 - The Doctest Tutorials workflow runs `scripts/run_org_doctests.py` on `docs/orgmode/tutorials/*.org`.
   Every Python block there is marked `SKIP-DOCTEST`, so it runs none.
 
 ### Lint
 
-- `uvx prek run -a`, as the lints workflow does: whitespace and end-of-file fixes, YAML and TOML checks, ruff (with `--fix`), ruff-format, taplo-format and codespell, configured in `prek.toml`.
+- `uvx prek run -a` runs the hooks of `prek.toml`, as the lints workflow does.
+  They are the whitespace and end-of-file fixes, the `check-yaml` and `check-toml` hooks, ruff (with `--fix`), ruff-format, taplo-format and codespell.
   `uvx prek run --files FILE...` checks just the files you changed.
-- The ruff rules are in `pyproject.toml`; `skills/ruff.toml` extends them with the allowances `scripts/` and `tests/` already have.
+- The ruff rules are in `pyproject.toml`.
+  `skills/ruff.toml` extends them with the allowances `scripts/` and `tests/` already have.
 
 ### Docs
 
@@ -5220,21 +5229,27 @@ uv sync --extra doc
 uv run sphinx-build doc/source doc/build/html
 ```
 
-- The export needs Emacs 30 (Org 9.7); CI installs 30.1.
+- The export needs Emacs 30 (Org 9.7), and CI installs 30.1.
   Emacs 29.3, the Ubuntu 24.04 package, stops at the first page (see the `chemparseplot-docs` skill), and so does Emacs 30 with an ox-rst that Emacs 29 compiled.
   After switching Emacs, remove `~/.emacs.d/elpa/ox-rst-*` or use a fresh `HOME`.
-  With Emacs 30.2 the export wrote 27 pages in 1.3 s, and in 4 to 6 s when it first installed ox-rst from MELPA; Sphinx, with the doc extra only, took 21 s: "build succeeded, 17 warnings".
+  With Emacs 30.2 the export wrote 27 pages in 1.3 s, or in 4 to 6 s when it first installed ox-rst from Milkypostman's Emacs Lisp Package Archive (MELPA).
+  Sphinx, with the doc extra only, took 21 s and printed "build succeeded, 17 warnings".
 - Sphinx runs five notebooks: the two under `tutorials/chemgp/`, `tutorials/eon/saddle`, `tutorials/orca/geomscan` and `worklog/graphTrials`.
-  A failing cell is a warning, not an error, and its traceback goes under `doc/build/html/reports/`.
+  A failing cell gives a warning, and the build still succeeds.
+  The traceback goes under `doc/build/html/reports/`.
   With the doc extra only, as CI installs it, all five stop at their first cell on a missing module (h5py, rgpycrumbs, ase or matplotlib).
   With `uv sync --all-extras` three still fail: the chemgp pages need pandas and plotnine, which no extra installs, and `tutorials/orca/geomscan` never imports `TwoDimPlot`.
 - `python skills/chemparseplot-docs/scripts/where_is.py PAGE` names the file behind a page.
-- Fetched without a browser in November 2026, the site served `llms.txt` but none of the 39 pages it links: each answered HTTP 403 with a Cloudflare challenge titled "Just a moment...".
-  An address the site does not have answers HTTP 200 with the home page, never a 404, so a fetched page is only real if its title matches.
+- Fetched without a browser in November 2026, the site served `llms.txt` but none of the 39 pages it links.
+  Each of them returned HTTP 403 and a Cloudflare challenge titled `Just a moment...`.
+  For an address it does not have, the site returns its home page with status 200, never a 404.
+  A fetched page is only real if its title matches.
   Read the pages from the repository, or `llms-full.txt`, which the site does not publish.
-- `python scripts/llms/build_llms.py` rewrites `llms-full.txt` after a change to the pages, `AGENTS.md` or `skills/`; `--check`, which CI runs, exits 1 while it is stale.
+- After a change to the pages, `AGENTS.md` or `skills/`, run `python scripts/llms/build_llms.py` to rewrite `llms-full.txt`.
+  CI runs it with `--check`, which exits 1 while the file is stale.
   Its tests: `python -m unittest discover -s scripts/llms -p "test_*.py"`.
-- `readme.md` is the export of `readme_src.org` (`bash scripts/org_to_md.sh readme_src.org readme.md`), but on main the two have drifted apart; change both by hand.
+- `readme.md` is the export of `readme_src.org` (`bash scripts/org_to_md.sh readme_src.org readme.md`), but on main the two have drifted apart.
+  Change both by hand.
   Links in the README must be absolute, since PyPI shows it too.
 
 ### Changelog, commits, versions
@@ -5242,31 +5257,34 @@ uv run sphinx-build doc/source doc/build/html
 - One towncrier fragment per change, in `doc/release/upcoming_changes/`: `ISSUE.TYPE.md`, or `+NAME.TYPE.md` without an issue, with `TYPE` one of `removed`, `deprecated`, `added`, `changed`, `fixed`, `misc`.
   Preview with `uv run towncrier build --draft --version X.Y.Z`.
   A release (`docs/orgmode/release.org`) moves the fragments into `CHANGELOG.md` below the `<!-- towncrier release notes start -->` line, so after v1.13.2 the directory does not exist until the next fragment.
-  The file opens with 1.9.17 to 1.9.13, above that line; the newest entries start below it.
+  The file opens with 1.9.17 to 1.9.13, above that line, and the newest entries start below it.
 - Commit subjects are Conventional Commits with cog's default types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
   No workflow checks them, but the release picks the next version with `cog bump --auto`, which reads the types since the latest tag (`cog.toml`).
   Release commits are `release: vX.Y.Z`.
 - The version comes from the git tag through hatch-vcs and is written to the ignored `_version.py`.
-  The `version` in `pixi.toml` and `current` in `tbump.toml` still say 1.8.0; the build does not read them.
+  The `version` in `pixi.toml` and `current` in `tbump.toml` still say 1.8.0, but the build does not read them.
   `doc/source/conf.py` asks the installed package and falls back to 1.11.0, so a docs build without chemparseplot installed shows that.
   A `v*` tag publishes to PyPI.
 
 ### Common tasks
 
-- Read an ORCA scan, check its length unit and plot it: the `chemparseplot-orca-scan` skill.
-- Add a parser, with its tests, fragment and docs: the `chemparseplot-add-parser` skill.
-- Fix or add a docs page: the `chemparseplot-docs` skill.
+- Read an ORCA scan, check its length unit and plot it with the `chemparseplot-orca-scan` skill.
+- Add a parser with its tests, fragment and docs by following the `chemparseplot-add-parser` skill.
+- Fix or add a docs page with the `chemparseplot-docs` skill.
 - Check the skills: `uv run python scripts/skills/run_skills.py` (`--no-run` checks the frontmatter and links only).
 
 ### Pitfalls
 
-- `geomscan.extract_energy_data` labels ORCA scan distances bohr, but ORCA printed them in ångström; `.to("angstrom")` then shrinks them 1.89 times.
+- `geomscan.extract_energy_data` labels ORCA scan distances bohr, but ORCA printed them in ångström.
+  `.to("angstrom")` then shrinks them 1.89 times.
   The ORCA tutorial does that.
   Relabel instead.
-- `extract_energy_data(text, energy_type)` matches the table name as written (`"Actual"`, `"SCF"`); `"actual"` returns two empty arrays and no error.
+- `extract_energy_data(text, energy_type)` matches the table name as written (`"Actual"`, `"SCF"`).
+  `"actual"` returns two empty arrays and no error.
 - `Q_(e, "hartree").to("kcal/mol")` raises `DimensionalityError`: pint's kcal/mol is per mole.
   Use `"kcal_mol"`, which chemparseplot defines, or `chemparseplot.units.convert_energy_magnitude`.
-- `chemparseplot.plot.geomscan.plot_energy_paths` imports `rgpycrumbs.interpolation`, which needs scipy, and wants increasing distances; otherwise `ValueError: Error on input data`.
+- `chemparseplot.plot.geomscan.plot_energy_paths` imports `rgpycrumbs.interpolation`, which needs scipy, and wants increasing distances.
+  With decreasing distances it raises `ValueError: Error on input data`.
 - `TwoDimPlot.add_data` takes `XYData`, not `EnergyPath`.
 - `BasePlotter` calls `plt.style.use("bmh")` for the whole session.
 - `import chemparseplot.plot.chemgp` fails without pandas and plotnine.
@@ -5276,67 +5294,81 @@ uv run sphinx-build doc/source doc/build/html
   - `doc/source/installation.md` and `doc/source/quickstart.md` say that installing chemparseplot, or its `all` extra, pulls in rgpycrumbs, and that there is no `xyzrender` extra.
     Neither is true.
   - The quickstart calls `parse_eon_saddle(eresp="results_saddle.dat", rloc="saddle/")`, which raises `TypeError`.
-    It takes the results directory as a `Path` and an `rgpycrumbs.basetypes.SpinID`, and the `SaddleMeasure` it returns has `saddle_energy` and `termination_status`, not `energy` and `status`.
-  - `ARCHITECTURE.md` calls `extract_energy_data` with one argument and converts hartree to kcal/mol with `.to`; both raise.
-  - `docs/orgmode/dev/contributing.org` puts tests next to the parser, lists a `plot` marker that is not declared, and imports `rgpycrumbs._aux.ensure_import`; rgpycrumbs is not a runtime dependency.
-  - `howto/install`, `howto/faq` and `tutorials/orca_neb` list Python 3.10; `requires-python` is `>=3.11`.
+    It takes the results directory as a `Path` and an `rgpycrumbs.basetypes.SpinID`.
+    The `SaddleMeasure` it returns has `saddle_energy` and `termination_status`, not `energy` and `status`.
+  - `ARCHITECTURE.md` calls `extract_energy_data` with one argument and converts hartree to kcal/mol with `.to`, and both calls raise.
+  - `docs/orgmode/dev/contributing.org` puts tests next to the parser, lists a `plot` marker that is not declared, and imports `rgpycrumbs._aux.ensure_import`, though rgpycrumbs is not a runtime dependency.
+  - `howto/install`, `howto/faq` and `tutorials/orca_neb` list Python 3.10, but `requires-python` is `>=3.11`.
   - `howto/dev_testing` says `pixi run cov` fails below 90% coverage and that coverage runs with `parallel = true`.
     The `cov` task sets no threshold, the Coverage workflow fails below 70%, and `pyproject.toml` has `parallel = false`.
-- An Org link to another page, `[[file:page.org][...]]`, ends up as a link to `page.rst` on the site; see the `chemparseplot-docs` skill.
-- `CONTRIBUTING.md` at the root is empty; the guide is `docs/orgmode/dev/contributing.org`.
+- An Org link to another page, `[[file:page.org][...]]`, ends up as a link to `page.rst` on the site.
+  The `chemparseplot-docs` skill gives the export snippet to use instead.
+- `CONTRIBUTING.md` at the root is empty, and the guide is `docs/orgmode/dev/contributing.org`.
 
 ## Skill: chemparseplot-add-parser
 
 Source: https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/skills/chemparseplot-add-parser/SKILL.md
 
-Add a parser for the output of a computational chemistry code to chemparseplot. Covers where the module and its tests go, keeping the bare install (numpy and pint) importable, returning pint quantities in the unit the code really printed, failing loudly instead of returning empty arrays, the MyST docstring the API reference is built from, the test markers, the towncrier fragment and the docs pages to touch. Use when asked to parse a new kind of output file, or a new section of ORCA, eOn, Sella or PLUMED output.
+Add a parser for the output of a computational chemistry code to chemparseplot. Covers where the module and its tests go, keeping the bare install (numpy and pint) importable, returning pint quantities in the unit the code printed, failing loudly instead of returning empty arrays, the MyST docstring behind the API reference, the test markers, the towncrier fragment and the docs pages to touch. Use when asked to parse a new type of output file, or a new section of ORCA, eOn, Sella or PLUMED output.
 
 ### Where it goes
 
-- The module: `chemparseplot/parse/ENGINE/NAME.py` for a code that already has a directory (`eon`, `orca`, `sella`, `surrogate`, `trajectory`), or `chemparseplot/parse/NAME.py` next to `plumed.py` and `chemgp_hdf5.py`.
-- The tests: `tests/parse/ENGINE/test_NAME.py`, or `tests/parse/test_NAME.py`.
-  pytest collects `tests/` only; the layout in `docs/orgmode/dev/contributing.org`, with the test next to the parser, is not what the repository does.
-- Re-exporting from the package `__init__.py` is optional: `chemparseplot.parse.orca` exports `geomscan` and the NEB parsers, most modules are imported by their full name.
+- The module is `chemparseplot/parse/ENGINE/NAME.py` for a code that already has a directory (`eon`, `orca`, `sella`, `surrogate`, `trajectory`), or `chemparseplot/parse/NAME.py` next to `plumed.py` and `chemgp_hdf5.py`.
+- The tests are `tests/parse/ENGINE/test_NAME.py`, or `tests/parse/test_NAME.py`.
+  pytest collects `tests/` only.
+  The layout in `docs/orgmode/dev/contributing.org`, with the test next to the parser, is not what the repository does.
+- Re-exporting from the package `__init__.py` is optional.
+  `chemparseplot.parse.orca` exports `geomscan` and the nudged elastic band (NEB) parsers, but callers import most modules by their full name.
 
 ### The module
 
 [assets/scan_steps.py](https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/skills/chemparseplot-add-parser/assets/scan_steps.py) is a complete parser.
-It reads the banner ORCA prints at each step of a bond scan and returns the atom pair and the bond lengths:
+It reads the banner that the quantum chemistry program (ORCA) prints at each step of a bond scan and returns the atom pair and the bond lengths:
 
-- The SPDX header and a module docstring, like every file in the package.
+- The Software Package Data Exchange (SPDX) header and a module docstring, like every file in the package.
 - Only numpy, pint and the standard library at module level.
-  The dependencies of chemparseplot are numpy and pint; `import chemparseplot.parse` loads `eon`, `orca` and `patterns`, and `chemparseplot.parse.orca` loads `geomscan` and `neb`, so a module-level import of anything else in a module they load breaks every bare install.
+  The dependencies of chemparseplot are numpy and pint.
+  `import chemparseplot.parse` loads `eon`, `orca` and `patterns`, and `chemparseplot.parse.orca` loads `geomscan` and `neb`.
+  A module-level import of anything else in a module they load breaks every bare install.
   Import optional packages inside the function that needs them (ruff's PLC0415 is switched off under `chemparseplot/parse/`).
-  rgpycrumbs is not a dependency either: the `rgpycrumbs._aux.ensure_import` recipe in `docs/orgmode/dev/contributing.org` fails where rgpycrumbs is not installed.
+  rgpycrumbs is not a dependency either.
+  The `rgpycrumbs._aux.ensure_import` recipe in `docs/orgmode/dev/contributing.org` fails where rgpycrumbs is not installed.
 - Values as pint quantities from `chemparseplot.units.Q_`, in the unit the code printed.
   Check it against the output instead of the code's defaults: `geomscan.extract_energy_data` labels ORCA scan distances bohr while ORCA printed ångström (see the `chemparseplot-orca-scan` skill).
   Unit names are pint's: `"hartree"`, `"eV"`, `"angstrom"`, `"bohr"`.
-  `"kcal/mol"` is per mole in pint and does not convert from hartree; `"kcal_mol"`, which chemparseplot defines, does.
-- A `ValueError` with a message when the text holds nothing to parse.
+  `"kcal/mol"` is per mole in pint and does not convert from hartree.
+  `"kcal_mol"`, which chemparseplot defines, does.
+- A `ValueError` with a message when the text has nothing to parse.
   `geomscan.extract_energy_data` returns empty arrays instead, and a misspelt table name then looks like an empty scan.
-  Build messages in a variable first (`msg = ...; raise ValueError(msg)`); ruff's EM rules are on.
-- A numpy-style docstring with a MyST block for the release that first ships the function:
+  Build messages in a variable first (`msg = ...; raise ValueError(msg)`), since ruff's EM rules are on.
+- A numpy-style docstring with a MyST block for the first release with the function:
 
   ````text
   ```{versionadded} 1.14.0
   ```
   ````
 
-  The version comes from git tags (hatch-vcs); take the release after `git describe --tags --abbrev=0`.
-  The API reference at `/apidocs/` is generated by sphinx-autodoc2 from every module of the package, so the docstring is the reference page and there is nothing to register.
+  The version comes from git tags (hatch-vcs).
+  Take the release after `git describe --tags --abbrev=0`.
+  sphinx-autodoc2 writes the API reference at `/apidocs/` from every module of the package, so the docstring is the reference page and there is nothing to register.
 
 ### Tests
 
 [assets/test_scan_steps.py](https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/skills/chemparseplot-add-parser/assets/test_scan_steps.py) shows the usual shape: a snippet of real output inline, the error paths, and a check against a whole run when one is in the repository.
 
 - Mark the module `pytestmark = pytest.mark.pure` when the parser needs only numpy and pint.
-  pyproject.toml declares three markers: `pure`, `neb` (ase, polars, h5py, scipy, matplotlib and rgpycrumbs; add `skip_if_not_env("neb")` from `tests.conftest`, as `tests/parse/test_neb_utils.py` does) and `grammar` (parsimonious).
+  pyproject.toml declares three markers: `pure`, `neb` and `grammar`.
+  Tests marked `neb` need ase, polars, h5py, scipy, matplotlib and rgpycrumbs.
+  Call `skip_if_not_env("neb")` from `tests.conftest` at the top of such a module, as `tests/parse/test_neb_utils.py` does.
+  Tests marked `grammar` need parsimonious.
   The `plot` marker that `docs/orgmode/dev/contributing.org` lists is not declared.
 - Keep snippets inline or in `tests/fixtures/`.
-  A whole output goes in gzipped, like `doc/source/tutorials/orca/data/scanuhf.gz`; the pre-commit hooks refuse files over 1000 kB.
+  A whole output goes in gzipped, like `doc/source/tutorials/orca/data/scanuhf.gz`.
+  The pre-commit hooks refuse files over 1000 kB.
 - Run one file with `uv run pytest tests/parse/orca/test_scan_steps.py`.
   CI runs `uv sync --all-extras` and `uv run pytest --cov=chemparseplot tests` on Python 3.11 and 3.12.
-  `uv run` and `uv sync` may rewrite `uv.lock`; leave that out of the commit unless the dependencies changed.
+  `uv run` and `uv sync` may rewrite `uv.lock`.
+  Leave that out of the commit unless the dependencies changed.
 
 ### Lint, changelog and docs
 
@@ -5345,9 +5377,11 @@ It reads the banner ORCA prints at each step of a bond scan and returns the atom
   A release moves the fragments into `CHANGELOG.md`, so on main the directory may not exist until the first fragment is added: `ISSUE.added.md`, or `+NAME.added.md` without an issue.
   One line or paragraph of Markdown.
   The types are `removed`, `deprecated`, `added`, `changed`, `fixed` and `misc`.
-  Preview with `uv run towncrier build --draft --version X.Y.Z`; the draft changes nothing.
+  Preview with `uv run towncrier build --draft --version X.Y.Z`.
+  The draft changes nothing.
 - A how-to page when the parser is meant for users: `docs/orgmode/howto/NAME.org`, added to the How-to toctree in the `#+begin_export rst` block of `docs/orgmode/index.org` and to the table in `docs/orgmode/howto/index.org`, plus a line in the site map `doc/source/llms.txt`.
-  Then run `python scripts/llms/build_llms.py`; CI fails while `llms-full.txt` is stale.
+  Then run `python scripts/llms/build_llms.py`.
+  CI fails while `llms-full.txt` is stale.
 - Commit subjects follow the log: `feat(parse): read ORCA scan step banners`.
 
 ### Check
@@ -5356,32 +5390,38 @@ It reads the banner ORCA prints at each step of a bond scan and returns the atom
 python scripts/scaffold_check.py
 ```
 
-copies the package, the tests, `pyproject.toml`, `CHANGELOG.md` and the ORCA tutorial run into a temporary directory, puts the two assets at `chemparseplot/parse/orca/scan_steps.py` and `tests/parse/orca/test_scan_steps.py`, and checks that Python imports the module from the copy, that its four tests pass, that ruff check and ruff format accept both files under the repository's rules, and that a fragment shows up under "Added" in a towncrier draft.
+The script copies the package, the tests, `pyproject.toml`, `CHANGELOG.md` and the ORCA tutorial run into a temporary directory.
+It puts the two assets at `chemparseplot/parse/orca/scan_steps.py` and `tests/parse/orca/test_scan_steps.py`, and adds a fragment for them.
+It then checks that Python imports the module from the copy and that its four tests pass.
+It also checks that ruff check and ruff format accept both files under the repository's rules.
+Last, a towncrier draft has to list the fragment under "Added".
 The checkout is not changed.
 
 ## Skill: chemparseplot-docs
 
 Source: https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/skills/chemparseplot-docs/SKILL.md
 
-Find, edit and rebuild a page of the chemparseplot manual. Covers the Org pages under docs/orgmode/ that docs/export.el turns into generated reStructuredText, the MyST Markdown pages and notebooks under doc/source/, the API reference sphinx-autodoc2 writes from docstrings, links between pages, the site map doc/source/llms.txt and llms-full.txt, the README export, and the Emacs version the build needs. Use when asked to fix or add a docs page, when the file behind a page cannot be found, or when the docs build fails.
+Find, edit and rebuild a page of the chemparseplot manual. Covers the Org pages under docs/orgmode/ that docs/export.el turns into generated reStructuredText, the MyST Markdown pages and notebooks under doc/source/, the API reference that sphinx-autodoc2 builds from docstrings, links between pages, the site map doc/source/llms.txt and llms-full.txt, the README export, and the Emacs version the build needs. Use when asked to fix or add a docs page, when the file behind a page cannot be found, or when the docs build fails.
 
 ### Which file is a page
 
 | Pages | Source | Built by |
 |---|---|---|
 | `index`, `howto/`, `explanation/`, `reference/`, `dev/`, `release`, `used_by`, `tutorials/orca_neb` | `docs/orgmode/PAGE.org` | `docs/export.el` (ox-rst) writes `doc/source/PAGE.rst`, then Sphinx |
-| `quickstart`, `installation`, `features`, the other `tutorials/`, `worklog/graphTrials` | `doc/source/PAGE.md` | Sphinx with MyST; pages with `{code-cell}` blocks are notebooks that myst-nb runs during the build |
+| `quickstart`, `installation`, `features`, the other `tutorials/`, `worklog/graphTrials` | `doc/source/PAGE.md` | Sphinx with MyST (myst-nb runs the pages with `{code-cell}` blocks as notebooks during the build) |
 | `apidocs/` | docstrings under `chemparseplot/` | sphinx-autodoc2, for every module, private ones included |
 | `llms.txt` | `doc/source/llms.txt` | copied to the site root (`html_extra_path`) |
 
 `python scripts/where_is.py PAGE` prints the source of one page, given its address, its name (`howto/install`) or a file under `doc/source/`.
 
 - Never edit `doc/source/**/*.rst`.
-  They are written by the export and ignored by `doc/source/.gitignore`; the next export overwrites them.
+  The export writes them and `doc/source/.gitignore` ignores them.
+  The next export overwrites them.
 - `tutorials/index` has both sources.
   `export.el` leaves `docs/orgmode/tutorials/index.org` out, so the site shows `doc/source/tutorials/index.md`.
 - `doc/source/contributing.md` is left out by `exclude_patterns` in `doc/source/conf.py`.
-  The published guide is `docs/orgmode/dev/contributing.org`; `CONTRIBUTING.md` at the root is empty.
+  The published guide is `docs/orgmode/dev/contributing.org`.
+  `CONTRIBUTING.md` at the root is empty.
 - `readme.md` is exported from `readme_src.org` with `bash scripts/org_to_md.sh readme_src.org readme.md`.
   Change both.
   The Generate README workflow pushes its export to the `readme` branch, not to main.
@@ -5392,10 +5432,12 @@ Find, edit and rebuild a page of the chemparseplot manual. Covers the Org pages 
   `doc/source/tutorials/index.md` and `doc/source/tutorials/chemgp/index.md` hold MyST toctrees for their pages.
   The section pages such as `docs/orgmode/howto/index.org` are tables of links, not toctrees.
   A page in no toctree is built with the warning "document isn't included in any toctree", as `howto/surrogate_search_figures` is on main.
-- An Org link to another page, `[[file:install.org][text]]`, comes out of ox-rst as `` `text <install.rst>`_ `` and in the HTML as `href="install.rst"`, which the site does not serve.
+- An Org link to another page, `[[file:install.org][text]]`, comes out of ox-rst as `` `text <install.rst>`_ ``.
+  In the HTML it becomes `href="install.rst"`, which the site does not serve.
   Main has 111 such links in 25 Org files.
   Link pages with an export snippet instead: ``@@rst::doc:`install`@@`` (the target's title) or ``@@rst::doc:`text <install>`@@``, both of which become links to `install.html`.
-- `python scripts/llms/build_llms.py` prints a note for each Org link to a file that does not exist; on main, `docs/orgmode/dev/index.org` links eight and `docs/orgmode/dev/contributing.org` one.
+- `python scripts/llms/build_llms.py` prints a note for each Org link to a file that does not exist.
+  On main, `docs/orgmode/dev/index.org` links eight such files and `docs/orgmode/dev/contributing.org` one.
 
 ### Build
 
@@ -5410,24 +5452,31 @@ uv run sphinx-build doc/source doc/build/html
 - Emacs 30.
   CI installs 30.1.
   Emacs 29.3 with its Org 9.6.15 stops at the first page with `void-function (org-element-parent)`, although `export.el` defines a stand-in for `org-element-type-p`.
-- On the first run `export.el` installs ox-rst from MELPA into `~/.emacs.d/elpa`, and the Emacs that installs it byte-compiles it.
-  A copy the other version compiled stops at the first page: with `wrong-number-of-arguments` under Emacs 29, with `wrong-type-argument` under Emacs 30.
+- On the first run `export.el` installs ox-rst from Milkypostman's Emacs Lisp Package Archive (MELPA) into `~/.emacs.d/elpa`, and the Emacs that installs it byte-compiles it.
+  A copy that the other version compiled stops at the first page, with `wrong-number-of-arguments` under Emacs 29 and with `wrong-type-argument` under Emacs 30.
   After switching Emacs, run with a fresh `HOME`, or remove `~/.emacs.d/elpa/ox-rst-*` so that `export.el` installs and compiles it again.
 - Notebooks run during the build.
   A cell that fails is a warning, the build still succeeds, and the traceback is written under `doc/build/html/reports/`, which CI deploys with the rest of `doc/build/html`.
   CI installs the doc extra only, so all five notebooks stop at their first cell on a missing module (h5py, rgpycrumbs, ase or matplotlib).
-  With `uv sync --all-extras` on main three fail: `tutorials/chemgp/convergence` and `tutorials/chemgp/surfaces` import pandas and plotnine, which no extra installs, and `tutorials/orca/geomscan` uses `TwoDimPlot` without importing it.
-  With pandas and plotnine added, `tutorials/chemgp/surfaces` still fails: it passes `true_energy=` to `plot_gp_progression`, whose parameter is `_true_energy`.
-- `uv run` and `uv sync` may rewrite `uv.lock`; restore it with `git checkout -- uv.lock` unless the dependencies changed.
+  With `uv sync --all-extras` on main, three of them fail.
+  `tutorials/chemgp/convergence` and `tutorials/chemgp/surfaces` import pandas and plotnine, which no extra installs.
+  `tutorials/orca/geomscan` uses `TwoDimPlot` without importing it.
+  With pandas and plotnine added, `tutorials/chemgp/surfaces` still fails.
+  It passes `true_energy=` to `plot_gp_progression`, whose parameter is `_true_energy`.
+- `uv run` and `uv sync` may rewrite `uv.lock`.
+  Restore it with `git checkout -- uv.lock` unless the dependencies changed.
 
 ### Site map and llms-full.txt
 
 - Add a line for a new page to `doc/source/llms.txt`, in its section: `- [Title](https://chemparseplot.rgoswami.me/PAGE): what it is for`.
-- Fetched without a browser, the pages of the site answer HTTP 403 with a Cloudflare challenge ("Just a moment..."); only `llms.txt` comes back.
+- Fetched without a browser, the pages of the site answer HTTP 403 with a Cloudflare challenge (`Just a moment...`).
+  Only `llms.txt` comes back.
   Check a page in your own build, `doc/build/html/PAGE.html`, not on the site.
 - `python scripts/llms/build_llms.py` writes `llms-full.txt`: every page in toctree order, converted to Markdown from its Org or MyST source, then `AGENTS.md` and the skills.
-  Its settings are in `scripts/llms/llms.toml`; a page listed under `full_exclude` there is left out, and the header of the file names it.
-  With `--check` it changes nothing and exits 1 when the file is stale; CI runs that.
+  Its settings are in `scripts/llms/llms.toml`.
+  A page listed under `full_exclude` there is left out, and the header of the file names it.
+  With `--check` it changes nothing and exits 1 when the file is stale.
+  CI runs that.
   It exits 2 when the site map links a page with no source or when a page names a file in a home, temporary or scratch directory.
 
 ### Check
@@ -5436,14 +5485,15 @@ uv run sphinx-build doc/source doc/build/html
 python scripts/where_is.py
 ```
 
-prints the source of every page the site map links and exits 1 when one has none.
+The script prints the source of every page that the site map links.
+It exits 1 when one has none.
 On main all 39 have one.
 
 ## Skill: chemparseplot-orca-scan
 
 Source: https://raw.githubusercontent.com/HaoZeke/chemparseplot/main/skills/chemparseplot-orca-scan/SKILL.md
 
-Read an ORCA relaxed surface scan (a `%geom Scan` over a bond) with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and packages no chemparseplot extra installs. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
+Read a relaxed surface scan from the quantum chemistry program (ORCA), a `%geom Scan` over a bond, with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and packages no chemparseplot extra installs. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
 
 ### What ORCA writes
 
@@ -5459,7 +5509,7 @@ end
 ```
 
 `B 0 1` is the bond between atoms 0 and 1 (ORCA counts from 0), stepped from the first value to the second in 33 constrained optimisations.
-Near the end of the output ORCA prints two tables with one row per step, the coordinate and then the energy in hartree:
+Near the end of the output ORCA prints two tables with one row per step, the coordinate and then the energy in hartree.
 
 ```text
 The Calculated Surface using the 'Actual Energy'
@@ -5474,7 +5524,7 @@ The output of that run is in the repository as `doc/source/tutorials/orca/data/s
 
 ### Read it
 
-`extract_energy_data` takes the text of the output, not a path, and the table name, `"Actual"` or `"SCF"`.
+`extract_energy_data` takes the text of the output as a string, and the table name, `"Actual"` or `"SCF"`.
 It returns two pint quantities:
 
 ```python
@@ -5498,7 +5548,7 @@ Run from this directory in a chemparseplot checkout, the block reads the tutoria
 The distances come back labelled bohr, whatever ORCA printed.
 ORCA printed ångström here: at step 1 the Cartesian coordinates in the output put the two atoms 7.558904 Å apart, and the first row of the table is 7.55890395.
 So `distance.to("angstrom")` gives 4.0 Å where the bond was 7.56 Å, 1.89 times too short.
-The tutorial does exactly that conversion, and the comment in its input, "Converted from Angstrom to Bohr", is the same mistake made on the way in: ORCA read the numbers as ångström and scanned from 7.56 Å to 0.21 Å.
+The tutorial does exactly that conversion, and the comment in its input, `Converted from Angstrom to Bohr`, is the same mistake made on the way in: ORCA read the numbers as ångström and scanned from 7.56 Å to 0.21 Å.
 
 Relabel the numbers instead of converting them:
 
@@ -5517,8 +5567,9 @@ The same label is put on the first column of any scan, so for an angle or a dihe
 
 - The name is pasted into a regular expression and matched as written: `"actual"`, `"ACTUAL"` and `"scf"` find nothing.
   A name that matches nothing returns two empty arrays, with no error or warning, so check the length.
-- `"Actual"` is the total energy the optimiser used and `"SCF"` the SCF energy alone.
-  In the tutorial run, plain UHF, the two tables are the same; `scripts/scan_table.py` compares them.
+- `"Actual"` is the total energy the optimiser used and `"SCF"` the self-consistent field (SCF) energy alone.
+  In the tutorial run, plain unrestricted Hartree-Fock (UHF), the two tables are the same.
+  `scripts/scan_table.py` compares them.
 - Only one-coordinate scans were checked.
   The pattern reads two numbers per row.
 
@@ -5543,15 +5594,18 @@ plotter.fig.savefig("scan.png")
 - Sort first.
   ORCA scans run in the order of the input, here from long to short, and the spline then fails with `ValueError: Error on input data`.
 - It imports `rgpycrumbs.interpolation` when called, and that needs scipy.
-  Neither is in any chemparseplot extra, `[all]` included:
+  Neither is in any chemparseplot extra, `[all]` included.
+  Without rgpycrumbs the call stops with `ModuleNotFoundError`.
+  Without scipy, rgpycrumbs raises `ImportError: Module 'scipy.interpolate' is required`.
+  Install the plot extra and both packages in one command:
 
   ```bash
   pip install "chemparseplot[plot]" rgpycrumbs "scipy>=1.11"
   ```
 
-  Without rgpycrumbs the call stops with `ModuleNotFoundError`; without scipy, rgpycrumbs raises `ImportError: Module 'scipy.interpolate' is required`.
 - `BasePlotter` calls `plt.style.use("bmh")`, which changes the matplotlib style for every later figure of the session.
-- `TwoDimPlot`, which the tutorial uses next, takes `XYData(label, x, y)`, not `EnergyPath`; given an `EnergyPath` it raises `AttributeError: 'EnergyPath' object has no attribute 'x'`.
+- `TwoDimPlot`, which the tutorial uses next, takes `XYData(label, x, y)`, not `EnergyPath`.
+  Given an `EnergyPath` it raises `AttributeError: 'EnergyPath' object has no attribute 'x'`.
 
 ### Check
 
@@ -5561,7 +5615,7 @@ python scripts/plot_scan.py [ORCA_OUTPUT [PNG]]
 ```
 
 Both read the tutorial run when no file is given, plain or gzipped.
-`scripts/scan_table.py` prints how it settled the unit, then the scan in ångström, hartree and eV above the lowest point:
+`scripts/scan_table.py` prints how it settled the unit, then the scan in ångström, hartree and eV above the lowest point.
 
 ```text
 step 1: atoms 1 and 0 are 7.558904 angstrom apart
@@ -5574,5 +5628,5 @@ step  r / angstrom    E / hartree  E - Emin / eV
   31      0.670873    -1.12403918       0.000000  <- lowest
 ```
 
-`scripts/plot_scan.py` sorts the points, draws them with `plot_energy_paths` and checks that the file is a PNG image.
-Without PNG it draws into a temporary directory, which is how CI runs it.
+`scripts/plot_scan.py` sorts the points, draws them with `plot_energy_paths` and checks that the file is a Portable Network Graphics (PNG) image.
+Without the PNG argument it draws into a temporary directory, which is how CI runs it.

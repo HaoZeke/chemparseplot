@@ -1,7 +1,7 @@
 ---
 name: chemparseplot-orca-scan
-description: Read an ORCA relaxed surface scan (a `%geom Scan` over a bond) with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and packages no chemparseplot extra installs. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
-license: MIT
+description: Read a relaxed surface scan from the quantum chemistry program (ORCA), a `%geom Scan` over a bond, with chemparseplot and plot its energy curve. Covers `chemparseplot.parse.orca.geomscan.extract_energy_data`, the two surface tables ORCA prints, the bohr label it puts on distances ORCA printed in ångström, the table name it matches case by case, and `chemparseplot.plot.geomscan.plot_energy_paths`, which needs sorted distances and packages no chemparseplot extra installs. Use when asked for the energies, the minimum or a figure of an ORCA scan, or when a scan comes out 1.89 times too short.
+license: See LICENSE in the chemparseplot repository
 compatibility: scripts/scan_table.py needs chemparseplot alone (numpy and pint). scripts/plot_scan.py also needs matplotlib and cmcrameri (the plot extra), rgpycrumbs and scipy. Python 3.11 or newer. Checked on Linux against ORCA 5.0.4 output.
 ---
 
@@ -21,7 +21,7 @@ end
 ```
 
 `B 0 1` is the bond between atoms 0 and 1 (ORCA counts from 0), stepped from the first value to the second in 33 constrained optimisations.
-Near the end of the output ORCA prints two tables with one row per step, the coordinate and then the energy in hartree:
+Near the end of the output ORCA prints two tables with one row per step, the coordinate and then the energy in hartree.
 
 ```text
 The Calculated Surface using the 'Actual Energy'
@@ -36,7 +36,7 @@ The output of that run is in the repository as `doc/source/tutorials/orca/data/s
 
 ## Read it
 
-`extract_energy_data` takes the text of the output, not a path, and the table name, `"Actual"` or `"SCF"`.
+`extract_energy_data` takes the text of the output as a string, and the table name, `"Actual"` or `"SCF"`.
 It returns two pint quantities:
 
 ```python
@@ -60,7 +60,7 @@ Run from this directory in a chemparseplot checkout, the block reads the tutoria
 The distances come back labelled bohr, whatever ORCA printed.
 ORCA printed ångström here: at step 1 the Cartesian coordinates in the output put the two atoms 7.558904 Å apart, and the first row of the table is 7.55890395.
 So `distance.to("angstrom")` gives 4.0 Å where the bond was 7.56 Å, 1.89 times too short.
-The tutorial does exactly that conversion, and the comment in its input, "Converted from Angstrom to Bohr", is the same mistake made on the way in: ORCA read the numbers as ångström and scanned from 7.56 Å to 0.21 Å.
+The tutorial does exactly that conversion, and the comment in its input, `Converted from Angstrom to Bohr`, is the same mistake made on the way in: ORCA read the numbers as ångström and scanned from 7.56 Å to 0.21 Å.
 
 Relabel the numbers instead of converting them:
 
@@ -79,8 +79,9 @@ The same label is put on the first column of any scan, so for an angle or a dihe
 
 - The name is pasted into a regular expression and matched as written: `"actual"`, `"ACTUAL"` and `"scf"` find nothing.
   A name that matches nothing returns two empty arrays, with no error or warning, so check the length.
-- `"Actual"` is the total energy the optimiser used and `"SCF"` the SCF energy alone.
-  In the tutorial run, plain UHF, the two tables are the same; `scripts/scan_table.py` compares them.
+- `"Actual"` is the total energy the optimiser used and `"SCF"` the self-consistent field (SCF) energy alone.
+  In the tutorial run, plain unrestricted Hartree-Fock (UHF), the two tables are the same.
+  `scripts/scan_table.py` compares them.
 - Only one-coordinate scans were checked.
   The pattern reads two numbers per row.
 
@@ -105,15 +106,18 @@ plotter.fig.savefig("scan.png")
 - Sort first.
   ORCA scans run in the order of the input, here from long to short, and the spline then fails with `ValueError: Error on input data`.
 - It imports `rgpycrumbs.interpolation` when called, and that needs scipy.
-  Neither is in any chemparseplot extra, `[all]` included:
+  Neither is in any chemparseplot extra, `[all]` included.
+  Without rgpycrumbs the call stops with `ModuleNotFoundError`.
+  Without scipy, rgpycrumbs raises `ImportError: Module 'scipy.interpolate' is required`.
+  Install the plot extra and both packages in one command:
 
   ```bash
   pip install "chemparseplot[plot]" rgpycrumbs "scipy>=1.11"
   ```
 
-  Without rgpycrumbs the call stops with `ModuleNotFoundError`; without scipy, rgpycrumbs raises `ImportError: Module 'scipy.interpolate' is required`.
 - `BasePlotter` calls `plt.style.use("bmh")`, which changes the matplotlib style for every later figure of the session.
-- `TwoDimPlot`, which the tutorial uses next, takes `XYData(label, x, y)`, not `EnergyPath`; given an `EnergyPath` it raises `AttributeError: 'EnergyPath' object has no attribute 'x'`.
+- `TwoDimPlot`, which the tutorial uses next, takes `XYData(label, x, y)`, not `EnergyPath`.
+  Given an `EnergyPath` it raises `AttributeError: 'EnergyPath' object has no attribute 'x'`.
 
 ## Check
 
@@ -123,7 +127,7 @@ python scripts/plot_scan.py [ORCA_OUTPUT [PNG]]
 ```
 
 Both read the tutorial run when no file is given, plain or gzipped.
-`scripts/scan_table.py` prints how it settled the unit, then the scan in ångström, hartree and eV above the lowest point:
+`scripts/scan_table.py` prints how it settled the unit, then the scan in ångström, hartree and eV above the lowest point.
 
 ```text
 step 1: atoms 1 and 0 are 7.558904 angstrom apart
@@ -136,5 +140,5 @@ step  r / angstrom    E / hartree  E - Emin / eV
   31      0.670873    -1.12403918       0.000000  <- lowest
 ```
 
-`scripts/plot_scan.py` sorts the points, draws them with `plot_energy_paths` and checks that the file is a PNG image.
-Without PNG it draws into a temporary directory, which is how CI runs it.
+`scripts/plot_scan.py` sorts the points, draws them with `plot_energy_paths` and checks that the file is a Portable Network Graphics (PNG) image.
+Without the PNG argument it draws into a temporary directory, which is how CI runs it.
