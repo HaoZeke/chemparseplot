@@ -1,15 +1,15 @@
 
 # Table of Contents
 
--   [About](#org69d0d18)
-    -   [Installation](#org6425b9a)
-    -   [Ecosystem Overview](#org7717c22)
-    -   [Features](#org7ec2e1c)
-        -   [Supported Engines](#org3c6cfc2)
-    -   [Documentation](#org7d2bbf4)
-    -   [Contributing](#orgc77604d)
--   [License](#org8180f68)
--   [Acknowledgments](#org7ebb45c)
+- [About](#org69d0d18)
+  - [Installation](#org6425b9a)
+  - [Ecosystem Overview](#org7717c22)
+  - [Features](#org7ec2e1c)
+    - [Supported Engines](#org3c6cfc2)
+  - [Documentation](#org7d2bbf4)
+  - [Contributing](#orgc77604d)
+- [License](#org8180f68)
+- [Acknowledgments](#org7ebb45c)
 
 
 
@@ -19,15 +19,7 @@
 
 ![img](branding/logo/chemparseplot_logo.png)
 
-[![Tests](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml)
-[![Linting](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml)
-[![Docs](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml)
-[![PyPI](https://img.shields.io/pypi/v/chemparseplot)](https://pypi.org/project/chemparseplot/)
-[![Python](https://img.shields.io/pypi/pyversions/chemparseplot)](https://pypi.org/project/chemparseplot/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![One Good Tutorial docs checklist v1: adopted](https://onegoodtutorial.org/badge/adopted-v1.svg)](https://onegoodtutorial.org/about/badge/?v=1)
-[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
-[![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
+[![Tests](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_test.yml) [![Linting](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/ci_prek.yml) [![Docs](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml/badge.svg)](https://github.com/HaoZeke/chemparseplot/actions/workflows/build_docs.yml) [![PyPI](https://img.shields.io/pypi/v/chemparseplot)](https://pypi.org/project/chemparseplot/) [![Python](https://img.shields.io/pypi/pyversions/chemparseplot)](https://pypi.org/project/chemparseplot/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![One Good Tutorial docs checklist v1: adopted](https://onegoodtutorial.org/badge/adopted-v1.svg)](https://onegoodtutorial.org/about/badge/?v=1) [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch) [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 
 A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role="doc-backlink">1</a></sup> parsing and plotting library for computational chemistry outputs.
 `chemparseplot` extracts structured data from quantum chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality, unit-aware visualizations with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/).
@@ -79,30 +71,30 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 
 ## Features
 
--   **Parsing** computational chemistry output files into structured data
--   **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/) (camera-ready)
--   **Unit preserving** throughout via `pint`
--   **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis
--   **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+)
--   **Metadata-native eOn** CON frames and typed parser results for NEB and single-ended tools
--   **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs
+- **Parsing** computational chemistry output files into structured data
+- **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/) (camera-ready)
+- **Unit preserving** throughout via `pint`
+- **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis
+- **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+)
+- **Metadata-native eOn** CON frames and typed parser results for NEB and single-ended tools
+- **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs
 
 
 <a id="org3c6cfc2"></a>
 
 ### Supported Engines
 
--   ORCA (**5.x**)
-    -   Geometry scan (`OPT`) energy profiles
-    -   Nudged elastic band (`NEB`) path visualization
--   eOn
-    -   Saddle search parsing (Dimer, GPRD, LBFGS methods)
-    -   NEB path energy profiles with landscape projections
--   Sella
-    -   Saddle point optimization result parsing
--   Trajectory formats
-    -   HDF5 trajectories (ChemGP output with pre-computed forces)
-    -   Generic ASE-readable formats (extxyz, .traj) for NEB analysis
+- ORCA (**5.x**)
+  - Geometry scan (`OPT`) energy profiles
+  - Nudged elastic band (`NEB`) path visualization
+- eOn
+  - Saddle search parsing (Dimer, GPRD, LBFGS methods)
+  - NEB path energy profiles with landscape projections
+- Sella
+  - Saddle point optimization result parsing
+- Trajectory formats
+  - HDF5 trajectories (ChemGP output with pre-computed forces)
+  - Generic ASE-readable formats (extxyz, .traj) for NEB analysis
 
 
 <a id="org7d2bbf4"></a>
@@ -112,9 +104,9 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 Full documentation is at <https://chemparseplot.rgoswami.me>.
 This includes:
 
--   A [quickstart guide](https://chemparseplot.rgoswami.me/quickstart.html)
--   [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html) for common workflows
--   [API reference](https://chemparseplot.rgoswami.me/apidocs/index.html)
+- A [quickstart guide](https://chemparseplot.rgoswami.me/quickstart.html)
+- [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html) for common workflows
+- [API reference](https://chemparseplot.rgoswami.me/apidocs/index.html)
 
 The map of the site, [llms.txt](https://chemparseplot.rgoswami.me/llms.txt), lists the pages with a line on what each covers, and [llms-full.txt](https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt) holds the manual in one Markdown file and names what it leaves out.
 [AGENTS.md](https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md) has the build, test and documentation commands and the mistakes that are easy to make, and [skills/](https://github.com/HaoZeke/chemparseplot/tree/main/skills) has task guides whose scripts CI runs: reading an ORCA scan, adding a parser, and finding the source of a docs page.
@@ -137,8 +129,8 @@ For bug reports or questions, open an issue on [GitHub](https://github.com/HaoZe
 MIT.
 However, this is an academic resource, so **please cite** as much as possible via:
 
--   The [Zenodo DOI](https://doi.org/10.5281/zenodo.18529752) for general use.
--   The `wailord` paper for ORCA usage
+- The [Zenodo DOI](https://doi.org/10.5281/zenodo.18529752) for general use.
+- The `wailord` paper for ORCA usage
 
 
 <a id="org7ebb45c"></a>
