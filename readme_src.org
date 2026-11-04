@@ -1,9 +1,8 @@
 #+OPTIONS: num:nil
 
 #+begin_quote
-Canonical source note: this Org file is authoritative for contributor-facing
-documentation. Rendered Markdown files are derived artifacts and should not be
-edited separately.
+Canonical source note: this Org file is authoritative for contributor-facing documentation.
+Rendered Markdown files are derived artifacts and should not be edited separately.
 #+end_quote
 
 * About
@@ -19,15 +18,11 @@ file:branding/logo/chemparseplot_logo.png
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-blueviolet.svg)](https://github.com/pypa/hatch)
 [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 #+end_export
-A *pure-python*[fn:butwhy] parsing and plotting library for computational
-chemistry outputs. ~chemparseplot~ extracts structured data from quantum
-chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality,
-unit-aware visualizations with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]].
+A *pure-python*[fn:butwhy] parsing and plotting library for computational chemistry outputs.
+~chemparseplot~ extracts structured data from quantum chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality, unit-aware visualizations with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]].
 
-Computational tasks (surface fitting, structure analysis, interpolation) are
-handled by [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]], which is a required dependency. ~chemparseplot~ parses
-output files, delegates heavy computation to ~rgpycrumbs~, and produces
-publication-quality plots.
+Computational tasks (surface fitting, structure analysis, interpolation) are handled by [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]], which is a required dependency.
+~chemparseplot~ parses output files, delegates heavy computation to ~rgpycrumbs~, and produces publication-quality plots.
 
 ** Installation
 
@@ -50,7 +45,7 @@ uv sync --all-extras
 See the [[https://chemparseplot.rgoswami.me/installation.html][installation guide]] and [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart]] for details.
 
 ** Ecosystem Overview
-   ~chemparseplot~ is part of the ~rgpycrumbs~ suite of interlinked libraries.
+~chemparseplot~ is part of the ~rgpycrumbs~ suite of interlinked libraries.
 
 [[file:branding/logo/ecosystem.png]]
 
@@ -58,8 +53,7 @@ See the [[https://chemparseplot.rgoswami.me/installation.html][installation guid
 - *Parsing* computational chemistry output files into structured data
 - *Plotting* with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]] (camera-ready)
 - *Unit preserving* throughout via ~pint~
-- *Computation* delegated to [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for surface fitting, interpolation,
-  and structure analysis
+- *Computation* delegated to [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for surface fitting, interpolation, and structure analysis
 
 *** Supported Engines
 - ORCA (*5.x*)
@@ -73,40 +67,33 @@ See the [[https://chemparseplot.rgoswami.me/installation.html][installation guid
 - Trajectory formats
   + HDF5 trajectories (ChemGP output with pre-computed forces)
   + Generic ASE-readable formats (extxyz, .traj) for NEB analysis
-- Multi-segment NEB stitching (~stitch_neb_segments~) for continuous bands
-  across chained minimizations (v1.8+)
-- Metadata-native eOn CON frames (prefer JSON metadata energies over ~.dat~
-  tables) with typed parser results shared by NEB and single-ended tools
-- Unit-aware NEB/optimization plot helpers (~convert_neb_values~, centralized
-  strip rendering) consumed by ~rgpycrumbs~ CLIs
+- Multi-segment NEB stitching (~stitch_neb_segments~) for continuous bands across chained minimizations (v1.8+)
+- Metadata-native eOn CON frames (prefer JSON metadata energies over ~.dat~ tables) with typed parser results shared by NEB and single-ended tools
+- Unit-aware NEB/optimization plot helpers (~convert_neb_values~, centralized strip rendering) consumed by ~rgpycrumbs~ CLIs
 
 ** Documentation
 
-Full documentation is at [[https://chemparseplot.rgoswami.me]]. This includes:
+Full documentation is at [[https://chemparseplot.rgoswami.me]].
+This includes:
 - A [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart guide]]
 - [[https://chemparseplot.rgoswami.me/tutorials/index.html][Tutorials]] for common workflows
 - [[https://chemparseplot.rgoswami.me/apidocs/index.html][API reference]]
 
-The map of the site, [[https://chemparseplot.rgoswami.me/llms.txt][llms.txt]], lists the pages with a line on what
-each covers, and [[https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt][llms-full.txt]] holds the manual in one
-Markdown file and names what it leaves out. [[https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md][AGENTS.md]] has the build, test and documentation
-commands and the mistakes that are easy to make, and [[https://github.com/HaoZeke/chemparseplot/tree/main/skills][skills/]] has task
-guides whose scripts CI runs: reading an ORCA scan, adding a parser, and
-finding the source of a docs page.
+The map of the site, [[https://chemparseplot.rgoswami.me/llms.txt][llms.txt]], lists the pages with a line on what each covers, and [[https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt][llms-full.txt]] holds the manual in one Markdown file and names what it leaves out.
+[[https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md][AGENTS.md]] has the build, test and documentation commands and the mistakes that are easy to make, and [[https://github.com/HaoZeke/chemparseplot/tree/main/skills][skills/]] has task guides whose scripts CI runs: reading an ORCA scan, adding a parser, and finding the source of a docs page.
 
 ** Contributing
 
-Contributions are welcome. See [[https://github.com/HaoZeke/chemparseplot/blob/main/CONTRIBUTING.md][CONTRIBUTING.md]] for development setup and
-guidelines, and our [[https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md][Code of Conduct]].
+Contributions are welcome.
+See [[https://github.com/HaoZeke/chemparseplot/blob/main/CONTRIBUTING.md][CONTRIBUTING.md]] for development setup and guidelines, and our [[https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md][Code of Conduct]].
 
 For bug reports or questions, open an issue on [[https://github.com/HaoZeke/chemparseplot/issues][GitHub]].
 
 ** Release Process
 
-Versions are derived automatically from Git tags via ~hatch-vcs~. We keep
-~towncrier~ for release-note aggregation and use ~cocogitto~ (~cog~) for the
-semantic version/tag step. The actual publish step is already handled by the
-tag-triggered ~.github/workflows/release.yml~ workflow.
+Versions are derived automatically from Git tags via ~hatch-vcs~.
+We keep ~towncrier~ for release-note aggregation and use ~cocogitto~ (~cog~) for the semantic version/tag step.
+The actual publish step is already handled by the tag-triggered ~.github/workflows/release.yml~ workflow.
 
 #+begin_src bash
 # 1. Run the same checks the tag workflow expects
@@ -135,14 +122,13 @@ git push origin main --tags
 #+end_src
 
 * License
-MIT. However, this is an academic resource, so *please cite* as much as possible
-via:
+MIT.
+However, this is an academic resource, so *please cite* as much as possible via:
 - The [[https://doi.org/10.5281/zenodo.18529752][Zenodo DOI]] for general use.
 - The ~wailord~ paper for ORCA usage
 
 * Acknowledgments
-This project builds on work supported by the University of Iceland and the
-Icelandic Research Fund. ~chemparseplot~ relies on [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for computational
-modules.
+This project builds on work supported by the University of Iceland and the Icelandic Research Fund.
+~chemparseplot~ relies on [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for computational modules.
 
 [fn:butwhy] To distinguish it from my other thin-python wrapper projects

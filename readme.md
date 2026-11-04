@@ -29,15 +29,11 @@
 [![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
 [![DOI](https://zenodo.org/badge/725730118.svg)](https://doi.org/10.5281/zenodo.18529752)
 
-A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role="doc-backlink">1</a></sup> parsing and plotting library for computational
-chemistry outputs. `chemparseplot` extracts structured data from quantum
-chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality,
-unit-aware visualizations with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/).
+A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role="doc-backlink">1</a></sup> parsing and plotting library for computational chemistry outputs.
+`chemparseplot` extracts structured data from quantum chemistry codes (ORCA, eOn, Sella, ChemGP) and produces publication-quality, unit-aware visualizations with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/).
 
-Computational tasks (surface fitting, structure analysis, interpolation) are
-handled by [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs), which is a required dependency. `chemparseplot` parses
-output files, delegates heavy computation to `rgpycrumbs`, and produces
-publication-quality plots.
+Computational tasks (surface fitting, structure analysis, interpolation) are handled by [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs), which is a required dependency.
+`chemparseplot` parses output files, delegates heavy computation to `rgpycrumbs`, and produces publication-quality plots.
 
 
 <a id="org6425b9a"></a>
@@ -52,9 +48,8 @@ Suite config (shared with rgpycrumbs — **no** `~/.config/chemparseplot`):
     # [pins] lock = "uv.lock"
     # [pins.packages] …
 
-Feature extras (`plot`, `neb`, …) are *transitional* install convenience. Target
-is the same on-demand uv / `ensure_import` design as the rgpycrumbs hub; prefer
-bare install + suite pins for new work.
+Feature extras (`plot`, `neb`, …) are *transitional* install convenience.
+Target is the same on-demand uv / `ensure_import` design as the rgpycrumbs hub; prefer bare install + suite pins for new work.
 
     # transitional:
     # With plotting support
@@ -87,8 +82,7 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 -   **Parsing** computational chemistry output files into structured data
 -   **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/) (camera-ready)
 -   **Unit preserving** throughout via `pint`
--   **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation,
-    and structure analysis
+-   **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis
 -   **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+)
 -   **Metadata-native eOn** CON frames and typed parser results for NEB and single-ended tools
 -   **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs
@@ -115,26 +109,23 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 
 ## Documentation
 
-Full documentation is at <https://chemparseplot.rgoswami.me>. This includes:
+Full documentation is at <https://chemparseplot.rgoswami.me>.
+This includes:
 
 -   A [quickstart guide](https://chemparseplot.rgoswami.me/quickstart.html)
 -   [Tutorials](https://chemparseplot.rgoswami.me/tutorials/index.html) for common workflows
 -   [API reference](https://chemparseplot.rgoswami.me/apidocs/index.html)
 
-The map of the site, [llms.txt](https://chemparseplot.rgoswami.me/llms.txt), lists the pages with a line on what
-each covers, and [llms-full.txt](https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt) holds the manual in one
-Markdown file and names what it leaves out. [AGENTS.md](https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md) has the build, test and documentation
-commands and the mistakes that are easy to make, and [skills/](https://github.com/HaoZeke/chemparseplot/tree/main/skills) has task
-guides whose scripts CI runs: reading an ORCA scan, adding a parser, and
-finding the source of a docs page.
+The map of the site, [llms.txt](https://chemparseplot.rgoswami.me/llms.txt), lists the pages with a line on what each covers, and [llms-full.txt](https://github.com/HaoZeke/chemparseplot/blob/main/llms-full.txt) holds the manual in one Markdown file and names what it leaves out.
+[AGENTS.md](https://github.com/HaoZeke/chemparseplot/blob/main/AGENTS.md) has the build, test and documentation commands and the mistakes that are easy to make, and [skills/](https://github.com/HaoZeke/chemparseplot/tree/main/skills) has task guides whose scripts CI runs: reading an ORCA scan, adding a parser, and finding the source of a docs page.
 
 
 <a id="orgc77604d"></a>
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](https://github.com/HaoZeke/chemparseplot/blob/main/CONTRIBUTING.md) for development setup and
-guidelines, and our [Code of Conduct](https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md).
+Contributions are welcome.
+See [CONTRIBUTING.md](https://github.com/HaoZeke/chemparseplot/blob/main/CONTRIBUTING.md) for development setup and guidelines, and our [Code of Conduct](https://github.com/HaoZeke/chemparseplot/blob/main/CODE_OF_CONDUCT.md).
 
 For bug reports or questions, open an issue on [GitHub](https://github.com/HaoZeke/chemparseplot/issues).
 
@@ -143,8 +134,8 @@ For bug reports or questions, open an issue on [GitHub](https://github.com/HaoZe
 
 # License
 
-MIT. However, this is an academic resource, so **please cite** as much as possible
-via:
+MIT.
+However, this is an academic resource, so **please cite** as much as possible via:
 
 -   The [Zenodo DOI](https://doi.org/10.5281/zenodo.18529752) for general use.
 -   The `wailord` paper for ORCA usage
@@ -154,9 +145,8 @@ via:
 
 # Acknowledgments
 
-This project builds on work supported by the University of Iceland and the
-Icelandic Research Fund. `chemparseplot` relies on [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for computational
-modules.
+This project builds on work supported by the University of Iceland and the Icelandic Research Fund.
+`chemparseplot` relies on [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for computational modules.
 
 
 # Footnotes
