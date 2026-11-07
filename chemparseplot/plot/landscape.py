@@ -231,8 +231,8 @@ def plot_landscape_surface(ax, coords, energies, cmap=None, levels=20):
     ```
 
     ```{versionchanged} 1.14.0
-    The default *cmap* changed from ``ruhi_diverging`` to ``ruhi_seq``,
-    whose lightness rises monotonically with energy.
+    The default *cmap* is ``RUHI_THEME.cmap_landscape``. That release
+    pointed the theme at ``ruhi_seq``; it is ``ruhi_diverging`` again.
     ```
     """
     from scipy.interpolate import griddata

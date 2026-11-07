@@ -475,7 +475,7 @@ Frozen dataclass holding all aesthetic parameters.
 
 | Name | Font | Colormap | Notes |
 |------+------+----------+-------|
-| ="ruhi"= | Atkinson Hyperlegible | =ruhi_seq= | Default theme |
+| ="ruhi"= | Atkinson Hyperlegible | =ruhi_diverging= | Default theme |
 | ="cmc.batlow"= | Atkinson Hyperlegible | =cmc.batlow= | Crameri scientific colormap |
 
 ** =get_theme(name, **overrides)=
