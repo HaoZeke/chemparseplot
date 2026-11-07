@@ -128,7 +128,7 @@ plot_landscape_surface(
 plot_landscape_path_overlay(
     ax,
     r=latest_r, p=latest_p, z=latest_z,
-    cmap="ruhi_seq",         # the surface's default map
+    cmap="ruhi_diverging",   # the surface's default map
     z_label="Energy (eV)",
     project_path=True,
 )

@@ -673,12 +673,11 @@ def plot_surface_contour(
 
     Drawn in the style of :mod:`chemparseplot.plot.journal`: one column of
     ``journal`` wide and as tall as the equal-aspect map needs, filled with
-    the perceptually ordered ``ruhi_seq`` map. Filled bands, contour lines
-    and colour-bar ticks share one set of levels, and each contour line is
-    black or white, whichever contrasts more with the bands on either side.
-    Paths are white lines with a dark outline through numbered sky-blue
-    images, a hue the warm sequential map never takes; minima are white
-    circles (A, B, ...), saddles white crosses (S1, S2, ...) and other
+    ``ruhi_diverging``. Filled bands, contour lines and colour-bar ticks
+    share one set of levels, and each contour line is black or white,
+    whichever contrasts more with the bands on either side. Paths are white
+    lines with a dark outline through numbered sky-blue images. Minima are
+    white circles (A, B, ...), saddles white crosses (S1, S2, ...) and other
     points sunshine stars.
 
     Parameters
@@ -710,7 +709,7 @@ def plot_surface_contour(
     columns : str
         Column span for the default width.
     cmap : str or None
-        Colour map name (default ``"ruhi_seq"``).
+        Colour map name (default ``"ruhi_diverging"``).
     xlabel, ylabel, zlabel : str
         Axis labels and colour-bar label.
 
@@ -730,13 +729,13 @@ def plot_surface_contour(
     .. versionadded:: 1.4.0
 
     .. versionchanged:: 1.14.0
-       Journal style and size by default, the ``ruhi_seq`` map, shared
+       Journal style and size by default, the ``ruhi_diverging`` map, shared
        levels for bands, lines and colour bar; added *journal*,
        *columns*, *cmap*, *xlabel*, *ylabel* and *zlabel*.
     """
     _ensure_ruhi_cmap()
     style = apply_style(journal or DEFAULT_JOURNAL, theme="ruhi")
-    cmap = cmap or RUHI_SEQUENTIAL
+    cmap = cmap or "ruhi_diverging"
 
     gz = np.asarray(grid_z, dtype=float).copy()
     if clamp_lo is not None:
@@ -996,7 +995,7 @@ def plot_gp_progression(
         ax = axes[row][col]
         gp_mean = np.clip(np.asarray(data["gp_mean"]), clamp_lo, clamp_hi)
 
-        cf = ax.contourf(xv, yv, gp_mean, levels=levels, cmap=RUHI_SEQUENTIAL)
+        cf = ax.contourf(xv, yv, gp_mean, levels=levels, cmap="ruhi_diverging")
         ax.contour(xv, yv, gp_mean, levels=contour_levels, colors="black", linewidths=0.3)
 
         # Training points
@@ -1203,7 +1202,7 @@ def plot_variance_overlay(
     contour_levels = np.arange(clamp_lo, clamp_hi + contour_step, contour_step)
 
     # Energy surface as filled contour (shows basins clearly)
-    cf = ax.contourf(gx, gy, ge, levels=levels, cmap=RUHI_SEQUENTIAL)
+    cf = ax.contourf(gx, gy, ge, levels=levels, cmap="ruhi_diverging")
     ax.contour(gx, gy, ge, levels=contour_levels, colors="black", linewidths=0.3)
     fig.colorbar(cf, ax=ax, label="Energy", shrink=0.8)
 

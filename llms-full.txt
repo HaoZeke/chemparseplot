@@ -338,10 +338,30 @@ flowchart LR
 - **Parsing** computational chemistry output files into structured data
 - **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/)
   (camera-ready)
+- **Journal figures** at the exact column widths and text sizes of five journals, in the Ruhi palette
 - **Unit preserving** throughout via `pint`
 - **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
   for surface fitting, interpolation, and structure analysis
 - **Concurrent** RMSD landscape calculations via `ThreadPoolExecutor`
+
+### Journal figures
+
+Figures sized and styled for the journal they go to (`chemparseplot.plot.journal`, `chemparseplot.plot.palette`):
+
+- **Presets**: column widths, LaTeX text sizes, smallest lettering, thinnest line and raster resolution
+  - `acs`: Journal of Chemical Theory and Computation, Journal of Chemical Information and Modeling
+  - `aip`: The Journal of Chemical Physics
+  - `elsevier`: Computer Physics Communications
+  - `rsc`: Physical Chemistry Chemical Physics
+- **Derived style**: line widths, tick lengths, gaps and marker sizes from the text size
+- **Standards**: proportions from ISO 3098-1 and ISO 128-2 of the International Organization for Standardization (ISO)
+- **Labels**: direct line labels, legends placed off the data and panel letters
+- **Numbers**: plain from 0.1 to 1000, and log scales for relative errors
+- **Colour**: the Ruhi palette and the perceptually ordered `ruhi_seq` and `ruhi_div` maps
+- **Contrast**: checked against the Web Content Accessibility Guidelines
+- **Colour-vision deficiency**: CIEDE2000 separation checked under simulated protan, deutan and tritan vision
+- **Figures**: nudged elastic band energy profile with earlier bands, energy landscape and convergence panels
+- **Output**: PDF, SVG and raster files at the exact figure size with TrueType fonts embedded
 
 ### Supported Engines
 
@@ -369,6 +389,8 @@ GP-based optimization visualization from HDF5 output (`chemparseplot.plot.chemgp
 - **2D matplotlib surfaces**: PES contour with NEB path overlay, GP surrogate
   progression panels, MAP-NLL landscape, variance overlay with hatching,
   trust region illustration, hyperparameter sensitivity grid
+
+plotnine and pandas are imported when a line chart is first drawn, so the surfaces need only matplotlib.
 
 #### Surrogate-assisted searches
 
@@ -669,7 +691,7 @@ points are added. Each panel is a separate training size.
 ```python
 fig = plot_gp_progression(
     gp_grids,
-    true_energy=energy,
+    energy,
     x_range=x_range,
     y_range=y_range,
     clamp_lo=-1.0,
@@ -1270,6 +1292,211 @@ You learned to:
 
 The parsed data format is compatible with eOn NEB plotting, allowing consistent visualization across different quantum chemistry codes.
 
+## Tutorial: A Journal Figure from a Nudged Elastic Band
+
+Source: https://chemparseplot.rgoswami.me/tutorials/journal_figure
+
+> **Added in version 1.14.0:** Journal presets and the nudged elastic band energy profile in the journal style.
+
+### Prerequisites
+
+The tutorial needs Python 3.11 or newer.
+It runs a nudged elastic band (NEB) with ASE and draws it with matplotlib.
+The `neb` and `plot` extras install both:
+
+```bash
+pip install "chemparseplot[plot,neb]"
+```
+
+ASE has to be 3.23 or newer, since the tutorial imports `NEB` from `ase.mep`.
+The figures set text in Atkinson Hyperlegible where that font is installed.
+On Debian and Ubuntu the `fonts-atkinson-hyperlegible-ttf` package installs it.
+
+### Learning objectives
+
+By the end of this tutorial you will be able to:
+
+1. Run a small NEB with ASE and take the energy and the force along the path from it
+2. Draw its energy profile exactly one journal column wide
+3. Save the figure without changing its size
+4. Draw the same figure for another journal
+5. Check that the colours stay apart for readers with a colour-vision deficiency
+
+### Step 1: Run a small band
+
+A gold atom hops between two hollow sites of an Al(100) surface.
+The effective medium theory (EMT) calculator of ASE gives the energies, so no electronic-structure code is needed.
+The set-up is that of the ASE tutorial "Diffusion of gold atom on Al(100) surface (NEB)".
+
+```python
+import numpy as np
+from ase.build import add_adsorbate, fcc100
+from ase.calculators.emt import EMT
+from ase.constraints import FixAtoms
+from ase.mep import NEB
+from ase.optimize import BFGS, QuasiNewton
+
+slab = fcc100("Al", size=(2, 2, 3))
+add_adsorbate(slab, "Au", 1.7, "hollow")
+slab.center(axis=2, vacuum=4.0)
+fixed = FixAtoms(mask=[atom.tag > 1 for atom in slab])
+
+
+def relaxed(atoms):
+    atoms = atoms.copy()
+    atoms.set_constraint(fixed)
+    atoms.calc = EMT()
+    QuasiNewton(atoms, logfile=None).run(fmax=0.05)
+    return atoms
+
+
+initial = relaxed(slab)
+hop = initial.copy()
+hop[-1].x += hop.get_cell()[0, 0] / 2
+final = relaxed(hop)
+
+images = [initial] + [initial.copy() for _ in range(3)] + [final]
+for image in images:
+    image.set_constraint(fixed)
+    image.calc = EMT()
+band = NEB(images, method="improvedtangent")
+band.interpolate()
+converged = BFGS(band, logfile=None).run(fmax=0.05)
+```
+
+The two lower layers of the slab are fixed.
+The band uses the improved tangent of Henkelman and Jonsson (J. Chem. Phys. 113, 9978, 2000).
+ASE made it the default in version 3.28, and naming it gives the same band on older versions.
+`converged` is `True` once the largest force on the band is below 0.05 eV/Angstrom.
+
+### Step 2: Path length, energy and force along the path
+
+The profile needs three numbers for each image.
+`rc` is the distance along the band from the first image.
+`energy` is the energy of the image, here relative to the first.
+`f_para` is the force along the path.
+The tangent at an image points from its neighbour behind to its neighbour ahead, and one-sided at the two ends.
+
+```python
+positions = np.array([image.positions for image in images])
+energy = np.array([image.get_potential_energy() for image in images])
+forces = np.array([image.get_forces() for image in images])
+
+flat = positions.reshape(len(images), -1)
+rc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(flat, axis=0), axis=1))])
+tangent = np.gradient(flat, axis=0)
+tangent /= np.linalg.norm(tangent, axis=1, keepdims=True)
+f_para = np.sum(forces.reshape(len(images), -1) * tangent, axis=1)
+energy -= energy[0]
+```
+
+`get_forces` gives the forces of the calculator, without the springs of the band.
+
+### Step 3: Draw the profile
+
+```python
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+fig.get_size_inches()  # array([3.33, 2.22])
+```
+
+The figure is one column of the Journal of Chemical Theory and Computation (JCTC) wide, 3.33 in.
+Its height is two thirds of its width.
+The x and y labels are set at 10 pt and the tick labels at 9 pt, the sizes of the JCTC page.
+The curve between the images is a cubic Hermite interpolant whose slopes are minus `f_para`.
+The barrier, 0.37 eV for this band, is written above the peak.
+
+### Step 4: Save it
+
+```python
+from chemparseplot.plot.journal import get_preset, save_figure
+
+save_figure(fig, "profile.pdf")
+png = save_figure(fig, "profile.png")
+```
+
+`save_figure` writes the page at the exact figure size, with the fonts embedded.
+It writes the Portable Network Graphics (PNG) file at the journal's raster resolution, 1200 dpi for JCTC.
+The width of the PNG in pixels divided by that resolution gives the width back:
+
+```python
+from PIL import Image
+
+with Image.open(png) as image:
+    width = image.width / get_preset("jctc").raster_dpi  # 3.33
+```
+
+### Step 5: Another journal
+
+The same call draws the figure for Physical Chemistry Chemical Physics (PCCP):
+
+```python
+fig = plot_neb_profile(rc, energy, f_para, journal="pccp")
+fig.get_size_inches()  # array([3.27, 2.18]), to two decimals
+save_figure(fig, "profile-pccp.pdf")
+```
+
+The column is 8.3 cm, 3.27 in.
+The text is at the 9 pt and 8 pt sizes of the article template of the Royal Society of Chemistry.
+Line widths and tick lengths follow from the text size, so they shrink with it.
+[How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) lists every journal.
+
+### Step 6: Check the colours
+
+```python
+from chemparseplot.plot.palette import palette_report
+
+report = palette_report()
+report.passes_graphics_contrast()  # ('teal', 'sky', 'magenta')
+report.min_delta_e["deutan"]       # 16.02
+```
+
+`passes_graphics_contrast` names the Ruhi colours with a contrast of at least 3:1 on white.
+That is what the Web Content Accessibility Guidelines ask of lines and markers.
+The band is drawn in teal, the first of them.
+`min_delta_e` gives the smallest CIEDE2000 difference between two Ruhi colours.
+It has one number for normal vision and one for each simulated deficiency.
+`reference_min_delta_e` gives the same numbers for the Okabe-Ito palette.
+
+### Troubleshooting
+
+#### ASE is missing
+
+Python stops with `ModuleNotFoundError: No module named 'ase'` when ASE is not installed.
+The NEB extra installs it:
+
+```bash
+pip install "chemparseplot[plot,neb]"
+```
+
+#### The saved file is not a column wide
+
+A tight bounding box crops the page to what is drawn, so the file comes out narrower or wider than the column.
+Saving with `bbox_inches` set to tight does that, and so does `setup_publication_theme` without a journal.
+`save_figure` never crops.
+
+#### The band has not converged
+
+`converged` is `False` when the optimizer stopped before the forces fell below `fmax`.
+Run it again on the same band to continue from where it stopped.
+
+### Next steps
+
+- [How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) - landscapes, convergence panels and labels
+- [Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style) - where each size, line width and colour comes from
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api) - the journal and palette modules
+
+### Summary
+
+You learned to:
+
+1. Run a NEB with ASE and take the path length, energy and force along the path from it
+2. Draw its energy profile one JCTC column wide with `plot_neb_profile`
+3. Save it at that exact size with `save_figure`
+4. Draw it again for PCCP by changing `journal`
+5. Check the Ruhi colours with `palette_report`
+
 ## Contributing tutorials
 
 Source: https://chemparseplot.rgoswami.me/tutorials/contribdoc
@@ -1298,6 +1525,7 @@ How-to guides are goal-oriented. Use them to solve specific problems.
 | [Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb) | Extract energies and barriers from ORCA NEB |
 | [Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb) | Extract data from eOn NEB calculations |
 | [Create Publication-quality Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures) | NEB, dimer, and minimization plotting tips |
+| [Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) | Column widths and text sizes of five journals, labels, legends and saving |
 | [Draw Surrogate-assisted Searches](https://chemparseplot.rgoswami.me/howto/surrogate_search_figures) | Band, convergence, dimer and campaign figures from gpr_optim or ML-NEB output |
 
 #### Structure
@@ -1828,42 +2056,56 @@ You have parsed NEB data (eOn or ORCA) and want publication-quality figures for 
 
 ### 1D Energy Profiles
 
+#### Journal Profile
+
+`plot_neb_profile` draws the whole figure in a journal's style: band, barrier, earlier bands and any reference energy.
+
+```python
+from chemparseplot.plot.journal import save_figure
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+save_figure(fig, "profile.pdf")
+```
+
+[How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) covers its options.
+
 #### Hermite Spline (Default)
 
 Uses cubic Hermite splines with Savitzky-Golay smoothed force derivatives:
 
 ```python
-import matplotlib.pyplot as plt
-import numpy as np
+from chemparseplot.plot.journal import journal_figure, save_figure
 from chemparseplot.plot.neb import plot_energy_path, SmoothingParams
+from chemparseplot.plot.palette import RUHI_COLORS
 
-fig, ax = plt.subplots(figsize=(5.37, 5.37), dpi=200)
+fig, ax = journal_figure("jctc")
 
 plot_energy_path(
     ax,
     rc=rmsd_r,             # reaction coordinate (RMSD from reactant)
     energy=energies,       # energy array
     f_para=f_parallel,     # parallel force component
-    color="#1f77b4",
+    color=RUHI_COLORS["teal"],
     alpha=1.0,
     zorder=10,
     method="hermite",
     smoothing=SmoothingParams(window_length=5, polyorder=2),
 )
 
-ax.set_xlabel(r"RMSD from Reactant ($\AA$)")
+ax.set_xlabel("RMSD from reactant (\u00c5)")
 ax.set_ylabel("Energy (eV)")
-fig.savefig("profile.pdf", dpi=300, bbox_inches="tight")
+save_figure(fig, "profile.pdf")
 ```
 
 #### Standard Cubic Spline
 
-Use `method`"spline"= for B-spline interpolation without force information:
+Set `method` to `"spline"` for B-spline interpolation without force information:
 
 ```python
 plot_energy_path(
     ax, rc, energy, f_para,
-    color="#1f77b4", alpha=1.0, zorder=10,
+    color=RUHI_COLORS["teal"], alpha=1.0, zorder=10,
     method="spline",
 )
 ```
@@ -1879,7 +2121,7 @@ plot_eigenvalue_path(
     ax,
     rc=rmsd_r,
     eigenvalue=eigenvalues,
-    color="#d62728",
+    color=RUHI_COLORS["magenta"],
     alpha=0.8,
     zorder=10,
     grid_color="white",    # horizontal zero-line color
@@ -1919,7 +2161,6 @@ plot_landscape_surface(
     z_data=df["z"].to_numpy(),
     step_data=df["step"].to_numpy(),
     method="grad_matern",
-    cmap="viridis",
     show_pts=True,
     variance_threshold=0.05,
     project_path=True,       # reaction valley projection
@@ -1929,7 +2170,7 @@ plot_landscape_surface(
 plot_landscape_path_overlay(
     ax,
     r=latest_r, p=latest_p, z=latest_z,
-    cmap="viridis",
+    cmap="ruhi_diverging",   # the surface's default map
     z_label="Energy (eV)",
     project_path=True,
 )
@@ -2103,6 +2344,12 @@ theme = get_theme("ruhi")
 setup_publication_theme(theme)
 ```
 
+With `journal`, every size comes from the journal preset instead:
+
+```python
+setup_publication_theme(theme, journal="jctc")
+```
+
 #### Per-Axis Theming
 
 ```python
@@ -2113,29 +2360,31 @@ apply_axis_theme(ax, theme)
 
 ### Journal Export
 
-#### DPI and Size for Common Journals
+#### Size for the Journal
+
+`journal_figure` makes a figure exactly one or two journal columns wide, with lettering at the journal's text sizes.
+Journals are named by abbreviation (`jctc`, `jcim`, `jcp`, `cpc`, `pccp`) or by preset key, such as `acs`:
 
 ```python
-# ACS journals: single column = 3.25 in, double = 7.0 in
-fig, ax = plt.subplots(figsize=(3.25, 3.25), dpi=300)
+from chemparseplot.plot.journal import journal_figure
 
-# Nature: single column = 89 mm = 3.5 in
-fig, ax = plt.subplots(figsize=(3.5, 3.5), dpi=300)
+fig, ax = journal_figure("jctc")                      # 3.33 in
+fig, axes = journal_figure("jctc", "double", ncols=2)  # 7.00 in
 ```
 
-#### Save as Vector (PDF/EPS)
+#### Save
+
+`save_figure` keeps the exact size, embeds TrueType fonts and writes raster formats at the journal's resolution.
+A tight bounding box would crop the page, and the figure would no longer be a column wide.
 
 ```python
-fig.savefig("figure.pdf", dpi=300, bbox_inches="tight", pad_inches=0.05)
-fig.savefig("figure.eps", dpi=300, bbox_inches="tight")
+from chemparseplot.plot.journal import save_figure
+
+save_figure(fig, "figure.pdf")  # vector
+save_figure(fig, "figure.png")  # 1200 dpi for ACS
 ```
 
-#### Save as Raster (PNG/TIFF)
-
-```python
-fig.savefig("figure.png", dpi=600, bbox_inches="tight")
-fig.savefig("figure.tiff", dpi=600, bbox_inches="tight")
-```
+[How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) lists the presets and the rest of the style.
 
 ### Single-Ended Method Visualization
 
@@ -2201,7 +2450,11 @@ rmsd_a, rmsd_b = calculate_landscape_coords(
 #### Energy/Convergence Profiles
 
 ```python
-from chemparseplot.plot.optimization import plot_optimization_profile, plot_convergence_panel
+from chemparseplot.plot.journal import get_preset
+from chemparseplot.plot.optimization import (
+    plot_optimization_profile,
+    plot_single_ended_convergence,
+)
 
 fig, (ax_e, ax_ev) = plt.subplots(1, 2, figsize=(10, 4))
 dat = traj.dat_df
@@ -2211,6 +2464,12 @@ plot_optimization_profile(
     dat["delta_e"].to_numpy(),
     eigenvalues=dat["eigenvalue"].to_numpy(),
     ax_eigen=ax_ev,
+)
+
+# Convergence measure and step size on log axes, in the JCTC style
+plot_single_ended_convergence(
+    [traj], ["Dimer"], Path("dimer_convergence.pdf"),
+    get_preset("jctc").raster_dpi, journal="jctc",
 )
 ```
 
@@ -2245,10 +2504,239 @@ rgpycrumbs eon plt-neb --mmf-peaks --peak-dir . --plot-type landscape
 
 ### See Also
 
+- [How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures)
 - [How-to: Parse eOn NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_eon_neb)
 - [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
 - [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
 - [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design)
+
+## How-to: Make Journal Figures
+
+Source: https://chemparseplot.rgoswami.me/howto/journal_figures
+
+### Problem
+
+A journal figure has to be exactly one or two columns wide, with lettering at the size of the journal's text.
+Its lines can be no thinner than the journal accepts, and every reader has to be able to tell its colours apart.
+`chemparseplot.plot.journal` has those numbers for journals of four publishers.
+Two of them are the American Chemical Society (ACS) and the Royal Society of Chemistry (RSC).
+Every other length in the figure is derived from those numbers by the drafting standards of the International Organization for Standardization (ISO).
+
+### Pick a journal
+
+| Key | Aliases | Single (in) | Double (in) | Text (pt) | Smallest text (pt) | Raster (dpi) |
+|---|---|---|---|---|---|---|
+| `acs` | `jctc`, `jcim` | 3.33 | 7.00 | 10, 9, 8 | 4.5 | 1200 |
+| `aip` | `jcp` | 3.35 | 6.69 | 9.96, 8.97, 8 | 8 | 1200 |
+| `elsevier` | `cpc` | 3.54 | 7.48 | 9.96, 8.97, 7.97 | 7 | 1000 |
+| `rsc` | `pccp` | 3.27 | 6.73 | 8.97, 7.97, 7 | 7 | 600 |
+
+The text sizes are the body, `\small` and `\footnotesize` sizes of the journal's two-column LaTeX layout.
+For ACS they are those of the published page.
+They are in the PostScript points matplotlib uses, and never below the journal's smallest lettering.
+The x and y labels and the panel letters are set at the first size, tick labels and legends at the second.
+Elsevier also has a one-and-a-half column width (`columns`"onehalf"`, 5.51 in).
+The default journal is =acs`.
+
+### Make a figure
+
+```python
+from chemparseplot.plot.journal import journal_figure, label_panels, save_figure
+
+fig, (ax_a, ax_b) = journal_figure("jctc", "double", ncols=2)
+ax_a.plot(iterations, fmax, label="BFGS")
+ax_b.plot(iterations, step, label="BFGS")
+label_panels(fig)
+save_figure(fig, "convergence.pdf")
+```
+
+`journal_figure` puts the journal style into the global rcParams, as `setup_publication_theme` does.
+It returns a constrained-layout figure of exactly the column width.
+Each panel is two thirds as tall as it is wide unless `aspect` or `height` is given.
+A height above the journal's page limit raises a `ValueError`.
+`label_panels` letters the panels in order from "(a)" at the body size.
+Each letter goes on the left edge of its panel's labels.
+
+`journal_style` leaves the global rcParams alone when the figure is drawn and saved inside it:
+
+```python
+from chemparseplot.plot.journal import journal_figure, journal_style, save_figure
+
+with journal_style("pccp") as style:
+    fig, ax = journal_figure(style=style)
+    ax.plot(rc, energy)
+    save_figure(fig, "profile.pdf")
+```
+
+Save inside the block: font embedding and the raster resolution are read from the rcParams when the file is written.
+
+The theme module applies the same style:
+
+```python
+from chemparseplot.plot.theme import get_theme, setup_publication_theme
+
+setup_publication_theme(get_theme("ruhi"), journal="jcp")
+```
+
+### NEB energy profile
+
+```python
+from chemparseplot.plot.journal import save_figure
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+save_figure(fig, "neb_profile.pdf")
+```
+
+`rc` is the path length of each image of the nudged elastic band (NEB).
+`energy` is its energy and `f_para` the force along the path.
+The curve is a cubic Hermite interpolant whose slopes are minus those forces, and the barrier is written above the peak.
+Earlier bands go in `history`, oldest first, each as `(rc, energy)` or `(rc, energy, f_para)`.
+They are drawn as fading lines with an iteration colour bar.
+`reference` is a saddle energy known by other means, drawn as a dashed line.
+
+```python
+fig = plot_neb_profile(
+    rc, energy, f_para,
+    history=earlier_bands,
+    iterations=band_iterations,
+    reference=saddle_energy,
+    reference_label="Dimer saddle",
+)
+```
+
+Pass `ax` to draw into an existing panel; the figure's rcParams are then left as they are.
+
+### Energy landscape
+
+```python
+from chemparseplot.plot.chemgp import plot_surface_contour
+from chemparseplot.plot.journal import save_figure
+
+fig = plot_surface_contour(
+    grid_x, grid_y, grid_z,
+    paths={"NEB": (path_x, path_y)},
+    points={"minima": (min_x, min_y), "saddles": (sad_x, sad_y)},
+    journal="jctc",
+)
+save_figure(fig, "landscape.pdf")
+```
+
+The map is one column wide, and equal x and y scales set its height.
+Bands, contour lines and colour-bar ticks share one set of levels.
+Each contour line is black or white, whichever contrasts more with the bands it separates.
+Minima are lettered from A and saddles numbered from S1.
+
+### Convergence
+
+```python
+from pathlib import Path
+
+from chemparseplot.plot.journal import get_preset
+from chemparseplot.plot.optimization import plot_single_ended_convergence
+
+plot_single_ended_convergence(
+    trajs,
+    ["BFGS", "FIRE"],
+    Path("convergence.pdf"),
+    get_preset("jctc").raster_dpi,
+    journal="jctc",
+    threshold=0.05,
+    force_label=r"$F_{\max}$" + " (eV/\u00c5)",
+    step_label="Step (\u00c5)",
+)
+```
+
+Each trajectory has a `dat_df` with `iteration`, `convergence` and `step_size` columns.
+The eOn trajectory loaders return them in that form.
+Both panels have log scales.
+Lines are labelled at their ends where the labels touch no data, and in a legend otherwise.
+`threshold` adds the convergence criterion as a dashed, labelled line.
+The style applies only while the figure is drawn and saved.
+
+`plot_relative_error` puts relative errors against a reference value on a log scale.
+An exact result is drawn at machine epsilon instead of dropping off the plot.
+In the example, `barrier_history` gives each optimizer's iterations and the band's barrier at each:
+
+```python
+from chemparseplot.plot.journal import journal_figure, label_lines
+from chemparseplot.plot.optimization import plot_relative_error
+
+fig, ax = journal_figure("jctc")
+for index, (name, (steps, barriers)) in enumerate(barrier_history.items()):
+    plot_relative_error(ax, steps, barriers, reference_barrier, label=name, index=index)
+label_lines(ax)
+```
+
+### Labels and legends
+
+- `label_lines(ax)` writes each line's label at its right end, in a shade of the line colour with a 4.5:1 contrast.
+  That is the contrast the Web Content Accessibility Guidelines ask of text.
+  Labels that would collide move just far enough apart (least squares).
+  When a label would touch data, the panel gets a legend instead.
+- `smart_legend(ax)` puts the legend inside the panel where it covers no data, and in one row above the panel otherwise.
+  Entries of a legend already on the panel are kept.
+- `label_hline(ax, line, "Threshold")` labels a horizontal reference line at whichever end is free.
+- `series_style(i)` gives series `i` a Ruhi line colour and an ISO 128-2 line type, so series stay apart in greyscale too.
+
+### Tick numbers
+
+Tick labels from 0.1 to 1000 are plain numbers.
+Outside that range they switch to powers of ten, and no offset is ever used.
+`sci_axis(ax)` sets the same formatting where another formatter is already set.
+`log_error_axis(ax)` labels decades as powers of ten and leaves the minor ticks unlabelled.
+
+### Save
+
+`save_figure(fig, "figure.pdf")` writes the page at the figure's exact size, with TrueType fonts embedded.
+There is no tight bounding box, so the width stays the column width.
+PDF and SVG files carry no creation date, and SVG ids come from a fixed salt.
+A script therefore writes the same bytes on every run.
+Raster files are written at the journal's resolution.
+
+`chemparseplot.plot.provenance.save_with_provenance` also records the SHA-256 of the inputs in the file.
+Pass it `dpi=get_preset("jctc").raster_dpi`.
+It follows `savefig.bbox`.
+Inside the journal style the page keeps its exact size.
+After `setup_publication_theme` without a journal, the page is cropped to its content.
+
+### Fonts
+
+Every preset sets text in the theme's face, Atkinson Hyperlegible for `ruhi`.
+The journals name faces as well: ACS Helvetica or Arial, Elsevier Arial and RSC Arial or Helvetica.
+To use one, name it:
+
+```python
+from chemparseplot.plot.journal import apply_style
+
+style = apply_style("jctc", font="Helvetica")
+style.font  # Helvetica, or Nimbus Sans, Liberation Sans or Arimo
+```
+
+A named face that is not installed is replaced by one with the same advance widths, so text takes the same room.
+The journal's faces stand in the same way when the theme's face is missing.
+When none of them is installed, text falls back to DejaVu Sans, which comes with matplotlib.
+On Debian and Ubuntu the `fonts-atkinson-hyperlegible-ttf` package provides Atkinson Hyperlegible and `fonts-liberation` provides Liberation Sans.
+
+### Check colours
+
+```python
+from chemparseplot.plot.palette import colormap_report, palette_report
+
+report = palette_report()
+report.contrast        # WCAG contrast of each Ruhi colour on white
+report.min_delta_e     # smallest CIEDE2000 difference, by vision type
+colormap_report("ruhi_seq").lightness_monotonic("deutan")
+```
+
+[Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style) explains these numbers and why lines use teal, sky and magenta.
+
+### See Also
+
+- [Tutorial: A Journal Figure from a Nudged Elastic Band](https://chemparseplot.rgoswami.me/tutorials/journal_figure)
+- [How-to: Create Publication NEB Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures)
+- [Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style)
+- [Plotting API Reference](https://chemparseplot.rgoswami.me/reference/plotting_api)
 
 ## Frequently Asked Questions
 
@@ -2321,6 +2809,23 @@ plot_orca_neb_energy_profile(data, "profile.pdf")
 ```
 
 See: [ORCA NEB Tutorial](https://chemparseplot.rgoswami.me/tutorials/orca_neb)
+
+##### How do I make a figure exactly one journal column wide?
+
+```python
+from chemparseplot.plot.journal import save_figure
+from chemparseplot.plot.neb import plot_neb_profile
+
+fig = plot_neb_profile(rc, energy, f_para, journal="jctc")
+save_figure(fig, "profile.pdf")
+```
+
+Pass the journal to the plotting function, or draw on a figure from `journal_figure`.
+Save with `save_figure`, which keeps the page at the figure's size.
+A tight bounding box crops the page, and the file is then no longer a column wide.
+[Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures) lists the journals.
+
+See: [Journal Figure Tutorial](https://chemparseplot.rgoswami.me/tutorials/journal_figure)
 
 ##### How do I parse eOn NEB output?
 
@@ -2661,7 +3166,7 @@ plot_orca_neb_landscape(
 | "No images found" | NEB calculation incomplete | Check ORCA output for errors |
 | "Barrier is negative" | Product higher than saddle | Check calculation converged |
 | "RMSD values are identical" | Structures not loaded | Verify .xyz/.con files exist |
-| "Color map not found" | Invalid colormap name | Use "cmc.batlow" or "viridis" |
+| "Color map not found" | Invalid colormap name | Use `"ruhi_seq"`, `"ruhi_div"` or `"cmc.batlow"` |
 
 #### Getting Help
 
@@ -2813,6 +3318,7 @@ Explanation documents are understanding-oriented. Use them to understand concept
 | [ORCA NEB Integration Design](https://chemparseplot.rgoswami.me/explanation/orca_neb_design) | Why OPI, lazy loading, compatible formats |
 | [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports) | How ensure_import() works |
 | [NEB Parsing Design](https://chemparseplot.rgoswami.me/explanation/neb_parsing_design) | Unified data format rationale |
+| [Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style) | Where each size, line width and colour of the journal style comes from |
 
 #### Structure
 
@@ -3418,6 +3924,209 @@ Benefits:
 - [How-to: Parse ORCA NEB Calculations](https://chemparseplot.rgoswami.me/howto/parse_orca_neb)
 - [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
 - [Lazy Import Pattern](https://chemparseplot.rgoswami.me/explanation/lazy_imports)
+
+## Figure Style
+
+Source: https://chemparseplot.rgoswami.me/explanation/figure_style
+
+### Overview
+
+The journal style has no hand-set sizes.
+A preset records what a journal states: its column widths, the font sizes of its LaTeX class and its smallest lettering.
+It also records the journal's minimum line weight, its raster resolution and the faces it names.
+`figure_style()` derives every other length from those numbers and from the drafting standards of the International Organization for Standardization (ISO).
+The colours come from the Ruhi palette (Ruhila Goswami).
+They are checked under simulated colour-vision deficiency with the colour-difference formula of the International Commission on Illumination (CIE).
+This page follows each number back to its source.
+
+### Sizes from the journal
+
+| Preset | Journals | Publisher |
+|---|---|---|
+| `acs` | Journal of Chemical Theory and Computation (JCTC), Journal of Chemical Information and Modeling (JCIM) | American Chemical Society (ACS) |
+| `aip` | The Journal of Chemical Physics | American Institute of Physics (AIP) Publishing |
+| `elsevier` | Computer Physics Communications | Elsevier |
+| `rsc` | Physical Chemistry Chemical Physics | Royal Society of Chemistry (RSC) |
+
+Column widths and page heights come from each publisher's author guidelines.
+A guideline may give a length in two units, such as 240 pt and 3.33 in for an ACS column.
+The two are then rounded conversions of each other.
+The preset takes the smaller, so the figure fits both.
+
+Text sizes are the `\normalsize`, `\small` and `\footnotesize` of each journal's LaTeX class in its two-column layout:
+
+| Preset | Class and layout | Sizes (TeX pt) |
+|---|---|---|
+| `aip` | revtex4-2, `reprint` | 10, 9, 8 |
+| `elsevier` | elsarticle, `5p` | 10, 9, 8 |
+| `rsc` | RSC article template | 9, 8, 7 |
+
+The achemso class sets JCTC and JCIM only in a 12 pt submission layout.
+The ACS sizes are therefore those of the published page, 10, 9 and 8 PostScript points.
+TeX points (72.27 per inch) are converted to PostScript points (72 per inch).
+No size goes below the journal's smallest lettering.
+The x and y labels use the body size, and tick labels and legends `\small`.
+
+### Panel shape
+
+A panel takes its shape from the data where they give one, as an energy landscape does with equal x and y scales.
+Otherwise it is half again as wide as it is tall.
+Tufte advises graphics "about 50 percent wider than tall" when the data suggest no shape (1983, p. 190).
+
+### Lettering and lines
+
+Text is set in the theme's face, Atkinson Hyperlegible.
+The Braille Institute released it in 2019 for readers with low vision.
+It gives easily confused characters such as I, l and 1 distinct shapes.
+The ACS, Elsevier and RSC guidelines name Helvetica or Arial.
+Those faces replace Atkinson Hyperlegible where it is not installed.
+
+ISO 3098-1:2015 gives the proportions of lettering as fractions of the capital height h.
+With h measured from the outline of "H" in the chosen face at the body size, the style sets:
+
+| Length | ISO 3098-1 type B | Used for |
+|---|---|---|
+| letter stroke d | 0.1 h | base of the line widths |
+| x-height | 0.7 h | major tick length |
+| descender | 0.3 h | minor tick length |
+| word space | 0.6 h | tick-to-label and label pads |
+| character space | 0.2 h | gaps around panels and labels |
+| baseline pitch (mixed case) | 1.5 h | spacing of stacked labels |
+
+Markers are as tall as a capital.
+ISO 128-2:2020 steps line widths by a factor of the square root of two.
+It pairs them as narrow, wide and extra-wide in the ratio 1 : 2 : 4.
+The narrow width is one step below the letter stroke, d/sqrt(2), so spines and ticks are lighter than the text.
+It never goes below the journal's minimum line weight.
+Data lines are wide.
+In Atkinson Hyperlegible at the ACS body size, h is 6.68 pt and d/sqrt(2) is 0.47 pt, below the ACS minimum of 0.5 pt.
+The minimum therefore binds: spines and ticks are 0.5 pt, data lines 1 pt and major ticks 4.7 pt long.
+
+Dashed series use the ISO 128-2 line types 02 (dashed), 07 (dotted), 04 (long-dashed dotted) and 10 (dashed dotted), in that order.
+Types with one kind of mark come before types with two, and each group follows the standard's numbering.
+Their dashes, gaps and dots are 12, 3 and 0.5 line widths long, and long dashes 24.
+Matplotlib scales dash patterns by the line width, so the patterns stay in proportion at any width.
+
+### Numbers
+
+The National Institute of Standards and Technology (NIST) advises choosing prefixes so that numerical values lie between 0.1 and 1000.
+That advice is in section 7.9 of its Special Publication 811.
+Tick labels keep that range in plain numbers and switch to powers of ten, written with mathtext, outside it.
+They never print an offset.
+Errors that span decades go on log scales, with decades labelled as powers of ten.
+A relative error below machine epsilon cannot be resolved and would vanish from a log scale, so it is drawn at epsilon.
+
+### Colour
+
+#### The Ruhi palette
+
+| Colour | sRGB | Contrast on white |
+|---|---|---|
+| teal | `#004D40` | 9.8 |
+| magenta | `#D81B60` | 4.9 |
+| sky | `#1E88E5` | 3.7 |
+| coral | `#FF655D` | 2.9 |
+| sunshine | `#F1DB4B` | 1.4 |
+
+The Web Content Accessibility Guidelines (WCAG) 2.1 ask for a contrast of 3:1 for graphical objects (criterion 1.4.11).
+For text they ask for 4.5:1 (criterion 1.4.3).
+Teal, sky and magenta pass the first on white; coral and sunshine do not.
+`series_style` therefore colours lines with teal, sky and magenta only.
+The default colour cycle puts sunshine and coral last.
+Direct labels take their line's colour.
+Where needed it is darkened at the same hue until it reaches 4.5:1 after rounding to 8-bit values.
+
+#### Colour-vision deficiency
+
+Colours are compared with CIEDE2000 (ISO/CIE 11664-6) in CIELAB.
+Protan, deutan and tritan vision are simulated by the full-severity matrices of Machado, Oliveira and Fernandes (2009).
+Each palette's most confusable pair is the one with the smallest difference:
+
+| Vision | Ruhi | Okabe-Ito | Closest Ruhi pair |
+|---|---|---|---|
+| normal | 19.8 | 21.7 | coral, magenta |
+| protan | 11.4 | 12.2 | teal, magenta |
+| deutan | 16.0 | 11.6 | coral, magenta |
+| tritan | 9.5 | 10.9 | coral, magenta |
+
+The Ruhi palette keeps its colours further apart than the Okabe-Ito palette for deutan vision.
+It keeps them less far apart for normal, protan and tritan vision.
+Colour alone is therefore not enough to tell series apart.
+`series_style` pairs each colour with an ISO 128-2 line type, and lines are labelled directly where there is room.
+The colours that pass 3:1 come first, the highest contrast leading.
+Each next colour is the one farthest from those already chosen, by the smallest difference over all four vision types.
+The colours that fail follow in the same way.
+The order is teal, sky, magenta, sunshine, coral.
+
+#### Colour maps
+
+`ruhi_seq` runs from a dark wine (teal's lightness and chroma at magenta's hue) through magenta and coral to sunshine.
+Chroma and hue follow monotone cubic curves in the CIELAB lightness L*.
+The table is spaced evenly in CIEDE2000 arc length (Kovesi, 2015).
+Teal and sky are left out.
+Sky's lightness lies between magenta's and coral's.
+A map through sky therefore turns the hue by 94 and then 116 degrees over 15.5 units of L*.
+Its lightness is then no longer monotone for protan, deutan or tritan vision.
+A map that starts at teal itself turns the hue by 166 degrees on the way to magenta.
+For protan vision its lightness is then not monotone either.
+`ruhi_div` runs from teal through sky to a neutral grey at sunshine's lightness.
+From there it runs through coral and magenta to the dark wine.
+Both arms share one lightness schedule (Moreland, 2009).
+An entry on one arm has the same L* as its mirror image on the other.
+
+`colormap_report` measures both, with viridis for comparison:
+
+| Map | L* monotone, all four vision types | Step uniformity, normal vision |
+|---|---|---|
+| `ruhi_seq` | yes | 0.003 |
+| `ruhi_div` | each arm | 0.159 |
+| `viridis` | yes | 0.149 |
+
+Step uniformity is the coefficient of variation of the CIEDE2000 steps between neighbouring entries.
+A value of 0 means every step looks the same size.
+`ruhi_diverging` is the default for surfaces and landscapes.
+`ruhi_div` is for signed quantities centred on zero.
+Its steps are less even than those of `ruhi_seq`.
+Lines coloured from a map use only the entries with a 3:1 contrast on the background (`contrast_limited`).
+The earlier bands of a nudged elastic band run are such lines.
+
+### Labels and legends
+
+Direct labels sit at the end of each line, one character space plus half a marker away.
+Labels closer than one baseline pitch are moved apart as little as possible in the least-squares sense.
+Subtracting k pitches from the k-th label turns the spacing constraint into an ordering constraint.
+The pool-adjacent-violators algorithm solves that exactly.
+Constrained layout then makes room for the labels and moves the line ends.
+The labels are spread again until the ends move by less than one output pixel.
+
+A legend is placed inside the panel at the first of matplotlib's locations that is clear.
+A location is clear when the legend's box touches no line, marker, filled area, image or text.
+When every location covers data, the legend goes in one row above the panel.
+
+### Files
+
+`save_figure` keeps the figure's exact size, so the width stays the column width.
+Fonts are embedded, as The Journal of Chemical Physics asks of every figure.
+They are embedded as TrueType (`pdf.fonttype` 42) rather than matplotlib's default Type 3.
+PDF and SVG files carry no creation date, and SVG ids come from a fixed salt.
+The same script therefore writes the same bytes on every run.
+
+### References
+
+- International Electrotechnical Commission (IEC) 61966-2-1:1999, the sRGB colour space.
+- ISO/CIE 11664-4:2019, the CIELAB colour space; ISO/CIE 11664-6:2014, the CIEDE2000 colour-difference formula.
+- G. Sharma, W. Wu and E. N. Dalal, The CIEDE2000 color-difference formula: implementation notes, supplementary test data, and mathematical observations, Color Research and Application 30, 21 (2005).
+- G. M. Machado, M. M. Oliveira and L. A. F. Fernandes, A physiologically-based model for simulation of color vision deficiency, Institute of Electrical and Electronics Engineers (IEEE) Transactions on Visualization and Computer Graphics 15, 1291 (2009).
+- World Wide Web Consortium, Web Content Accessibility Guidelines 2.1 (2018).
+- M. Okabe and K. Ito, Color Universal Design: how to make figures and presentations that are friendly to colorblind people (2008).
+- B. Wong, Points of view: color blindness, Nature Methods 8, 441 (2011).
+- P. Kovesi, Good colour maps: how to design them, arXiv:1509.03700 (2015).
+- K. Moreland, Diverging color maps for scientific visualization, in Advances in Visual Computing, Lecture Notes in Computer Science 5876, 92 (Springer, 2009).
+- ISO 3098-1:2015, Technical product documentation, Lettering, Part 1: General requirements.
+- ISO 128-2:2020, Technical product documentation, General principles of representation, Part 2: Basic conventions for lines.
+- Braille Institute of America, Atkinson Hyperlegible (2019).
+- A. Thompson and B. N. Taylor, Guide for the Use of the International System of Units (SI), NIST Special Publication 811 (2008).
+- E. R. Tufte, The Visual Display of Quantitative Information (Graphics Press, 1983).
 
 ## How to Cite chemparseplot
 
@@ -4164,7 +4873,15 @@ Dataclass for Savitzky-Golay smoothing of NEB force profiles.
 
 #### 1D Profile Functions
 
-##### `plot_energy_path(ax, rc, energy, f_para, color, alpha, zorder, method`"hermite", smoothing=None)=
+##### `plot_energy_path`
+
+```python
+plot_energy_path(
+    ax, rc, energy, f_para, color, alpha, zorder,
+    method="hermite", smoothing=None, label=None, *,
+    markersize=None, markeredgewidth=None, markeredgecolor=None, samples=None,
+)
+```
 
 Plots a 1D energy profile with optional Hermite spline interpolation.
 
@@ -4179,17 +4896,82 @@ Plots a 1D energy profile with optional Hermite spline interpolation.
 | `color` | `str` | - | Line and marker color |
 | `alpha` | `float` | - | Opacity |
 | `zorder` | `int` | - | Drawing order |
-| `method` | `str` | `"hermite"` | Interpolation method: `"hermite"` or `"spline"` |
+| `method` | `str` | `"hermite"` | Interpolation method: `"hermite"`, `"spline"` or `"none"` |
 | `smoothing` | `SmoothingParams` or `None` | `None` | Savitzky-Golay parameters (defaults to `SmoothingParams()`) |
+| `label` | `str` or `None` | `None` | Legend label of the curve |
+| `markersize` | `float` or `None` | `None` | Image marker size in points; `lines.markersize` when `None` |
+| `markeredgewidth` | `float` or `None` | `None` | Marker edge width in points; `lines.markeredgewidth` when `None` |
+| `markeredgecolor` | colour or `None` | `None` | Marker edge colour; the line colour when `None` |
+| `samples` | `int` or `None` | `None` | Points on the interpolant; when `None`, one per pixel across the figure at `savefig.dpi`, plus one |
 
 ###### Notes
 
 - `hermite`: CubicHermiteSpline using Savitzky-Golay smoothed force derivatives. Produces physically meaningful interpolation when forces are available.
 - `spline`: Standard B-spline via `splrep/splev` (cubic, k=3). Does not use force information.
+- `none`: markers joined by straight segments.
 - Normalizes reaction coordinate to [0, 1] before fitting, then maps back.
 - Falls back to raw line plot if spline fitting raises an exception.
+- Marker size and edge width follow the rcParams, which `chemparseplot.plot.journal.apply_style` sets.
+  Before 1.14.0 they were fixed at 6 and 0.5 points.
+- With `samples` left at `None` the curve has a point for every pixel column at `savefig.dpi`.
+  `apply_style` sets that to the journal's line-art resolution, so the count matches `plot_neb_profile`.
+  Before 1.14.0 the curve always had 300 points.
 
-##### `plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color`"white")=
+##### `plot_neb_profile`
+
+```python
+plot_neb_profile(
+    rc, energy, f_para=None, *, history=None, iterations=None,
+    reference=None, reference_label="Reference", ax=None, journal=None,
+    columns="single", method="hermite", smoothing=None, color=None,
+    label=None, energy_unit="eV", xlabel="Path length (\u00c5)", ylabel=None,
+    barrier=True,
+)
+```
+
+Nudged elastic band (NEB) energy profile in the journal style.
+Returns the figure.
+
+###### Parameters
+
+All but `rc` and `energy` have defaults:
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `rc` | `np.ndarray` | - | Path length (or other reaction coordinate) of each image |
+| `energy` | `np.ndarray` | - | Energy of each image |
+| `f_para` | `np.ndarray` or `None` | `None` | Force along the path, the negative of the Hermite curve's slope |
+| `history` | sequence or `None` | `None` | Earlier bands, oldest first, each `(rc, energy)` or `(rc, energy, f_para)` |
+| `iterations` | sequence of `int` or `None` | `None` | Iteration of each earlier band, counted from 0 when `None` |
+| `reference` | `float` or `None` | `None` | Energy drawn as a dashed, directly labelled line |
+| `reference_label` | `str` | `"Reference"` | Label of the reference line |
+| `ax` | `matplotlib.axes.Axes` or `None` | `None` | Panel to draw into; a new figure when `None` |
+| `journal` | `str`, `JournalPreset` or `None` | `None` | Journal style (`acs` when `None`) |
+| `columns` | `str` | `"single"` | Column span of a new figure |
+| `method` | `str` | `"hermite"` | `"hermite"`, `"spline"` or `"none"` |
+| `smoothing` | `SmoothingParams` or `None` | `None` | Savitzky-Golay filter on the forces; raw forces when `None` |
+| `color` | colour or `None` | `None` | Band colour (teal when `None`) |
+| `label` | `str` or `None` | `None` | Band label, written at the end of the band |
+| `energy_unit` | `str` | `"eV"` | Unit in the energy label and barrier |
+| `xlabel` and `ylabel` | `str` | path length, relative energy | x and y labels |
+| `barrier` | `bool` | `True` | Barrier written above the highest interior image |
+
+###### Notes
+
+- The band is a wide line through markers outlined in the background colour.
+  The curve is sampled once per output pixel at the journal's raster resolution.
+- Earlier bands are narrow lines coloured light to dark along the entries of `ruhi_seq` that reach 3:1 on the background.
+  A colour bar gives their iterations.
+- The barrier is the highest image above the first.
+  It is written with one decimal more than the energy ticks show, on a halo of the background colour.
+- Without `ax` the journal style goes into the global rcParams, as `journal_figure` does.
+  With `ax` the caller's rcParams are kept and the journal sets only line and marker sizes.
+
+##### `plot_eigenvalue_path`
+
+```python
+plot_eigenvalue_path(ax, rc, eigenvalue, color, alpha, zorder, grid_color="white")
+```
 
 Plots a 1D eigenvalue profile with cubic spline interpolation.
 
@@ -4216,17 +4998,19 @@ Plots a 1D eigenvalue profile with cubic spline interpolation.
 
 Plots a 2D landscape surface using gradient-enhanced GP/RBF interpolation.
 
-Signature (core args abbreviated)::
+The signature below shows the core arguments only.
 
-  plot_landscape_surface(
-      ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
-      step_data=None, method="grad_matern", rbf_smooth=None,
-      cmap="viridis", show_pts=True, variance_threshold=0.05,
-      project_path=True, extra_points=None, n_inducing=None,
-      xlim=None, ylim=None, basis=None,
-      auto_thin=False, max_surface_points=64,
-      surface_fit=None,
-  )
+```python
+plot_landscape_surface(
+    ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
+    step_data=None, method="grad_matern", rbf_smooth=None,
+    cmap="ruhi_diverging", show_pts=True, variance_threshold=0.05,
+    project_path=True, extra_points=None, n_inducing=None,
+    xlim=None, ylim=None, basis=None,
+    auto_thin=False, max_surface_points=64,
+    surface_fit=None,
+)
+```
 
 ###### Parameters
 
@@ -4241,7 +5025,7 @@ Signature (core args abbreviated)::
 | `step_data` | `np.ndarray` or `None` | `None` | Step indices per point |
 | `method` | `str` | `"grad_matern"` | Surface model (see table below) |
 | `rbf_smooth` | `float` or `None` | `None` | Length scale hint (auto-optimized) |
-| `cmap` | `str` | `"viridis"` | Matplotlib colormap name |
+| `cmap` | `str` | `"ruhi_diverging"` | Matplotlib colormap name |
 | `show_pts` | `bool` | `True` | Scatter data points on surface |
 | `variance_threshold` | `float` | `0.05` | Variance contour threshold (fraction of range) |
 | `project_path` | `bool` | `True` | Project to reaction valley coordinates |
@@ -4334,7 +5118,14 @@ Renders an ASE Atoms object to a numpy RGBA image array using ASE's built-in PNG
 
 `np.ndarray` -- RGBA image array with shape `(H, W, 4)` and float dtype.
 
-##### `plot_structure_strip(ax, atoms_list, labels=None, zoom=0.3, rotation`"0x,90y,0z", theme_color="black", max_cols=6, renderer="xyzrender", label_ax=None)=
+##### `plot_structure_strip`
+
+```python
+plot_structure_strip(
+    ax, atoms_list, labels=None, zoom=0.3, rotation="0x,90y,0z", theme_color="black",
+    max_cols=6, renderer="xyzrender", label_ax=None
+)
+```
 
 Renders a horizontal gallery of atomic structures.
 
@@ -4360,7 +5151,14 @@ Renders a horizontal gallery of atomic structures.
 - `StructurePlacement` lets callers pass a typed strip payload instead of parallel `atoms_list` / `labels` lists
 - Supplying `label_ax` keeps captions out of the structure-image axis and uses matching normalized row and column positions
 
-##### `plot_structure_inset(ax, atoms, x, y, xybox, rad, zoom=0.4, rotation`"0x,90y,0z", arrow_props=None, renderer="ase")=
+##### `plot_structure_inset`
+
+```python
+plot_structure_inset(
+    ax, atoms, x, y, xybox, rad, zoom=0.4, rotation="0x,90y,0z", arrow_props=None,
+    renderer="ase"
+)
+```
 
 Plots a single structure as an annotation inset with an arrow.
 
@@ -4386,7 +5184,12 @@ Plots a single structure as an annotation inset with an arrow.
 
 #### OCI-NEB/RONEB Functions
 
-##### `plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True)`
+##### `plot_mmf_peaks_overlay`
+
+```python
+plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True,
+                       path_rmsd_r=None, path_rmsd_p=None, cmap="ruhi_diverging")
+```
 
 Overlays MMF (mode-following) refinement peak positions on the landscape. Used for OCI-NEB/RONEB to show where dimer refinement was applied.
 
@@ -4399,13 +5202,14 @@ Overlays MMF (mode-following) refinement peak positions on the landscape. Used f
 | `peak_rmsd_p` | `np.ndarray` | - | RMSD-P coordinates of peak structures |
 | `peak_energies` | `np.ndarray` | - | Energy at each peak |
 | `project_path` | `bool` | `True` | Apply reaction valley projection |
+| `cmap` | `str` | `"ruhi_diverging"` | Colormap of the peak cores |
 
 ###### Notes
 
 - Draws a dark outer halo marker below each peak and an energy-colored core on top
-- Colors peak cores by energy using `coolwarm` colormap
+- Colors peak cores by energy with `cmap`, by default the landscape's own map
 
-##### `plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap`"Blues")=
+##### `plot_neb_evolution(ax, step_rmsd_r_list, step_rmsd_p_list, project_path=True, cmap=None)`
 
 Shows NEB band evolution across optimization iterations with fading older bands.
 
@@ -4417,7 +5221,7 @@ Shows NEB band evolution across optimization iterations with fading older bands.
 | `step_rmsd_r_list` | `list[np.ndarray]` | - | RMSD-R arrays per NEB iteration |
 | `step_rmsd_p_list` | `list[np.ndarray]` | - | RMSD-P arrays per NEB iteration |
 | `project_path` | `bool` | `True` | Apply reaction valley projection |
-| `cmap` | `str` | `"Blues"` | Colormap for band fading |
+| `cmap` | `str` or `None` | `None` | Colormap for band fading; when `None`, the entries of `ruhi_seq` that reach 3:1 on the panel background, light to dark |
 
 #### High-Level ORCA Functions
 
@@ -4435,7 +5239,14 @@ Simple ORCA NEB energy profile. Plots image index vs energy with labeled reactan
 | `height` | `float` | `5.0` | Figure height (inches) |
 | `dpi` | `int` | `200` | Output resolution |
 
-##### `plot_orca_neb_energy_profile(neb_data, output, *, width=5.37, height=5.37, dpi=200, method`"hermite", smoothing=None)=
+##### `plot_orca_neb_energy_profile`
+
+```python
+plot_orca_neb_energy_profile(
+    neb_data, output, *, width=5.37, height=5.37, dpi=200, method="hermite",
+    smoothing=None
+)
+```
 
 Publication ORCA NEB energy profile using the eOn-style `plot_energy_path()` function.
 
@@ -4457,7 +5268,14 @@ Publication ORCA NEB energy profile using the eOn-style `plot_energy_path()` fun
 - Applies the `ruhi` theme
 - Labels reactant, product, and saddle points
 
-##### `plot_orca_neb_landscape(neb_data, output, *, width=5.37, height=5.37, dpi=200, method`"grad_matern", project_path=True)=
+##### `plot_orca_neb_landscape`
+
+```python
+plot_orca_neb_landscape(
+    neb_data, output, *, width=5.37, height=5.37, dpi=200, method="grad_matern",
+    project_path=True
+)
+```
 
 Publication ORCA NEB 2D landscape using `plot_landscape_surface()` and `plot_landscape_path_overlay()`.
 
@@ -4512,10 +5330,12 @@ Retrieves a theme by name, applying optional field overrides.
 #### `setup_global_theme(theme)`
 
 Sets `plt.rcParams` from the theme (font, colors, sizes).
+The Ruhi line colours become the colour cycle and the theme's landscape map the default image map.
 
-#### `setup_publication_theme(theme)`
+#### `setup_publication_theme(theme, journal=None)`
 
 Extends `setup_global_theme()` with publication defaults: spine removal, line widths, DPI 300, tight bbox.
+With `journal` (a preset key or alias such as `"jctc"`), applies the style of `chemparseplot.plot.journal` instead.
 
 #### `apply_axis_theme(ax, theme)`
 
@@ -4525,11 +5345,229 @@ Applies theme properties to a specific axes instance (facecolor, spine colors, t
 
 Builds and registers a `LinearSegmentedColormap` from hex color strings.
 
+### Module: `chemparseplot.plot.journal`
+
+Journal presets and the figure style derived from them.
+Lengths follow the lettering and line standards of the International Organization for Standardization (ISO).
+All sizes are in PostScript points (72 per inch) unless marked as inches.
+
+#### Presets
+
+| Key | Aliases | Widths (in) | Height limit (in) | Text (pt) | Smallest text (pt) | Thinnest line (pt) | Raster (dpi) |
+|---|---|---|---|---|---|---|---|
+| `acs` | `jctc`, `jcim` | single 3.33, double 7.00 | 9.17 | 10, 9, 8 | 4.5 | 0.5 | 1200 |
+| `aip` | `jcp` | single 3.35, double 6.69 | 8.25 | 9.96, 8.97, 8 | 8 | 0.5 | 1200 |
+| `elsevier` | `cpc` | single 3.54, onehalf 5.51, double 7.48 | none | 9.96, 8.97, 7.97 | 7 | 0.25 | 1000 |
+| `rsc` | `pccp` | single 3.27, double 6.73 | 9.17 | 8.97, 7.97, 7 | 7 | none | 600 |
+
+Text sizes are the body, `\small` and `\footnotesize` sizes, at least the smallest text.
+`DEFAULT_JOURNAL` is `"acs"`; `PRESETS` maps keys to presets and `ALIASES` journal abbreviations to keys.
+
+#### `JournalPreset`
+
+Frozen dataclass of what a journal fixes for its figures.
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | `str` | Preset key |
+| `name` | `str` | Publisher and journals |
+| `widths` | `Mapping[str, float]` | Figure width in inches by column span |
+| `max_height` | `float` or `None` | Tallest figure in inches; `None` when not stated |
+| `class_sizes` | `tuple[float, float, float]` | `\normalsize`, `\small`, `\footnotesize` in TeX points |
+| `min_text` | `float` | Smallest lettering |
+| `min_line` | `float` or `None` | Thinnest line; `None` when not stated |
+| `raster_dpi` | `int` | Resolution for raster output |
+| `fonts` | `tuple[str, ...]` | Faces the journal names |
+| `panel_label` | `str` | Panel letter format |
+| `sources` | `tuple[str, ...]` | Author guidelines the values come from |
+
+`width(columns)` returns the width for a column span and raises `ValueError` for spans the journal lacks.
+
+#### `get_preset(journal)`
+
+Looks up a preset by key or alias, case-insensitively; raises `ValueError` for unknown names.
+
+#### `figure_style`
+
+```python
+figure_style(journal="acs", *, font=None, theme="ruhi")
+```
+
+Returns a `JournalStyle`, the lengths derived from the preset.
+Here h is the capital height of the face at the body size.
+
+| Field | Derivation |
+|---|---|
+| `body`, `small`, `footnote` | Class sizes in PostScript points, at least `min_text` |
+| `cap` | h, measured from the outline of "H" |
+| `narrow` | ISO 3098-1 stroke 0.1 h divided by sqrt(2) (one ISO 128-2 step), at least `min_line` |
+| `wide`, `extra` | 2 and 4 times `narrow` (ISO 128-2) |
+| `tick`, `minor_tick` | 0.7 h and 0.3 h (x-height and descender) |
+| `pad`, `gap` | 0.6 h and 0.2 h (word and character space) |
+| `marker` | h |
+| `textcolor`, `facecolor` | From `theme` |
+
+Text is set in `font`, by default the theme's face.
+Where that face is not installed the faces the journal names stand in.
+Missing ones give way to their metric clones (Nimbus Sans, Liberation Sans, Arimo), and DejaVu Sans comes last.
+`rc()` returns the rcParams and `halo(color)` path effects that outline text.
+`pitch` is the baseline spacing of stacked `\small` labels, 1.5 h at that size.
+`marker_large` is one sqrt(2) step larger than `marker`.
+
+#### `apply_style` and `journal_style`
+
+```python
+apply_style(journal="acs", **kwargs)
+journal_style(journal="acs", **kwargs)
+```
+
+`apply_style` puts the style into the global rcParams and returns it.
+`journal_style` is a context manager that yields the style and restores the rcParams on exit.
+Keyword arguments go to `figure_style`.
+
+#### `journal_figure`
+
+```python
+journal_figure(journal="acs", columns="single", *, nrows=1, ncols=1,
+               aspect=None, height=None, style=None, **subplots_kw)
+```
+
+Returns `(fig, axes)` as `plt.subplots` does, for a constrained-layout figure at the exact column width.
+Without `style` the journal style is applied globally.
+The height is `height` inches.
+Without `height` it is the width times `aspect` times `nrows / ncols`.
+`aspect` is the panel height over width, by default `PANEL_ASPECT` (2/3).
+A height above the journal's limit raises `ValueError`.
+
+#### `fit_height(fig, *, dpi=None)`
+
+Shrinks the figure height to its content, keeping the width, for equal-aspect maps that leave empty bands.
+Stops when the height changes by less than one output pixel.
+Returns the new height in inches.
+
+#### `save_figure(fig, path, *, dpi=None, **savefig_kw)`
+
+Saves at the exact figure size (no tight bounding box) with TrueType fonts embedded.
+PDF and SVG files carry no creation date and SVG ids use a fixed salt, so the bytes are the same on every run.
+Returns the path.
+
+#### `label_panels`
+
+```python
+label_panels(target, labels=None, *, fmt=None, journal=None, fontweight="normal")
+```
+
+Letters the panels of a figure, or a sequence of panels, in order from "(a)".
+Each letter goes above the top left of its panel, on the left edge of the panel's tick labels and y label.
+Panels in one grid column share that edge.
+Returns the texts.
+
+#### Labels and legends
+
+| Function | Description |
+|---|---|
+| `direct_labels(ax, lines, *, side)` | Labels at the line ends (default right) in a shade of the line colour that reaches 4.5:1, moved apart by least squares where they would collide |
+| `label_lines(ax, lines, *, fallback)` | Direct labels where they touch no data, otherwise `smart_legend`; with `fallback=False` nothing is drawn instead |
+| `label_hline(ax, line, label, *, color, ignore)` | Label at a free end of a horizontal reference line, otherwise a legend entry |
+| `smart_legend(ax, handles, labels, **kwargs)` | Legend inside the panel where it covers no data, otherwise in one row above it |
+| `series_style(index, background)` | Colour and ISO 128-2 line type of series `index` |
+
+Arguments after `ax` are optional except `line` and `label`; `lines` default to the labelled lines of `ax`.
+
+#### Scales
+
+| Function | Description |
+|---|---|
+| `relative_error(value, reference)` | `abs(value - reference) / abs(reference)`, at least machine epsilon |
+| `log_error_axis(ax, axis)` | Log scale with decades labelled as powers of ten and unlabelled minor ticks |
+| `sci_axis(ax, axis)` | Plain numbers from 0.1 to 1000, powers of ten outside, never an offset |
+
+`axis` is `"x"`, `"y"` (default) or `"both"`.
+
+#### Constants
+
+| Name | Value | Source |
+|---|---|---|
+| `LINE_TYPES` | ISO 128-2 types 01, 02, 07, 04 and 10 as `(number, name, dash pattern)` | ISO 128-2:2020 |
+| `SI_POWERLIMITS` | `(-2, 3)` | National Institute of Standards and Technology Special Publication 811 (2008), section 7.9 |
+| `PANEL_ASPECT` | 2/3 | Tufte (1983), p. 190 |
+
+### Module: `chemparseplot.plot.palette`
+
+The Ruhi palette (Ruhila Goswami), the colour science used to check it and the colour maps built from it.
+
+#### Colours
+
+| Name | Type or value | Description |
+|---|---|---|
+| `RUHI_COLORS` | `dict[str, str]` | coral `#FF655D`, sunshine `#F1DB4B`, teal `#004D40`, sky `#1E88E5`, magenta `#D81B60` |
+| `RUHI_LINE_ORDER` | `tuple[str, ...]` | Names in line order: teal, sky, magenta, sunshine, coral |
+| `RUHI_CYCLE` | `tuple[str, ...]` | Hex values in line order |
+| `OKABE_ITO` | `tuple[str, ...]` | Okabe-Ito palette, the reference of `palette_report` |
+| `WCAG_TEXT_CONTRAST` | `4.5` | Web Content Accessibility Guidelines (WCAG) 2.1, criterion 1.4.3 |
+| `WCAG_GRAPHICS_CONTRAST` | `3.0` | WCAG 2.1, criterion 1.4.11 |
+
+#### Colour maps
+
+`ruhi_seq` (`RUHI_SEQUENTIAL`) and `ruhi_div` (`RUHI_DIVERGING`) and their reversed `_r` forms are registered with matplotlib when the module is imported.
+
+| Function | Description |
+|---|---|
+| `ruhi_sequential_colors(n)` | Table of `ruhi_seq`: dark wine through magenta and coral to sunshine, L* rising, steps even in CIEDE2000 |
+| `ruhi_diverging_colors(n)` | Table of `ruhi_div`: teal through sky to grey, then coral and magenta to dark wine; equal L* at equal distance from the centre |
+| `contrast_limited(cmap, background, ratio)` | `ListedColormap` of the entries of `cmap` that reach `ratio` (default 3) against `background` (default white) |
+| `register_ruhi_colormaps()` | Registers both maps (called on import) |
+
+`n` defaults to the `image.lut` rcParam.
+
+#### Checks
+
+##### `palette_report`
+
+```python
+palette_report(colors=None, background="white", reference=OKABE_ITO)
+```
+
+Returns a `PaletteReport` of `colors` (default `RUHI_COLORS`).
+Its `contrast` is the WCAG contrast of each colour on `background`.
+Its `min_delta_e` is the smallest CIEDE2000 difference between any two colours for each vision type.
+The keys are `"normal"`, `"protan"`, `"deutan"` and `"tritan"`.
+`reference_min_delta_e` gives the same numbers for `reference`.
+
+##### `colormap_report(cmap)`
+
+Returns a `ColormapReport` holding L* and the CIEDE2000 step between neighbouring entries for each vision type.
+Its methods `lightness_monotonic(kind)`, `arms_monotonic(kind)` (for diverging maps) and `step_cv(kind)` summarise them.
+`step_cv` is the coefficient of variation of the steps.
+
+#### Colour science
+
+`background` defaults to white.
+
+| Function | Description |
+|---|---|
+| `srgb_to_lab(colors)`, `srgb_to_lch(colors)` | sRGB (International Electrotechnical Commission standard 61966-2-1) to CIELAB or CIELCh, D65 |
+| `lch_to_srgb(lch)` | CIELCh to sRGB; out-of-gamut colours lose chroma at fixed L* and hue |
+| `delta_e_2000(lab1, lab2)` | CIEDE2000 colour difference |
+| `simulate_cvd(colors, kind)` | Protan, deutan or tritan vision (Machado et al., 2009, severity 1) |
+| `contrast_ratio(color, background)` | WCAG 2.1 contrast ratio |
+| `readable_color(color, background, ratio)` | `color`, or its shade at the same hue that reaches `ratio` (default 4.5) |
+| `best_contrast(neighbours, candidates)` | The candidate (default black or white) whose smallest contrast with `neighbours` is largest |
+| `order_for_lines(colors, background)` | Colours passing 3:1 first, each next one furthest in CIEDE2000 from those chosen over all four vision types |
+
 ### Module: `chemparseplot.plot.optimization`
 
 Functions for single-ended method (dimer, minimization) visualization.
 
-#### `plot_optimization_landscape(ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode`"optimization", project_path=True, method="grad_matern", cmap="viridis", z_label="Energy (eV)", **surface_kwargs)=
+#### `plot_optimization_landscape`
+
+```python
+plot_optimization_landscape(
+    ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode="optimization",
+    project_path=True, method="grad_matern", cmap="ruhi_diverging", energy_unit="eV",
+    z_label=None, **surface_kwargs,
+)
+```
 
 Wraps `plot_landscape_surface()` and `plot_landscape_path_overlay()` with semantically correct axis labels for single-ended methods.
 
@@ -4548,17 +5586,107 @@ Full single-ended pipeline (min/saddle CLIs). Accepts the same surface-fit
 knobs (`auto_thin` default false, `max_surface_points` 64, `surface_fit`).
 See `plot_landscape_surface` above.
 
-#### `plot_optimization_profile(ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color`"#004D40", eigen_color="#FF655D")=
+#### `plot_optimization_profile`
+
+```python
+plot_optimization_profile(
+    ax, iterations, energies, *, eigenvalues=None, ax_eigen=None, color="#004D40",
+    eigen_color="#FF655D"
+)
+```
 
 Plots energy (and optionally eigenvalue) vs iteration.
 
-#### `plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col`"convergence", step_col="step_size", iter_col="iteration", color="#004D40")=
+#### `plot_convergence_panel`
+
+```python
+plot_convergence_panel(ax_force, ax_step, dat_df, *, force_col="convergence",
+                       step_col="step_size", iter_col="iteration", color="#004D40")
+```
 
 Plots convergence metrics (force norm and step size) from a trajectory DataFrame.
+Both scales are logarithmic, with decades labelled as powers of ten.
+Steps of zero length are left out, and a marker shows the last iteration.
 
-#### `plot_dimer_mode_evolution(ax, mode_vectors, *, color`"#004D40")=
+#### `plot_single_ended_convergence`
 
-Plots alignment of per-iteration dimer mode with the final converged mode (|cos(mode, final)|).
+```python
+plot_single_ended_convergence(
+    trajs, labels, output, dpi, *, journal=None, columns="double",
+    threshold=None, threshold_label="Threshold",
+    force_label="Convergence", step_label="Step size",
+)
+```
+
+Two panels, (a) the convergence measure and (b) the step size against iteration, saved to `output`.
+The figure is in the style of `journal` (`acs` when `None`) and one `columns` of it wide.
+Each trajectory needs a `dat_df`, as the eOn loaders return.
+It gets its own colour and ISO 128-2 line type and is labelled at the end of its line.
+When the labels would touch the data, a legend placed off the data replaces them.
+`threshold` draws the convergence criterion as a dashed, labelled line.
+The global rcParams are left as they were.
+
+#### `plot_relative_error`
+
+```python
+plot_relative_error(ax, x, values, reference, *, label=None, index=0,
+                    xlabel="Iteration", ylabel="Relative error")
+```
+
+Plots `abs(values - reference) / abs(reference)` on a log scale with decades labelled as powers of ten.
+Errors below machine epsilon are drawn at epsilon, so an exact result stays on the plot.
+The line takes the colour and line type of `series_style(index)`.
+Returns the line.
+
+#### `plot_dimer_mode_evolution`
+
+```python
+plot_dimer_mode_evolution(ax, mode_vectors, *, color="#004D40")
+```
+
+Plots alignment of per-iteration dimer mode with the final converged mode (`|cos(mode, final)|`).
+
+### Module: `chemparseplot.plot.chemgp`
+
+#### `plot_surface_contour`
+
+```python
+plot_surface_contour(
+    grid_x, grid_y, grid_z, paths=None, points=None,
+    clamp_lo=None, clamp_hi=None, levels=None, contour_step=None,
+    _point_style="star", width=None, height=None, *,
+    journal=None, columns="single", cmap=None,
+    xlabel=r"$x$", ylabel=r"$y$", zlabel=r"$E$ (eV)",
+)
+```
+
+Filled contour map of a 2D surface with optional paths and stationary points, in the journal style.
+Returns the figure.
+
+##### Parameters
+
+All but the three grids have defaults:
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `grid_x`, `grid_y` and `grid_z` | array | - | Meshgrid arrays of the surface |
+| `paths` | `dict` or `None` | `None` | `{label: (xs, ys)}` paths, white lines with a dark outline through numbered sky-blue images |
+| `points` | `dict` or `None` | `None` | `{label: (xs, ys)}` points: white circles lettered from A for keys containing "minim", white crosses numbered from S1 for keys containing "saddle", sunshine stars otherwise |
+| `clamp_lo` and `clamp_hi` | `float` or `None` | `None` | Clipping range of the surface values |
+| `levels` | `int`, array or `None` | `None` | Filled levels, the colour-bar ticks of matplotlib's locator when `None` |
+| `contour_step` | `float` or `None` | `None` | Spacing of the contour lines, the filled levels when `None` |
+| `width` and `height` | `float` or `None` | `None` | Figure size in inches, the column width and the height the map needs when `None` |
+| `journal` | `str`, `JournalPreset` or `None` | `None` | Journal whose style goes into the global rcParams (`acs` when `None`) |
+| `columns` | `str` | `"single"` | Column span of the default width |
+| `cmap` | `str` or `None` | `None` | Colour map (`ruhi_diverging` when `None`) |
+| `xlabel`, `ylabel` and `zlabel` | `str` | x, y, E (eV) | x, y and colour-bar labels |
+
+##### Notes
+
+- The x and y scales are equal; without `height` the figure is shrunk to its content with `fit_height`.
+- Filled bands, contour lines and colour-bar ticks share one set of levels.
+- Each contour line is black or white, whichever contrasts more with the bands on both sides.
+- Image numbers are below the path and point labels above it, so they never cover each other at a stationary point.
 
 ### Module: `chemparseplot.parse.projection`
 
@@ -4590,6 +5718,8 @@ Inverse transform for grid evaluation on projected surfaces.
 ### See Also
 
 - [How-to: Create Publication Figures](https://chemparseplot.rgoswami.me/howto/create_neb_figures)
+- [How-to: Make Journal Figures](https://chemparseplot.rgoswami.me/howto/journal_figures)
+- [Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style)
 - [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
 - [eOn NEB API Reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api)
 

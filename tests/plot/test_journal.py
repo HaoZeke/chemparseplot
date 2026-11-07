@@ -26,7 +26,6 @@ from chemparseplot.plot import journal as jr
 from chemparseplot.plot.palette import (
     RUHI_COLORS,
     RUHI_CYCLE,
-    RUHI_SEQUENTIAL,
     WCAG_GRAPHICS_CONTRAST,
     WCAG_TEXT_CONTRAST,
     contrast_ratio,
@@ -242,7 +241,7 @@ class TestStyle:
         assert rc["savefig.dpi"] == jr.ACS.raster_dpi
         assert rc["pdf.fonttype"] == rc["ps.fonttype"] == 42
         assert rc["savefig.bbox"] == "standard"
-        assert rc["image.cmap"] == RUHI_SEQUENTIAL
+        assert rc["image.cmap"] == "ruhi_diverging"
         assert rc["axes.prop_cycle"].by_key()["color"] == list(RUHI_CYCLE)
         assert rc["axes.formatter.limits"] == list(jr.SI_POWERLIMITS)
         assert rc["font.sans-serif"][0] == FACE
