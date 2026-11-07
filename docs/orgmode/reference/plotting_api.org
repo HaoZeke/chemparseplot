@@ -159,7 +159,7 @@ The signature below shows the core arguments only.
 plot_landscape_surface(
     ax, rmsd_r, rmsd_p, grad_r, grad_p, z_data,
     step_data=None, method="grad_matern", rbf_smooth=None,
-    cmap="ruhi_seq", show_pts=True, variance_threshold=0.05,
+    cmap="ruhi_diverging", show_pts=True, variance_threshold=0.05,
     project_path=True, extra_points=None, n_inducing=None,
     xlim=None, ylim=None, basis=None,
     auto_thin=False, max_surface_points=64,
@@ -180,7 +180,7 @@ plot_landscape_surface(
 | =step_data= | =np.ndarray= or =None= | =None= | Step indices per point |
 | =method= | =str= | ="grad_matern"= | Surface model (see table below) |
 | =rbf_smooth= | =float= or =None= | =None= | Length scale hint (auto-optimized) |
-| =cmap= | =str= | ="ruhi_seq"= | Matplotlib colormap name |
+| =cmap= | =str= | ="ruhi_diverging"= | Matplotlib colormap name |
 | =show_pts= | =bool= | =True= | Scatter data points on surface |
 | =variance_threshold= | =float= | =0.05= | Variance contour threshold (fraction of range) |
 | =project_path= | =bool= | =True= | Project to reaction valley coordinates |
@@ -343,7 +343,7 @@ Plots a single structure as an annotation inset with an arrow.
 
 #+begin_src python
 plot_mmf_peaks_overlay(ax, peak_rmsd_r, peak_rmsd_p, peak_energies, project_path=True,
-                       path_rmsd_r=None, path_rmsd_p=None, cmap="ruhi_seq")
+                       path_rmsd_r=None, path_rmsd_p=None, cmap="ruhi_diverging")
 #+end_src
 
 Overlays MMF (mode-following) refinement peak positions on the landscape. Used for OCI-NEB/RONEB to show where dimer refinement was applied.
@@ -357,7 +357,7 @@ Overlays MMF (mode-following) refinement peak positions on the landscape. Used f
 | =peak_rmsd_p= | =np.ndarray= | - | RMSD-P coordinates of peak structures |
 | =peak_energies= | =np.ndarray= | - | Energy at each peak |
 | =project_path= | =bool= | =True= | Apply reaction valley projection |
-| =cmap= | =str= | ="ruhi_seq"= | Colormap of the peak cores |
+| =cmap= | =str= | ="ruhi_diverging"= | Colormap of the peak cores |
 
 **** Notes
 
@@ -719,7 +719,7 @@ Functions for single-ended method (dimer, minimization) visualization.
 #+begin_src python
 plot_optimization_landscape(
     ax, rmsd_a, rmsd_b, grad_a, grad_b, z_data, *, label_mode="optimization",
-    project_path=True, method="grad_matern", cmap="ruhi_seq", energy_unit="eV",
+    project_path=True, method="grad_matern", cmap="ruhi_diverging", energy_unit="eV",
     z_label=None, **surface_kwargs,
 )
 #+end_src
@@ -833,7 +833,7 @@ All but the three grids have defaults:
 | =width= and =height= | =float= or =None= | =None= | Figure size in inches, the column width and the height the map needs when =None= |
 | =journal= | =str=, =JournalPreset= or =None= | =None= | Journal whose style goes into the global rcParams (=acs= when =None=) |
 | =columns= | =str= | ="single"= | Column span of the default width |
-| =cmap= | =str= or =None= | =None= | Colour map (=ruhi_seq= when =None=) |
+| =cmap= | =str= or =None= | =None= | Colour map (=ruhi_diverging= when =None=) |
 | =xlabel=, =ylabel= and =zlabel= | =str= | x, y, E (eV) | x, y and colour-bar labels |
 
 *** Notes

@@ -58,7 +58,6 @@ from matplotlib.transforms import ScaledTranslation
 
 from chemparseplot.plot.palette import (
     RUHI_CYCLE,
-    RUHI_SEQUENTIAL,
     WCAG_GRAPHICS_CONTRAST,
     WCAG_TEXT_CONTRAST,
     contrast_ratio,
@@ -464,7 +463,7 @@ class JournalStyle:
             "axes.titlecolor": self.textcolor,
             "axes.facecolor": self.facecolor,
             "text.color": self.textcolor,
-            "image.cmap": RUHI_SEQUENTIAL,
+            "image.cmap": "ruhi_diverging",
             "figure.facecolor": self.facecolor,
             "figure.constrained_layout.w_pad": bp(self.gap),
             "figure.constrained_layout.h_pad": bp(self.gap),

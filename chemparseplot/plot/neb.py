@@ -1334,7 +1334,7 @@ def plot_landscape_surface(
     step_data=None,
     method="grad_matern",
     rbf_smooth=None,
-    cmap=RUHI_SEQUENTIAL,
+    cmap="ruhi_diverging",
     show_pts=True,
     variance_threshold=0.05,
     project_path=True,
@@ -1404,7 +1404,8 @@ def plot_landscape_surface(
     ```
 
     ```{versionchanged} 1.14.0
-    The default *cmap* changed from ``viridis`` to ``ruhi_seq``.
+    The default *cmap* is ``ruhi_diverging``. Release 1.14.0 had pointed
+    it at ``ruhi_seq``.
     ```
     """
     from rgpycrumbs.surfaces import (
@@ -1790,7 +1791,7 @@ def plot_landscape_path_overlay(
     try:
         colormap = plt.get_cmap(cmap)
     except ValueError:
-        colormap = plt.get_cmap(RUHI_SEQUENTIAL)
+        colormap = plt.get_cmap("ruhi_diverging")
 
     norm = plt.Normalize(z.min(), z.max())
 
@@ -1870,13 +1871,13 @@ def plot_mmf_peaks_overlay(
     project_path=True,
     path_rmsd_r=None,
     path_rmsd_p=None,
-    cmap: str = RUHI_SEQUENTIAL,
+    cmap: str = "ruhi_diverging",
 ) -> None:
     """Overlay MMF (mode-following) refinement peak positions on the landscape.
 
     Used for OCI-NEB/RONEB visualization to show where dimer refinement
     was applied along the band. Peaks are coloured by energy with ``cmap``,
-    by default the sequential map of the landscape itself.
+    by default the ``ruhi_diverging`` map of the landscape itself.
 
     Parameters
     ----------
@@ -1897,7 +1898,8 @@ def plot_mmf_peaks_overlay(
     ```
 
     ```{versionchanged} 1.14.0
-    Added *cmap*; the default changed from ``coolwarm`` to ``ruhi_seq``.
+    Added *cmap*. The default is ``ruhi_diverging``. Release 1.14.0 had
+    pointed it at ``ruhi_seq``.
     ```
     """
     if len(peak_rmsd_r) == 0:
