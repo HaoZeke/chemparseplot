@@ -23,6 +23,7 @@ It shows that the distances `extract_energy_data` labels bohr are in ångström.
 `ruhi_seq` stays registered for the light-to-dark series.
 - The Ruhi theme's profile and landscape colour maps are `ruhi_diverging` again: teal `#004D40`, sky `#1E88E5`, magenta `#D81B60`, coral `#FF655D`, sunshine `#F1DB4B`.
 `ruhi_seq` stays registered.
+- The manual index lists the how-to that draws surrogate-assisted searches.
 
 ### Miscellaneous
 
@@ -32,6 +33,8 @@ It also lists the pitfalls.
 Among them, `extract_energy_data` labels scan distances bohr that the quantum chemistry program (ORCA) printed in ångström.
 `uv.lock` is out of date, and the docs export needs Emacs 30 and an ox-rst that the same Emacs compiled.
 One pitfall lists the documentation pages that disagree with the code.
+- The release extra checks packages with twine 7, which accepts Metadata-Version 2.5.
+- The release steps run the Emacs 30 export that writes `doc/source/index.rst` before Sphinx.
 
 
 ## [1.14.0](https://github.com/HaoZeke/chemparseplot/tree/1.14.0) - 2026-11-04
