@@ -2,6 +2,38 @@
 
 <!-- towncrier release notes start -->
 
+## [1.14.1](https://github.com/HaoZeke/chemparseplot/tree/1.14.1) - 2026-11-08
+
+### Added
+
+- `llms-full.txt` at the repository root has the manual in one Markdown file, the pages in the order of the site's navigation, converted from the Org and MyST sources by `python scripts/llms/build_llms.py` (settings in `scripts/llms/llms.toml`).
+Its header names what it leaves out: the API reference, and any page listed under `full_exclude`.
+`--check` exits 1 while the file is stale, and 2 when the site map `doc/source/llms.txt` links a page that does not exist.
+- `skills/` has three task guides, each a `SKILL.md` with scripts that check what it says against the code.
+`chemparseplot-orca-scan` reads a relaxed surface scan from the quantum chemistry program (ORCA) and plots it.
+It shows that the distances `extract_energy_data` labels bohr are in ångström.
+`chemparseplot-add-parser` covers adding a parser with its tests, fragment and docs pages.
+`chemparseplot-docs` finds the source of a page of the manual and covers the docs build.
+`python scripts/skills/run_skills.py` checks every guide and runs its examples.
+
+### Fixed
+
+- Journal figures set `image.cmap` to `ruhi_diverging`.
+`plot_landscape_surface`, `plot_optimization_landscape`, `render_single_ended_landscape`, `plot_mmf_peaks_overlay` and `plot_surface_contour` default to that map, and the ChemGP energy surfaces use it.
+`ruhi_seq` stays registered for the light-to-dark series.
+- The Ruhi theme's profile and landscape colour maps are `ruhi_diverging` again: teal `#004D40`, sky `#1E88E5`, magenta `#D81B60`, coral `#FF655D`, sunshine `#F1DB4B`.
+`ruhi_seq` stays registered.
+
+### Miscellaneous
+
+- The `Skills` workflow (`.github/workflows/ci_skills.yml`) fails when `llms-full.txt` is stale or `doc/source/llms.txt` links a page that does not exist, runs the generator's tests, and runs the examples and scripts of every guide under `skills/`.
+- `AGENTS.md` lists the install, test, lint and documentation commands, and the common tasks with the guide for each.
+It also lists the pitfalls.
+Among them, `extract_energy_data` labels scan distances bohr that the quantum chemistry program (ORCA) printed in ångström.
+`uv.lock` is out of date, and the docs export needs Emacs 30 and an ox-rst that the same Emacs compiled.
+One pitfall lists the documentation pages that disagree with the code.
+
+
 ## [1.14.0](https://github.com/HaoZeke/chemparseplot/tree/1.14.0) - 2026-11-04
 
 ### Added
