@@ -94,6 +94,8 @@ uv sync --extra test --extra plot --extra release
 uv run pytest --cov=chemparseplot tests
 uv run ruff check .
 uv run ruff format --check .
+# Emacs 30 writes doc/source/index.rst. Sphinx reads that file.
+(cd docs && emacs --batch --load export.el)
 uv run sphinx-build doc/source/ doc/build
 
 # 2. Preview the next semantic version from Conventional Commits

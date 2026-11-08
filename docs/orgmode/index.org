@@ -125,6 +125,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
    howto/parse_eon_neb
    howto/create_neb_figures
    howto/journal_figures
+   howto/surrogate_search_figures
    howto/faq
    howto/troubleshooting
    howto/dev_testing
