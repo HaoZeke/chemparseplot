@@ -2,7 +2,7 @@ version: 7
 platforms:
 - name: linux-64
   virtual-packages:
-  - __unix=0=0
+  - __unix=0
   - __linux=4.18
   - __glibc=2.28
   - __archspec=0=x86_64
@@ -2293,7 +2293,7 @@ packages:
   - matplotlib>=3.8.2 ; extra == 'plot'
   - build>=0.10 ; extra == 'release'
   - towncrier>=24.8.0 ; extra == 'release'
-  - twine>=4.0 ; extra == 'release'
+  - twine>=7 ; extra == 'release'
   - wheel>=0.40 ; extra == 'release'
   - pydseamslib>=2.11.1 ; extra == 'rings'
   - xyzrender>=0.3.8 ; extra == 'rings'
