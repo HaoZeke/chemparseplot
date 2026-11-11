@@ -19,7 +19,10 @@ import functools
 import logging
 import math
 import os
+import shutil
+import subprocess
 import tempfile
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -933,10 +936,67 @@ def _hex(rgb: np.ndarray) -> str:
     return f"#{vals[0]:02x}{vals[1]:02x}{vals[2]:02x}"
 
 
+# Xvfb display numbers to try, and how long to wait for the socket.
+_XVFB_DISPLAY_START = 99
+_XVFB_DISPLAY_ATTEMPTS = 11
+_XVFB_READY_SECONDS = 5.0
+_XVFB_POLL_SECONDS = 0.05
+_XVFB_SCREEN = "1280x1024x24"
+# The running server, kept so the process outlives this call.
+_XVFB: list[tuple[subprocess.Popen[bytes], str]] = []
+
+
+def _ensure_glx_display() -> None:
+    """Give VTK an X display when this process has none.
+
+    The pip wheel of VTK 9.7 draws through GLX. With ``DISPLAY`` unset it
+    tries EGL and then OSMesa, finds neither library, and ``screenshot``
+    segfaults. Xvfb is the display the GitHub Ubuntu runners already ship.
+    """
+    if os.environ.get("DISPLAY"):
+        return
+    if _XVFB:
+        os.environ["DISPLAY"] = _XVFB[0][1]
+        return
+    xvfb = shutil.which("Xvfb")
+    if xvfb is None:
+        msg = (
+            "A cluster render needs an X display. "
+            "VTK has no EGL or OSMesa in this environment, and screenshot() "
+            "segfaults without one. Install Xvfb or set DISPLAY."
+        )
+        raise RuntimeError(msg)
+    for offset in range(_XVFB_DISPLAY_ATTEMPTS):
+        number = _XVFB_DISPLAY_START + offset
+        # X11 puts the server socket here. Xvfb creates it; we only wait.
+        socket_path = Path("/tmp/.X11-unix") / f"X{number}"  # noqa: S108
+        if socket_path.exists():
+            continue
+        proc = subprocess.Popen(  # noqa: S603
+            [xvfb, f":{number}", "-screen", "0", _XVFB_SCREEN, "-nolisten", "tcp"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        deadline = time.monotonic() + _XVFB_READY_SECONDS
+        while time.monotonic() < deadline:
+            if proc.poll() is not None:
+                break
+            if socket_path.exists():
+                display = f":{number}"
+                os.environ["DISPLAY"] = display
+                _XVFB.append((proc, display))
+                return
+            time.sleep(_XVFB_POLL_SECONDS)
+        proc.kill()
+    msg = "Xvfb did not open a display"
+    raise RuntimeError(msg)
+
+
 def _render_solvis(
     frames: list[Frame], span: float, canvas: int, theme: PlotTheme
 ) -> np.ndarray:
     os.environ.setdefault("PYVISTA_OFF_SCREEN", "true")
+    _ensure_glx_display()
     solvis = _import_solvis()
     import pyvista
 

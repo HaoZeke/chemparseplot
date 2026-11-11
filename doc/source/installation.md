@@ -30,6 +30,9 @@ Structure strips use **xyzrender** via the Python API
 Lennard-Jones clusters use **solvis**.
 Install it with `pip install "chemparseplot[solvis]"`.
 The test extra installs that stack too, including pyvista and vtk.
+The VTK wheel draws through GLX.
+When the process has no display, a cluster render starts Xvfb.
+Without a display, EGL, or OSMesa, the screenshot segfaults.
 Structure captions use Atkinson Hyperlegible when that font is installed.
 Without it they fall back to the matplotlib sans-serif face.
 

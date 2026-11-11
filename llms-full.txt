@@ -262,6 +262,15 @@ Structure strips use **xyzrender** via the Python API
 (`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
 `[xyzrender]` extra. Prefer bare install + AUTO_DEPS / suite pins for new work.
 
+Lennard-Jones clusters use **solvis**.
+Install it with `pip install "chemparseplot[solvis]"`.
+The test extra installs that stack too, including pyvista and vtk.
+The VTK wheel draws through GLX.
+When the process has no display, a cluster render starts Xvfb.
+Without a display, EGL, or OSMesa, the screenshot segfaults.
+Structure captions use Atkinson Hyperlegible when that font is installed.
+Without it they fall back to the matplotlib sans-serif face.
+
 ### Development install
 
 Local clones of the GitHub repo are best served setting up the maximally
@@ -4136,6 +4145,43 @@ Each next colour is the one farthest from those already chosen, by the smallest 
 The colours that fail follow in the same way.
 The order is teal, sky, magenta, sunshine, coral.
 
+#### Element colours
+
+Structure renders colour each atom by its element.
+The usual scheme is named after the Corey-Pauling-Koltun (CPK) space-filling models.
+Corey and Pauling (1953) and Koltun (1965) describe them.
+The Jmol table extends the scheme, and the copy in the Atomic Simulation Environment runs from hydrogen to meitnerium.
+The renders keep the grouping of that table and draw it in Ruhi colours.
+Coral marks the highlighted atoms, so element bodies use the other four.
+
+The Corey and Pauling models were of hydrogen, carbon, nitrogen and oxygen atoms.
+Those four are the anchors, and they take the four colours one to one.
+Of the 24 pairings, one is closest to their Jmol colours.
+It gives hydrogen sunshine, carbon teal, nitrogen sky and oxygen magenta.
+Its summed CIEDE2000 difference is 106.1.
+The next pairing swaps carbon and nitrogen, at 115.9.
+Every other element takes the colour of the anchor whose Jmol colour is nearest its own.
+Gold and platinum go with hydrogen, aluminium with carbon, sodium with nitrogen, and phosphorus and iron with oxygen.
+Of the 109 elements in the table, teal goes to 34, sunshine to 32, sky to 27 and magenta to 16.
+Silver is the closest call: its Jmol colour is 14.05 from carbon's and 14.12 from hydrogen's.
+
+Giving each element the Ruhi colour nearest its own Jmol colour does not work.
+Carbon's grey and nitrogen's blue are both nearest sky, and teal would go to only 5 elements.
+
+Sky is also the dash of a hydrogen bond.
+Keeping sky for the dash alone would leave three colours for hydrogen, carbon and oxygen.
+Nitrogen would then take carbon's teal, and 61 elements would share it.
+Nitrogen keeps sky instead.
+An atom is a disc outlined in ink and the dash is a broken line, so their shapes tell them apart.
+
+Four colours cannot keep every element apart.
+Hydrogen shares sunshine with sulfur, chlorine, gold and platinum.
+Without coral, the closest pair for normal vision is teal and sky, 39.8 apart.
+For protan vision it is teal and magenta, 11.4 apart, so carbon and oxygen come close.
+A figure that has to tell such elements apart passes its own `element_colors` map to `render_structure`.
+Hydrogen's Jmol colour, white, has a contrast of 1.0 on a white ground, and sunshine has 1.4.
+Every atom is outlined in the theme ink, so neither depends on the ground.
+
 #### Colour maps
 
 `ruhi_seq` runs from a dark wine (teal's lightness and chroma at magenta's hue) through magenta and coral to sunshine.
@@ -4198,6 +4244,9 @@ The same script therefore writes the same bytes on every run.
 - World Wide Web Consortium, Web Content Accessibility Guidelines 2.1 (2018).
 - M. Okabe and K. Ito, Color Universal Design: how to make figures and presentations that are friendly to colorblind people (2008).
 - B. Wong, Points of view: color blindness, Nature Methods 8, 441 (2011).
+- R. B. Corey and L. Pauling, Molecular models of amino acids, peptides, and proteins, Review of Scientific Instruments 24, 621 (1953).
+- W. L. Koltun, Precision space-filling atomic models, Biopolymers 3, 665 (1965).
+- Jmol, Jmol colors, https://jmol.sourceforge.net/jscolors/.
 - P. Kovesi, Good colour maps: how to design them, arXiv:1509.03700 (2015).
 - K. Moreland, Diverging color maps for scientific visualization, in Advances in Visual Computing, Lecture Notes in Computer Science 5876, 92 (Springer, 2009).
 - ISO 3098-1:2015, Technical product documentation, Lettering, Part 1: General requirements.
@@ -4298,7 +4347,8 @@ Source: https://chemparseplot.rgoswami.me/reference/
 
 ### API Reference
 
-Reference documentation is information-oriented. Use it to find technical details.
+Reference documentation is information-oriented.
+Use it to find technical details.
 
 #### Available Reference
 
@@ -4307,6 +4357,7 @@ Reference documentation is information-oriented. Use it to find technical detail
 | [ORCA NEB API](https://chemparseplot.rgoswami.me/reference/orca_neb_api) | `parse_orca_neb()`, plotting functions |
 | [eOn NEB API](https://chemparseplot.rgoswami.me/reference/eon_neb_api) | eOn NEB parsing and plotting |
 | [Plotting API](https://chemparseplot.rgoswami.me/reference/plotting_api) | All plotting functions |
+| [Structure render](https://chemparseplot.rgoswami.me/reference/structure_render) | Clusters, water cells, instantons, and nudged elastic band strips |
 
 #### Structure
 
@@ -5393,6 +5444,7 @@ Frozen dataclass holding all aesthetic parameters.
 | `cmap_profile` | `str` | Default colormap for profiles |
 | `cmap_landscape` | `str` | Default colormap for landscapes |
 | `highlight_color` | `str` | Accent color |
+| `caption_font` | `str` | Structure caption face. The default is Atkinson Hyperlegible, the ruhi face. |
 
 #### Built-in Themes
 
@@ -5618,6 +5670,26 @@ Returns a `ColormapReport` holding L* and the CIEDE2000 step between neighbourin
 Its methods `lightness_monotonic(kind)`, `arms_monotonic(kind)` (for diverging maps) and `step_cv(kind)` summarise them.
 `step_cv` is the coefficient of variation of the steps.
 
+#### Element colours
+
+```python
+assign_element_colors(reference, colors, anchors=CPK_ANCHORS)
+```
+
+Returns a map from each symbol of `reference` to one of the hex values in `colors`.
+`reference` maps each element to its usual colour, such as its Jmol colour.
+The anchors take `colors` one to one.
+Their pairing is the one with the least summed CIEDE2000 difference from their reference colours.
+Every other element takes the colour of the anchor whose reference colour is nearest its own.
+`colors` needs one entry per anchor, or a `ValueError` is raised.
+An anchor missing from `reference` raises a `KeyError`.
+
+| Name | Value | Source |
+|---|---|---|
+| `CPK_ANCHORS` | `("H", "C", "N", "O")` | The atoms of the Corey and Pauling models (1953), p. 622 |
+
+`chemparseplot.plot.render.ELEMENT_COLORS` is this map for the Jmol colours in ASE and the four Ruhi colours other than coral.
+
 #### Colour science
 
 `background` defaults to white.
@@ -5800,6 +5872,208 @@ Inverse transform for grid evaluation on projected surfaces.
 - [Figure Style](https://chemparseplot.rgoswami.me/explanation/figure_style)
 - [ORCA NEB API Reference](https://chemparseplot.rgoswami.me/reference/orca_neb_api)
 - [eOn NEB API Reference](https://chemparseplot.rgoswami.me/reference/eon_neb_api)
+
+## Structure render
+
+Source: https://chemparseplot.rgoswami.me/reference/structure_render
+
+### Module: `chemparseplot.plot.render`
+
+Publication figures cover a cluster, a water cell, or a reaction path.
+The heavy plotting entry points stay under `chemparseplot.plot`.
+This module is one of them.
+It is not re-exported from `chemparseplot.api`.
+
+#### `render_structure(structure, *, kind`"snapshot", energies=None, highlight=None, output=None, canvas=None, element_colors=None, theme=None)=
+
+Draw one structure, or a strip of a path, and return a ``uint8`` image.
+The four channels are red green blue alpha (RGBA).
+
+| Parameter | Meaning |
+|---|---|
+| `structure` | An ASE `Atoms` object, or a sequence of them in path order. |
+| `kind` | `cluster`, `cell`, `instanton`, `neb`, or `snapshot`. |
+| `energies` | One energy per frame. The highest frame is the summit. |
+| `highlight` | Zero-based indices painted in Ruhi coral. |
+| `output` | Optional portable network graphics (PNG) path. |
+| `canvas` | Figure width in pixels. Panels share that width. |
+| `element_colors` | Symbol to hex, `ELEMENT_COLORS` by default. |
+| `theme` | Caption face, ground, and ink. The default is ruhi. |
+
+The figure width is a Nature single column.
+The column is 89 mm at 300 dpi.
+Each panel takes the figure width divided by the panel count.
+xyzrender writes an SVG at that panel size.
+The PNG file is larger than the panel.
+xyzrender 0.3.8 pads each side by 20 px and scales the drawing into the rest.
+A panel of 40 px or less would be blank, so it raises a `ValueError`.
+At the default width, a strip of 26 panels or more raises it.
+
+A single unlabelled frame is returned as that panel.
+A path is a horizontal strip.
+The caption sits under each panel.
+
+##### Caption size
+
+Nature's final-submission guide sets figure text from 5 pt to 7 pt.
+Panel letters are the exception, at 8 pt.
+A caption is figure text, so its size stays inside that range.
+The caption reads the PNG pixel size.
+It also reads the dpi of that PNG.
+xyzrender 0.3.8 writes no dpi chunk.
+The dpi is then the print resolution times the measured scale.
+The largest size is 7 pt, rounded down to whole pixels.
+The smallest is 5 pt, rounded up to whole pixels.
+A caption takes the largest size at which it fits its panel.
+A label that is wider than its panel at the smallest size ends in an ellipsis.
+The caption row is the tallest em box in the strip.
+That box is the font ascent plus its descent.
+The g in an image label stays inside that row.
+
+##### Caption face
+
+The caption face is `caption_font` on the theme.
+The default is Atkinson Hyperlegible, the ruhi face.
+For Nature, which prefers Helvetica or Arial, set `caption_font` to Liberation Sans, which has the Arial metrics.
+A missing caption font logs a warning that names the face.
+The caption then uses the matplotlib sans-serif face.
+
+##### Colours
+
+Every colour comes from the Ruhi palette.
+Coral is the highlight, and sky is the hydrogen-bond dash.
+Atom bodies take the four colours other than coral.
+The default map, `ELEMENT_COLORS`, comes from `palette.assign_element_colors` and the Jmol colours in ASE.
+Hydrogen is sunshine, carbon teal, nitrogen sky and oxygen magenta.
+These four are the anchors.
+Every other element takes the colour of the anchor nearest it in Jmol colour.
+Gold is sunshine, aluminium teal and iron magenta.
+The map covers the 109 elements of the Jmol table in ASE, hydrogen to meitnerium.
+Nitrogen shares sky with the dash.
+An atom is a disc outlined in ink and the dash is a broken line, so their shapes tell them apart.
+Keeping sky for the dash alone would give nitrogen carbon's teal.
+An element outside the map raises a `KeyError` that names it.
+A map passed as `element_colors` must name every element in the figure.
+A cluster is teal, with the highlight in coral.
+
+On white, sunshine is 1.4:1 and coral is 2.9:1.
+The Web Content Accessibility Guidelines (WCAG) 2.1 ask for 3:1 between a graphic and its ground.
+Every atom is therefore outlined in the theme ink.
+Nature sets line weights from 0.25 pt to 1 pt.
+A solvis atom gets a sphere one outline wider, drawn from its back faces.
+That sphere shows as a ring around the atom.
+The ring is 0.25 pt, the lower end of that range.
+The xyzrender outline width comes from the paton preset.
+That width scales with the drawing, so a narrow strip panel can print it under 0.25 pt.
+The paton depth fog is off, because it lightens far outlines below 3:1.
+
+##### Which renderer
+
+| Kind | Renderer | What is drawn |
+|---|---|---|
+| `cluster` | solvis | Lennard-Jones spheres. Coordinates are in units of sigma. |
+| `cell` | xyzrender | A molecule, or ice when the cell is orthorhombic water. |
+| `instanton` | xyzrender | Beads of a path. Bond orders come from xyzrender. |
+| `neb` | xyzrender | Images of a nudged elastic band (NEB). |
+| `snapshot`, one element | solvis | Cordero spheres, no bonds. |
+| `snapshot`, more than one element | xyzrender | A molecule, or ice in an orthorhombic water cell. |
+
+solvis draws a cluster as a shaded sphere packing.
+That packing shows the shell.
+xyzrender draws water and a path.
+A dashed hydrogen bond stays readable on a planar molecule.
+A bond order stays readable on that molecule too.
+solvis turns depth peeling and shadows on by default.
+Both are off here.
+Depth peeling orders translucent layers, and these spheres are opaque.
+On the LJ38 figure it changes no pixel.
+With shadows on, the Visualization Toolkit (VTK) 9.7.1 cannot compile the shader of the unlit outline.
+The outline then takes a dark tint of the atom colour instead of the ink.
+Shadows also darken about half of the cluster pixels on that figure.
+They pull the fill colours away from coral and teal too.
+
+##### Defaults for the highlight
+
+| Kind | Coral atoms |
+|---|---|
+| `cluster` | Lowest coordination inside the first fcc-shell cutoff. |
+| one-element snapshot | Lowest covalent coordination. |
+| orthorhombic water | The water nearest the cell centre in the image, among oxygens in view. |
+| path | The hydrogen that moves farthest between the endpoints. |
+
+The view of a water cell is down c.
+A water inside a column sits behind the waters above it.
+An oxygen is out of view when a nearer oxygen covers it in the image.
+Covering means the two sit closer in the image than the sum of their Cordero radii.
+A ghost oxygen can cover one too.
+When every oxygen is covered, every water is a candidate.
+
+##### Path frames
+
+Without `energies`, the summit is one frame of the path.
+There the moving hydrogen sits equidistant from the donor and the acceptor.
+The donor oxygen is nearest that hydrogen on the opening frame.
+The acceptor oxygen is nearest it on the closing frame.
+The strip shows the two endpoints and the summit.
+It also shows the halfway index on each side.
+Duplicate indices are dropped.
+
+Heavy atoms have an atomic number above 1.
+The Kabsch rotation aligns those atoms to the opening frame.
+One inertia rotation comes from the same heavy atoms.
+That rotation is then applied to every frame.
+A flat molecule is seen face on.
+
+#### Bond rules
+
+These rules are the same for every system.
+
+- A covalent contact uses the Jmol autobond window.
+  OpenBabel records that window in JmolConstants (Hanson).
+  The contact is at least 0.4 Å.
+  It is at most the Cordero radii plus 0.45 Å.
+  The Atomic Simulation Environment (ASE) carries the Cordero set.
+  Cordero et al. gave them in Dalton Trans. 2008, 2832-2838.
+- A hydrogen bond follows Kumar, Schmidt, and Skinner.
+  The paper is J. Chem. Phys. 126, 204107, 2007.
+  The contact is an O-H···O pair.
+  The O-O distance is at most 3.5 Å.
+  The O-O-H angle β is at most 30°.
+  The donor O-H must itself be covalent.
+  The hydrogen-acceptor pair must not be covalent.
+- An orthorhombic water molecule is one oxygen and two hydrogens.
+  The pair is unwrapped by the minimum image.
+  The molecule is wrapped back into the cell.
+  A periodic-image acceptor is drawn as a ghost oxygen.
+  The ghost is not the atom stored in the cell.
+  A ghost is not part of the highlight.
+  Two stored sites are one atom when the gap is under 0.4 Å.
+  That gap is the shortest distance drawn as a bond.
+- Lennard-Jones coordinates are in units of sigma.
+  The pair minimum is at `2**(1/6)` sigma.
+  The drawn radius is half of that minimum.
+  Neighbours at the minimum therefore touch.
+  One fcc shell lies on the pair minimum.
+  The farther shell is the minimum times `sqrt(2)`.
+  The cutoff is the midpoint of those shells.
+
+#### Example
+
+```python
+from ase.build import molecule
+
+from chemparseplot.plot.render import render_structure
+
+water = molecule("H2O")
+image = render_structure(water, kind="snapshot", canvas=200)
+```
+
+`image` has shape `(height, width, 4)` and dtype `uint8`.
+A cluster needs `solvis` (`pip install solvis-tools`).
+The VTK wheel draws through GLX.
+When the process has no display, the render starts Xvfb.
+Without a display, EGL, or OSMesa, the screenshot segfaults.
+A molecule, a cell, or a path needs `xyzrender>=0.3.8`.
 
 ## Release Process
 

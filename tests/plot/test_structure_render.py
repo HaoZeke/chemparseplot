@@ -236,9 +236,13 @@ class TestRender:
         image = render_structure(atoms, kind="snapshot", canvas=blank + 1)
         assert np.any(image[:, :, :3] != 255)
 
-    def test_solvis_cluster_screenshot(self):
+    def test_solvis_cluster_screenshot(self, monkeypatch):
         pytest.importorskip("solvis")
         pytest.importorskip("pyvista")
+        # The VTK wheel segfaults in screenshot() when DISPLAY is unset and
+        # neither EGL nor OSMesa is installed. The render must start Xvfb.
+        monkeypatch.delenv("DISPLAY", raising=False)
+        monkeypatch.delenv("WAYLAND_DISPLAY", raising=False)
         distance = LJ_RMIN_OVER_SIGMA
         atoms = Atoms("He2", positions=[[0.0, 0.0, 0.0], [distance, 0.0, 0.0]])
         try:

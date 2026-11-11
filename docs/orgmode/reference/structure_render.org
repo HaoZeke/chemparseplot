@@ -196,4 +196,7 @@ image = render_structure(water, kind="snapshot", canvas=200)
 
 =image= has shape =(height, width, 4)= and dtype =uint8=.
 A cluster needs =solvis= (=pip install solvis-tools=).
+The VTK wheel draws through GLX.
+When the process has no display, the render starts Xvfb.
+Without a display, EGL, or OSMesa, the screenshot segfaults.
 A molecule, a cell, or a path needs =xyzrender>=0.3.8=.
