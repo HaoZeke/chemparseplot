@@ -54,13 +54,14 @@ neb = [
   "readcon-db>=0.2.0",
 ]
 xyzrender = ["xyzrender>=0.3.8", "resvg-py>=0.5.0"]
+solvis = ["solvis-tools>=0.1.5"]
 rings = ["pydseamslib>=2.11.1", "xyzrender>=0.3.8"]
 # Optional ORCA Python Interface (import name: opi). Used only as an
 # internal backend for parse.orca.neb — consumers use parse_orca_neb.
 opi = ["orca-pi>=0.1.0"]
 # Grammar/AST track (parsimonious) for XYZ and text-heavy ORCA sections.
 grammar = ["parsimonious>=0.10.0"]
-all = ["chemparseplot[plot,neb,xyzrender,opi,grammar,rings]"]
+all = ["chemparseplot[plot,neb,xyzrender,solvis,opi,grammar,rings]"]
 release = ["build>=0.10", "towncrier>=24.8.0", "twine>=7", "wheel>=0.40"]
 test = [
   "ase>=3.22",
@@ -76,6 +77,7 @@ test = [
   "rgpycrumbs",
   "scipy>=1.11",
   "xyzrender>=0.3.8",
+  "solvis-tools>=0.1.5",
   "pydseamslib>=2.11.1",
 ]
 lint = ["ruff>=0.1.6"]
@@ -220,6 +222,7 @@ ban-relative-imports = "all"
   "PLC0415",
 ] # optional plotting deps stay lazy
 "chemparseplot/plot/rings.py" = ["PLC0415", "PLR2004"]
+"chemparseplot/plot/render.py" = ["PLC0415"]
 "chemparseplot/units.py" = [
   "F822",    # lazy Q_/ureg via __getattr__
   "EM102",

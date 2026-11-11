@@ -151,6 +151,7 @@ This documentation follows the [[https://diataxis.fr/][Diataxis]] framework.
    reference/orca_neb_api
    reference/eon_neb_api
    reference/plotting_api
+   reference/structure_render
    release
 
 .. toctree::

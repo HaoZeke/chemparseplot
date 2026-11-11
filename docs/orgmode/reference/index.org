@@ -3,7 +3,8 @@
 
 * API Reference
 
-Reference documentation is information-oriented. Use it to find technical details.
+Reference documentation is information-oriented.
+Use it to find technical details.
 
 ** Available Reference
 
@@ -12,6 +13,7 @@ Reference documentation is information-oriented. Use it to find technical detail
 | [[file:orca_neb_api.org][ORCA NEB API]] | =parse_orca_neb()=, plotting functions |
 | [[file:eon_neb_api.org][eOn NEB API]] | eOn NEB parsing and plotting |
 | [[file:plotting_api.org][Plotting API]] | All plotting functions |
+| [[file:structure_render.org][Structure render]] | Clusters, water cells, instantons, and nudged elastic band strips |
 
 ** Structure
 
