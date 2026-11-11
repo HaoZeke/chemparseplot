@@ -31,9 +31,7 @@ _Backend = Literal["auto", "opi", "text"]
 
 _VIB_HDR = re.compile(r"VIBRATIONAL FREQUENCIES")
 _IR_HDR = re.compile(r"IR SPECTRUM")
-_VIB_LINE = re.compile(
-    r"^\s*(\d+):\s+(-?\d+\.?\d*)\s+cm\*\*-1(.*)$"
-)
+_VIB_LINE = re.compile(r"^\s*(\d+):\s+(-?\d+\.?\d*)\s+cm\*\*-1(.*)$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,11 +54,20 @@ class IrSpectrumMode:
     eps: float | None = None
 
 
+# A short string with no newline is probed as a path. The gaps are how far
+# a table header may sit above its first data row. A fallback IR row needs
+# mode, frequency, intensity, and three dipole components.
+_PATH_PROBE_MAX = 4096
+_VIB_HEADER_GAP = 20
+_IR_HEADER_GAP = 30
+_IR_FALLBACK_FIELDS = 6
+
+
 def _as_text(path_or_text: str | Path) -> str:
     if isinstance(path_or_text, Path):
         return path_or_text.read_text(encoding="utf-8", errors="replace")
     s = str(path_or_text)
-    if "\n" not in s and len(s) < 4096:
+    if "\n" not in s and len(s) < _PATH_PROBE_MAX:
         p = Path(s)
         try:
             if p.is_file():
@@ -83,7 +90,7 @@ def parse_orca_vibrational_frequencies(
         j = i + 1
         while j < len(lines) and not _VIB_LINE.match(lines[j]):
             j += 1
-            if j - i > 20:
+            if j - i > _VIB_HEADER_GAP:
                 break
         while j < len(lines):
             m = _VIB_LINE.match(lines[j])
@@ -106,11 +113,13 @@ def _parse_ir_text(text: str) -> list[IrSpectrumMode]:
         if not _IR_HDR.search(line):
             continue
         j = i + 1
-        while j < len(lines) and "Mode" not in lines[j] and not re.match(
-            r"^\s*\d+:", lines[j]
+        while (
+            j < len(lines)
+            and "Mode" not in lines[j]
+            and not re.match(r"^\s*\d+:", lines[j])
         ):
             j += 1
-            if j - i > 30:
+            if j - i > _IR_HEADER_GAP:
                 break
         if j < len(lines) and "Mode" in lines[j]:
             j += 1
@@ -137,12 +146,9 @@ def _parse_ir_text(text: str) -> list[IrSpectrumMode]:
                 )
             except Exception:
                 cleaned = (
-                    raw_line.replace(":", " ")
-                    .replace("(", " ")
-                    .replace(")", " ")
-                    .split()
+                    raw_line.replace(":", " ").replace("(", " ").replace(")", " ").split()
                 )
-                if len(cleaned) < 6:
+                if len(cleaned) < _IR_FALLBACK_FIELDS:
                     break
                 out.append(
                     IrSpectrumMode(

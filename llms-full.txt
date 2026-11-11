@@ -251,12 +251,15 @@ as a dependency, which provides the computational modules used by `chemparseplot
 # Plotting support (matplotlib, cmcrameri colormaps)
 pip install "chemparseplot[plot]"
 
-# NEB analysis (ase, h5py, polars, readcon)
+# NEB analysis (ase, h5py, polars, readcon). CON/convel I/O is readcon-core.
 pip install "chemparseplot[neb]"
 
 # Everything transitional
 pip install "chemparseplot[all]"
 ```
+
+The `neb` extra installs [readcon-core](https://github.com/lode-org/readcon-core)
+(PyPI: `readcon`) for CON and convel files.
 
 Structure strips use **xyzrender** via the Python API
 (`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
@@ -321,6 +324,10 @@ Gradient-enhanced GPs via `rgpycrumbs.surfaces`, optional `SurfaceFitConfig`.
 **CLI suite**
 
 Call from `rgpycrumbs eon plt-*` with TOML `--config` for dense option sets.
+
+**CON I/O**
+
+[readcon-core](https://github.com/lode-org/readcon-core) (PyPI: [readcon](https://pypi.org/project/readcon/)) via `chemparseplot.parse.con`.
 
 **Primitive rings**
 
@@ -3433,8 +3440,11 @@ flowchart TB
     RGP[rgpycrumbs]
     CPP[chemparseplot]
     PYC[pychum]
+    RC[readcon-core]
   end
   ENG[eOn / ORCA / Sella] --> CPP
+  EON[eOn CON movies] --> RC
+  RC -->|ConFrame| CPP
   CPP -->|parse + plot APIs| USER[Notebooks / docs recipes]
   RGP -->|CLI plt-* + surfaces| USER
   RGP -->|plot.toml config| CPP
@@ -3448,6 +3458,11 @@ Library: parsers, landscape APIs, `SurfaceFitConfig`.
 **rgpycrumbs**
 
 CLI dispatch, GP surfaces, TOML plot config.
+
+**readcon-core**
+
+CON/convel I/O (Rust). PyPI package `readcon`.
+https://github.com/lode-org/readcon-core
 
 ### Architecture Overview
 
@@ -6552,6 +6567,57 @@ with open(config_file, "rb") as f:
 - [Contributing Guidelines](https://chemparseplot.rgoswami.me/dev/contributing)
 - [How-to Guides](https://chemparseplot.rgoswami.me/howto/)
 - [Reference](https://chemparseplot.rgoswami.me/reference/)
+
+## Plot a general readcon CON trajectory
+
+Source: https://chemparseplot.rgoswami.me/howto/plot_con_trajectory
+
+### Goal
+
+Load any CON/convel (readcon-core) — or chemfiles-supported XYZ/PDB/GRO when
+the readcon build links chemfiles — and plot energy / force profiles, overlays,
+and structure strips without an eOn job directory.
+
+### Library
+
+```python
+from chemparseplot.api import (
+    load_trajectory,
+    plot_con_overview,
+    plot_con_overlay,
+)
+
+traj = load_trajectory("movie.con")  # also .xyz/.pdb if chemfiles-enabled
+fig = plot_con_overview(
+    traj,
+    energy_unit="eV",
+    relative=True,
+    structures="endpoints",  # none|endpoints|linspace|all
+    strip_renderer="ase",    # or xyzrender
+)
+fig.savefig("movie_profile.pdf")
+
+# overlay several movies
+from chemparseplot.api import load_con_trajectory
+t1 = load_con_trajectory("run_a.con")
+t2 = load_con_trajectory("run_b.con")
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+plot_con_overlay([t1, t2], labels=["A", "B"], ax=ax)
+```
+
+### CLI
+
+```bash
+rgpycrumbs eon plt-con movie.con --structures endpoints -o profile.pdf
+rgpycrumbs eon plt-con a.con b.con --label A --label B -o overlay.pdf
+rgpycrumbs eon plt-con traj.xyz -o xyz_profile.pdf
+```
+
+### Related
+
+- eOn job-dir landscapes: `rgpycrumbs eon plt-min` / `plt-neb`
+- I/O: `chemparseplot.parse.con`
 
 ## AGENTS.md
 

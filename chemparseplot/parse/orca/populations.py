@@ -69,7 +69,8 @@ def _parse_text(text: str, kind: PopKind) -> list[AtomicCharge]:
             if "Sum" in lines[j] or "--" in lines[j]:
                 break
             parts = lines[j].split()
-            if len(parts) < 3:
+            # index, element, charge
+            if len(parts) < 3:  # noqa: PLR2004
                 break
             # formats: "0 H :  -0.1" or "0 H : -0.1  0.0"
             try:
@@ -83,7 +84,7 @@ def _parse_text(text: str, kind: PopKind) -> list[AtomicCharge]:
             nums = [float(x) for x in rest if _is_float(x)]
             if not nums:
                 break
-            spin = nums[1] if has_spin and len(nums) >= 2 else None
+            spin = nums[1] if has_spin and len(nums) >= 2 else None  # noqa: PLR2004
             charge = nums[0]
             rows.append(
                 AtomicCharge(

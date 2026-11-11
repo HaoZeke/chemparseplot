@@ -75,6 +75,9 @@ def _structure_indices(n_frames: int, mode: str, max_structs: int) -> list[int]:
 
 
 def _atoms_for_strip(traj: Any) -> list[Any]:
+    atoms_list = getattr(traj, "atoms_list", None)
+    if atoms_list and any(atoms is not None for atoms in atoms_list):
+        return list(atoms_list)
     frames = list(traj.frames)
     if getattr(traj, "source", None) == "con" or (
         frames and callable(getattr(frames[0], "to_ase", None))

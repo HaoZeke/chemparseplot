@@ -19,7 +19,11 @@ from chemparseplot.parse.orca import freq as freq_mod
 from chemparseplot.parse.orca.freq import (
     IrSpectrumMode,
     VibMode,
+)
+from chemparseplot.parse.orca.freq import (
     parse_orca_ir_spectrum as parse_ir,
+)
+from chemparseplot.parse.orca.freq import (
     parse_orca_vibrational_frequencies as pv,
 )
 from chemparseplot.parse.orca.migration import (
@@ -92,7 +96,7 @@ def test_ir_spectrum_manual_line_fallback(monkeypatch):
     # Force IrMode.from_string to fail so the cleaned-token path runs
     class Boom:
         @staticmethod
-        def from_string(line):
+        def from_string(_line):
             raise ValueError("force fallback")
 
     monkeypatch.setitem(
@@ -163,9 +167,7 @@ def test_ir_opi_required_raises_without_opi(monkeypatch):
     def _boom():
         raise ImportError("no opi")
 
-    monkeypatch.setattr(
-        "chemparseplot.parse.orca._opi.get_opi_output_class", _boom
-    )
+    monkeypatch.setattr("chemparseplot.parse.orca._opi.get_opi_output_class", _boom)
     with pytest.raises(ImportError):
         parse_ir("x", backend="opi", basename="job")
 
@@ -224,7 +226,7 @@ def test_populations_opi_mock(monkeypatch, tmp_path):
     from chemparseplot.parse.orca import populations as pop_mod
 
     class Block:
-        atomiccharges = [[0.1, -0.1]]
+        atomiccharges = ((0.1, -0.1),)
 
     class FakeOut:
         def __init__(self, *a, **k):
@@ -240,7 +242,9 @@ def test_populations_opi_mock(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "chemparseplot.parse.orca._opi.get_opi_output_class", lambda: FakeOut
     )
-    rows = pp("ignored", kind="Mulliken", backend="opi", basename="j", working_dir=tmp_path)
+    rows = pp(
+        "ignored", kind="Mulliken", backend="opi", basename="j", working_dir=tmp_path
+    )
     assert len(rows) == 2
     assert rows[0].charge == 0.1
 
@@ -270,7 +274,7 @@ def test_ir_frequencies_alias():
 
 
 def test_api_lazy_orcas():
-    import chemparseplot.api as api
+    from chemparseplot import api
 
     assert callable(api.parse_orca_vibrational_frequencies)
     assert callable(api.parse_orca_ir_spectrum)
@@ -315,7 +319,7 @@ def test_ir_header_without_data_timeout():
 def test_ir_text_break_on_short_fallback_line(monkeypatch):
     class Boom:
         @staticmethod
-        def from_string(line):
+        def from_string(_line):
             raise ValueError("x")
 
     import opi.output.ir_mode as imod
@@ -354,7 +358,7 @@ def test_populations_loewdin_opi(monkeypatch, tmp_path):
     from chemparseplot.parse.orca import populations as pop_mod
 
     class Block:
-        atomiccharges = [[0.2]]
+        atomiccharges = ((0.2,),)
 
     class FakeOut:
         def __init__(self, *a, **k):
@@ -405,7 +409,9 @@ def test_populations_opi_backend_empty_returns_empty(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "chemparseplot.parse.orca._opi.get_opi_output_class", lambda: FakeOut
     )
-    assert pp("x", kind="Mulliken", backend="opi", basename="j", working_dir=tmp_path) == []
+    assert (
+        pp("x", kind="Mulliken", backend="opi", basename="j", working_dir=tmp_path) == []
+    )
 
 
 def test_populations_bad_first_token():
@@ -474,7 +480,13 @@ def test_populations_opi_backend_empty_list_explicit(monkeypatch, tmp_path):
     )
     # backend opi + empty -> return [] without text fallback
     assert (
-        pp("no text charges", kind="Mulliken", backend="opi", basename="j", working_dir=tmp_path)
+        pp(
+            "no text charges",
+            kind="Mulliken",
+            backend="opi",
+            basename="j",
+            working_dir=tmp_path,
+        )
         == []
     )
 
@@ -492,7 +504,9 @@ def test_ir_opi_backend_when_auto_and_empty_falls_to_text(monkeypatch, tmp_path)
         "chemparseplot.parse.orca._opi.get_opi_output_class", lambda: FakeOut
     )
     # empty dict is falsy -> fall through to text for auto
-    modes = parse_ir(FIX / "ir_spectrum_h2o.out", backend="auto", basename="j", working_dir=tmp_path)
+    modes = parse_ir(
+        FIX / "ir_spectrum_h2o.out", backend="auto", basename="j", working_dir=tmp_path
+    )
     assert modes
 
 
@@ -508,7 +522,9 @@ def test_ir_opi_backend_returns_empty_without_fallback(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "chemparseplot.parse.orca._opi.get_opi_output_class", lambda: FakeOut
     )
-    assert parse_ir("textignored", backend="opi", basename="j", working_dir=tmp_path) == []
+    assert (
+        parse_ir("textignored", backend="opi", basename="j", working_dir=tmp_path) == []
+    )
 
 
 def test_ir_text_successful_irmode_path():
@@ -533,9 +549,7 @@ def test_ir_backend_opi_when_unavailable_raises_then_empty(monkeypatch):
     def boom():
         raise ImportError("missing opi")
 
-    monkeypatch.setattr(
-        "chemparseplot.parse.orca._opi.get_opi_output_class", boom
-    )
+    monkeypatch.setattr("chemparseplot.parse.orca._opi.get_opi_output_class", boom)
     with pytest.raises(ImportError):
         parse_ir("x", backend="opi", basename="job")
 
@@ -550,9 +564,7 @@ def test_populations_backend_opi_without_opi_available(monkeypatch):
 
     monkeypatch.setattr(pop_mod, "opi_available", lambda: False)
     # basename set but opi unavailable -> fall through; backend opi returns []
-    assert (
-        pp("no charges here", kind="Mulliken", backend="opi", basename="j") == []
-    )
+    assert pp("no charges here", kind="Mulliken", backend="opi", basename="j") == []
 
 
 def test_populations_eof_without_sum_footer():

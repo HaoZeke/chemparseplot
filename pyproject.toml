@@ -236,7 +236,7 @@ ban-relative-imports = "all"
   "PLR2004",
   "S110",
   "PLC0415",
-  "F822",  # lazy re-exports via __getattr__
+  "F822",    # lazy re-exports via __getattr__
 ]
 "chemparseplot/util.py" = ["PLC0415"]
 "chemparseplot/parse/**/*" = [

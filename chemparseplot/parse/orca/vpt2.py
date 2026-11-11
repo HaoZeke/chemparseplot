@@ -62,7 +62,7 @@ def parse_orca_vpt2_fundamentals(path_or_text: str | Path) -> list[Vpt2Fundament
             if "---" in lines[j] or set(lines[j].strip()) <= {"-"}:
                 break
             parts = lines[j].split()
-            if len(parts) < 4:
+            if len(parts) < 4:  # noqa: PLR2004
                 break
             try:
                 rows.append(

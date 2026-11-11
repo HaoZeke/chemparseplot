@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 # SPDX-License-Identifier: MIT
+import numpy as np
+
 from chemparseplot.basetypes import (
     DimerOpt,
     MolGeom,
@@ -8,7 +10,6 @@ from chemparseplot.basetypes import (
     nebiter,
     nebpath,
 )
-import numpy as np
 
 
 def test_nebpath_nebiter():

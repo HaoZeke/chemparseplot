@@ -100,11 +100,11 @@ def test_con_trajectory_energies_and_with_energies():
     np.testing.assert_allclose(traj.energies, [-1.0, -1.5])
 
 
-def test_load_con_trajectory_from_fixture():
-    # single-frame CON from rgpycrumbs tests (if present)
-    cand = Path("/home/rgoswami/tmp/rgpycrumbs/tests/data/reactant.con")
-    if not cand.is_file():
-        pytest.skip("reactant.con fixture missing")
+def test_load_con_trajectory_from_fixture(tmp_path):
+    pytest.importorskip("readcon")
+    from tests.parse._con_fixtures import write_band
+
+    cand = write_band(tmp_path / "reactant.con", [(1.5, 0.0)])
     traj = load_con_trajectory(cand)
     assert traj.n_frames >= 1
     assert traj.path is not None

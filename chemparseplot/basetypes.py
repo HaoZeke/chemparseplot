@@ -27,7 +27,7 @@ __all__ = [
 
 
 @dataclass(frozen=True, slots=True)
-class nebpath:
+class nebpath:  # noqa: N801 — hub records use these names
     """NEB path samples: normalized arc, arc length, energy."""
 
     norm_dist: float
@@ -36,7 +36,7 @@ class nebpath:
 
 
 @dataclass(frozen=True, slots=True)
-class nebiter:
+class nebiter:  # noqa: N801 — hub records use these names
     """Typed record for one NEB iteration."""
 
     iteration: int
@@ -75,9 +75,7 @@ class SaddleMeasure:
 
     pes_calls: int = 0
     iter_steps: int = 0
-    tot_time: float = field(
-        default_factory=lambda: datetime.timedelta(0).total_seconds()
-    )
+    tot_time: float = field(default_factory=lambda: datetime.timedelta(0).total_seconds())
     saddle_energy: float = np.nan
     saddle_fmax: float = np.nan
     success: bool = False

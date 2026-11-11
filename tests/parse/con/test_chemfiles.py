@@ -17,10 +17,11 @@ def test_chemfiles_available_bool():
     assert isinstance(chemfiles_available(), bool)
 
 
-def test_load_trajectory_con_path():
-    cand = Path("/home/rgoswami/tmp/rgpycrumbs/tests/data/reactant.con")
-    if not cand.is_file():
-        pytest.skip("fixture missing")
+def test_load_trajectory_con_path(tmp_path):
+    pytest.importorskip("readcon")
+    from tests.parse._con_fixtures import write_band
+
+    cand = write_band(tmp_path / "reactant.con", [(1.5, 0.0)])
     traj = load_trajectory(cand)
     assert traj.n_frames >= 1
     assert traj.source == "readcon"

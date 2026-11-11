@@ -79,7 +79,7 @@ def test_grammar_available_callable():
 
 
 def test_lazy_units_and_plot_exports():
-    import chemparseplot.api as api
+    from chemparseplot import api
 
     ureg = api.ureg
     Q_ = api.Q_
@@ -100,7 +100,7 @@ def test_suite_pins_soft():
 
 
 def test_getattr_unknown():
-    import chemparseplot.api as api
+    from chemparseplot import api
 
     with pytest.raises(AttributeError):
         _ = api.not_a_real_export  # type: ignore[attr-defined]
@@ -123,11 +123,10 @@ def test_parse_xyz_and_final_energy_if_grammar():
         pass
 
 
-
-
 def test_looks_like_path_branches(tmp_path, monkeypatch):
-    from chemparseplot import api as api_mod
     import pathlib
+
+    from chemparseplot import api as api_mod
 
     assert api_mod._looks_like_path("a\nb") is False
     assert api_mod._looks_like_path("x" * 5000) is False
@@ -194,9 +193,10 @@ def test_suite_pins_manual_fallback(monkeypatch):
 
 
 def test_suite_pins_getattr_none(monkeypatch):
-    import chemparseplot.api as api_mod
     import importlib
     import types
+
+    import chemparseplot.api as api_mod
 
     fake = types.ModuleType("rgpycrumbs.api")
     fake.suite_pins = None  # not callable -> fall through
@@ -217,8 +217,9 @@ def test_suite_pins_getattr_none(monkeypatch):
 
 
 def test_suite_pins_hub_missing(monkeypatch):
-    import chemparseplot.api as api_mod
     import importlib
+
+    import chemparseplot.api as api_mod
 
     def boom(name, package=None):
         raise ImportError("gone")
@@ -228,9 +229,10 @@ def test_suite_pins_hub_missing(monkeypatch):
 
 
 def test_lazy_surface_and_plot(monkeypatch):
-    import chemparseplot.api as api_mod
     import sys
     import types
+
+    import chemparseplot.api as api_mod
 
     # clear cached attrs if any
     for name in ("SurfaceFitConfig", "plot_landscape_surface"):
@@ -246,16 +248,16 @@ def test_lazy_surface_and_plot(monkeypatch):
 
     fake_neb.SurfaceFitConfig = C
     fake_neb.plot_landscape_surface = plot
-    sys.modules["chemparseplot.plot"] = types.ModuleType("chemparseplot.plot")
-    sys.modules["chemparseplot.plot.neb"] = fake_neb
+    monkeypatch.setitem(sys.modules, "chemparseplot.plot.neb", fake_neb)
     assert api_mod.SurfaceFitConfig is C
     assert api_mod.plot_landscape_surface is plot
 
 
 def test_suite_pins_attribute_error(monkeypatch):
-    import chemparseplot.api as api_mod
     import importlib
     import types
+
+    import chemparseplot.api as api_mod
 
     fake = types.ModuleType("rgpycrumbs.api")
     # no suite_pins attr, no pins_from_env -> AttributeError
@@ -271,8 +273,9 @@ def test_suite_pins_attribute_error(monkeypatch):
 
 
 def test_suite_pins_import_error_first_try(monkeypatch):
-    import chemparseplot.api as api_mod
     import importlib
+
+    import chemparseplot.api as api_mod
 
     calls = {"n": 0}
     real = importlib.import_module
@@ -291,9 +294,10 @@ def test_suite_pins_import_error_first_try(monkeypatch):
 
 
 def test_suite_pins_calls_hub_function(monkeypatch):
-    import chemparseplot.api as api_mod
     import importlib
     import types
+
+    import chemparseplot.api as api_mod
 
     fake = types.ModuleType("rgpycrumbs.api")
     fake.suite_pins = lambda: {"hub": "1"}
