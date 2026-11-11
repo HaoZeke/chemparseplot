@@ -55,11 +55,13 @@ class IrSpectrumMode:
 
 
 # A short string with no newline is probed as a path. The gaps are how far
-# a table header may sit above its first data row. A fallback IR row needs
-# mode, frequency, intensity, and three dipole components.
+# a table header may sit above its first data row. An ORCA IR row is mode,
+# frequency, epsilon, intensity, then the dipole. A shorter row is mode,
+# frequency, intensity, and three dipole components.
 _PATH_PROBE_MAX = 4096
 _VIB_HEADER_GAP = 20
 _IR_HEADER_GAP = 30
+_IR_ORCA_SCALARS = 4
 _IR_FALLBACK_FIELDS = 6
 
 
@@ -106,6 +108,43 @@ def parse_orca_vibrational_frequencies(
     return modes
 
 
+def _ir_mode_from_orca_line(raw_line: str) -> IrSpectrumMode:
+    """Parse one ORCA IR row: mode, frequency, epsilon, intensity, dipole.
+
+    This is the column order of ``opi.output.ir_mode.IrMode.from_string``.
+    The text parser does not import opi, so a machine without that package
+    still reads the table.
+    """
+    left, right = raw_line.split("(", maxsplit=1)
+    tx, ty, tz = (float(part) for part in right.split(")", maxsplit=1)[0].split())
+    parts = left.replace(":", "").split()
+    if len(parts) < _IR_ORCA_SCALARS:
+        msg = "IR row has no epsilon and intensity before the dipole"
+        raise ValueError(msg)
+    return IrSpectrumMode(
+        mode=int(parts[0]),
+        freq_cm1=float(parts[1]),
+        intensity_km_mol=float(parts[3]),
+        dipole=(tx, ty, tz),
+        eps=float(parts[2]),
+    )
+
+
+def _ir_mode_from_tokens(raw_line: str) -> IrSpectrumMode:
+    """Parse a shorter row: mode, frequency, intensity, then the dipole."""
+    cleaned = raw_line.replace(":", " ").replace("(", " ").replace(")", " ").split()
+    if len(cleaned) < _IR_FALLBACK_FIELDS:
+        msg = "IR row is shorter than mode, frequency, intensity, and a dipole"
+        raise ValueError(msg)
+    return IrSpectrumMode(
+        mode=int(cleaned[0]),
+        freq_cm1=float(cleaned[1]),
+        intensity_km_mol=float(cleaned[2]),
+        dipole=(float(cleaned[3]), float(cleaned[4]), float(cleaned[5])),
+        eps=None,
+    )
+
+
 def _parse_ir_text(text: str) -> list[IrSpectrumMode]:
     lines = text.splitlines()
     out: list[IrSpectrumMode] = []
@@ -132,37 +171,12 @@ def _parse_ir_text(text: str) -> list[IrSpectrumMode]:
             if not re.match(r"^\s*\d+", raw_line):
                 break
             try:
-                from opi.output.ir_mode import IrMode
-
-                im = IrMode.from_string(raw_line)
-                out.append(
-                    IrSpectrumMode(
-                        mode=im.mode,
-                        freq_cm1=im.wavenumber,
-                        intensity_km_mol=im.intensity,
-                        dipole=im.dipole,
-                        eps=im.eps,
-                    )
-                )
-            except Exception:
-                cleaned = (
-                    raw_line.replace(":", " ").replace("(", " ").replace(")", " ").split()
-                )
-                if len(cleaned) < _IR_FALLBACK_FIELDS:
+                out.append(_ir_mode_from_orca_line(raw_line))
+            except ValueError:
+                try:
+                    out.append(_ir_mode_from_tokens(raw_line))
+                except ValueError:
                     break
-                out.append(
-                    IrSpectrumMode(
-                        mode=int(cleaned[0]),
-                        freq_cm1=float(cleaned[1]),
-                        intensity_km_mol=float(cleaned[2]),
-                        dipole=(
-                            float(cleaned[3]),
-                            float(cleaned[4]),
-                            float(cleaned[5]),
-                        ),
-                        eps=None,
-                    )
-                )
             j += 1
         if out:
             break

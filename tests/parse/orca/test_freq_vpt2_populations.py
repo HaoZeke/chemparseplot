@@ -1,11 +1,10 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 # SPDX-License-Identifier: MIT
-"""Real ORCA IR / VPT2 / population parsers (text + OPI IrMode)."""
+"""Real ORCA IR / VPT2 / population parsers."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -92,22 +91,9 @@ def test_ir_spectrum_text():
     assert len(m0.dipole) == 3
 
 
-def test_ir_spectrum_manual_line_fallback(monkeypatch):
-    # Force IrMode.from_string to fail so the cleaned-token path runs
-    class Boom:
-        @staticmethod
-        def from_string(_line):
-            raise ValueError("force fallback")
-
-    monkeypatch.setitem(
-        __import__("sys").modules,
-        "opi.output.ir_mode",
-        SimpleNamespace(IrMode=Boom),
-    )
-    # also patch import path used inside _parse_ir_text
-    import opi.output.ir_mode as imod
-
-    monkeypatch.setattr(imod, "IrMode", Boom)
+def test_ir_spectrum_manual_line_fallback():
+    # Three scalars before the dipole is the short row, not the ORCA
+    # epsilon layout, so the token parser reads it.
     text = """
 IR SPECTRUM
 -----------
@@ -316,15 +302,7 @@ def test_ir_header_without_data_timeout():
     assert freq_mod._parse_ir_text(text) == []
 
 
-def test_ir_text_break_on_short_fallback_line(monkeypatch):
-    class Boom:
-        @staticmethod
-        def from_string(_line):
-            raise ValueError("x")
-
-    import opi.output.ir_mode as imod
-
-    monkeypatch.setattr(imod, "IrMode", Boom)
+def test_ir_text_break_on_short_fallback_line():
     text = """
 IR SPECTRUM
  Mode freq T2 TX TY TZ
