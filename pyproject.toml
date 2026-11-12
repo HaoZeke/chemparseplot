@@ -3,7 +3,7 @@ build-backend = "hatchling.build"
 requires = ["hatch-vcs", "hatchling"]
 
 [tool.hatch.build.hooks.vcs]
-version-file = "_version.py"
+version-file = "chemparseplot/_version.py"
 
 [tool.hatch.build]
 include = ["chemparseplot/**/*.py", "chemparseplot/*.py", "/tests"]
@@ -282,7 +282,7 @@ ban-relative-imports = "all"
 source_pkgs = ["chemparseplot"]
 branch = true
 parallel = false
-omit = ["_version.py", "chemparseplot/util.py"]
+omit = ["chemparseplot/_version.py", "chemparseplot/util.py"]
 
 [tool.coverage.paths]
 chemparseplot = ["chemparseplot", "*/chemparseplot/chemparseplot"]
@@ -298,7 +298,7 @@ single_file = true
 filename = "CHANGELOG.md"
 directory = "doc/release/upcoming_changes/"
 issue_format = "[#{issue}](https://github.com/HaoZeke/chemparseplot/issues/{issue})"
-title_format = "## [{version}](https://github.com/HaoZeke/chemparseplot/tree/{version}) - {project_date}"
+title_format = "## [{version}](https://github.com/HaoZeke/chemparseplot/tree/v{version}) - {project_date}"
 all_bullets = false
 
 [[tool.towncrier.type]]
