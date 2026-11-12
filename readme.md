@@ -25,8 +25,12 @@ A **pure-python**<sup><a id="fnr.butwhy" class="footref" href="#fn.butwhy" role=
 `chemparseplot` extracts structured data from the output of the quantum chemistry program (ORCA), eOn, Sella and ChemGP.
 It produces publication-quality, unit-aware visualizations with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/).
 
-Computational tasks (surface fitting, structure analysis, interpolation) are handled by [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs), which is a required dependency.
-`chemparseplot` parses output files, delegates heavy computation to `rgpycrumbs`, and produces publication-quality plots.
+Computational tasks (surface fitting, structure analysis, interpolation) are
+**optionally** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+(suite hub / compute). Hard install dependencies are only `numpy` and `pint`;
+plot/NEB/grammar stacks are extras or host-provided. `chemparseplot` parses
+output files and produces unit-aware plots; heavy compute stays optional so
+packages remain lightweight (CLI isolation: PEP 723 + uv; library: `ensure_import`).
 
 
 <a id="org6425b9a"></a>
@@ -64,7 +68,12 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 
 ## Ecosystem Overview
 
-`chemparseplot` is part of the `rgpycrumbs` suite of interlinked libraries.
+`chemparseplot` is part of the `rgpkgs` suite of interlinked libraries (hub: `rgpycrumbs`).
+
+- Hub / CLI: [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs)
+- Inputs: [`pychum`](https://github.com/HaoZeke/pychum)
+- CON/convel I/O: [`readcon-core`](https://github.com/lode-org/readcon-core) (PyPI: [`readcon`](https://pypi.org/project/readcon/))
+- Engine: [eOn](https://eondocs.org)
 
 ![img](branding/logo/ecosystem.png)
 
@@ -76,9 +85,9 @@ See the [installation guide](https://chemparseplot.rgoswami.me/installation.html
 - **Parsing** computational chemistry output files into structured data.
 - **Plotting** with [scientific color maps](https://www.fabiocrameri.ch/colourmaps/) (camera-ready).
 - **Unit preserving** throughout via `pint`.
-- **Computation** delegated to [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis.
+- **Optional computation** via [`rgpycrumbs`](https://github.com/HaoZeke/rgpycrumbs) for surface fitting, interpolation, and structure analysis (not a hard dependency).
 - **NEB stitching** (`stitch_neb_segments`) for continuous multi-segment bands (v1.8+).
-- **Metadata-native eOn** `.con` frames and typed parser results for NEB and single-ended tools.
+- **Metadata-native eOn** `.con` frames ([readcon-core](https://github.com/lode-org/readcon-core)) and typed parser results for NEB and single-ended tools.
 - **Unit-aware plot helpers** (`convert_neb_values`, shared strip rendering) used by `rgpycrumbs` CLIs.
 
 

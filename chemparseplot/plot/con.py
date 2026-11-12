@@ -1,7 +1,12 @@
 # SPDX-FileCopyrightText: 2023-present Rohit Goswami <rog32@hi.is>
 #
 # SPDX-License-Identifier: MIT
-"""Draw CON trajectory profiles. These helpers do not parse files."""
+"""Draw CON trajectory profiles. These helpers do not parse files.
+
+``plot_con_energy_profile`` and ``plot_con_force_profile`` draw one curve.
+``plot_con_overview`` stacks energy, optional fmax, and an optional
+structure strip. ``plot_con_overlay`` draws several trajectories together.
+"""
 
 from __future__ import annotations
 
@@ -70,6 +75,9 @@ def _structure_indices(n_frames: int, mode: str, max_structs: int) -> list[int]:
 
 
 def _atoms_for_strip(traj: Any) -> list[Any]:
+    atoms_list = getattr(traj, "atoms_list", None)
+    if atoms_list and any(atoms is not None for atoms in atoms_list):
+        return list(atoms_list)
     frames = list(traj.frames)
     if getattr(traj, "source", None) == "con" or (
         frames and callable(getattr(frames[0], "to_ase", None))
@@ -184,3 +192,201 @@ def plot_con_overlay(
     if labels:
         ax.legend(frameon=False)
     return fig
+
+
+def _x_axis(traj: Any) -> np.ndarray:
+    table = getattr(traj, "table", None)
+    empty = getattr(table, "is_empty", lambda: True)
+    if table is not None and not empty() and "frame_index" in table.columns:
+        x = np.asarray(table["frame_index"].to_numpy(), dtype=float)
+        if np.all(np.isfinite(x)):
+            return x
+    return np.arange(int(traj.n_frames), dtype=float)
+
+
+def plot_con_energy_profile(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    energy_unit: str = "eV",
+    relative: bool = True,
+    color: str | None = None,
+    marker: str = "o",
+    label: str | None = None,
+    title: str | None = None,
+) -> Axes:
+    """Plot energy against frame index for one CON trajectory.
+
+    *relative* subtracts the first finite energy. *energy_unit* is the
+    presentation unit.
+    """
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 3.5), constrained_layout=True)
+    style: dict[str, Any] = {"marker": marker}
+    if color is not None:
+        style["color"] = color
+    if label is not None:
+        style["label"] = label
+    ax.plot(
+        _x_axis(traj),
+        _display_energies(traj.energies, energy_unit, relative=relative),
+        **style,
+    )
+    ax.set_xlabel("Frame")
+    ax.set_ylabel(_energy_ylabel(energy_unit, relative=relative))
+    if title:
+        ax.set_title(title)
+    elif getattr(traj, "path", None) is not None:
+        ax.set_title(str(traj.path.name))
+    if label:
+        ax.legend(frameon=False)
+    ax.grid(True, alpha=0.3)
+    return ax
+
+
+def plot_con_force_profile(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    which: str = "fmax",
+    color: str | None = None,
+    marker: str = "s",
+    label: str | None = None,
+    title: str | None = None,
+) -> Axes:
+    """Plot a per-frame force norm from the trajectory table.
+
+    *which* is ``fmax`` or ``frms``. A table without that column raises
+    ``ValueError``.
+    """
+    if which not in {"fmax", "frms"}:
+        msg = f"which must be 'fmax' or 'frms', got {which!r}"
+        raise ValueError(msg)
+    table = getattr(traj, "table", None)
+    missing = (
+        table is None
+        or table.is_empty()
+        or which not in table.columns
+        or table[which].null_count() == table.height
+    )
+    if missing:
+        msg = f"trajectory has no {which} data (frames lack forces)"
+        raise ValueError(msg)
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 3.5), constrained_layout=True)
+    style: dict[str, Any] = {"marker": marker, "label": label or which}
+    if color is not None:
+        style["color"] = color
+    ax.plot(_x_axis(traj), np.asarray(table[which].to_numpy(), dtype=float), **style)
+    ax.set_xlabel("Frame")
+    ax.set_ylabel(f"{which} (eV/Å)")
+    if title:
+        ax.set_title(title)
+    ax.grid(True, alpha=0.3)
+    if label:
+        ax.legend(frameon=False)
+    return ax
+
+
+def select_structure_indices(
+    n_frames: int,
+    mode: str = "endpoints",
+    *,
+    max_structs: int = 8,
+    energies: np.ndarray | None = None,
+) -> list[int]:
+    """Pick frame indices for a structure strip.
+
+    ``endpoints`` is the first and last frame, plus the highest energy
+    between them when *energies* is given. ``linspace`` and ``all`` are
+    evenly spaced, and ``all`` returns every frame when it fits in
+    *max_structs*. ``none`` is empty.
+    """
+    if n_frames <= 0 or mode == "none":
+        return []
+    if mode == "all" and n_frames <= max_structs:
+        return list(range(n_frames))
+    if mode in {"linspace", "all"}:
+        count = min(max_structs, n_frames)
+        idx = np.unique(np.linspace(0, n_frames - 1, num=count, dtype=int))
+        return idx.tolist()
+    if n_frames == 1:
+        return [0]
+    chosen = {0, n_frames - 1}
+    if energies is not None and n_frames > 2:
+        values = np.asarray(energies, dtype=float)
+        middle = values[1:-1]
+        if middle.size and np.any(np.isfinite(middle)):
+            chosen.add(int(np.nanargmax(middle)) + 1)
+    return sorted(chosen)
+
+
+def plot_con_structure_strip(
+    traj: Any,
+    ax: Axes | None = None,
+    *,
+    mode: str = "endpoints",
+    max_structs: int = 8,
+    renderer: str = "ase",
+    rotation: str = "0x,90y,0z",
+    xyzrender_config: str = "paton",
+    title: str | None = None,
+) -> Axes:
+    """Draw selected frames of *traj* with ``plot_structure_strip``.
+
+    The default renderer is ``ase``.
+    """
+    from chemparseplot.plot.neb import plot_structure_strip
+
+    if ax is None:
+        _fig, ax = plt.subplots(figsize=(5.37, 1.8), constrained_layout=True)
+    indices = select_structure_indices(
+        int(traj.n_frames), mode, max_structs=max_structs, energies=traj.energies
+    )
+    if not indices:
+        ax.axis("off")
+        ax.text(
+            0.5,
+            0.5,
+            "no structures",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        return ax
+    atoms_list = []
+    labels = []
+    for index in indices:
+        atoms = traj.atoms_list[index]
+        if atoms is None:
+            continue
+        atoms_list.append(atoms)
+        if index == 0:
+            labels.append("start")
+        elif index == int(traj.n_frames) - 1:
+            labels.append("end")
+        else:
+            labels.append(str(index))
+    if not atoms_list:
+        ax.axis("off")
+        ax.text(
+            0.5,
+            0.5,
+            "no ASE atoms",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        return ax
+    plot_structure_strip(
+        ax,
+        atoms_list,
+        labels=labels,
+        renderer=renderer,
+        rotation=rotation,
+        xyzrender_config=xyzrender_config,
+        prefer_single_row=True,
+    )
+    if title:
+        ax.set_title(title, fontsize=10)
+    return ax

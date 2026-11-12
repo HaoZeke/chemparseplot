@@ -16,12 +16,15 @@ as a dependency, which provides the computational modules used by `chemparseplot
 # Plotting support (matplotlib, cmcrameri colormaps)
 pip install "chemparseplot[plot]"
 
-# NEB analysis (ase, h5py, polars, readcon)
+# NEB analysis (ase, h5py, polars, readcon). CON/convel I/O is readcon-core.
 pip install "chemparseplot[neb]"
 
 # Everything transitional
 pip install "chemparseplot[all]"
 ```
+
+The `neb` extra installs [readcon-core](https://github.com/lode-org/readcon-core)
+(PyPI: `readcon`) for CON and convel files.
 
 Structure strips use **xyzrender** via the Python API
 (`ensure_import("xyzrender")` when `RGPYCRUMBS_AUTO_DEPS=1`); there is no
