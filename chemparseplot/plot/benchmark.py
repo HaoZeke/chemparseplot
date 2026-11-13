@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.lines import Line2D
-from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter
+from matplotlib.ticker import FixedLocator, FuncFormatter, LogLocator, NullFormatter
 
 from chemparseplot.parse.benchmark import paired_costs
 
@@ -39,6 +39,313 @@ def _plain_log_ticks(axis, lo, hi):
     axis.set_major_locator(LogLocator(base=10, subs=subs))
     axis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
     axis.set_minor_formatter(NullFormatter())
+
+
+def _sparse_log_ticks(axis, lo, hi, minimum=3):
+    """Label the sparsest 1-2-5 style series with at least ``minimum`` ticks."""
+    for subs in ((1,), (1, 2, 5), (1, 2, 3, 5), tuple(range(1, 10))):
+        decades = range(int(np.floor(np.log10(lo))) - 1, int(np.ceil(np.log10(hi))) + 2)
+        ticks = [m * 10.0**d for d in decades for m in subs if lo <= m * 10.0**d <= hi]
+        if len(ticks) >= minimum:
+            break
+    axis.set_major_locator(FixedLocator(ticks))
+    axis.set_major_formatter(FuncFormatter(lambda value, _pos: f"{value:g}"))
+    axis.set_minor_locator(LogLocator(base=10, subs=tuple(range(1, 10))))
+    axis.set_minor_formatter(NullFormatter())
+
+
+METHOD_MARKERS = {
+    "gpridge": "o",
+    "cineb": "s",
+    "ocineb": "^",
+    "catlearn": "D",
+    "mlfsm": "v",
+    "dimer": "P",
+    "sella": "X",
+    "plain": "h",
+}
+LIMIT_TOLERANCE = 1e-9  # decades; where the fitted log limits stop moving
+PAIRED_METRICS = (
+    ("search_calls", "Mean search force calls"),
+    ("search_wall_s", "Mean search time (s)"),
+)
+
+
+def _text_width(text, size, weight="normal"):
+    """Width in points of ``text`` in the current font family."""
+    from matplotlib.font_manager import FontProperties  # noqa: PLC0415
+    from matplotlib.textpath import TextPath  # noqa: PLC0415
+
+    prop = FontProperties(weight=weight)
+    return float(TextPath((0, 0), text, size=size, prop=prop).get_extents().width)
+
+
+def _log_limits_with_room(pairs, room, width):
+    """Log-axis limits that leave ``room`` points beside each pair of values.
+
+    ``pairs`` holds the ``(low, high)`` values of each lane and ``room`` the
+    points needed left of the low value and right of the high value. The
+    limits are the fixed point at which every lane has exactly the room it
+    asks for or more on an axis ``width`` points long.
+    """
+    logs = [(np.log10(a), np.log10(b)) for a, b in pairs]
+    lo = min(a for a, _ in logs)
+    hi = max(b for _, b in logs)
+    span = max(hi - lo, 0.05)
+    lo, hi = lo - 0.02 * span, hi + 0.02 * span
+    for _ in range(200):
+        span = hi - lo
+        new_lo = min(
+            a - left / width * span for (a, _), (left, _) in zip(logs, room, strict=True)
+        )
+        new_hi = max(
+            b + right / width * span
+            for (_, b), (_, right) in zip(logs, room, strict=True)
+        )
+        if max(abs(new_lo - lo), abs(new_hi - hi)) < LIMIT_TOLERANCE:
+            break
+        lo, hi = new_lo, new_hi
+    return 10**lo, 10**hi
+
+
+def plot_paired_means(
+    reports,
+    panels,
+    methods,
+    *,
+    width=7.2,
+    metrics=PAIRED_METRICS,
+    reference_label="GPRidge",
+    reference_color=GP_COLOR,
+    method_color=BASE_COLOR,
+    method_text_color=None,
+    markers=None,
+    show_ratio=True,
+    lane=22.0,
+    title_size=9.0,
+    label_size=8.0,
+    value_size=8.0,
+    tick_size=7.5,
+):
+    """Paired mean costs of each method and the reference, one lane per method.
+
+    ``reports`` maps a panel to ``{method: paired_costs(...)}``, the reports
+    :func:`plot_cost_savings` returns and the comparison manifest stores.
+    Each lane joins the mean of the method and the mean of the reference on
+    the reactions both accept and prints each mean on the outer side of its
+    marker, so two close means never share a spot. The lane labels are
+    written once, left of the first column, and the axis limits are fitted
+    to the printed values so the plot area carries no empty margin.
+
+    Sizes are in points at the given ``width``; include the figure at that
+    width to keep them. ``show_ratio`` prints the method total divided by the
+    reference total at the end of each lane.
+    """
+    markers = {**METHOD_MARKERS, **(markers or {})}
+    method_text_color = method_text_color or method_color
+    total = width * 72
+    lead = 1.3
+    lanes = {
+        panel: [m for m in methods if m != "plain" and m in reports[panel]]
+        for panel in panels
+    }
+
+    def lane_label(panel, method):
+        s = reports[panel][method]
+        return f"{methods[method]}  {s['accepted']}/{s['total']}"
+
+    def ratio_text(value):
+        return f"{value:.3g}\u00d7"
+
+    labels_w = max(
+        _text_width(lane_label(panel, m), label_size)
+        for panel in panels
+        for m in lanes[panel]
+    )
+    ratio_w = (
+        max(_text_width(ratio_text(999.0), value_size, "bold"), 1.0) + 6.0
+        if show_ratio
+        else 0.0
+    )
+    side, gap, between = 2.0, 8.0, 16.0
+    left = side + labels_w + gap
+    plot_w = (
+        total - left - side - len(metrics) * ratio_w - (len(metrics) - 1) * between
+    ) / len(metrics)
+    title_h = lead * title_size + 3.0
+    axis_h = 2.5 + 2.0 + lead * tick_size + 2.0 + lead * label_size + 4.0
+    key_h = lead * label_size + 8.0
+    heights = {panel: len(lanes[panel]) * lane for panel in panels}
+    height = sum(title_h + heights[p] + axis_h for p in panels) + key_h
+    fig = plt.figure(figsize=(width, height / 72))
+    marker_pt = 6.5
+    reach = marker_pt / 2 + 3.0
+    y = height
+    letter = 0
+    for panel, title in panels.items():
+        y -= title_h
+        rows = lanes[panel]
+        for col, (metric, xlabel) in enumerate(metrics):
+            x0 = left + col * (plot_w + ratio_w + between)
+            fig.text(
+                x0 / total,
+                (y + 0.45 * title_size) / height,
+                f"({'abcdefghijklmnopqrstuvwxyz'[letter]}) {title}",
+                fontsize=title_size,
+                fontweight="bold",
+                va="baseline",
+            )
+            letter += 1
+            ax = fig.add_axes(
+                (
+                    x0 / total,
+                    (y - heights[panel]) / height,
+                    plot_w / total,
+                    heights[panel] / height,
+                )
+            )
+            pairs, room, drawn = [], [], []
+            for lane_index, m in enumerate(rows):
+                s = reports[panel][m]
+                n = len(s["labels"])
+                if not n:
+                    ax.text(
+                        0.02,
+                        lane_index,
+                        "No shared successes",
+                        transform=ax.get_yaxis_transform(),
+                        fontsize=value_size,
+                        va="center",
+                    )
+                    continue
+                a, b = s[metric]["method_total"] / n, s[metric]["reference_total"] / n
+                (lo, lo_text, lo_color), (hi, hi_text, hi_color) = sorted(
+                    [
+                        (a, f"{a:.3g}", method_text_color),
+                        (b, f"{b:.3g}", reference_color),
+                    ],
+                    key=lambda item: item[0],
+                )
+                pairs.append((lo, hi))
+                room.append(
+                    (
+                        reach + _text_width(lo_text, value_size) + 2.0,
+                        reach + _text_width(hi_text, value_size) + 2.0,
+                    )
+                )
+                drawn.append((lane_index, m, a, b, s[metric]["ratio"]))
+                ax.plot(
+                    [a, b], [lane_index] * 2, color="#C9CED3", linewidth=1.2, zorder=1
+                )
+                ax.plot(
+                    [a],
+                    [lane_index],
+                    marker=markers.get(m, "s"),
+                    markersize=marker_pt,
+                    color=method_color,
+                    markeredgewidth=0,
+                    linestyle="none",
+                    zorder=3,
+                )
+                ax.plot(
+                    [b],
+                    [lane_index],
+                    marker=markers["gpridge"],
+                    markersize=marker_pt,
+                    color=reference_color,
+                    markeredgewidth=0,
+                    linestyle="none",
+                    zorder=3,
+                )
+                for value, text, color, direction in (
+                    (lo, lo_text, lo_color, -1),
+                    (hi, hi_text, hi_color, 1),
+                ):
+                    ax.annotate(
+                        text,
+                        (value, lane_index),
+                        xytext=(direction * reach, 0),
+                        textcoords="offset points",
+                        ha="right" if direction < 0 else "left",
+                        va="center_baseline",
+                        fontsize=value_size,
+                        color=color,
+                    )
+            ax.set_xscale("log")
+            if pairs:
+                ax.set_xlim(*_log_limits_with_room(pairs, room, plot_w))
+            ax.set_ylim(len(rows) - 0.5, -0.5)
+            _sparse_log_ticks(ax.xaxis, *ax.get_xlim())
+            ax.set_yticks(range(len(rows)))
+            if col == 0:
+                ax.set_yticklabels(
+                    [lane_label(panel, m) for m in rows], fontsize=label_size
+                )
+            else:
+                ax.set_yticklabels([])
+            ax.tick_params(axis="y", length=0, pad=gap)
+            ax.tick_params(axis="x", labelsize=tick_size, length=2.5, width=0.6, pad=2.0)
+            ax.tick_params(axis="x", which="minor", length=1.5, width=0.4)
+            ax.set_xlabel(xlabel, fontsize=label_size, labelpad=2.0)
+            ax.grid(axis="x", which="major", color="#E3E6E8", linewidth=0.6)
+            ax.set_axisbelow(True)
+            ax.spines[["top", "right", "left"]].set_visible(False)
+            ax.spines["bottom"].set_linewidth(0.6)
+            if show_ratio:
+                for lane_index, _m, _a, _b, ratio in drawn:
+                    ax.text(
+                        1.0 + 6.0 / plot_w,
+                        lane_index,
+                        ratio_text(ratio),
+                        transform=ax.get_yaxis_transform(),
+                        va="center_baseline",
+                        fontsize=value_size,
+                        fontweight="bold",
+                        color=reference_color if ratio >= 1 else method_text_color,
+                    )
+        y -= heights[panel] + axis_h
+    # Key: the reference marker, then every comparator marker before one label.
+    present = list(dict.fromkeys(m for panel in panels for m in lanes[panel]))
+    overlay = fig.add_axes((0, 0, 1, 1), zorder=-1)
+    overlay.set_axis_off()
+    overlay.set_xlim(0, total)
+    overlay.set_ylim(0, height)
+    note = "comparator, named on its row"
+    step = marker_pt + 3.0
+    key_w = (
+        step
+        + _text_width(reference_label, label_size)
+        + 18.0
+        + len(present) * step
+        + _text_width(note, label_size)
+    )
+    x = (total - key_w) / 2
+    mid = 0.5 * key_h
+    baseline = mid - 0.36 * label_size
+
+    def mark(x, marker, color):
+        overlay.plot(
+            [x + marker_pt / 2],
+            [mid],
+            marker=marker,
+            markersize=marker_pt,
+            color=color,
+            markeredgewidth=0,
+            linestyle="none",
+            clip_on=False,
+        )
+
+    mark(x, markers["gpridge"], reference_color)
+    x += step
+    fig.text(
+        x / total, baseline / height, reference_label, fontsize=label_size, va="baseline"
+    )
+    x += _text_width(reference_label, label_size) + 18.0
+    for m in present:
+        mark(x, markers.get(m, "s"), method_color)
+        x += step
+    fig.text(x / total, baseline / height, note, fontsize=label_size, va="baseline")
+    return fig
 
 
 def plot_cost_savings(rows, panels, methods, *, width=7.2):
