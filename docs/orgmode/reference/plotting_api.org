@@ -385,9 +385,84 @@ Extends =setup_global_theme()= with publication defaults: spine removal, line wi
 
 Applies theme properties to a specific axes instance (facecolor, spine colors, tick colors).
 
-** =build_cmap(hex_list, name)=
+** =build_cmap(hex_list, name, positions=None)=
 
 Builds and registers a =LinearSegmentedColormap= from hex color strings.
+=positions= places each colour on the unit interval; without it the colours are evenly spaced.
+
+** Registered colormaps
+
+| Name | Colours | Use |
+|------+---------+-----|
+| =ruhi_diverging= | teal, sky, magenta, coral, sunshine | Profiles and landscapes of the =ruhi= theme |
+| =ruhi_full= | coral, sunshine, teal, sky, magenta | Five-colour sequence |
+| =ruhi_bond_order= | coral at 0, sunshine at 0.75, teal from 1 to 3 | Bond orders on a scale from 0 to 3 |
+
+* Module: =chemparseplot.plot.molecule=
+
+Vector ball-and-stick drawings on matplotlib axes.
+Atoms are discs in angstrom; text sizes and line widths are in points, so labels stay legible at any panel size and the saved figure contains no raster structure.
+
+** =MoleculeStyle=
+
+Frozen dataclass of sizes and colours.
+
+| Field | Default | Description |
+|-------+---------+-------------|
+| =radius_scale= | =0.5= | Disc radius as a fraction of the covalent radius |
+| =outline=, =outline_width= | ="#1C2421"=, =0.6= | Disc outline and bond casing colour, outline width in points |
+| =bond_width= | =1.5= | Points of coloured width per unit bond order |
+| =bond_width_min=, =bond_width_max= | =1.0=, =4.6= | Limits of the coloured width of a solid bond |
+| =bond_casing= | =0.45= | Outline on each side of a solid bond, in points |
+| =weak_order= | =0.5= | Orders below this are dotted |
+| =weak_width= | =1.3= | Dot size at half of =weak_order= |
+| =label_size= | =7.0= | Atom label size in points |
+| =element_colors= | =ELEMENT_COLORS= | Fill colour per element symbol |
+
+=bond_linewidth(order)= gives the coloured width and =bond_stroke(order)= the drawn weight including the casing; the weight never falls as the order rises.
+
+** =frame_structure(fig, box, centre, scale)=
+
+Adds an axes at =box= (=x0, y0, width, height= in points from the lower-left corner of the figure) that draws =scale= points per angstrom with =centre= in its middle.
+
+** =draw_molecule(ax, symbols, positions, bonds, *, labels=None, style=None, cmap=None, norm=None)=
+
+Draws depth-sorted discs and bonds.
+=positions= holds the drawing plane in its first two columns and the depth, growing towards the viewer, in the third.
+=bonds= lists =(i, j, order)= with zero-based indices.
+=labels= maps an atom index to a text placed beside the atom, clear of discs, bonds and other labels.
+Returns the drawn artists under the keys =bonds=, =atoms= and =labels=.
+
+** =draw_discs(ax, xy, depth, radii, *, facecolors, edgecolors, linewidths, hatches=None)=
+
+Draws one disc per atom with nearer atoms over farther ones; each style is a scalar or one value per atom.
+Use it for slabs and other structures without bonds.
+
+* Module: =chemparseplot.plot.reaction=
+
+** =plot_reaction_atlas(cases, *, density=False, width=7.2)=
+
+Lays out pre-rendered structure images, one row per reaction, with bond annotations and a bond-order colour bar.
+
+** =plot_bonding_atlas(cases, *, width=7.0, style=None, cmap="ruhi_bond_order", vmax=3.0, ...)=
+
+Draws the same rows with =draw_molecule=, so every panel comes from one renderer and the figure stays vector.
+
+| Key of a state | Description |
+|----------------+-------------|
+| =title= | Column title; a title shared by every row is printed once above the first row |
+| =symbols=, =positions= | Element symbols and aligned coordinates (see =align_reaction=) |
+| =bond_orders= | Mapping from =read_wbo= |
+| =bonds= | Annotated pairs with =label=, =distance_A=, =wbo= and optionally =atom_i=, =atom_j= |
+| =subtitle= | Optional lines printed above the bond annotations |
+| =labels= | Optional atom labels; by default the atoms of the annotated bonds are numbered |
+
+All structures of a row share one scale in points per angstrom.
+Text sizes are in points at =width=; include the figure at that width to keep them.
+
+** =visible_bond_orders(symbols, positions, bond_orders, *, minimum=0.1, max_contact=2.5)=
+
+Returns the zero-based =(i, j, order)= pairs a drawing keeps: orders of at least =minimum= between atoms within =max_contact= covalent-radius sums.
 
 * Module: =chemparseplot.plot.optimization=
 
