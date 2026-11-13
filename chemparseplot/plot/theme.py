@@ -97,13 +97,22 @@ THEMES = {
 }
 
 
-def build_cmap(hex_list, name):
+def build_cmap(hex_list, name, positions=None):
     """Build and register a LinearSegmentedColormap from a list of hex colors.
+
+    ``positions`` places each colour on the unit interval; without it the
+    colours are evenly spaced.
 
     ```{versionadded} 0.1.0
     ```
+
+    ```{versionchanged} 1.14.0
+    Added ``positions``.
+    ```
     """
     cols = [c.strip() for c in hex_list]
+    if positions is not None:
+        cols = list(zip(positions, cols, strict=True))
     cmap = LinearSegmentedColormap.from_list(name, cols, N=256)
     try:
         mpl.colormaps.register(cmap)
@@ -133,6 +142,22 @@ build_cmap(
         RUHI_COLORS["magenta"],
     ],
     name="ruhi_full",
+)
+
+# Bond orders from 0 to 3: coral for a contact, sunshine for a weakened
+# bond at three quarters, and teal that darkens from a single bond to a
+# triple bond, so the forming and breaking bonds of a transition state stand
+# out from the rest.
+RUHI_BOND_ORDER_MAX = 3.0
+build_cmap(
+    [
+        RUHI_COLORS["coral"],
+        RUHI_COLORS["sunshine"],
+        "#3E9C8A",
+        RUHI_COLORS["teal"],
+    ],
+    name="ruhi_bond_order",
+    positions=[0.0, 0.75 / RUHI_BOND_ORDER_MAX, 1.0 / RUHI_BOND_ORDER_MAX, 1.0],
 )
 
 
