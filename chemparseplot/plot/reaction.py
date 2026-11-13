@@ -337,3 +337,317 @@ def plot_reaction_gallery(tiles, *, columns=4, density=False, width=7.2):
     cbar.set_label("Wiberg bond order", fontsize=8)
     cbar.ax.tick_params(labelsize=7)
     return fig
+
+
+def visible_bond_orders(symbols, positions, bond_orders, *, minimum=0.1, max_contact=2.5):
+    """Zero-based ``(i, j, order)`` for the Wiberg pairs a drawing keeps.
+
+    The rule is that of :func:`apply_wbo_style`: an order below ``minimum``
+    or a pair farther apart than ``max_contact`` covalent-radius sums gets no
+    edge. ``bond_orders`` uses the one-based keys of :func:`read_wbo`.
+    """
+    from ase.data import atomic_numbers, covalent_radii  # noqa: PLC0415
+
+    positions = np.asarray(positions, dtype=float)
+    radii = [covalent_radii[atomic_numbers[s]] for s in symbols]
+    kept = []
+    for (i, j), value in sorted(bond_orders.items()):
+        a, b = i - 1, j - 1
+        if value < minimum:
+            continue
+        if np.linalg.norm(positions[a] - positions[b]) > max_contact * (
+            radii[a] + radii[b]
+        ):
+            continue
+        kept.append((a, b, float(value)))
+    return kept
+
+
+def bond_annotation(bond):
+    """One line of a bond annotation: label, distance and Wiberg order."""
+    wbo = "n/r" if bond["wbo"] is None else f"{bond['wbo']:.2f}"
+    return f"{bond['label']}: {bond['distance_A']:.2f} Å / {wbo}"
+
+
+def plot_bonding_atlas(
+    cases,
+    *,
+    width=7.0,
+    style=None,
+    cmap="ruhi_bond_order",
+    vmax=3.0,
+    title_size=9.0,
+    header_size=8.0,
+    note_size=7.0,
+    max_scale=20.0,
+    structure_aspect=0.72,
+    highlight_column=COMPARATOR_COLUMN,
+    highlight_color="#B8463F",
+    text_color="#1C2421",
+):
+    """Vector reaction rows drawn by one renderer, one scale per row.
+
+    Each case holds a ``title`` and its ``states``. A state holds ``title``,
+    ``symbols``, ``positions`` (aligned, drawing plane in the first two
+    columns), ``bond_orders`` (the mapping :func:`read_wbo` returns), the
+    ``bonds`` to annotate and an optional ``subtitle`` printed above them.
+    Atoms of the annotated bonds are numbered unless the state gives its own
+    ``labels`` (zero-based index to text).
+
+    Every structure of a row shares one scale in points per angstrom, so the
+    comparator can be compared with the saddle by eye. A column whose state
+    titles agree in every row is headed once, above the first row; the other
+    columns are named on each row's title line, or on a line of their own
+    when the row title reaches them. Text sizes are in points at the given
+    ``width``; include the figure at that width to keep them. An element key,
+    the bond-order scale and the dotted-bond note share one line below the
+    rows, with the scale label beside the bar and the ticks beneath it.
+    """
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+    from ase.data import atomic_numbers  # noqa: PLC0415
+    from matplotlib import colormaps  # noqa: PLC0415
+    from matplotlib.cm import ScalarMappable  # noqa: PLC0415
+    from matplotlib.colors import Normalize  # noqa: PLC0415
+    from matplotlib.lines import Line2D  # noqa: PLC0415
+    from matplotlib.patches import Circle  # noqa: PLC0415
+
+    from chemparseplot.plot.molecule import (  # noqa: PLC0415
+        MoleculeStyle,
+        atom_radii,
+        draw_molecule,
+        frame_structure,
+        text_extent,
+    )
+
+    style = style or MoleculeStyle()
+    cmap = colormaps[cmap] if isinstance(cmap, str) else cmap
+    norm = Normalize(0, vmax)
+    columns = len(cases[0]["states"])
+    if any(len(case["states"]) != columns for case in cases):
+        msg = "Every reaction row needs the same number of states"
+        raise ValueError(msg)
+    total = width * 72
+    side, gutter, leading = 2.0, 5.0, 1.24
+    column = (total - 2 * side - (columns - 1) * gutter) / columns
+    title_h, header_h, note_h = (
+        leading * s for s in (title_size, header_size, note_size)
+    )
+
+    def centre_of(col):
+        return side + col * (column + gutter) + column / 2
+
+    def labels_of(state):
+        if "labels" in state:
+            return dict(state["labels"])
+        found = {}
+        for bond in state["bonds"]:
+            for key in ("atom_i", "atom_j"):
+                if key in bond:
+                    index = bond[key] - 1
+                    found[index] = f"{state['symbols'][index]}{index + 1}"
+        return found
+
+    def notes_of(state):
+        head = [line for line in state.get("subtitle", "").split("\n") if line]
+        return head + [bond_annotation(b) for b in state["bonds"]]
+
+    shared = [
+        len({case["states"][col]["title"] for case in cases}) == 1
+        for col in range(columns)
+    ]
+    rows = []
+    for index, case in enumerate(cases):
+        drawn = []
+        for state in case["states"]:
+            positions = np.asarray(state["positions"], dtype=float)
+            radii = atom_radii(state["symbols"], style.radius_scale)[:, None]
+            labels = labels_of(state)
+            drawn.append(
+                {
+                    "state": state,
+                    "positions": positions,
+                    "lo": (positions[:, :2] - radii).min(axis=0),
+                    "hi": (positions[:, :2] + radii).max(axis=0),
+                    "labels": labels,
+                    "notes": notes_of(state),
+                }
+            )
+        tallest = max(
+            (
+                text_extent(t, style.label_size)[1]
+                for d in drawn
+                for t in d["labels"].values()
+            ),
+            default=0.0,
+        )
+        pad = tallest + style.label_gap + style.label_halo
+        span = np.max([d["hi"] - d["lo"] for d in drawn], axis=0)
+        scale = min(
+            max_scale,
+            (column - 2 * pad) / span[0],
+            (structure_aspect * column - 2 * pad) / span[1],
+        )
+        title = f"({'abcdefghijklmnopqrstuvwxyz'[index]}) {case['title']}"
+        own = [col for col in range(columns) if not shared[col]]
+        reach = side + _bold_extent(title, title_size)
+        clear = all(
+            reach + gutter
+            < centre_of(col)
+            - text_extent(drawn[col]["state"]["title"], header_size)[0] / 2
+            for col in own
+        )
+        rows.append(
+            {
+                "title": title,
+                "drawn": drawn,
+                "scale": scale,
+                "box": span[1] * scale + 2 * pad,
+                "lines": max(len(d["notes"]) for d in drawn),
+                "own": own,
+                "own_line": bool(own) and not clear,
+            }
+        )
+
+    row_gap, bar_h = 0.7 * note_h, 0.8 * note_size
+    key_h = bar_h + 2.0 + 1.4 * note_h
+    height = (
+        (header_h if any(shared) else 0.0)
+        + sum(
+            title_h
+            + (header_h if row["own_line"] else 0.0)
+            + row["box"]
+            + row["lines"] * note_h
+            + row_gap
+            for row in rows
+        )
+        + key_h
+    )
+    fig = plt.figure(figsize=(width, height / 72))
+
+    def write(x, y, text, size, **kwargs):
+        kwargs.setdefault("color", text_color)
+        kwargs.setdefault("va", "baseline")
+        return fig.text(x / total, y / height, text, fontsize=size, **kwargs)
+
+    def header(col, y, text):
+        write(
+            centre_of(col),
+            y,
+            text,
+            header_size,
+            ha="center",
+            color=highlight_color if col == highlight_column else text_color,
+        )
+
+    y = height
+    if any(shared):
+        y -= header_h
+        for col in range(columns):
+            if shared[col]:
+                header(col, y + 0.3 * header_size, cases[0]["states"][col]["title"])
+    for row in rows:
+        y -= title_h
+        write(side, y + 0.3 * title_size, row["title"], title_size, fontweight="bold")
+        if row["own_line"]:
+            y -= header_h
+        for col in row["own"]:
+            header(
+                col,
+                y + 0.3 * (header_size if row["own_line"] else title_size),
+                row["drawn"][col]["state"]["title"],
+            )
+        y -= row["box"]
+        for col, d in enumerate(row["drawn"]):
+            state = d["state"]
+            ax = frame_structure(
+                fig,
+                (side + col * (column + gutter), y, column, row["box"]),
+                (d["lo"] + d["hi"]) / 2,
+                row["scale"],
+            )
+            draw_molecule(
+                ax,
+                state["symbols"],
+                d["positions"],
+                visible_bond_orders(
+                    state["symbols"], d["positions"], state["bond_orders"]
+                ),
+                labels=d["labels"],
+                style=style,
+                cmap=cmap,
+                norm=norm,
+            )
+            for k, line in enumerate(d["notes"]):
+                write(
+                    centre_of(col),
+                    y - (k + 1) * note_h + 0.3 * note_size,
+                    line,
+                    note_size,
+                    ha="center",
+                )
+        y -= row["lines"] * note_h + row_gap
+
+    # Key line: elements, the bond-order scale and the dotted-bond note.
+    overlay = fig.add_axes((0, 0, 1, 1), zorder=-1)
+    overlay.set_axis_off()
+    overlay.set_xlim(0, total)
+    overlay.set_ylim(0, height)
+    bar_y = 1.4 * note_h + 2.0
+    mid = bar_y + bar_h / 2
+    baseline = mid - 0.36 * note_size
+    present = {s for row in rows for d in row["drawn"] for s in d["state"]["symbols"]}
+    x = side + 2.0
+    disc = 0.42 * note_size
+    for symbol in sorted(present, key=lambda s: atomic_numbers[s]):
+        overlay.add_patch(
+            Circle(
+                (x + disc, mid),
+                disc,
+                facecolor=style.color_of(symbol),
+                edgecolor=style.outline,
+                linewidth=style.outline_width,
+            )
+        )
+        write(x + 2 * disc + 2.0, baseline, symbol, note_size)
+        x += 2 * disc + 2.0 + text_extent(symbol, note_size)[0] + 6.0
+    label = "Wiberg bond order"
+    note = f"dotted: order below {style.weak_order:g}"
+    sample = 16.0
+    bar_x0 = x + 10.0 + text_extent(label, note_size)[0] + 6.0
+    bar_x1 = total - side - text_extent(note, note_size)[0] - sample - 4.0 - 12.0
+    write(bar_x0 - 6.0, baseline, label, note_size, ha="right")
+    cax = fig.add_axes(
+        (bar_x0 / total, bar_y / height, (bar_x1 - bar_x0) / total, bar_h / height)
+    )
+    bar = fig.colorbar(
+        ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation="horizontal"
+    )
+    ticks = np.arange(0, vmax + 1e-9, 0.5)
+    bar.set_ticks(ticks, labels=[f"{t:g}" for t in ticks])
+    bar.ax.tick_params(
+        axis="x", labelsize=note_size, length=2.0, width=0.5, pad=1.5, colors=text_color
+    )
+    bar.outline.set_linewidth(0.5)
+    bar.outline.set_edgecolor(text_color)
+    sample_x = bar_x1 + 12.0
+    overlay.add_line(
+        Line2D(
+            [sample_x, sample_x + sample],
+            [mid, mid],
+            linewidth=style.weak_width,
+            color=cmap(norm(0.6 * style.weak_order)),
+            linestyle=(0, (0.1, 1.9)),
+            dash_capstyle="round",
+        )
+    )
+    write(sample_x + sample + 4.0, baseline, note, note_size)
+    return fig
+
+
+def _bold_extent(text, size):
+    """Width in points of ``text`` set bold in the current font family."""
+    from matplotlib.font_manager import FontProperties  # noqa: PLC0415
+    from matplotlib.textpath import TextPath  # noqa: PLC0415
+
+    prop = FontProperties(weight="bold")
+    return float(TextPath((0, 0), text, size=size, prop=prop).get_extents().width)

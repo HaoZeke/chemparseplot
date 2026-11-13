@@ -159,3 +159,144 @@ def test_atlas_rows_make_room_for_every_bond_line(tmp_path):
     lowest = min(t.get_window_extent().y0 for t in tall.texts if "\u2013" in t.get_text())
     assert bar.y1 * tall.bbox.height < lowest
     plt.close("all")
+
+
+def _bonding_case(title, comparator, shift=0.0):
+    symbols = ["C", "O", "H"]
+    positions = np.array([[0.0, 0.0, 0.0], [1.9 + shift, 0.2, 0.3], [-0.6, 0.9, -0.2]])
+    orders = {(1, 2): 0.4, (1, 3): 0.95}
+    bond = {
+        "atom_i": 1,
+        "atom_j": 2,
+        "label": "C1-O2",
+        "distance_A": 1.94,
+        "wbo": 0.41,
+    }
+
+    def state(name, subtitle=""):
+        return {
+            "title": name,
+            "symbols": symbols,
+            "positions": positions,
+            "bond_orders": orders,
+            "bonds": [bond],
+            "subtitle": subtitle,
+        }
+
+    return {
+        "title": title,
+        "states": [
+            state("Reactant"),
+            state("Saddle", "1 negative; 0 unresolved\nmax |F| = 0.050 eV/Å"),
+            state("Product"),
+            state(comparator),
+        ],
+    }
+
+
+def test_visible_bond_orders_follow_the_edge_rule():
+    from chemparseplot.plot.reaction import visible_bond_orders
+
+    symbols = ["C", "H", "H"]
+    positions = np.array([[0.0, 0, 0], [1.09, 0, 0], [-3.85, 0, 0]])
+    kept = visible_bond_orders(
+        symbols, positions, {(1, 2): 0.98, (1, 3): 0.75, (2, 3): 0.05}
+    )
+    assert kept == [(0, 1, 0.98)]
+    assert visible_bond_orders(symbols, positions, {(1, 3): 0.75}, max_contact=4.0) == [
+        (0, 2, 0.75)
+    ]
+
+
+def test_bonding_atlas_is_vector_with_one_scale_per_row():
+    import matplotlib as mpl
+
+    mpl.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.image import AxesImage
+
+    from chemparseplot.plot.molecule import points_per_unit
+    from chemparseplot.plot.reaction import plot_bonding_atlas
+
+    cases = [_bonding_case("first", "Method A"), _bonding_case("second", "Method B", 1.5)]
+    fig = plot_bonding_atlas(cases, width=6.0, note_size=7.0)
+    assert fig.get_figwidth() == 6.0
+    # eight structures, the key overlay and the colour bar; no raster panel
+    structures = [ax for ax in fig.axes if ax.patches and not ax.axison][:8]
+    assert len(fig.axes) == 10
+    assert not any(isinstance(c, AxesImage) for ax in fig.axes for c in ax.get_children())
+    scales = [points_per_unit(ax) for ax in structures]
+    assert scales[:4] == pytest.approx([scales[0]] * 4)
+    assert scales[4:] == pytest.approx([scales[4]] * 4)
+    assert scales[4] < scales[0]
+    texts = [t.get_text() for t in fig.texts]
+    # shared column titles are printed once, the differing column once per row
+    assert texts.count("Reactant") == texts.count("Saddle") == texts.count("Product") == 1
+    assert texts.count("Method A") == texts.count("Method B") == 1
+    assert texts.count("C1-O2: 1.94 Å / 0.41") == 8
+    assert "max |F| = 0.050 eV/Å" in texts
+    assert min(t.get_fontsize() for t in fig.texts) >= 7.0
+    labels = [t for ax in structures for t in ax.texts]
+    assert {t.get_text() for t in labels} == {"C1", "O2"}
+    assert min(t.get_fontsize() for t in labels) >= 6.5
+    plt.close(fig)
+    with pytest.raises(ValueError, match="same number"):
+        plot_bonding_atlas([cases[0], {"title": "x", "states": cases[1]["states"][:3]}])
+
+
+def test_bonding_atlas_scale_label_clears_the_ticks_and_the_rows():
+    import matplotlib as mpl
+
+    mpl.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from chemparseplot.plot.reaction import plot_bonding_atlas
+
+    fig = plot_bonding_atlas([_bonding_case("only", "Method A")], width=6.0)
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    bar = fig.axes[-1]
+    label = next(t for t in fig.texts if t.get_text() == "Wiberg bond order")
+    label_box = label.get_window_extent(renderer)
+    ticks = [t.get_window_extent(renderer) for t in bar.get_xticklabels()]
+    assert [t.get_text() for t in bar.get_xticklabels()] == [
+        "0",
+        "0.5",
+        "1",
+        "1.5",
+        "2",
+        "2.5",
+        "3",
+    ]
+    assert not any(label_box.overlaps(t) for t in ticks)
+    # the key sits below the lowest annotation of the rows
+    notes = [t for t in fig.texts if " Å / " in t.get_text()]
+    lowest = min(t.get_window_extent(renderer).y0 for t in notes)
+    assert bar.get_window_extent(renderer).y1 < lowest
+    assert label_box.y1 < lowest
+    plt.close(fig)
+
+
+def test_bonding_atlas_moves_row_headers_clear_of_a_long_title():
+    import matplotlib as mpl
+
+    mpl.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from chemparseplot.plot.reaction import plot_bonding_atlas
+
+    other = _bonding_case("second", "Method B")
+    short = plot_bonding_atlas([_bonding_case("row", "Method A"), other], width=6.0)
+    long_title = "a reaction title long enough to run under the last column " * 2
+    tall = plot_bonding_atlas([_bonding_case(long_title, "Method A"), other], width=6.0)
+    assert tall.get_figheight() > short.get_figheight()
+    fig_h = tall.get_figheight() * tall.dpi
+    tall.canvas.draw()
+    renderer = tall.canvas.get_renderer()
+    title = next(t for t in tall.texts if t.get_text().startswith("(a)"))
+    name = next(t for t in tall.texts if t.get_text() == "Method A")
+    assert not title.get_window_extent(renderer).overlaps(
+        name.get_window_extent(renderer)
+    )
+    assert 0 < name.get_window_extent(renderer).y0 < fig_h
+    plt.close("all")
