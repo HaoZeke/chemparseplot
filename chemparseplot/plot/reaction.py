@@ -11,10 +11,24 @@ MIN_BOND_CHANGE_A = 0.25
 COMPARATOR_COLUMN = 3
 
 
-def align_reaction(atoms_list, reference=1):
-    """Keep atom identities and apply proper rigid rotations into one view."""
+def align_reaction(atoms_list, reference=1, *, weights=None):
+    """Keep atom identities and apply proper rigid rotations into one view.
+
+    Every frame is fitted onto the ``reference`` frame and then rotated into
+    the principal axes of that frame, so the first two coordinates span its
+    plane of largest extent. ``weights`` chooses the fit: ``None`` weighs all
+    atoms equally, ``"mass"`` weighs each atom by its mass. With mass weights
+    the heavy-atom frame stays put and a migrating hydrogen is seen to move.
+
+    ```{versionchanged} 1.14.0
+    Added ``weights``.
+    ```
+    """
     from ase.build import minimize_rotation_and_translation  # noqa: PLC0415
 
+    if weights not in (None, "mass"):
+        msg = f"Unknown alignment weights {weights!r}; use None or 'mass'"
+        raise ValueError(msg)
     ref = atoms_list[reference].copy()
     ref.pbc = False
     ref.positions -= ref.positions.mean(axis=0)
@@ -28,7 +42,12 @@ def align_reaction(atoms_list, reference=1):
             raise ValueError(msg)
         frame = atoms.copy()
         frame.pbc = False
-        minimize_rotation_and_translation(ref, frame)
+        if weights == "mass":
+            frame.positions = _weighted_fit(
+                ref.positions, frame.positions, ref.get_masses()
+            )
+        else:
+            minimize_rotation_and_translation(ref, frame)
         frame.positions = frame.positions @ axes.T
         if not np.allclose(
             atoms.get_all_distances(), frame.get_all_distances(), rtol=1e-12, atol=1e-10
@@ -37,6 +56,22 @@ def align_reaction(atoms_list, reference=1):
             raise ValueError(msg)
         result.append(frame)
     return result
+
+
+def _weighted_fit(target, positions, weights):
+    """Proper rotation and translation of ``positions`` onto ``target`` (Kabsch).
+
+    The weighted centroids coincide afterwards and the weighted squared
+    deviation is least among proper rotations.
+    """
+    w = np.asarray(weights, dtype=float)[:, None]
+    centre_t = (w * target).sum(axis=0) / w.sum()
+    centre_p = (w * positions).sum(axis=0) / w.sum()
+    covariance = (w * (positions - centre_p)).T @ (target - centre_t)
+    left, _, right = np.linalg.svd(covariance)
+    sign = np.sign(np.linalg.det(left @ right)) or 1.0
+    rotation = left @ np.diag([1.0, 1.0, sign]) @ right
+    return (positions - centre_p) @ rotation + centre_t
 
 
 def read_wbo(path, natoms):

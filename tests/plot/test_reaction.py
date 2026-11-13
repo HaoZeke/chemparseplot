@@ -300,3 +300,60 @@ def test_bonding_atlas_moves_row_headers_clear_of_a_long_title():
     )
     assert 0 < name.get_window_extent(renderer).y0 < fig_h
     plt.close("all")
+
+
+def test_mass_weighted_alignment_keeps_the_heavy_frame_in_place():
+    reactant = Atoms("CNH", positions=[[0, 0, 0], [1.16, 0, 0], [-1.07, 0, 0]])
+    saddle = Atoms("CNH", positions=[[0, 0, 0], [1.19, 0, 0], [0.45, 1.1, 0]])
+    product = Atoms("CNH", positions=[[0, 0, 0], [1.17, 0, 0], [2.17, 0, 0]])
+    moved = []
+    for k, frame in enumerate((reactant, saddle, product)):
+        copy = frame.copy()
+        copy.rotate(25 + 40 * k, "z")
+        copy.rotate(15 * k, "x")
+        copy.translate([k, -2 * k, 3])
+        moved.append(copy)
+    plain = align_reaction(moved, reference=1)
+    weighted = align_reaction(moved, reference=1, weights="mass")
+
+    def drift(frames):
+        return max(
+            np.linalg.norm(f.positions[:2] - frames[1].positions[:2], axis=1).max()
+            for f in frames
+        )
+
+    def travel(frames):
+        return np.linalg.norm(frames[0].positions[2] - frames[2].positions[2])
+
+    # In the frame of carbon and nitrogen the hydrogen travels 3.24 A. Mass
+    # weights keep that frame within the 1/27 share of the hydrogen mass;
+    # equal weights turn the molecule and hide two thirds of the travel.
+    assert drift(weighted) < 0.25
+    assert drift(weighted) < drift(plain) / 3
+    assert travel(weighted) > 2.9
+    assert travel(plain) < 1.5
+    for source, aligned in zip(moved, weighted, strict=True):
+        np.testing.assert_allclose(
+            source.get_all_distances(), aligned.get_all_distances(), atol=1e-10
+        )
+    # the hydrogen ends on opposite sides of the C-N frame
+    axis = weighted[1].positions[1] - weighted[1].positions[0]
+    side = [np.dot(f.positions[2] - f.positions[0], axis) for f in weighted]
+    assert side[0] < 0 < side[2]
+    with pytest.raises(ValueError, match="Unknown alignment weights"):
+        align_reaction(moved, weights="charge")
+
+
+def test_mass_weighted_alignment_is_a_proper_rotation():
+    a = Atoms("CHNO", positions=[[0, 0, 0], [1, 0, 0], [0, 2, 0], [0, 0, 3]])
+    b = a.copy()
+    b.rotate(47, "x")
+    b.rotate(110, "z")
+    b.translate([3, 4, 5])
+    result = align_reaction([a, b], reference=0, weights="mass")
+    np.testing.assert_allclose(result[0].positions, result[1].positions, atol=1e-10)
+
+    def volume(frame):
+        return np.linalg.det(frame.positions[1:] - frame.positions[0])
+
+    assert volume(b) * volume(result[1]) > 0
