@@ -19,18 +19,20 @@ import numpy as np
 from chemparseplot.plot.theme import RUHI_COLORS
 
 INK = "#1C2421"
+# Fills follow the usual element conventions in the tones of the Ruhi palette;
+# elements that meet in one structure (O and Br, S and Mg) keep distinct hues.
 ELEMENT_COLORS = {
     "H": "#FFFFFF",
     "C": "#AFB3B6",
     "N": "#298EE6",
     "O": RUHI_COLORS["coral"],
-    "F": "#B5B848",
-    "Mg": "#F4E478",
-    "Si": "#FAF2C0",
+    "F": "#C5E59B",
+    "Mg": "#8CCB7B",
+    "Si": "#E9CFA6",
     "P": "#F99A55",
     "S": RUHI_COLORS["sunshine"],
-    "Cl": "#BCC672",
-    "Br": "#E8686B",
+    "Cl": "#45B97C",
+    "Br": "#A8573B",
     "Pt": "#D2E7FA",
 }
 FALLBACK_ELEMENT_COLOR = "#D9DCDE"
