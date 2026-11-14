@@ -12,6 +12,7 @@ from matplotlib.colors import Normalize, to_hex
 from chemparseplot.plot.molecule import (
     MoleculeStyle,
     atom_radii,
+    draw_disc_field,
     draw_discs,
     draw_molecule,
     frame_structure,
@@ -142,3 +143,57 @@ def test_label_avoids_a_thick_bond_and_falls_back_when_crowded():
     # no room at all: the least crowded candidate is still returned
     tight = place_labels(centres, radii, bond, {0: "C1", 1: "C2"}, (1.0, 1.0))
     assert set(tight) == {0, 1}
+
+
+def test_disc_field_keeps_depth_order_in_one_collection_per_hatch_run(tmp_path):
+    rng = np.random.default_rng(3)
+    n = 600
+    xy = rng.uniform(0, 20, (n, 2))
+    depth = rng.uniform(0, 5, n)
+    moving = np.zeros(n, dtype=bool)
+    moving[np.argsort(depth)[-4:]] = True
+    faces = np.where(moving, "#F1DB4B", "#D2E7FA")
+
+    def framed():
+        fig = plt.figure(figsize=(3.0, 3.0))
+        return fig, frame_structure(fig, (0, 0, 216, 216), (10, 10), 9.0)
+
+    fig, ax = framed()
+    field = draw_disc_field(
+        ax,
+        xy,
+        depth,
+        1.25,
+        facecolors=list(faces),
+        edgecolors="#1C2421",
+        linewidths=0.4,
+        hatches=["xxxx" if m else None for m in moving],
+    )
+    # the four nearest atoms are hatched, so the field is two runs
+    assert len(field) == 2
+    assert [len(c.get_offsets()) for c in field] == [n - 4, 4]
+    assert field[0].get_hatch() is None and field[1].get_hatch() == "xxxx"
+    assert field[0].get_zorder() < field[1].get_zorder()
+    back = np.asarray(field[0].get_offsets())
+    expected = xy[np.argsort(depth, kind="stable")][: n - 4]
+    np.testing.assert_allclose(back, expected)
+    # marker diameter in points equals the disc diameter at the axes scale
+    assert np.sqrt(field[0].get_sizes()[0]) == pytest.approx(2 * 1.25 * 9.0)
+    compact = tmp_path / "field.pdf"
+    fig.savefig(compact)
+    plt.close(fig)
+
+    fig, ax = framed()
+    draw_discs(
+        ax,
+        xy,
+        depth,
+        np.full(n, 1.25),
+        facecolors=list(faces),
+        edgecolors="#1C2421",
+        linewidths=0.4,
+    )
+    patches = tmp_path / "patches.pdf"
+    fig.savefig(patches)
+    plt.close(fig)
+    assert compact.stat().st_size < patches.stat().st_size / 3

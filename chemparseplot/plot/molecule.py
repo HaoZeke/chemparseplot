@@ -176,6 +176,72 @@ def draw_discs(
     return patches
 
 
+def draw_disc_field(
+    ax,
+    xy,
+    depth,
+    radius,
+    *,
+    facecolors,
+    edgecolors=INK,
+    linewidths=0.6,
+    hatches=None,
+    zorder=2.0,
+):
+    """Draw many discs of one radius compactly, nearer atoms over farther ones.
+
+    The atoms are sorted by ``depth`` and each run of atoms that share a
+    hatch becomes one marker collection, so a PDF stores the disc shape once
+    per run and places it per atom. A slab of hundreds of atoms then takes a
+    fraction of the bytes of one patch per atom. The PDF backend shares the
+    shape only within a run of one line width and one edge and face opacity;
+    give an atom without an outline the edge colour of its face instead of a
+    zero width. ``radius`` is in data units of ``ax``, whose limits must
+    already be final and equal in scale on both axes (see
+    :func:`frame_structure`). Scalar styles apply to every atom; sequences
+    give one value per atom. Returns the collections, back to front.
+    """
+    xy = np.asarray(xy, dtype=float)
+    n = len(xy)
+
+    def per_atom(value):
+        if isinstance(value, str) or not isinstance(value, Sequence | np.ndarray):
+            return [value] * n
+        return list(value)
+
+    faces, edges, widths = (
+        per_atom(facecolors),
+        per_atom(edgecolors),
+        per_atom(linewidths),
+    )
+    marks = per_atom(hatches)
+    order = np.argsort(np.asarray(depth, dtype=float), kind="stable")
+    runs = []
+    for k in order:
+        if runs and marks[runs[-1][0]] == marks[k]:
+            runs[-1].append(k)
+        else:
+            runs.append([k])
+    area = (2 * radius * points_per_unit(ax)) ** 2
+    collections = []
+    for index, run in enumerate(runs):
+        collection = ax.scatter(
+            xy[run, 0],
+            xy[run, 1],
+            s=area,
+            marker="o",
+            facecolors=[faces[k] for k in run],
+            edgecolors=[edges[k] for k in run],
+            linewidths=[widths[k] for k in run],
+            zorder=zorder + index / len(runs),
+            clip_on=False,
+        )
+        if marks[run[0]]:
+            collection.set_hatch(marks[run[0]])
+        collections.append(collection)
+    return collections
+
+
 def _box_hits_circle(box, centre, radius) -> bool:
     x0, y0, x1, y1 = box
     nearest = np.array([min(max(centre[0], x0), x1), min(max(centre[1], y0), y1)])
