@@ -435,10 +435,20 @@ Returns the drawn artists under the keys =bonds=, =atoms= and =labels=.
 
 ** =draw_discs(ax, xy, depth, radii, *, facecolors, edgecolors, linewidths, hatches=None)=
 
-Draws one disc per atom with nearer atoms over farther ones; each style is a scalar or one value per atom.
-Use it for slabs and other structures without bonds.
+Draws one disc patch per atom with nearer atoms over farther ones; each style is a scalar or one value per atom.
+
+** =draw_disc_field(ax, xy, depth, radius, *, facecolors, edgecolors, linewidths, hatches=None)=
+
+Draws many discs of one radius as marker collections, one per run of equal hatch in depth order.
+A PDF then stores the disc once per run, so a slab of hundreds of atoms stays small.
+Keep one line width and one edge opacity within a run; give an atom without an outline the edge colour of its face.
 
 * Module: =chemparseplot.plot.reaction=
+
+** =align_reaction(atoms_list, reference=1, *, weights=None)=
+
+Fits every frame onto the reference frame by a proper rotation and rotates all of them into the principal axes of that frame.
+=weights="mass"= weighs each atom by its mass, which keeps the heavy-atom frame in place when a hydrogen migrates; the default weighs all atoms equally.
 
 ** =plot_reaction_atlas(cases, *, density=False, width=7.2)=
 
@@ -463,6 +473,19 @@ Text sizes are in points at =width=; include the figure at that width to keep th
 ** =visible_bond_orders(symbols, positions, bond_orders, *, minimum=0.1, max_contact=2.5)=
 
 Returns the zero-based =(i, j, order)= pairs a drawing keeps: orders of at least =minimum= between atoms within =max_contact= covalent-radius sums.
+
+* Module: =chemparseplot.plot.benchmark=
+
+** =plot_cost_savings(rows, panels, methods, *, width=7.2)=
+
+Computes the paired costs of every method against the reference and draws them; returns the figure and the reports.
+
+** =plot_paired_means(reports, panels, methods, *, width=7.2, show_ratio=True, ...)=
+
+Draws paired mean costs from the reports of =plot_cost_savings= (or of a stored comparison manifest), one lane per method.
+Each mean is printed on the outer side of its marker, the log limits are fitted to the printed values, and the lane labels are written once beside the first column.
+=reference_color=, =method_color= and =method_text_color= set the colours; =markers= overrides the marker of a method.
+Sizes are in points at =width=.
 
 * Module: =chemparseplot.plot.optimization=
 
