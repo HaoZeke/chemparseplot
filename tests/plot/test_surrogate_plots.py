@@ -797,12 +797,9 @@ def test_landscape_fades_where_the_model_has_no_data(baker):
 
 def test_landscape_can_hide_variance_contours(baker):
     _jax_surfaces()
-    fig = surr.plot_reduced_landscape(
-        baker.band, show_variance_contours=False
-    )
+    fig = surr.plot_reduced_landscape(baker.band, show_variance_contours=False)
     assert not any(
-        text.get_text().startswith("relative variance")
-        for text in fig.axes[0].texts
+        text.get_text().startswith("relative variance") for text in fig.axes[0].texts
     )
     names = [text.get_text() for text in fig.legends[0].get_texts()]
     assert not any("variance contours" in name for name in names)
