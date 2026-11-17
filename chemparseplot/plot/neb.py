@@ -1364,6 +1364,7 @@ def plot_landscape_surface(
     variance_label: Callable[[float], str] | None = None,
     show_variance_contours: bool = True,
     fade_variance_above: float | None = None,
+    fade_distance_above: float | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1403,6 +1404,10 @@ def plot_landscape_surface(
         the relative variance is above it the surface is faded to the
         background, so the plot does not show a confident surface where the
         model has no data. Default None: no fading (the NEB behaviour).
+    fade_distance_above : float, optional
+        Distance in the plotted coordinate units. Surface cells farther than
+        this from every observation are faded to the background. This gives a
+        deterministic data-support mask independent of model uncertainty.
     surface_fit : SurfaceFitConfig or mapping, optional
         TOML-friendly config object. When given, overrides *auto_thin* and
         *max_surface_points* (prefer this over ad-hoc kwargs).
@@ -1451,6 +1456,10 @@ def plot_landscape_surface(
         grad_p = np.asarray(grad_p, dtype=float)
     if step_data is not None:
         step_data = np.asarray(step_data)
+    if fade_distance_above is not None:
+        fade_distance_above = float(fade_distance_above)
+        if fade_distance_above <= 0:
+            raise ValueError("fade_distance_above must be positive")
 
     n_obs = len(rmsd_r)
     fit_idx = np.arange(n_obs, dtype=int)
@@ -1666,6 +1675,26 @@ def plot_landscape_surface(
         zorder=10,
         extend="both",
     )
+    if fade_distance_above is not None:
+        support_x = s_data if project_path else rmsd_r
+        support_y = d_data if project_path else rmsd_p
+        support_distance = np.sqrt(
+            np.min(
+                (xg[..., None] - support_x) ** 2
+                + (yg[..., None] - support_y) ** 2,
+                axis=-1,
+            )
+        )
+        if support_distance.max() > fade_distance_above:
+            ax.contourf(
+                xg,
+                yg,
+                support_distance,
+                levels=[fade_distance_above, support_distance.max() + 1e-9],
+                colors="white",
+                alpha=0.78,
+                zorder=11,
+            )
     # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
         if fade_variance_above is not None and np.ptp(var_grid) > 1e-10:

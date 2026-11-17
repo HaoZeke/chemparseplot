@@ -795,6 +795,19 @@ def test_landscape_fades_where_the_model_has_no_data(baker):
     assert white and tuple(white[0].get_facecolor()[0][:3]) == (1.0, 1.0, 1.0)
 
 
+def test_landscape_can_fade_beyond_observation_distance(baker):
+    _jax_surfaces()
+    plain = surr.plot_reduced_landscape(baker.band, fade_variance=None)
+    faded = surr.plot_reduced_landscape(
+        baker.band,
+        fade_variance=None,
+        fade_distance=0.08,
+    )
+    names = [text.get_text() for text in faded.legends[0].get_texts()]
+    assert any(name.startswith("faded beyond 0.08") for name in names)
+    assert len(faded.axes[0].collections) > len(plain.axes[0].collections)
+
+
 def test_landscape_can_hide_variance_contours(baker):
     _jax_surfaces()
     fig = surr.plot_reduced_landscape(baker.band, show_variance_contours=False)

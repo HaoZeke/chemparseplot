@@ -922,6 +922,7 @@ def plot_reduced_landscape(
     surface: str | None = "grad_matern",
     color_by: str = "energy",
     fade_variance: float | None = 0.95,
+    fade_distance: float | None = None,
     show_variance_contours: bool = True,
     show_legend: bool = True,
     label_every: int | None = None,
@@ -956,6 +957,9 @@ def plot_reduced_landscape(
       the background, so no confident surface is drawn where nothing was
       evaluated. ``show_variance_contours=False`` hides only the dashed
       contours and their legend entry; ``surface=None`` omits the surface;
+    - ``fade_distance`` additionally fades cells farther than that many
+      angstroms in the displayed ``(s, d)`` plane from every oracle
+      observation, providing a deterministic data-support mask;
     - the oracle evaluations as dots, coloured by true energy
       (``color_by="energy"``) or by order of evaluation
       (``"iteration"``); ``label_every=k`` also numbers every k-th one, and the
@@ -1077,6 +1081,7 @@ def plot_reduced_landscape(
             variance_label=lambda x: f"relative variance {x:.2g}",
             show_variance_contours=show_variance_contours,
             fade_variance_above=fade_variance,
+            fade_distance_above=fade_distance,
         )
         handles.append(
             Patch(
@@ -1107,6 +1112,17 @@ def plot_reduced_landscape(
                     label=(
                         f"faded: relative variance above {fade_variance:g},\n"
                         "no oracle evaluation nearby"
+                    ),
+                )
+            )
+        if fade_distance is not None:
+            handles.append(
+                Patch(
+                    facecolor="white",
+                    edgecolor="#999999",
+                    label=(
+                        f"faded beyond {fade_distance:g} Å from\n"
+                        "the nearest oracle evaluation"
                     ),
                 )
             )
