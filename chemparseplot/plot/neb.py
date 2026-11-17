@@ -659,10 +659,12 @@ def plot_structure_strip(
     else:
         label_fontsize = float(label_fontsize)
         if label_fontsize <= 0:
-            raise ValueError("label_fontsize must be positive")
+            msg = "label_fontsize must be positive"
+            raise ValueError(msg)
     label_padding_px = float(label_padding_px)
     if label_padding_px < 0:
-        raise ValueError("label_padding_px must be non-negative")
+        msg = "label_padding_px must be non-negative"
+        raise ValueError(msg)
 
     fig = ax.figure
     fig.canvas.draw()
@@ -725,9 +727,7 @@ def plot_structure_strip(
         slot_top_y = ax_h_px - top_padding_px - row * row_pitch_px
         slot_bottom_y = slot_top_y - row_pitch_px
         img_top_y = (
-            slot_top_y
-            - (available_height_px - target_height_px) / 2
-            - target_height_px
+            slot_top_y - (available_height_px - target_height_px) / 2 - target_height_px
         )
         x0 = int(round(slot_center_x - target_width_px / 2))
         y0 = int(round(img_top_y))
@@ -1460,7 +1460,8 @@ def plot_landscape_surface(
     if fade_distance_above is not None:
         fade_distance_above = float(fade_distance_above)
         if fade_distance_above <= 0:
-            raise ValueError("fade_distance_above must be positive")
+            msg = "fade_distance_above must be positive"
+            raise ValueError(msg)
 
     n_obs = len(rmsd_r)
     fit_idx = np.arange(n_obs, dtype=int)
@@ -1681,8 +1682,7 @@ def plot_landscape_surface(
         support_y = d_data if project_path else rmsd_p
         support_distance = np.sqrt(
             np.min(
-                (xg[..., None] - support_x) ** 2
-                + (yg[..., None] - support_y) ** 2,
+                (xg[..., None] - support_x) ** 2 + (yg[..., None] - support_y) ** 2,
                 axis=-1,
             )
         )
