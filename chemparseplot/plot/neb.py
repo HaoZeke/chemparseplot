@@ -1347,6 +1347,7 @@ def plot_landscape_surface(
     max_surface_points: int = 64,
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
     variance_label: Callable[[float], str] | None = None,
+    show_variance_contours: bool = True,
     fade_variance_above: float | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
@@ -1378,6 +1379,9 @@ def plot_landscape_surface(
         Text of a variance contour label from its level; default
         ``$\\sigma^2 = $`` and the value (mathtext). Pass a plain-text
         formatter when the figure must embed a single font family.
+    show_variance_contours : bool, default True
+        Draw and label the dashed predictive-variance contours. Disabling
+        them does not disable ``fade_variance_above`` or variance calculation.
     fade_variance_above : float, optional
         Relative variance level in (0, 1) (the same scale as the labelled
         contours: 0 the smallest variance on the grid, 1 the largest). Where
@@ -1661,41 +1665,40 @@ def plot_landscape_surface(
                     alpha=0.78,
                     zorder=11,
                 )
-        # Get the actual min and max variance currently in the grid
-        v_min, v_max = var_grid.min(), var_grid.max()
-        v_range = v_max - v_min
+        if show_variance_contours:
+            # Get the actual min and max variance currently in the grid
+            v_min, v_max = var_grid.min(), var_grid.max()
+            v_range = v_max - v_min
 
-        # Calculate levels as 5%, threshold%, and 95% of the variance range.
-        # Skip contours entirely if variance is flat (avoids matplotlib error
-        # "Contour levels must be increasing").
-        if v_range < 1e-10:
-            v_con = None
-        else:
-            v_levs = sorted(
-                {
-                    v_min + 0.05 * v_range,
-                    v_min + variance_threshold * v_range,
-                    v_min + 0.95 * v_range,
-                }
-            )
+            # Calculate levels as 5%, threshold%, and 95% of the variance range.
+            # Skip contours entirely if variance is flat (avoids matplotlib error
+            # "Contour levels must be increasing").
+            if v_range >= 1e-10:
+                v_levs = sorted(
+                    {
+                        v_min + 0.05 * v_range,
+                        v_min + variance_threshold * v_range,
+                        v_min + 0.95 * v_range,
+                    }
+                )
 
-            v_con = ax.contour(
-                xg,
-                yg,
-                var_grid,
-                levels=v_levs,
-                colors="black",
-                linestyles="dashed",
-                alpha=0.8,
-                zorder=12,
-            )
-            ax.clabel(
-                v_con,
-                inline=True,
-                fontsize=8,
-                inline_spacing=50,
-                fmt=variance_label or (lambda x: r"$\sigma^2 = $" + f"{x:.2g}"),
-            )
+                v_con = ax.contour(
+                    xg,
+                    yg,
+                    var_grid,
+                    levels=v_levs,
+                    colors="black",
+                    linestyles="dashed",
+                    alpha=0.8,
+                    zorder=12,
+                )
+                ax.clabel(
+                    v_con,
+                    inline=True,
+                    fontsize=8,
+                    inline_spacing=50,
+                    fmt=variance_label or (lambda x: r"$\sigma^2 = $" + f"{x:.2g}"),
+                )
 
     if show_pts:
         plot_x = s_data if project_path else rmsd_r

@@ -795,10 +795,37 @@ def test_landscape_fades_where_the_model_has_no_data(baker):
     assert white and tuple(white[0].get_facecolor()[0][:3]) == (1.0, 1.0, 1.0)
 
 
+def test_landscape_can_hide_variance_contours(baker):
+    _jax_surfaces()
+    fig = surr.plot_reduced_landscape(
+        baker.band, show_variance_contours=False
+    )
+    assert not any(
+        text.get_text().startswith("relative variance")
+        for text in fig.axes[0].texts
+    )
+    names = [text.get_text() for text in fig.legends[0].get_texts()]
+    assert not any("variance contours" in name for name in names)
+    assert any(name.startswith("faded") for name in names)
+
+
+def test_landscape_can_hide_legend_and_reserved_space(baker):
+    _jax_surfaces()
+    shown = surr.plot_reduced_landscape(baker.band)
+    hidden = surr.plot_reduced_landscape(baker.band, show_legend=False)
+    assert not hidden.legends
+    assert hidden.get_figheight() < shown.get_figheight()
+
+
 def _captions(fig):
-    """Captions of the strip axes (the axes holding the rendered image)."""
-    ax = next(a for a in fig.axes if a.images)
-    return [t.get_text() for t in sorted(ax.texts, key=lambda t: t.get_position()[0])]
+    """Captions belonging to the structure strip, including a separate label axis."""
+    image_ax = next(a for a in fig.axes if a.images)
+    axes = [
+        image_ax,
+        *[a for a in fig.axes if a is not image_ax and not a.axison and a.texts],
+    ]
+    texts = [t for ax in axes for t in ax.texts]
+    return [t.get_text() for t in sorted(texts, key=lambda t: t.get_position()[0])]
 
 
 def test_landscape_strip_types_from_the_cell_and_labels(baker):
@@ -809,6 +836,8 @@ def test_landscape_strip_types_from_the_cell_and_labels(baker):
         baker.band, structures="crit_points", strip_renderer="ase"
     )
     assert _captions(fig) == ["R", "SP", "P"]
+    image_ax = next(a for a in fig.axes if a.images)
+    assert not image_ax.texts
     on_map = {t.get_text() for t in fig.axes[0].texts}
     assert {"R", "SP", "P"} <= on_map
     last = " ".join(fig.legends[0].get_texts()[-1].get_text().split())
