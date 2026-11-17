@@ -697,6 +697,7 @@ _STRIP_ZOOM = 0.5 * 3.15
 _STRIP_SPACING = 1.5
 _STRIP_FILL = 0.92
 _STRIP_ROW_IN = 1.6
+_STRIP_LABEL_ROW_IN = 0.28
 _MAP_IN, _Y_LABEL_IN, _CBAR_IN = 5.2, 0.95, 1.2
 _TOP_IN, _GAP_IN, _LEGEND_IN = 0.4, 0.1, 1.25
 _XLABEL_GAP_IN = 0.5  # room for the x label between the map and the strip
@@ -921,6 +922,9 @@ def plot_reduced_landscape(
     surface: str | None = "grad_matern",
     color_by: str = "energy",
     fade_variance: float | None = 0.95,
+    fade_distance: float | None = None,
+    show_variance_contours: bool = True,
+    show_legend: bool = True,
     label_every: int | None = None,
     window: str = "square",
     xlim: tuple[float, float] | None = None,
@@ -946,12 +950,16 @@ def plot_reduced_landscape(
     What this version adds, each with a legend entry:
 
     - the GP energy surface is a fresh fit to the oracle energies and the
-      in-plane gradient components in the reduced (s, d) plane, with dashed
-      relative variance contours; it is not the search's own model.
+      in-plane gradient components in the reduced (s, d) plane, optionally
+      with dashed relative variance contours; it is not the search's own model.
       Where the relative variance exceeds ``fade_variance`` (default 0.95, the
       outermost labelled contour; None keeps it all) the surface is faded to
       the background, so no confident surface is drawn where nothing was
-      evaluated. ``surface=None`` omits it;
+      evaluated. ``show_variance_contours=False`` hides only the dashed
+      contours and their legend entry; ``surface=None`` omits the surface;
+    - ``fade_distance`` additionally fades cells farther than that many
+      angstroms in the displayed ``(s, d)`` plane from every oracle
+      observation, providing a deterministic data-support mask;
     - the oracle evaluations as dots, coloured by true energy
       (``color_by="energy"``) or by order of evaluation
       (``"iteration"``); ``label_every=k`` also numbers every k-th one, and the
@@ -962,7 +970,8 @@ def plot_reduced_landscape(
 
     ``label_critical_points`` puts R, SP (or CI) and P on the path when no strip
     is drawn (the structures can be shown elsewhere); with a strip they are
-    always labelled.
+    always labelled. ``show_legend=False`` omits the legend and its reserved
+    layout space.
 
     ``window`` sets the extent: ``"square"`` (default) is the equal-metric square
     window of ``plt-neb``; ``"fit"`` crops to the bounding box of the part of the
@@ -1023,19 +1032,23 @@ def plot_reduced_landscape(
 
         entries = _strip_entries(band, structures, n_structures, locate)
     ax_strip = None
+    ax_strip_labels = None
     if own_axes:
         n_rows_strip = -(-len(entries) // _STRIP_MAX_COLS)
-        strip_h = (
+        strip_plot_h = (
             _STRIP_ROW_IN * n_rows_strip + (0.3 if n_rows_strip > 1 else 0.0)
             if entries
             else 0.0
         )
+        strip_label_h = _STRIP_LABEL_ROW_IN * n_rows_strip if entries else 0.0
+        strip_h = strip_plot_h + strip_label_h
         fig_w = _Y_LABEL_IN + _MAP_IN + _CBAR_IN
         fig_h = _TOP_IN + _MAP_IN + _XLABEL_GAP_IN + strip_h + _GAP_IN + _LEGEND_IN
         fig = plt.figure(figsize=(fig_w, fig_h))
         ax = fig.add_axes((0.1, 0.5, 0.5, 0.4))
         if entries:
             ax_strip = fig.add_axes((0.1, 0.1, 0.5, 0.1))
+            ax_strip_labels = fig.add_axes((0.1, 0.05, 0.5, 0.04))
     else:
         fig = ax.figure
     half = neb_plot.landscape_half_span(
@@ -1066,7 +1079,9 @@ def plot_reduced_landscape(
             ylim=(-half, half),
             basis=basis,
             variance_label=lambda x: f"relative variance {x:.2g}",
+            show_variance_contours=show_variance_contours,
             fade_variance_above=fade_variance,
+            fade_distance_above=fade_distance,
         )
         handles.append(
             Patch(
@@ -1078,16 +1093,17 @@ def plot_reduced_landscape(
                 ),
             )
         )
-        handles.append(
-            Line2D(
-                [],
-                [],
-                color="black",
-                ls="--",
-                lw=1.0,
-                label=("relative variance contours\n(0 at the data, 1 far from it)"),
+        if show_variance_contours:
+            handles.append(
+                Line2D(
+                    [],
+                    [],
+                    color="black",
+                    ls="--",
+                    lw=1.0,
+                    label=("relative variance contours\n(0 at the data, 1 far from it)"),
+                )
             )
-        )
         if fade_variance is not None:
             handles.append(
                 Patch(
@@ -1096,6 +1112,17 @@ def plot_reduced_landscape(
                     label=(
                         f"faded: relative variance above {fade_variance:g},\n"
                         "no oracle evaluation nearby"
+                    ),
+                )
+            )
+        if fade_distance is not None:
+            handles.append(
+                Patch(
+                    facecolor="white",
+                    edgecolor="#999999",
+                    label=(
+                        f"faded beyond {fade_distance:g} Å from\n"
+                        "the nearest oracle evaluation"
                     ),
                 )
             )
@@ -1315,8 +1342,17 @@ def plot_reduced_landscape(
     if own_axes:
         _wrap_handle_labels(handles, _lfs(8), fig_w)
         ncols_leg, _ = _legend_layout([h.get_label() for h in handles], _lfs(8), fig_w)
-        legend_in = 0.1 + _measured_legend_height(
-            handles, [h.get_label() for h in handles], _lfs(8), ncols_leg, fig_w
+        legend_in = (
+            0.1
+            + _measured_legend_height(
+                handles,
+                [h.get_label() for h in handles],
+                _lfs(8),
+                ncols_leg,
+                fig_w,
+            )
+            if show_legend
+            else 0.0
         )
         fig_h = _TOP_IN + map_h_in + _XLABEL_GAP_IN + strip_h + _GAP_IN + legend_in
         fig.set_size_inches(fig_w, fig_h, forward=True)
@@ -1325,7 +1361,7 @@ def plot_reduced_landscape(
         ax.set_position([left, map_bottom, map_w_in / fig_w, map_h_in / fig_h])
         ax.set_aspect("equal", adjustable="box", anchor="C")
         for other in list(fig.axes):
-            if other is ax or other is ax_strip:
+            if other is ax or other is ax_strip or other is ax_strip_labels:
                 continue
             other.set_position(
                 [
@@ -1336,10 +1372,25 @@ def plot_reduced_landscape(
                 ]
             )
         if entries:
+            strip_bottom = _GAP_IN + legend_in
             ax_strip.set_position(
-                [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+                [
+                    left,
+                    (strip_bottom + strip_label_h) / fig_h,
+                    _MAP_IN / fig_w,
+                    strip_plot_h / fig_h,
+                ]
+            )
+            ax_strip_labels.set_position(
+                [
+                    left,
+                    strip_bottom / fig_h,
+                    _MAP_IN / fig_w,
+                    strip_label_h / fig_h,
+                ]
             )
             ax_strip.axis("off")
+            ax_strip_labels.axis("off")
             fig.canvas.draw()
             neb_plot.plot_structure_strip(
                 ax_strip,
@@ -1353,19 +1404,34 @@ def plot_reduced_landscape(
                 width_fill_fraction=_STRIP_FILL,
                 max_cols=_STRIP_MAX_COLS,
                 prefer_single_row=False,
+                label_ax=ax_strip_labels,
             )
             ax_strip.set_position(
-                [left, (_GAP_IN + legend_in) / fig_h, _MAP_IN / fig_w, strip_h / fig_h]
+                [
+                    left,
+                    (strip_bottom + strip_label_h) / fig_h,
+                    _MAP_IN / fig_w,
+                    strip_plot_h / fig_h,
+                ]
             )
-        fig.legend(
-            handles=handles,
-            frameon=False,
-            fontsize=_lfs(8),
-            ncols=ncols_leg,
-            loc="lower center",
-            bbox_to_anchor=(0.5, 0.0),
-        )
-    else:
+            ax_strip_labels.set_position(
+                [
+                    left,
+                    strip_bottom / fig_h,
+                    _MAP_IN / fig_w,
+                    strip_label_h / fig_h,
+                ]
+            )
+        if show_legend:
+            fig.legend(
+                handles=handles,
+                frameon=False,
+                fontsize=_lfs(8),
+                ncols=ncols_leg,
+                loc="lower center",
+                bbox_to_anchor=(0.5, 0.0),
+            )
+    elif show_legend:
         ax.legend(handles=handles, frameon=False, fontsize=_lfs(8), loc="best")
     _drop_cut_labels(fig, ax)
     return fig

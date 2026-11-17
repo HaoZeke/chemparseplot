@@ -589,6 +589,8 @@ def plot_structure_strip(
     width_fill_fraction=0.82,
     prefer_single_row: bool = True,
     label_ax=None,
+    label_fontsize: float | None = None,
+    label_padding_px: float = 3.0,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -613,6 +615,11 @@ def plot_structure_strip(
         Optional caption-only axis. When supplied, structure images use the
         full height of ``ax`` and labels are placed in ``label_ax`` at matching
         normalized column and row positions.
+    label_fontsize : float or None
+        Label font size in points. When omitted, an adaptive size is used.
+    label_padding_px : float
+        Minimum vertical padding in pixels between each label and its
+        structure cell.
 
     ```{versionadded} 0.1.0
     ```
@@ -647,7 +654,17 @@ def plot_structure_strip(
     n_rows = (n_plot + effective_max_cols - 1) // effective_max_cols
 
     # Adaptive font size: shrink for many items
-    label_fontsize = min(11, max(7, 14 - n_plot // 2))
+    if label_fontsize is None:
+        label_fontsize = min(11, max(7, 14 - n_plot // 2))
+    else:
+        label_fontsize = float(label_fontsize)
+        if label_fontsize <= 0:
+            msg = "label_fontsize must be positive"
+            raise ValueError(msg)
+    label_padding_px = float(label_padding_px)
+    if label_padding_px < 0:
+        msg = "label_padding_px must be non-negative"
+        raise ValueError(msg)
 
     fig = ax.figure
     fig.canvas.draw()
@@ -676,22 +693,21 @@ def plot_structure_strip(
     label_band_px = (
         0.0
         if label_ax is not None
-        else label_fontsize * fig.dpi / 72 * (0.9 + 1.35 * max_label_lines)
+        else label_fontsize * fig.dpi / 72 * (0.35 + 1.15 * max_label_lines)
     )
     top_padding_px = 6.0
     bottom_padding_px = 6.0
     row_gap_px = 10.0
-    usable_total_height_px = max(
+    row_pitch_px = max(
         24.0,
-        ax_h_px - label_band_px * n_rows - top_padding_px - bottom_padding_px,
+        (ax_h_px - top_padding_px - bottom_padding_px) / max(n_rows, 1),
     )
-    slot_height_px = usable_total_height_px / max(n_rows, 1)
     slot_width_px = per_col_px
     col_gap_px = max(6.0, (col_spacing - 1.0) * slot_width_px * 0.22)
     target_width_px = max(
         20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
     )
-    available_height_px = max(20.0, slot_height_px - row_gap_px - label_band_px * 0.35)
+    available_height_px = max(20.0, row_pitch_px - row_gap_px - label_band_px)
     target_height_px = max(
         20,
         int(
@@ -708,10 +724,10 @@ def plot_structure_strip(
         col = i % effective_max_cols
         row = i // effective_max_cols
         slot_center_x = (col + 0.5) * slot_width_px
-        slot_top_y = ax_h_px - top_padding_px - row * slot_height_px
-        slot_bottom_y = slot_top_y - slot_height_px
+        slot_top_y = ax_h_px - top_padding_px - row * row_pitch_px
+        slot_bottom_y = slot_top_y - row_pitch_px
         img_top_y = (
-            slot_top_y - (slot_height_px - target_height_px) / 2 - target_height_px
+            slot_top_y - (available_height_px - target_height_px) / 2 - target_height_px
         )
         x0 = int(round(slot_center_x - target_width_px / 2))
         y0 = int(round(img_top_y))
@@ -748,7 +764,7 @@ def plot_structure_strip(
                 # Each row owns its caption baseline so column mates cannot
                 # occupy the same text position.
                 label_x = slot_center_x
-                label_y = max(2.0, slot_bottom_y + 3.0)
+                label_y = max(2.0, slot_bottom_y + label_padding_px)
                 label_va = "bottom"
             text_ax.text(
                 x=label_x,
@@ -1347,7 +1363,9 @@ def plot_landscape_surface(
     max_surface_points: int = 64,
     surface_fit: SurfaceFitConfig | Mapping[str, Any] | None = None,
     variance_label: Callable[[float], str] | None = None,
+    show_variance_contours: bool = True,
     fade_variance_above: float | None = None,
+    fade_distance_above: float | None = None,
 ) -> Any:
     """Plot the 2D landscape surface using reaction valley projection.
 
@@ -1378,12 +1396,19 @@ def plot_landscape_surface(
         Text of a variance contour label from its level; default
         ``$\\sigma^2 = $`` and the value (mathtext). Pass a plain-text
         formatter when the figure must embed a single font family.
+    show_variance_contours : bool, default True
+        Draw and label the dashed predictive-variance contours. Disabling
+        them does not disable ``fade_variance_above`` or variance calculation.
     fade_variance_above : float, optional
         Relative variance level in (0, 1) (the same scale as the labelled
         contours: 0 the smallest variance on the grid, 1 the largest). Where
         the relative variance is above it the surface is faded to the
         background, so the plot does not show a confident surface where the
         model has no data. Default None: no fading (the NEB behaviour).
+    fade_distance_above : float, optional
+        Distance in the plotted coordinate units. Surface cells farther than
+        this from every observation are faded to the background. This gives a
+        deterministic data-support mask independent of model uncertainty.
     surface_fit : SurfaceFitConfig or mapping, optional
         TOML-friendly config object. When given, overrides *auto_thin* and
         *max_surface_points* (prefer this over ad-hoc kwargs).
@@ -1432,6 +1457,11 @@ def plot_landscape_surface(
         grad_p = np.asarray(grad_p, dtype=float)
     if step_data is not None:
         step_data = np.asarray(step_data)
+    if fade_distance_above is not None:
+        fade_distance_above = float(fade_distance_above)
+        if fade_distance_above <= 0:
+            msg = "fade_distance_above must be positive"
+            raise ValueError(msg)
 
     n_obs = len(rmsd_r)
     fit_idx = np.arange(n_obs, dtype=int)
@@ -1647,6 +1677,25 @@ def plot_landscape_surface(
         zorder=10,
         extend="both",
     )
+    if fade_distance_above is not None:
+        support_x = s_data if project_path else rmsd_r
+        support_y = d_data if project_path else rmsd_p
+        support_distance = np.sqrt(
+            np.min(
+                (xg[..., None] - support_x) ** 2 + (yg[..., None] - support_y) ** 2,
+                axis=-1,
+            )
+        )
+        if support_distance.max() > fade_distance_above:
+            ax.contourf(
+                xg,
+                yg,
+                support_distance,
+                levels=[fade_distance_above, support_distance.max() + 1e-9],
+                colors="white",
+                alpha=0.78,
+                zorder=11,
+            )
     # NOTE(rg): this is not the "absolute" variance but the relative one
     if var_grid is not None:
         if fade_variance_above is not None and np.ptp(var_grid) > 1e-10:
@@ -1661,41 +1710,40 @@ def plot_landscape_surface(
                     alpha=0.78,
                     zorder=11,
                 )
-        # Get the actual min and max variance currently in the grid
-        v_min, v_max = var_grid.min(), var_grid.max()
-        v_range = v_max - v_min
+        if show_variance_contours:
+            # Get the actual min and max variance currently in the grid
+            v_min, v_max = var_grid.min(), var_grid.max()
+            v_range = v_max - v_min
 
-        # Calculate levels as 5%, threshold%, and 95% of the variance range.
-        # Skip contours entirely if variance is flat (avoids matplotlib error
-        # "Contour levels must be increasing").
-        if v_range < 1e-10:
-            v_con = None
-        else:
-            v_levs = sorted(
-                {
-                    v_min + 0.05 * v_range,
-                    v_min + variance_threshold * v_range,
-                    v_min + 0.95 * v_range,
-                }
-            )
+            # Calculate levels as 5%, threshold%, and 95% of the variance range.
+            # Skip contours entirely if variance is flat (avoids matplotlib error
+            # "Contour levels must be increasing").
+            if v_range >= 1e-10:
+                v_levs = sorted(
+                    {
+                        v_min + 0.05 * v_range,
+                        v_min + variance_threshold * v_range,
+                        v_min + 0.95 * v_range,
+                    }
+                )
 
-            v_con = ax.contour(
-                xg,
-                yg,
-                var_grid,
-                levels=v_levs,
-                colors="black",
-                linestyles="dashed",
-                alpha=0.8,
-                zorder=12,
-            )
-            ax.clabel(
-                v_con,
-                inline=True,
-                fontsize=8,
-                inline_spacing=50,
-                fmt=variance_label or (lambda x: r"$\sigma^2 = $" + f"{x:.2g}"),
-            )
+                v_con = ax.contour(
+                    xg,
+                    yg,
+                    var_grid,
+                    levels=v_levs,
+                    colors="black",
+                    linestyles="dashed",
+                    alpha=0.8,
+                    zorder=12,
+                )
+                ax.clabel(
+                    v_con,
+                    inline=True,
+                    fontsize=8,
+                    inline_spacing=50,
+                    fmt=variance_label or (lambda x: r"$\sigma^2 = $" + f"{x:.2g}"),
+                )
 
     if show_pts:
         plot_x = s_data if project_path else rmsd_r
