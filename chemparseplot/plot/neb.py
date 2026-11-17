@@ -691,22 +691,21 @@ def plot_structure_strip(
     label_band_px = (
         0.0
         if label_ax is not None
-        else label_fontsize * fig.dpi / 72 * (0.9 + 1.35 * max_label_lines)
+        else label_fontsize * fig.dpi / 72 * (0.35 + 1.15 * max_label_lines)
     )
     top_padding_px = 6.0
     bottom_padding_px = 6.0
     row_gap_px = 10.0
-    usable_total_height_px = max(
+    row_pitch_px = max(
         24.0,
-        ax_h_px - label_band_px * n_rows - top_padding_px - bottom_padding_px,
+        (ax_h_px - top_padding_px - bottom_padding_px) / max(n_rows, 1),
     )
-    slot_height_px = usable_total_height_px / max(n_rows, 1)
     slot_width_px = per_col_px
     col_gap_px = max(6.0, (col_spacing - 1.0) * slot_width_px * 0.22)
     target_width_px = max(
         20, int(round((slot_width_px - col_gap_px) * width_fill_fraction))
     )
-    available_height_px = max(20.0, slot_height_px - row_gap_px - label_band_px * 0.35)
+    available_height_px = max(20.0, row_pitch_px - row_gap_px - label_band_px)
     target_height_px = max(
         20,
         int(
@@ -723,10 +722,12 @@ def plot_structure_strip(
         col = i % effective_max_cols
         row = i // effective_max_cols
         slot_center_x = (col + 0.5) * slot_width_px
-        slot_top_y = ax_h_px - top_padding_px - row * slot_height_px
-        slot_bottom_y = slot_top_y - slot_height_px
+        slot_top_y = ax_h_px - top_padding_px - row * row_pitch_px
+        slot_bottom_y = slot_top_y - row_pitch_px
         img_top_y = (
-            slot_top_y - (slot_height_px - target_height_px) / 2 - target_height_px
+            slot_top_y
+            - (available_height_px - target_height_px) / 2
+            - target_height_px
         )
         x0 = int(round(slot_center_x - target_width_px / 2))
         y0 = int(round(img_top_y))
