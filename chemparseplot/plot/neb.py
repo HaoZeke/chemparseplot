@@ -589,6 +589,8 @@ def plot_structure_strip(
     width_fill_fraction=0.82,
     prefer_single_row: bool = True,
     label_ax=None,
+    label_fontsize: float | None = None,
+    label_padding_px: float = 3.0,
 ) -> Any:
     """Renders a horizontal gallery of atomic structures.
 
@@ -613,6 +615,11 @@ def plot_structure_strip(
         Optional caption-only axis. When supplied, structure images use the
         full height of ``ax`` and labels are placed in ``label_ax`` at matching
         normalized column and row positions.
+    label_fontsize : float or None
+        Label font size in points. When omitted, an adaptive size is used.
+    label_padding_px : float
+        Minimum vertical padding in pixels between each label and its
+        structure cell.
 
     ```{versionadded} 0.1.0
     ```
@@ -647,7 +654,15 @@ def plot_structure_strip(
     n_rows = (n_plot + effective_max_cols - 1) // effective_max_cols
 
     # Adaptive font size: shrink for many items
-    label_fontsize = min(11, max(7, 14 - n_plot // 2))
+    if label_fontsize is None:
+        label_fontsize = min(11, max(7, 14 - n_plot // 2))
+    else:
+        label_fontsize = float(label_fontsize)
+        if label_fontsize <= 0:
+            raise ValueError("label_fontsize must be positive")
+    label_padding_px = float(label_padding_px)
+    if label_padding_px < 0:
+        raise ValueError("label_padding_px must be non-negative")
 
     fig = ax.figure
     fig.canvas.draw()
@@ -748,7 +763,7 @@ def plot_structure_strip(
                 # Each row owns its caption baseline so column mates cannot
                 # occupy the same text position.
                 label_x = slot_center_x
-                label_y = max(2.0, slot_bottom_y + 3.0)
+                label_y = max(2.0, slot_bottom_y + label_padding_px)
                 label_va = "bottom"
             text_ax.text(
                 x=label_x,

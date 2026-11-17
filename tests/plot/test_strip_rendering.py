@@ -180,6 +180,33 @@ class TestPlotStructureStrip:
         assert len(ax.images) == 1
         plt.close(fig)
 
+    def test_custom_label_fontsize(self, small_molecules):
+        fig, ax = plt.subplots(figsize=(6, 2))
+        plot_structure_strip(
+            ax,
+            small_molecules,
+            ["A", "B", "C"],
+            label_fontsize=18,
+            label_padding_px=12,
+        )
+        assert all(text.get_fontsize() == 18 for text in ax.texts)
+        plt.close(fig)
+
+    @pytest.mark.parametrize(
+        ("keyword", "value"),
+        [("label_fontsize", 0), ("label_padding_px", -1)],
+    )
+    def test_invalid_label_layout_value(self, small_molecules, keyword, value):
+        fig, ax = plt.subplots(figsize=(6, 2))
+        with pytest.raises(ValueError):
+            plot_structure_strip(
+                ax,
+                small_molecules,
+                ["A", "B", "C"],
+                **{keyword: value},
+            )
+        plt.close(fig)
+
     def test_composes_single_canvas_not_annotation_boxes(
         self, monkeypatch, small_molecules
     ):
