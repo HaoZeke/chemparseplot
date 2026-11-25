@@ -1,9 +1,13 @@
-#+OPTIONS: num:nil
+#+OPTIONS: num:nil toc:nil
 
 #+begin_quote
 Canonical source note: this Org file is authoritative for contributor-facing documentation.
 Rendered Markdown files are derived artifacts and should not be edited separately.
 #+end_quote
+
+Parses computational chemistry outputs (ORCA, eOn, Sella, ChemGP, PLUMED) into unit-aware Python objects and plots NEB paths, energy profiles and surfaces.
+
+#+TOC: headlines 3
 
 * About
 file:branding/logo/chemparseplot_logo.png
