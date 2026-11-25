@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use chemparseplot, please cite it as below."
+type: software
+title: chemparseplot
+version: "1.14.1"
+date-released: "2026-11-11"
+authors:
+  - family-names: Goswami
+    given-names: Rohit
+    email: rog32@hi.is
+    orcid: "https://orcid.org/0000-0002-2393-8056"
+    affiliation: "TurtleTech ehf"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.18529752"
+    description: "Zenodo concept DOI for all software versions"
+repository-code: "https://github.com/HaoZeke/chemparseplot"
+license: MIT
+keywords:
+  - computational chemistry
+  - parsing
+  - plotting
+  - nudged elastic band
+  - Python
+abstract: >-
+  chemparseplot parses computational chemistry outputs (ORCA, eOn,
+  Sella, ChemGP, PLUMED) into unit-aware Python objects and produces
+  publication-quality plots.
