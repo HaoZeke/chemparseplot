@@ -1,9 +1,13 @@
-#+OPTIONS: num:nil
+#+OPTIONS: num:nil toc:nil
 
 #+begin_quote
 Canonical source note: this Org file is authoritative for contributor-facing documentation.
 Rendered Markdown files are derived artifacts and should not be edited separately.
 #+end_quote
+
+Parses computational chemistry outputs (ORCA, eOn, Sella, ChemGP, PLUMED) into unit-aware Python objects and plots NEB paths, energy profiles and surfaces.
+
+#+TOC: headlines 3
 
 * About
 file:branding/logo/chemparseplot_logo.png
@@ -14,13 +18,33 @@ A *pure-python*[fn:butwhy] parsing and plotting library for computational chemis
 ~chemparseplot~ extracts structured data from the output of the quantum chemistry program (ORCA), eOn, Sella and ChemGP.
 It produces publication-quality, unit-aware visualizations with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]].
 
-Computational tasks (surface fitting, structure analysis, interpolation) are handled by [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]], which is a required dependency.
-~chemparseplot~ parses output files, delegates heavy computation to ~rgpycrumbs~, and produces publication-quality plots.
+Computational tasks (surface fitting, structure analysis, interpolation) are
+*optionally* delegated to [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]]
+(suite hub / compute). Hard install dependencies are only ~numpy~ and ~pint~;
+plot/NEB/grammar stacks are extras or host-provided. ~chemparseplot~ parses
+output files and produces unit-aware plots; heavy compute stays optional so
+packages remain lightweight (CLI isolation: PEP 723 + uv; library: ~ensure_import~).
 
 ** Installation
 
 #+begin_src bash
 pip install chemparseplot
+#+end_src
+
+Suite config (shared with rgpycrumbs — *no* =~/.config/chemparseplot=):
+
+#+begin_src toml
+# ~/.config/rgpkgs/config.toml  or  ./rgpkgs.toml
+# [pins] lock = "uv.lock"
+# [pins.packages] …
+#+end_src
+
+Feature extras such as ~plot~ and ~neb~ are a /transitional/ install convenience.
+The target is the same on-demand uv / ~ensure_import~ design as the rgpycrumbs hub.
+Prefer the bare install and the suite pins for new work.
+
+#+begin_src bash
+# transitional:
 # With plotting support
 pip install "chemparseplot[plot]"
 # Everything
@@ -38,10 +62,12 @@ uv sync --all-extras
 See the [[https://chemparseplot.rgoswami.me/installation.html][installation guide]] and [[https://chemparseplot.rgoswami.me/quickstart.html][quickstart]] for details.
 
 ** Ecosystem Overview
-~chemparseplot~ is part of the ~rgpkgs~ suite (hub: ~rgpycrumbs~).
+~chemparseplot~ is part of the ~rgpkgs~ suite of interlinked libraries (hub: ~rgpycrumbs~).
 
-- CON/convel: [[https://github.com/lode-org/readcon-core][readcon-core]] (PyPI: ~readcon~)
-- Hub: [[https://github.com/HaoZeke/rgpycrumbs][rgpycrumbs]] · inputs: [[https://github.com/HaoZeke/pychum][pychum]] · engine: [[https://eondocs.org][eOn]]
+- Hub / CLI: [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]]
+- Inputs: [[https://github.com/HaoZeke/pychum][~pychum~]]
+- CON/convel I/O: [[https://github.com/lode-org/readcon-core][~readcon-core~]] (PyPI: [[https://pypi.org/project/readcon/][~readcon~]])
+- Engine: [[https://eondocs.org][eOn]]
 
 [[file:branding/logo/ecosystem.png]]
 
@@ -50,6 +76,9 @@ See the [[https://chemparseplot.rgoswami.me/installation.html][installation guid
 - *Plotting* with [[https://www.fabiocrameri.ch/colourmaps/][scientific color maps]] (camera-ready).
 - *Unit preserving* throughout via ~pint~.
 - *Optional computation* via [[https://github.com/HaoZeke/rgpycrumbs][~rgpycrumbs~]] for surface fitting, interpolation, and structure analysis (not a hard dependency).
+- *NEB stitching* (~stitch_neb_segments~) for continuous multi-segment bands across chained minimizations (v1.8+).
+- *Metadata-native eOn* ~.con~ frames ([[https://github.com/lode-org/readcon-core][readcon-core]]; prefer JSON metadata energies over ~.dat~ tables) and typed parser results for NEB and single-ended tools.
+- *Unit-aware NEB/optimization plot helpers* (~convert_neb_values~, shared strip rendering) used by ~rgpycrumbs~ CLIs.
 
 *** Supported Engines
 - ORCA (*5.x*)
@@ -63,9 +92,6 @@ See the [[https://chemparseplot.rgoswami.me/installation.html][installation guid
 - Trajectory formats
   + HDF5 trajectories (ChemGP output with pre-computed forces).
   + Generic ASE-readable formats (extxyz, .traj) for NEB analysis.
-- Multi-segment NEB stitching (~stitch_neb_segments~) for continuous bands across chained minimizations (v1.8+).
-- Metadata-native eOn ~.con~ frames (prefer JSON metadata energies over ~.dat~ tables) with typed parser results shared by NEB and single-ended tools.
-- Unit-aware NEB/optimization plot helpers (~convert_neb_values~, centralized strip rendering) consumed by ~rgpycrumbs~ CLIs.
 
 ** Documentation
 
