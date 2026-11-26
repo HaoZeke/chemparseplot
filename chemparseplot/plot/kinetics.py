@@ -1,6 +1,11 @@
 """Rate plots for temperature-dependent kinetics."""
 
+import os
+import tempfile
+
 import numpy as np
+
+_MIN_ENSEMBLE_FRAMES = 2
 
 
 def plot_arrhenius(ax, temperature, log10_rate_per_second, **kwargs):
@@ -13,16 +18,20 @@ def plot_arrhenius(ax, temperature, log10_rate_per_second, **kwargs):
     kelvin = np.asarray(temperature.to("kelvin").magnitude, dtype=float)
     rates = np.asarray(log10_rate_per_second, dtype=float)
     if kelvin.ndim != 1 or kelvin.shape != rates.shape:
-        raise ValueError("temperatures and log rates must be matching one-dimensional arrays")
+        msg = "temperatures and log rates must be matching one-dimensional arrays"
+        raise ValueError(msg)
     if np.any(~np.isfinite(kelvin)) or np.any(kelvin <= 0):
-        raise ValueError("temperatures must be positive and finite")
+        msg = "temperatures must be positive and finite"
+        raise ValueError(msg)
     (curve,) = ax.plot(1000 / kelvin, rates, **kwargs)
     ax.set_xlabel(r"$1000\,\mathrm{K}/T$")
     ax.set_ylabel(r"$\log_{10}(k/\mathrm{s}^{-1})$")
     return curve
 
 
-def render_path_ensemble(frames, *, canvas_size=700, config="paton", opacity=0.45, color=None):
+def render_path_ensemble(
+    frames, *, canvas_size=700, config="paton", opacity=0.45, color=None
+):
     """Render structures along a path as one overlaid xyzrender image.
 
     ``frames`` is a sequence of ASE ``Atoms`` with the same atom order, such
@@ -32,17 +41,17 @@ def render_path_ensemble(frames, *, canvas_size=700, config="paton", opacity=0.4
 
     Returns an RGBA array with a transparent background.
     """
-    import os
-    import tempfile
+    # matplotlib, ase and neb (scipy) are optional; plot_arrhenius must import
+    # without them.
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+    from ase.io import write  # noqa: PLC0415
 
-    import matplotlib.pyplot as plt
-    from ase.io import write
-
-    from chemparseplot.plot.neb import _import_xyzrender
+    from chemparseplot.plot.neb import _import_xyzrender  # noqa: PLC0415
 
     frames = list(frames)
-    if len(frames) < 2:
-        raise ValueError("a path ensemble needs at least two frames")
+    if len(frames) < _MIN_ENSEMBLE_FRAMES:
+        msg = "a path ensemble needs at least two frames"
+        raise ValueError(msg)
     xr = _import_xyzrender()
     with tempfile.TemporaryDirectory() as folder:
         source = os.path.join(folder, "path.xyz")
@@ -52,7 +61,14 @@ def render_path_ensemble(frames, *, canvas_size=700, config="paton", opacity=0.4
         if color is not None:
             options["ensemble_color"] = color
         molecule = xr.load(source, ensemble=True, reference_frame=0, **options)
-        xr.render(molecule, config=config, canvas_size=canvas_size, hy=True, transparent=True, output=image)
+        xr.render(
+            molecule,
+            config=config,
+            canvas_size=canvas_size,
+            hy=True,
+            transparent=True,
+            output=image,
+        )
         return plt.imread(image)
 
 
