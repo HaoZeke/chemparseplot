@@ -5153,6 +5153,7 @@ plot_landscape_surface(
     xlim=None, ylim=None, basis=None,
     auto_thin=False, max_surface_points=64,
     surface_fit=None,
+    show_variance_contours=True, fade_distance_above=None,
 )
 ```
 
@@ -5178,6 +5179,8 @@ plot_landscape_surface(
 | `auto_thin` | `bool` | `False` | Opt-in: subsample dense clouds for the **fit** only |
 | `max_surface_points` | `int` | `64` | Cap when `auto_thin` is true |
 | `surface_fit` | `SurfaceFitConfig` / mapping / `None` | `None` | TOML-friendly config; overrides the two keys above when set |
+| `show_variance_contours` | `bool` | `True` | Draw the dashed predictive-variance contours |
+| `fade_distance_above` | `float` or `None` | `None` | Fade cells farther than this distance from every observation |
 
 ###### `SurfaceFitConfig` (v1.9.10+)
 
@@ -5267,7 +5270,8 @@ Renders an ASE Atoms object to a numpy RGBA image array using ASE's built-in PNG
 ```python
 plot_structure_strip(
     ax, atoms_list, labels=None, zoom=0.3, rotation="0x,90y,0z", theme_color="black",
-    max_cols=6, renderer="xyzrender", label_ax=None
+    max_cols=6, renderer="xyzrender", label_ax=None,
+    label_fontsize=None, label_padding_px=3.0
 )
 ```
 
@@ -5286,6 +5290,8 @@ Renders a horizontal gallery of atomic structures.
 | `max_cols` | `int` | `6` | Maximum columns before wrapping |
 | `renderer` | `str` | `"xyzrender"` | Structure rendering backend |
 | `label_ax` | `matplotlib.axes.Axes` or `None` | `None` | Optional caption-only axis aligned with the structure gallery |
+| `label_fontsize` | `float` or `None` | `None` | Caption size in points; `None` keeps the adaptive size |
+| `label_padding_px` | `float` | `3.0` | Inset in pixels from the bottom of the row; ignored when `label_ax` is set |
 
 ###### Notes
 
