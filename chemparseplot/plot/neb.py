@@ -618,8 +618,9 @@ def plot_structure_strip(
     label_fontsize : float or None
         Label font size in points. When omitted, an adaptive size is used.
     label_padding_px : float
-        Minimum vertical padding in pixels between each label and its
-        structure cell.
+        Inset in pixels from the bottom of the row. The caption uses
+        ``va="bottom"``, so a larger value moves it toward the structure
+        image. Ignored when ``label_ax`` is set.
 
     ```{versionadded} 0.1.0
     ```
